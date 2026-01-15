@@ -24,11 +24,15 @@
 
 body {
   font-family: var(--font-main);
-  background-color: var(--bg-dark);
+  background-color: #0e2f1f;
+  /* Match auth background for notch */
   color: var(--text-main);
   line-height: 1.6;
-  overflow-x: hidden;
+  overflow: hidden;
+  /* Prevent global scroll */
   -webkit-font-smoothing: antialiased;
+  width: 100vw;
+  height: 100vh;
 }
 
 #root {

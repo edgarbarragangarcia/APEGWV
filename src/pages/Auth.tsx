@@ -54,7 +54,7 @@ const Auth: React.FC = () => {
             position: 'fixed',
             inset: 0,
             zIndex: 100,
-            overflowY: 'auto'
+            overflow: 'hidden'
         }}>
             <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
@@ -129,7 +129,14 @@ const Auth: React.FC = () => {
                             required
                             value={formData.email}
                             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                            style={{ background: 'none', border: 'none', color: 'white', width: '100%', outline: 'none' }}
+                            style={{
+                                background: 'none',
+                                border: 'none',
+                                color: 'white',
+                                width: '100%',
+                                outline: 'none',
+                                fontSize: '16px' // Prevent iOS zoom
+                            }}
                         />
                     </div>
 
@@ -146,7 +153,14 @@ const Auth: React.FC = () => {
                             required
                             value={formData.password}
                             onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                            style={{ background: 'none', border: 'none', color: 'white', width: '100%', outline: 'none' }}
+                            style={{
+                                background: 'none',
+                                border: 'none',
+                                color: 'white',
+                                width: '100%',
+                                outline: 'none',
+                                fontSize: '16px' // Prevent iOS zoom
+                            }}
                         />
                     </div>
 
