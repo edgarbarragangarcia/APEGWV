@@ -1,6 +1,11 @@
+import React from 'react';
+import { supabase } from '../services/SupabaseManager';
 import { Settings, LogOut, Shield, ShoppingBag, CreditCard, ChevronRight } from 'lucide-react';
 
 const Profile: React.FC = () => {
+    const handleLogout = async () => {
+        await supabase.auth.signOut();
+    };
     const menuItems = [
         { icon: Shield, label: 'Datos de la Federación', extra: 'MD24001293' },
         { icon: ShoppingBag, label: 'Mis Ventas', extra: '3 activos' },
@@ -80,14 +85,18 @@ const Profile: React.FC = () => {
                     </button>
                 ))}
 
-                <button style={{
-                    padding: '18px 20px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '15px',
-                    color: '#ef4444',
-                    marginTop: '10px'
-                }}>
+                <button
+                    onClick={handleLogout}
+                    style={{
+                        padding: '18px 20px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '15px',
+                        color: '#ef4444',
+                        marginTop: '10px',
+                        width: '100%'
+                    }}
+                >
                     <LogOut size={20} />
                     <span style={{ fontWeight: '600' }}>Cerrar Sesión</span>
                 </button>

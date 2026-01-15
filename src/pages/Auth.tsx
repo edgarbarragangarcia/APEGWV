@@ -48,8 +48,13 @@ const Auth: React.FC = () => {
     return (
         <div className="flex-center" style={{
             minHeight: '100dvh',
+            width: '100vw',
             padding: '20px 15px',
-            background: 'radial-gradient(circle at top right, var(--primary-light), transparent), var(--bg-dark)'
+            background: 'linear-gradient(135deg, #0e2f1f 0%, #1a4d35 100%)',
+            position: 'fixed',
+            inset: 0,
+            zIndex: 100,
+            overflowY: 'auto'
         }}>
             <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
