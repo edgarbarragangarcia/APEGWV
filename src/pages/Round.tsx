@@ -1,8 +1,15 @@
 import React from 'react';
+import { useLocation } from 'react-router-dom';
 import Card from '../components/Card';
 import { ChevronLeft, ChevronRight, Info, Target, History } from 'lucide-react';
+import type { GolfCourse } from '../data/courses';
 
 const Round: React.FC = () => {
+    const location = useLocation();
+    const { course, recorrido } = (location.state as { course?: GolfCourse; recorrido?: string }) || {};
+
+    const clubName = course?.club || 'Club de Golf';
+    const fieldName = recorrido ? `${course?.name} - ${recorrido}` : (course?.name || 'Recorrido Principal');
     return (
         <div className="animate-fade" style={{ maxWidth: '600px', margin: '0 auto' }}>
             <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
@@ -11,8 +18,8 @@ const Round: React.FC = () => {
                         <History size={20} />
                     </div>
                     <div>
-                        <h1 style={{ fontSize: '18px' }}>La Moraleja III</h1>
-                        <p style={{ fontSize: '12px', color: 'var(--text-dim)' }}>Campo Sur • Par 72</p>
+                        <h1 style={{ fontSize: '18px' }}>{clubName}</h1>
+                        <p style={{ fontSize: '12px', color: 'var(--text-dim)' }}>{fieldName} • Par 72</p>
                     </div>
                 </div>
                 <button style={{ color: 'var(--secondary)' }}>Finalizar</button>

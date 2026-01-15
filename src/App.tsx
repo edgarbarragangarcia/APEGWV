@@ -14,6 +14,7 @@ const Caddies = lazy(() => import('./pages/Caddies'));
 const Tournaments = lazy(() => import('./pages/Tournaments'));
 const Profile = lazy(() => import('./pages/Profile'));
 const Auth = lazy(() => import('./pages/Auth'));
+const CourseSelection = lazy(() => import('./pages/CourseSelection'));
 
 const App: React.FC = () => {
   const [session, setSession] = useState<Session | null>(null);
@@ -55,6 +56,7 @@ const App: React.FC = () => {
                 <>
                   <Route path="/" element={<Home />} />
                   <Route path="/round" element={<Round />} />
+                  <Route path="/select-course" element={<CourseSelection />} />
                   <Route path="/shop" element={<Shop />} />
                   <Route path="/caddies" element={<Caddies />} />
                   <Route path="/tournaments" element={<Tournaments />} />

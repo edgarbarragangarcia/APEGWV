@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Card from '../components/Card';
 import { Play, ArrowRight, Loader2 } from 'lucide-react';
 import { supabase } from '../services/SupabaseManager';
 
 const Home: React.FC = () => {
+    const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
     const [profile, setProfile] = useState<any>(null);
     const [stats, setStats] = useState<any>(null);
@@ -81,16 +83,19 @@ const Home: React.FC = () => {
                 <div style={{ position: 'relative', zIndex: 1 }}>
                     <h2 style={{ fontSize: '20px', marginBottom: '10px' }}>Partida en curso</h2>
                     <p style={{ fontSize: '14px', color: 'rgba(255,b255,255,0.7)', marginBottom: '20px' }}>Club de Golf La Moraleja • Hoyo 4</p>
-                    <button style={{
-                        background: 'var(--secondary)',
-                        color: 'var(--primary)',
-                        padding: '12px 25px',
-                        borderRadius: '12px',
-                        fontWeight: '600',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '10px'
-                    }}>
+                    <button
+                        onClick={() => navigate('/select-course')}
+                        style={{
+                            background: 'var(--secondary)',
+                            color: 'var(--primary)',
+                            padding: '12px 25px',
+                            borderRadius: '12px',
+                            fontWeight: '600',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '10px'
+                        }}
+                    >
                         <Play size={18} fill="currentColor" /> Reanudar GPS
                     </button>
                 </div>
