@@ -1,8 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Card from '../components/Card';
-import { Play, ArrowRight, Loader2 } from 'lucide-react';
+import { Play, ArrowRight, Loader2, Heart } from 'lucide-react';
 import { supabase } from '../services/SupabaseManager';
+
+const FEATURED_PRODUCTS = [
+    { id: 1, name: 'TaylorMade Stealth 2', price: 450, category: 'Drivers', image: 'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?auto=format&fit=crop&q=80&w=400', condition: 'Nuevo' },
+    { id: 2, name: 'Titleist Pro V1', price: 55, category: 'Bolas', image: 'https://images.unsplash.com/photo-1593118247619-e2d6f056869e?auto=format&fit=crop&q=80&w=400', condition: 'Top Ventas' },
+    { id: 3, name: 'Bushnell Phantom 2', price: 120, category: 'GPS', image: 'https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?auto=format&fit=crop&q=80&w=400', condition: 'Oferta' },
+    { id: 4, name: 'Nike Air Zoom', price: 180, category: 'Calzado', image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&q=80&w=400', condition: 'Nuevo' },
+];
 
 const Home: React.FC = () => {
     const navigate = useNavigate();
@@ -56,18 +63,18 @@ const Home: React.FC = () => {
 
             {/* Stats Summary */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '25px' }}>
-                <Card style={{ marginBottom: 0 }}>
+                <Card style={{ marginBottom: 0, padding: '15px' }}>
                     <div style={{ textAlign: 'center' }}>
-                        <span style={{ fontSize: '12px', color: 'var(--text-dim)', textTransform: 'uppercase' }}>Hándicap</span>
-                        <div style={{ fontSize: '32px', fontWeight: '800', margin: '5px 0' }}>{stats?.handicap_index || '--'}</div>
-                        <div style={{ fontSize: '10px', color: '#10b981' }}>Estadística actualizada</div>
+                        <span style={{ fontSize: '10px', color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '1px' }}>Hándicap</span>
+                        <div style={{ fontSize: '24px', fontWeight: '800', margin: '2px 0' }}>{stats?.handicap_index || '--'}</div>
+                        <div style={{ fontSize: '9px', color: '#10b981' }}>Actualizado</div>
                     </div>
                 </Card>
-                <Card style={{ marginBottom: 0 }}>
+                <Card style={{ marginBottom: 0, padding: '15px' }}>
                     <div style={{ textAlign: 'center' }}>
-                        <span style={{ fontSize: '12px', color: 'var(--text-dim)', textTransform: 'uppercase' }}>Rondas</span>
-                        <div style={{ fontSize: '32px', fontWeight: '800', margin: '5px 0' }}>{stats?.total_rounds || '0'}</div>
-                        <div style={{ fontSize: '10px', color: 'var(--text-dim)' }}>Total de temporada</div>
+                        <span style={{ fontSize: '10px', color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '1px' }}>Rondas</span>
+                        <div style={{ fontSize: '24px', fontWeight: '800', margin: '2px 0' }}>{stats?.total_rounds || '0'}</div>
+                        <div style={{ fontSize: '9px', color: 'var(--text-dim)' }}>Temporada</div>
                     </div>
                 </Card>
             </div>
@@ -118,16 +125,54 @@ const Home: React.FC = () => {
                         Ver todo <ArrowRight size={14} />
                     </button>
                 </div>
-                <div style={{ display: 'flex', gap: '15px', overflowX: 'auto', paddingBottom: '10px' }}>
-                    {['Palos', 'Bolas', 'Ropa', 'Accesorios'].map((cat) => (
-                        <button key={cat} className="glass" style={{
-                            padding: '12px 20px',
-                            whiteSpace: 'nowrap',
-                            borderRadius: '15px',
-                            fontSize: '14px'
+                <div style={{ display: 'flex', gap: '15px', overflowX: 'auto', paddingBottom: '15px', scrollSnapType: 'x mandatory' }}>
+                    {FEATURED_PRODUCTS.map((product) => (
+                        <div key={product.id} className="glass" style={{
+                            minWidth: '160px',
+                            width: '160px',
+                            padding: '10px',
+                            scrollSnapAlign: 'start',
+                            position: 'relative',
+                            overflow: 'hidden'
                         }}>
-                            {cat}
-                        </button>
+                            <div style={{ position: 'relative', marginBottom: '10px' }}>
+                                <img
+                                    src={product.image}
+                                    alt={product.name}
+                                    style={{ width: '100%', height: '120px', objectFit: 'cover', borderRadius: '10px' }}
+                                />
+                                <div style={{
+                                    position: 'absolute',
+                                    top: '5px',
+                                    right: '5px',
+                                    background: 'rgba(0,0,0,0.5)',
+                                    borderRadius: '50%',
+                                    padding: '5px',
+                                    backdropFilter: 'blur(4px)'
+                                }}>
+                                    <Heart size={12} color="white" />
+                                </div>
+                                <div style={{
+                                    position: 'absolute',
+                                    bottom: '5px',
+                                    left: '5px',
+                                    background: 'var(--primary)',
+                                    color: 'var(--bg-dark)',
+                                    fontSize: '9px',
+                                    fontWeight: '700',
+                                    padding: '2px 6px',
+                                    borderRadius: '4px',
+                                    textTransform: 'uppercase'
+                                }}>
+                                    {product.condition}
+                                </div>
+                            </div>
+                            <h4 style={{ fontSize: '13px', marginBottom: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{product.name}</h4>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <span style={{ fontSize: '10px', color: 'var(--text-dim)' }}>{product.category}</span>
+                                <span style={{ fontSize: '14px', fontWeight: '700', color: 'var(--secondary)' }}>{product.price}€</span>
+                            </div>
+                        </div>
                     ))}
                 </div>
             </div>
@@ -148,7 +193,7 @@ const Home: React.FC = () => {
                     </div>
                 </Card>
             </div>
-        </div>
+        </div >
     );
 };
 
