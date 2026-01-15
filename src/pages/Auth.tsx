@@ -206,6 +206,8 @@ const Auth: React.FC = () => {
                         <Mail size={18} color="var(--text-dim)" />
                         <input
                             type="email"
+                            name="email"
+                            autoComplete="username"
                             placeholder="Tu email"
                             required
                             value={formData.email}
@@ -233,6 +235,8 @@ const Auth: React.FC = () => {
                         <Lock size={18} color="var(--text-dim)" />
                         <input
                             type="password"
+                            name="password"
+                            autoComplete={isLogin ? "current-password" : "new-password"}
                             placeholder="Tu contraseña"
                             required
                             value={formData.password}
