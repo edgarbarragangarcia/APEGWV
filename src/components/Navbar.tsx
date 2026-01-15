@@ -12,7 +12,7 @@ const Navbar: React.FC = () => {
             height: 'var(--header-height)',
             display: 'flex',
             alignItems: 'center',
-            padding: '0 20px',
+            padding: 'var(--safe-top) 20px 0',
             zIndex: 1000,
             justifyContent: 'space-between'
         }}>

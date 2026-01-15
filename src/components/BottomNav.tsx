@@ -14,7 +14,7 @@ const BottomNav: React.FC = () => {
     return (
         <nav className="glass" style={{
             position: 'fixed',
-            bottom: '20px',
+            bottom: 'calc(20px + var(--safe-bottom))',
             left: '20px',
             right: '20px',
             height: '70px',

@@ -12,8 +12,10 @@
   --glass-border: rgba(255, 255, 255, 0.1);
   --glass-bg: rgba(255, 255, 255, 0.05);
   --font-main: 'Outfit', sans-serif;
-  --header-height: 70px;
-  --nav-height: 80px;
+  --header-height: calc(70px + env(safe-area-inset-top));
+  --nav-height: calc(80px + env(safe-area-inset-bottom));
+  --safe-top: env(safe-area-inset-top);
+  --safe-bottom: env(safe-area-inset-bottom);
 }
 
 * {
@@ -145,7 +147,7 @@ button {
 }
 
 .page-content {
-  padding-top: calc(var(--header-height) + 20px);
+  padding-top: calc(var(--header-height) + 10px);
   padding-bottom: calc(var(--nav-height) + 40px);
   flex: 1;
 }
