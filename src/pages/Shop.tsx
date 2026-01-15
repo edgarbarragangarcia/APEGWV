@@ -11,6 +11,14 @@ const products = [
 
 const Shop: React.FC = () => {
     const [activeTab, setActiveTab] = useState('Todo');
+    const [searchQuery, setSearchQuery] = useState('');
+
+    const filteredProducts = products.filter(product => {
+        const matchesCategory = activeTab === 'Todo' || product.category === activeTab;
+        const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            product.category.toLowerCase().includes(searchQuery.toLowerCase());
+        return matchesCategory && matchesSearch;
+    });
 
     return (
         <div className="animate-fade">
@@ -45,6 +53,8 @@ const Shop: React.FC = () => {
                 <input
                     type="text"
                     placeholder="Buscar palos, bolas, caddies..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
                     style={{
                         background: 'none',
                         border: 'none',
@@ -81,7 +91,7 @@ const Shop: React.FC = () => {
 
             {/* Product Grid */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '20px' }}>
-                {products.map(product => (
+                {filteredProducts.map(product => (
                     <motion.div
                         key={product.id}
                         whileHover={{ y: -5 }}
