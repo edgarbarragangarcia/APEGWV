@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../services/SupabaseManager';
 import { Mail, Lock, User, ArrowRight, Loader2 } from 'lucide-react';
+import logoApeg from '../assets/logo_apeg.png';
 
 const Auth: React.FC = () => {
     const [isLogin, setIsLogin] = useState(true);
@@ -120,19 +121,29 @@ const Auth: React.FC = () => {
                         animate={{ scale: 1 }}
                         transition={{ type: "spring", stiffness: 260, damping: 20, delay: 0.2 }}
                         style={{
-                            width: '70px',
-                            height: '70px',
-                            background: 'linear-gradient(135deg, var(--secondary), #7cc42b)',
-                            borderRadius: '22px',
-                            margin: '0 auto 20px',
+                            width: '120px',
+                            height: '120px',
+                            background: 'white',
+                            borderRadius: '50%',
+                            margin: '0 auto 25px',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            boxShadow: '0 15px 30px rgba(163, 230, 53, 0.3)',
-                            color: 'var(--primary)'
+                            boxShadow: '0 15px 30px rgba(0,0,0,0.2)',
+                            overflow: 'hidden',
+                            border: '4px solid rgba(255,255,255,0.2)'
                         }}
                     >
-                        <User size={35} strokeWidth={1.5} />
+                        <img
+                            src={logoApeg}
+                            alt="APEG Logo"
+                            style={{
+                                width: '100%',
+                                height: '100%',
+                                objectFit: 'cover',
+                                transform: 'scale(2.8) translateY(10%)'
+                            }}
+                        />
                     </motion.div>
 
                     <h2 style={{ fontSize: '32px', fontWeight: '700', marginBottom: '8px', letterSpacing: '-0.5px' }}>
@@ -299,8 +310,8 @@ const Auth: React.FC = () => {
                         </button>
                     </p>
                 </div>
-            </motion.div>
-        </div>
+            </motion.div >
+        </div >
     );
 };
 

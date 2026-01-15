@@ -42,7 +42,14 @@ const Profile: React.FC = () => {
     }, []);
 
     const handleLogout = async () => {
-        await supabase.auth.signOut();
+        try {
+            const { error } = await supabase.auth.signOut();
+            if (error) throw error;
+        } catch (error) {
+            console.error('Error logging out:', error);
+            // Fallback: force session cleanup if needed or just alert
+            // localStorage.clear(); // Use with caution if other data exists
+        }
     };
 
     if (loading) {
