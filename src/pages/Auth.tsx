@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../services/SupabaseManager';
 import { Mail, Lock, User, ArrowRight, Loader2 } from 'lucide-react';
-import logoApeg from '../assets/logo_apeg.png';
+import logoApeg from '../assets/apeg_logo_v2.png';
 
 const Auth: React.FC = () => {
     const [isLogin, setIsLogin] = useState(true);
@@ -140,8 +140,8 @@ const Auth: React.FC = () => {
                             style={{
                                 width: '100%',
                                 height: '100%',
-                                objectFit: 'cover',
-                                transform: 'scale(2.8) translateY(10%)'
+                                objectFit: 'contain',
+                                padding: '10px'
                             }}
                         />
                     </motion.div>

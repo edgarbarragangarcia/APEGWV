@@ -36,7 +36,7 @@ const Home: React.FC = () => {
                     .from('player_stats')
                     .select('*')
                     .eq('user_id', session.user.id)
-                    .single();
+                    .maybeSingle();
                 setStats(statsData);
             } catch (err) {
                 console.error('Error fetching home data:', err);

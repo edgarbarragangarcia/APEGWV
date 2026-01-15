@@ -28,7 +28,7 @@ const Profile: React.FC = () => {
                     .from('player_stats')
                     .select('*')
                     .eq('user_id', session.user.id)
-                    .single();
+                    .maybeSingle();
 
                 setStats(statsData);
             } catch (err) {
@@ -43,12 +43,12 @@ const Profile: React.FC = () => {
 
     const handleLogout = async () => {
         try {
-            const { error } = await supabase.auth.signOut();
-            if (error) throw error;
+            await supabase.auth.signOut();
         } catch (error) {
             console.error('Error logging out:', error);
-            // Fallback: force session cleanup if needed or just alert
-            // localStorage.clear(); // Use with caution if other data exists
+        } finally {
+            // Force session clean up or redirect
+            window.location.href = '/auth';
         }
     };
 
