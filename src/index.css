@@ -28,11 +28,8 @@ body {
   /* Match auth background for notch */
   color: var(--text-main);
   line-height: 1.6;
-  overflow: hidden;
-  /* Prevent global scroll */
+  overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
-  width: 100vw;
-  height: 100vh;
 }
 
 #root {
