@@ -1,8 +1,25 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Search, Bell } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { supabase } from '../services/SupabaseManager';
 
 const Navbar: React.FC = () => {
+    const [profile, setProfile] = useState<any>(null);
+
+    useEffect(() => {
+        const fetchProfile = async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+                const { data } = await supabase
+                    .from('profiles')
+                    .select('full_name, id_photo_url')
+                    .eq('id', session.user.id)
+                    .single();
+                setProfile(data);
+            }
+        };
+        fetchProfile();
+    }, []);
     return (
         <nav className="glass-dark" style={{
             position: 'fixed',
@@ -44,7 +61,11 @@ const Navbar: React.FC = () => {
                     overflow: 'hidden',
                     border: '2px solid var(--secondary)'
                 }}>
-                    <img src="https://ui-avatars.com/api/?name=User&background=0E2F1F&color=A3E635" alt="Profile" style={{ width: '100%', height: '100%' }} />
+                    <img
+                        src={profile?.id_photo_url || `https://ui-avatars.com/api/?name=${profile?.full_name || 'User'}&background=0E2F1F&color=A3E635`}
+                        alt="Profile"
+                        style={{ width: '100%', height: '100%' }}
+                    />
                 </Link>
             </div>
         </nav>

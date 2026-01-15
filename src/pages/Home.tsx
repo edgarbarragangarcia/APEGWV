@@ -1,12 +1,54 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Card from '../components/Card';
-import { Play, ArrowRight } from 'lucide-react';
+import { Play, ArrowRight, Loader2 } from 'lucide-react';
+import { supabase } from '../services/SupabaseManager';
 
 const Home: React.FC = () => {
+    const [loading, setLoading] = useState(true);
+    const [profile, setProfile] = useState<any>(null);
+    const [stats, setStats] = useState<any>(null);
+
+    useEffect(() => {
+        const fetchHomeData = async () => {
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                if (!session) return;
+
+                // Fetch Profile
+                const { data: profileData } = await supabase
+                    .from('profiles')
+                    .select('*')
+                    .eq('id', session.user.id)
+                    .single();
+                setProfile(profileData);
+
+                // Fetch Stats
+                const { data: statsData } = await supabase
+                    .from('player_stats')
+                    .select('*')
+                    .eq('user_id', session.user.id)
+                    .single();
+                setStats(statsData);
+            } catch (err) {
+                console.error('Error fetching home data:', err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchHomeData();
+    }, []);
+
+    if (loading) {
+        return <div className="flex-center" style={{ height: '70vh' }}><Loader2 className="animate-spin" /></div>;
+    }
+
     return (
         <div className="animate-fade">
             <header style={{ marginBottom: '30px' }}>
-                <h1 style={{ fontSize: '28px', marginBottom: '5px' }}>Hola, <span className="gradient-text">Álvaro</span></h1>
+                <h1 style={{ fontSize: '28px', marginBottom: '5px' }}>
+                    Hola, <span className="gradient-text">{profile?.full_name?.split(' ')[0] || 'golfista'}</span>
+                </h1>
                 <p style={{ color: 'var(--text-dim)' }}>Listo para tu próxima victoria en el campo?</p>
             </header>
 
@@ -15,14 +57,14 @@ const Home: React.FC = () => {
                 <Card style={{ marginBottom: 0 }}>
                     <div style={{ textAlign: 'center' }}>
                         <span style={{ fontSize: '12px', color: 'var(--text-dim)', textTransform: 'uppercase' }}>Hándicap</span>
-                        <div style={{ fontSize: '32px', fontWeight: '800', margin: '5px 0' }}>12.4</div>
-                        <div style={{ fontSize: '10px', color: '#10b981' }}>+0.2 vs semana pasada</div>
+                        <div style={{ fontSize: '32px', fontWeight: '800', margin: '5px 0' }}>{stats?.handicap_index || '--'}</div>
+                        <div style={{ fontSize: '10px', color: '#10b981' }}>Estadística actualizada</div>
                     </div>
                 </Card>
                 <Card style={{ marginBottom: 0 }}>
                     <div style={{ textAlign: 'center' }}>
                         <span style={{ fontSize: '12px', color: 'var(--text-dim)', textTransform: 'uppercase' }}>Rondas</span>
-                        <div style={{ fontSize: '32px', fontWeight: '800', margin: '5px 0' }}>48</div>
+                        <div style={{ fontSize: '32px', fontWeight: '800', margin: '5px 0' }}>{stats?.total_rounds || '0'}</div>
                         <div style={{ fontSize: '10px', color: 'var(--text-dim)' }}>Total de temporada</div>
                     </div>
                 </Card>
