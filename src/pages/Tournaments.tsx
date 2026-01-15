@@ -1,6 +1,6 @@
 import React from 'react';
 import Card from '../components/Card';
-import { Calendar, Users, MapPin, Trophy } from 'lucide-react';
+import { Calendar, Users, MapPin } from 'lucide-react';
 
 const tournaments = [
     { id: 1, name: 'Copa Primavera 2024', date: '15 Abr', club: 'Golf Santander', participants: '84/100', status: 'Inscripciones Abiertas', price: '75€' },
