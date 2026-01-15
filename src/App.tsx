@@ -43,7 +43,7 @@ const App: React.FC = () => {
       <div className="app-container">
         {session && <Navbar />}
 
-        <main className="page-content container" style={!session ? { paddingTop: '20px', paddingBottom: '20px' } : {}}>
+        <main className={session ? "page-content container" : ""} style={!session ? { minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' } : {}}>
           <Suspense fallback={<div className="flex-center" style={{ height: '70vh' }}><div className="loader">Cargando...</div></div>}>
             <Routes>
               {!session ? (

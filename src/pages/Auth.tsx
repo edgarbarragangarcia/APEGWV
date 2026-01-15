@@ -46,16 +46,21 @@ const Auth: React.FC = () => {
     };
 
     return (
-        <div className="flex-center" style={{ minHeight: '80vh', padding: '20px' }}>
+        <div className="flex-center" style={{
+            minHeight: '100dvh',
+            padding: '20px 15px',
+            background: 'radial-gradient(circle at top right, var(--primary-light), transparent), var(--bg-dark)'
+        }}>
             <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
                 className="glass-dark"
                 style={{
                     width: '100%',
-                    maxWidth: '400px',
-                    padding: '40px 30px',
-                    borderRadius: '24px',
+                    maxWidth: '430px',
+                    padding: '30px 20px',
+                    borderRadius: '30px',
+                    boxShadow: '0 20px 40px rgba(0,0,0,0.4)'
                 }}
             >
                 <div style={{ textAlign: 'center', marginBottom: '30px' }}>
