@@ -1,11 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../services/SupabaseManager';
-import { Settings, LogOut, Shield, ShoppingBag, CreditCard, ChevronRight, Loader2 } from 'lucide-react';
+import { Settings, LogOut, Shield, ShoppingBag, CreditCard, ChevronRight, Loader2, Edit2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import type { Database } from '../types/database.types';
+
+type Profile = Database['public']['Tables']['profiles']['Row'];
+type PlayerStats = Database['public']['Tables']['player_stats']['Row'];
 
 const Profile: React.FC = () => {
+    const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
-    const [profile, setProfile] = useState<any>(null);
-    const [stats, setStats] = useState<any>(null);
+    const [profile, setProfile] = useState<Profile | null>(null);
+    const [stats, setStats] = useState<PlayerStats | null>(null);
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -57,15 +63,28 @@ const Profile: React.FC = () => {
     }
 
     const menuItems = [
-        { icon: Shield, label: 'Datos de la Federación', extra: profile?.federation_code || 'No vinculado' },
+        { icon: Shield, label: 'Datos de la Federación', extra: profile?.federation_code || 'No vinculado', onClick: () => navigate('/profile/edit') },
         { icon: ShoppingBag, label: 'Mis Ventas', extra: 'Sin activos' },
         { icon: CreditCard, label: 'Métodos de Pago', extra: 'Configurar' },
-        { icon: Settings, label: 'Configuración', extra: '' },
+        { icon: Settings, label: 'Configuración', extra: '', onClick: () => navigate('/profile/edit') },
     ];
 
     return (
         <div className="animate-fade">
-            <div style={{ textAlign: 'center', marginBottom: '30px' }}>
+            <div style={{ textAlign: 'center', marginBottom: '30px', position: 'relative' }}>
+                <div
+                    onClick={() => navigate('/profile/edit')}
+                    style={{
+                        position: 'absolute',
+                        top: 0,
+                        right: 0,
+                        padding: '10px',
+                        cursor: 'pointer',
+                        color: 'var(--text-dim)'
+                    }}>
+                    <Edit2 size={20} />
+                </div>
+
                 <div style={{ position: 'relative', display: 'inline-block' }}>
                     <div style={{
                         width: '120px',
@@ -78,7 +97,7 @@ const Profile: React.FC = () => {
                         <img
                             src={profile?.id_photo_url || `https://ui-avatars.com/api/?name=${profile?.full_name || 'User'}&background=0E2F1F&color=A3E635&size=120`}
                             alt="Profile"
-                            style={{ width: '100%', height: '100%', borderRadius: '50%' }}
+                            style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }}
                         />
                     </div>
                     {profile?.is_premium && (
@@ -98,22 +117,22 @@ const Profile: React.FC = () => {
                         </div>
                     )}
                 </div>
-                <h1 style={{ fontSize: '24px', marginBottom: '5px' }}>{profile?.full_name || 'golfista'}</h1>
+                <h1 style={{ fontSize: '24px', marginBottom: '5px' }}>{profile?.full_name || 'Golfista'}</h1>
                 <p style={{ color: 'var(--text-dim)', fontSize: '14px' }}>
-                    Hándicap {stats?.handicap_index || '--'} • {profile?.federation_code ? 'Federado' : 'No Federado'}
+                    Hándicap {profile?.handicap !== null && profile?.handicap !== undefined ? profile.handicap : '--'} • {profile?.federation_code ? 'Federado' : 'No Federado'}
                 </p>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', marginBottom: '30px' }}>
-                <div className="glass" style={{ padding: '15px', textAlign: 'center' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', marginBottom: '30px' }} onClick={() => navigate('/profile/stats')}>
+                <div className="glass" style={{ padding: '15px', textAlign: 'center', cursor: 'pointer' }}>
                     <div style={{ fontSize: '18px', fontWeight: '700' }}>{stats?.average_score || '--'}</div>
                     <div style={{ fontSize: '10px', color: 'var(--text-dim)', textTransform: 'uppercase' }}>Avg Score</div>
                 </div>
-                <div className="glass" style={{ padding: '15px', textAlign: 'center' }}>
+                <div className="glass" style={{ padding: '15px', textAlign: 'center', cursor: 'pointer' }}>
                     <div style={{ fontSize: '18px', fontWeight: '700' }}>{stats?.putts_avg || '--'}</div>
                     <div style={{ fontSize: '10px', color: 'var(--text-dim)', textTransform: 'uppercase' }}>Putts Avg</div>
                 </div>
-                <div className="glass" style={{ padding: '15px', textAlign: 'center' }}>
+                <div className="glass" style={{ padding: '15px', textAlign: 'center', cursor: 'pointer' }}>
                     <div style={{ fontSize: '18px', fontWeight: '700' }}>{stats?.fairways_hit_rate ? `${stats.fairways_hit_rate}%` : '--'}</div>
                     <div style={{ fontSize: '10px', color: 'var(--text-dim)', textTransform: 'uppercase' }}>Fairways</div>
                 </div>
@@ -121,13 +140,18 @@ const Profile: React.FC = () => {
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                 {menuItems.map((item, i) => (
-                    <button key={i} className="glass" style={{
-                        padding: '18px 20px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        width: '100%'
-                    }}>
+                    <button
+                        key={i}
+                        className="glass"
+                        onClick={item.onClick}
+                        style={{
+                            padding: '18px 20px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            width: '100%',
+                            cursor: item.onClick ? 'pointer' : 'default'
+                        }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                             <item.icon size={20} color="var(--secondary)" />
                             <span style={{ fontWeight: '500' }}>{item.label}</span>

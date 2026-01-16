@@ -1,14 +1,11 @@
 /* Force Portrait Visuals if API fails */
 @media screen and (orientation: landscape) and (max-width: 900px) {
-
     /* Si es un dispositivo móvil y está en landscape, rotamos la UI o mostramos aviso */
     /* Opción sutil: Forzar que el usuario gire el teléfono */
-    #root {
-        /* Un enfoque agresivo es rotar todo el sitio 90deg, pero suele ser UX pobre */
-        /* Lo mejor con React es simplemente dejar que el diseño sea responsive, pero el usuario pidió "mantener posicion vertical". */
-        /* El manifest 'orientation: portrait' suele ser suficiente en móviles instalados. */
-        /* Si es web pura, no podemos bloquear fisicamente, pero podemos evitar el re-layout. */
-        /* Dado que la app ya tiene diseño movil, asumimos que el manifest hará el trabajo pesado. */
-        /* Este bloque se deja vacío intencionalmente para no romper layouts en tablets grandes que sí podrían usarse apaisado */
-    }
+
+    /* Un enfoque agresivo es rotar todo el sitio 90deg, pero suele ser UX pobre */
+    /* Lo mejor con React es simplemente dejar que el diseño sea responsive, pero el usuario pidió "mantener posicion vertical". */
+    /* El manifest 'orientation: portrait' suele ser suficiente en móviles instalados. */
+    /* Si es web pura, no podemos bloquear fisicamente, pero podemos evitar el re-layout. */
+    /* Dado que la app ya tiene diseño movil, asumimos que el manifest hará el trabajo pesado. */
 }

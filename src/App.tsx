@@ -15,6 +15,8 @@ const Tournaments = lazy(() => import('./pages/Tournaments'));
 const Profile = lazy(() => import('./pages/Profile'));
 const Auth = lazy(() => import('./pages/Auth'));
 const CourseSelection = lazy(() => import('./pages/CourseSelection'));
+const EditProfile = lazy(() => import('./pages/EditProfile'));
+const EditStats = lazy(() => import('./pages/EditStats'));
 
 const App: React.FC = () => {
   const [session, setSession] = useState<Session | null>(null);
@@ -75,6 +77,8 @@ const App: React.FC = () => {
                   <Route path="/caddies" element={<Caddies />} />
                   <Route path="/tournaments" element={<Tournaments />} />
                   <Route path="/profile" element={<Profile />} />
+                  <Route path="/profile/edit" element={<EditProfile />} />
+                  <Route path="/profile/stats" element={<EditStats />} />
                   <Route path="/auth" element={<Navigate to="/" replace />} />
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </>
