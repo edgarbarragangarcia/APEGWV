@@ -117,6 +117,8 @@ const Round: React.FC = () => {
         return g > 0 ? 'CAÍDA FUERTE DER' : 'CAÍDA FUERTE IZQ';
     };
 
+    const [showFinishModal, setShowFinishModal] = React.useState(false);
+
     return (
         <div className="animate-fade" style={{ maxWidth: '600px', margin: '0 auto', paddingBottom: '100px' }}>
 
@@ -131,11 +133,7 @@ const Round: React.FC = () => {
                     </div>
                 </div>
                 <button
-                    onClick={() => {
-                        if (confirm('¿Terminar ronda?')) {
-                            window.history.back();
-                        }
-                    }}
+                    onClick={() => setShowFinishModal(true)}
                     style={{ color: 'var(--secondary)' }}
                 >
                     Finalizar
@@ -420,6 +418,54 @@ const Round: React.FC = () => {
             </Card>
 
 
+            {/* Modal de Finalización */}
+            {showFinishModal && (
+                <div style={{
+                    position: 'fixed',
+                    inset: 0,
+                    zIndex: 1000,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '20px',
+                    background: 'rgba(0,0,0,0.8)',
+                    backdropFilter: 'blur(5px)'
+                }}>
+                    <Card style={{ maxWidth: '320px', width: '100%', padding: '25px', textAlign: 'center' }}>
+                        <History size={40} color="var(--secondary)" style={{ marginBottom: '15px' }} />
+                        <h2 style={{ fontSize: '20px', marginBottom: '10px' }}>¿Terminar ronda?</h2>
+                        <p style={{ fontSize: '14px', color: 'var(--text-dim)', marginBottom: '25px' }}>
+                            Se guardarán tus golpes del día en el historial.
+                        </p>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                            <button
+                                onClick={() => setShowFinishModal(false)}
+                                style={{
+                                    padding: '12px',
+                                    borderRadius: '12px',
+                                    background: 'rgba(255,b255,255,0.05)',
+                                    color: 'white',
+                                    fontWeight: '600'
+                                }}
+                            >
+                                Cancelar
+                            </button>
+                            <button
+                                onClick={() => window.history.back()}
+                                style={{
+                                    padding: '12px',
+                                    borderRadius: '12px',
+                                    background: 'var(--secondary)',
+                                    color: 'var(--primary)',
+                                    fontWeight: '700'
+                                }}
+                            >
+                                Finalizar
+                            </button>
+                        </div>
+                    </Card>
+                </div>
+            )}
         </div>
     );
 };
