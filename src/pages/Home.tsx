@@ -15,7 +15,7 @@ const Home: React.FC = () => {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
     const [profile, setProfile] = useState<any>(null);
-    const [stats, setStats] = useState<any>(null);
+    const [roundCount, setRoundCount] = useState<number>(0);
 
     useEffect(() => {
         const fetchHomeData = async () => {
@@ -32,12 +32,17 @@ const Home: React.FC = () => {
                 setProfile(profileData);
 
                 // Fetch Stats
-                const { data: statsData } = await supabase
-                    .from('player_stats')
-                    .select('*')
-                    .eq('user_id', session.user.id)
-                    .maybeSingle();
-                setStats(statsData);
+                // This was statsData, but we now use live round count
+
+                // Fetch Live Round Count
+                const { count, error: countError } = await supabase
+                    .from('rounds')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('user_id', session.user.id);
+
+                if (!countError) {
+                    setRoundCount(count || 0);
+                }
             } catch (err) {
                 console.error('Error fetching home data:', err);
             } finally {
@@ -76,7 +81,7 @@ const Home: React.FC = () => {
                 >
                     <div style={{ textAlign: 'center' }}>
                         <span style={{ fontSize: '10px', color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '1px' }}>Rondas</span>
-                        <div style={{ fontSize: '24px', fontWeight: '800', margin: '2px 0' }}>{stats?.total_rounds || '0'}</div>
+                        <div style={{ fontSize: '24px', fontWeight: '800', margin: '2px 0' }}>{roundCount}</div>
                         <div style={{ fontSize: '9px', color: 'var(--secondary)' }}>Ver Historial →</div>
                     </div>
                 </Card>

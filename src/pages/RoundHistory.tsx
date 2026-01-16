@@ -20,6 +20,11 @@ const RoundHistory: React.FC = () => {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
     const [rounds, setRounds] = useState<Round[]>([]);
+    const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; roundId: string | null; courseName: string }>({
+        isOpen: false,
+        roundId: null,
+        courseName: ''
+    });
 
     useEffect(() => {
         const fetchRounds = async () => {
@@ -48,12 +53,32 @@ const RoundHistory: React.FC = () => {
         fetchRounds();
     }, [navigate]);
 
+    const handleDelete = async () => {
+        if (!deleteModal.roundId) return;
+
+        try {
+            const { error } = await supabase
+                .from('rounds')
+                .delete()
+                .eq('id', deleteModal.roundId);
+
+            if (error) throw error;
+
+            setRounds(rounds.filter(r => r.id !== deleteModal.roundId));
+            if (navigator.vibrate) navigator.vibrate(50);
+            setDeleteModal({ isOpen: false, roundId: null, courseName: '' });
+        } catch (err) {
+            console.error(err);
+            alert('Error al eliminar');
+        }
+    };
+
     if (loading) {
         return <div className="flex-center" style={{ height: '70vh' }}><Loader2 className="animate-spin" /></div>;
     }
 
     return (
-        <div className="animate-fade">
+        <div className="animate-fade" style={{ paddingBottom: '100px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '30px' }}>
                 <button onClick={() => navigate('/')} style={{ background: 'none', border: 'none', color: 'var(--text)' }}>
                     <ArrowLeft size={24} />
@@ -110,6 +135,7 @@ const RoundHistory: React.FC = () => {
                                         flex: 1,
                                         background: '#3b82f6',
                                         border: 'none',
+                                        borderRight: '1px solid rgba(255,255,255,0.1)',
                                         color: 'white',
                                         display: 'flex',
                                         alignItems: 'center',
@@ -120,22 +146,13 @@ const RoundHistory: React.FC = () => {
                                     <Pencil size={24} />
                                 </button>
                                 <button
-                                    onClick={async (e) => {
+                                    onClick={(e) => {
                                         e.stopPropagation();
-                                        if (confirm(`¿Eliminar la ronda de ${round.course_name}?`)) {
-                                            try {
-                                                const { error } = await supabase
-                                                    .from('rounds')
-                                                    .delete()
-                                                    .eq('id', round.id);
-                                                if (error) throw error;
-                                                setRounds(rounds.filter(r => r.id !== round.id));
-                                                if (navigator.vibrate) navigator.vibrate(50);
-                                            } catch (err) {
-                                                console.error(err);
-                                                alert('Error al eliminar');
-                                            }
-                                        }
+                                        setDeleteModal({
+                                            isOpen: true,
+                                            roundId: round.id,
+                                            courseName: round.course_name
+                                        });
                                     }}
                                     style={{
                                         flex: 1,
@@ -157,20 +174,27 @@ const RoundHistory: React.FC = () => {
                                 drag="x"
                                 dragConstraints={{ left: -140, right: 0 }}
                                 dragElastic={0.05}
-                                dragSnapToOrigin={false} // We want it to stay open or close based on distance
-                                onDragEnd={() => {
-                                    // If we dragged more than half the distance, stay open, else close
-                                    // Actually, simple constraint is usually enough, but we want it to feel "snappy"
-                                }}
+                                dragSnapToOrigin={false}
+                                onDragEnd={() => { }}
                                 style={{
                                     position: 'relative',
                                     zIndex: 1,
-                                    x: 0
+                                    x: 0,
+                                    background: '#0d2b1d', // Opaque background to hide actions
+                                    borderRadius: '20px',
+                                    border: '1px solid rgba(255,255,255,0.08)' // Subtle border for the card container
                                 }}
                                 whileTap={{ cursor: 'grabbing' }}
                             >
                                 <Card
-                                    style={{ cursor: 'pointer', marginBottom: 0 }}
+                                    style={{
+                                        cursor: 'pointer',
+                                        marginBottom: 0,
+                                        background: 'rgba(255,255,255,0.02)', // Keep subtle glass feel inside
+                                        backdropFilter: 'none',
+                                        border: 'none',
+                                        borderRadius: '20px'
+                                    }}
                                     onClick={() => navigate(`/rounds/${round.id}`)}
                                 >
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -241,6 +265,89 @@ const RoundHistory: React.FC = () => {
                         <TrendingUp size={18} />
                         Iniciar Nueva Ronda
                     </button>
+                </div>
+            )}
+
+            {/* Custom Confirmation Modal */}
+            {deleteModal.isOpen && (
+                <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    background: 'rgba(0,0,0,0.85)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 1000,
+                    padding: '20px',
+                    backdropFilter: 'blur(8px)'
+                }}>
+                    <motion.div
+                        initial={{ scale: 0.9, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        className="glass"
+                        style={{
+                            width: '100%',
+                            maxWidth: '320px',
+                            padding: '25px',
+                            borderRadius: '24px',
+                            textAlign: 'center',
+                            border: '1px solid rgba(255,255,255,0.1)',
+                            background: 'var(--primary)',
+                            boxShadow: '0 20px 40px rgba(0,0,0,0.4)'
+                        }}
+                    >
+                        <div style={{
+                            background: 'rgba(239, 68, 68, 0.15)',
+                            width: '60px',
+                            height: '60px',
+                            borderRadius: '50%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            margin: '0 auto 20px'
+                        }}>
+                            <Trash2 color="#ef4444" size={28} />
+                        </div>
+                        <h2 style={{ fontSize: '20px', marginBottom: '10px', fontWeight: '700' }}>¿Eliminar ronda?</h2>
+                        <p style={{ color: 'var(--text-dim)', fontSize: '14px', marginBottom: '30px', lineHeight: '1.5' }}>
+                            ¿Estás seguro que deseas eliminar la ronda de <strong>{deleteModal.courseName}</strong>? Esta acción es permanente.
+                        </p>
+                        <div style={{ display: 'flex', gap: '12px' }}>
+                            <button
+                                onClick={() => setDeleteModal({ ...deleteModal, isOpen: false })}
+                                style={{
+                                    flex: 1,
+                                    background: 'rgba(255,255,255,0.05)',
+                                    color: 'white',
+                                    padding: '14px',
+                                    borderRadius: '14px',
+                                    border: '1px solid rgba(255,255,255,0.1)',
+                                    fontWeight: '600',
+                                    fontSize: '14px'
+                                }}
+                            >
+                                Cancelar
+                            </button>
+                            <button
+                                onClick={handleDelete}
+                                style={{
+                                    flex: 1,
+                                    background: '#ef4444',
+                                    color: 'white',
+                                    padding: '14px',
+                                    borderRadius: '14px',
+                                    border: 'none',
+                                    fontWeight: '700',
+                                    fontSize: '14px'
+                                }}
+                            >
+                                Eliminar
+                            </button>
+                        </div>
+                    </motion.div>
                 </div>
             )}
         </div>
