@@ -16,7 +16,7 @@ const Round: React.FC = () => {
     const [holeData, setHoleData] = React.useState<any[]>([]);
 
     // Hooks
-    const { beta, gamma, calibrate } = useGreenReader();
+    const { beta, gamma, calibrate, requestAccess, hasData: sensorsActive } = useGreenReader();
     const { calculateDistance, error: gpsError, permissionStatus } = useGeoLocation();
 
     // GPS Logic
@@ -28,13 +28,14 @@ const Round: React.FC = () => {
     const distanceToHole = calculateDistance(targetLat, targetLon);
 
     // Si estamos a menos de 30 metros, asumimos "Zona de Green" -> Activamos sensores
-    // Para probar, usamos < 3000km porque el usuario seguro no está en el campo real. 
+    // Para probar, usamos < 3000km porque el usuario seguro no está en el campo real.
     // Ajustaremos esto a 30m real para prod, pero dejaremos un umbral alto si distanceToHole es null para no bloquear.
     // Lógica real: distanceToHole !== null && distanceToHole < 30
     const isNearGreen = distanceToHole !== null && distanceToHole < 50000; // 50km for testing, change to 30 for real usage
 
     // Factor de amplificación visual para la flecha
-    const aimRotation = -gamma * 2;
+    // Aumentado a x5 para que sea más sensible y visible
+    const aimRotation = -gamma * 5;
 
     // Restauramos estados perdidos
     const [currentHole, setCurrentHole] = React.useState(1);
@@ -321,6 +322,35 @@ const Round: React.FC = () => {
                         <span>Slope: {Math.round(beta)}°</span>
                         <span>Break: {Math.round(gamma)}°</span>
                     </div>
+
+                    {/* Sensor Activation Overlay */}
+                    {isNearGreen && !sensorsActive && (
+                        <div style={{
+                            position: 'absolute',
+                            inset: 0,
+                            background: 'rgba(0,0,0,0.4)',
+                            backdropFilter: 'blur(2px)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            zIndex: 10
+                        }}>
+                            <button
+                                onClick={requestAccess}
+                                className="glass"
+                                style={{
+                                    padding: '15px 30px',
+                                    background: 'var(--secondary)',
+                                    color: 'var(--primary)',
+                                    fontWeight: 'bold',
+                                    fontSize: '16px',
+                                    boxShadow: '0 0 20px rgba(34, 197, 94, 0.5)'
+                                }}
+                            >
+                                ACTIVAR LECTURA
+                            </button>
+                        </div>
+                    )}
                 </div>
             </Card>
 
