@@ -7,7 +7,6 @@ interface GreenReaderProps {
 }
 
 const GreenReader: React.FC<GreenReaderProps> = ({ onClose }) => {
-    const [permissionGranted, setPermissionGranted] = useState(false);
     const [beta, setBeta] = useState(0); // Inclinación adelante/atrás (Slope)
     const [gamma, setGamma] = useState(0); // Inclinación izquierda/derecha (Break)
 
@@ -23,7 +22,6 @@ const GreenReader: React.FC<GreenReaderProps> = ({ onClose }) => {
                 try {
                     const response = await (DeviceOrientationEvent as any).requestPermission();
                     if (response === 'granted') {
-                        setPermissionGranted(true);
                         window.addEventListener('deviceorientation', handleOrientation);
                     } else {
                         alert('Permiso denegado para usar el acelerómetro');
@@ -33,7 +31,6 @@ const GreenReader: React.FC<GreenReaderProps> = ({ onClose }) => {
                 }
             } else {
                 // Non-iOS 13+ devices
-                setPermissionGranted(true);
                 window.addEventListener('deviceorientation', handleOrientation);
             }
         };

@@ -76,9 +76,11 @@ const Round: React.FC = () => {
 
     const getScoreTerm = (par: number, strokes: number) => {
         if (strokes === 0) return 'Inicio';
-        const diff = strokes - par;
         if (strokes === 1) return 'Hoyo en Uno';
-        if (diff <= -3) return 'Albatros';
+
+        const diff = strokes - par;
+        if (diff === -4) return 'Cóndor';
+        if (diff === -3) return 'Albatros';
         if (diff === -2) return 'Eagle';
         if (diff === -1) return 'Birdie';
         if (diff === 0) return 'Par';
@@ -102,7 +104,17 @@ const Round: React.FC = () => {
                         <p style={{ fontSize: '12px', color: 'var(--text-dim)' }}>{fieldName} • Par {course?.club.includes('Lagartos') && recorrido === 'Corea' ? 71 : 72}</p>
                     </div>
                 </div>
-                <button style={{ color: 'var(--secondary)' }}>Finalizar</button>
+                <button
+                    onClick={() => {
+                        if (confirm('¿Terminar ronda?')) {
+                            // En el futuro aquí se guardaría el score en Supabase
+                            window.history.back();
+                        }
+                    }}
+                    style={{ color: 'var(--secondary)' }}
+                >
+                    Finalizar
+                </button>
             </header>
 
             {/* Hole Selector */}
@@ -122,6 +134,39 @@ const Round: React.FC = () => {
                     </span>
                 </div>
                 <button onClick={() => handleHoleChange('next')} disabled={currentHole === 18} style={{ opacity: currentHole === 18 ? 0.3 : 1 }}><ChevronRight /></button>
+            </div>
+
+
+            {/* Quick Score - Moved below Hole Selector */}
+            <div style={{ marginBottom: '20px', padding: '0 10px' }}>
+                <div style={{ display: 'flex', justifyContent: 'center', gap: '30px', alignItems: 'center' }}>
+                    <button
+                        onClick={() => handleStrokeChange(-1)}
+                        className="glass"
+                        style={{ width: '60px', height: '60px', borderRadius: '50%', fontSize: '28px', cursor: 'pointer', background: 'rgba(255,255,255,0.05)' }}>
+                        -
+                    </button>
+
+                    <div style={{ textAlign: 'center', minWidth: '100px' }}>
+                        <div style={{ fontSize: '56px', fontWeight: '800', lineHeight: '1' }}>{currentStrokes}</div>
+                        <div style={{
+                            fontSize: '14px',
+                            fontWeight: 'bold',
+                            marginTop: '5px',
+                            color: getScoreTerm(currentHoleInfo.par, currentStrokes) === 'Birdie' || getScoreTerm(currentHoleInfo.par, currentStrokes) === 'Eagle' ? 'var(--secondary)' :
+                                getScoreTerm(currentHoleInfo.par, currentStrokes).includes('Bogey') ? '#f87171' : 'var(--text-dim)'
+                        }}>
+                            {getScoreTerm(currentHoleInfo.par, currentStrokes).toUpperCase()}
+                        </div>
+                    </div>
+
+                    <button
+                        onClick={() => handleStrokeChange(1)}
+                        className="glass"
+                        style={{ width: '60px', height: '60px', borderRadius: '50%', fontSize: '28px', borderColor: 'var(--secondary)', color: 'var(--secondary)', cursor: 'pointer', background: 'rgba(163, 230, 53, 0.1)' }}>
+                        +
+                    </button>
+                </div>
             </div>
 
             {/* GPS Distances */}
@@ -195,36 +240,7 @@ const Round: React.FC = () => {
                 </div>
             </Card>
 
-            {/* Quick Score */}
-            <div style={{ marginTop: '20px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-                    <h3 style={{ fontSize: '16px' }}>Golpes Hoyo {currentHole}</h3>
-                    <span style={{
-                        fontSize: '14px',
-                        fontWeight: 'bold',
-                        color: getScoreTerm(currentHoleInfo.par, currentStrokes) === 'Birdie' || getScoreTerm(currentHoleInfo.par, currentStrokes) === 'Eagle' ? 'var(--secondary)' :
-                            getScoreTerm(currentHoleInfo.par, currentStrokes) === 'Bogey' ? '#f87171' : 'white'
-                    }}>
-                        {getScoreTerm(currentHoleInfo.par, currentStrokes).toUpperCase()}
-                    </span>
-                </div>
 
-                <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', alignItems: 'center' }}>
-                    <button
-                        onClick={() => handleStrokeChange(-1)}
-                        className="glass"
-                        style={{ width: '50px', height: '50px', borderRadius: '50%', fontSize: '24px', cursor: 'pointer' }}>
-                        -
-                    </button>
-                    <div style={{ fontSize: '40px', fontWeight: '700', minWidth: '40px', textAlign: 'center' }}>{currentStrokes}</div>
-                    <button
-                        onClick={() => handleStrokeChange(1)}
-                        className="glass"
-                        style={{ width: '50px', height: '50px', borderRadius: '50%', fontSize: '24px', borderColor: 'var(--secondary)', color: 'var(--secondary)', cursor: 'pointer' }}>
-                        +
-                    </button>
-                </div>
-            </div>
         </div>
     );
 };
