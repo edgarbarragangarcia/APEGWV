@@ -1,6 +1,5 @@
 
 // OpenMeteo no requiere API Key
-const API_KEY = '';
 
 export interface WeatherData {
     temp: number;
