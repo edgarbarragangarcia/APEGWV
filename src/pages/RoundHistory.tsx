@@ -70,7 +70,16 @@ const RoundHistory: React.FC = () => {
                         </p>
                         <button
                             onClick={() => navigate('/select-course')}
-                            className="primary-button"
+                            style={{
+                                background: 'var(--secondary)',
+                                color: 'var(--primary)',
+                                padding: '14px 24px',
+                                borderRadius: '12px',
+                                fontWeight: '700',
+                                fontSize: '14px',
+                                border: 'none',
+                                cursor: 'pointer'
+                            }}
                         >
                             Iniciar Nueva Ronda
                         </button>
@@ -131,8 +140,21 @@ const RoundHistory: React.FC = () => {
                 <div style={{ marginTop: '30px', textAlign: 'center' }}>
                     <button
                         onClick={() => navigate('/select-course')}
-                        className="primary-button"
-                        style={{ width: '100%' }}
+                        style={{
+                            width: '100%',
+                            background: 'var(--secondary)',
+                            color: 'var(--primary)',
+                            padding: '14px',
+                            borderRadius: '12px',
+                            fontWeight: '700',
+                            fontSize: '14px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '10px',
+                            border: 'none',
+                            cursor: 'pointer'
+                        }}
                     >
                         <TrendingUp size={18} />
                         Iniciar Nueva Ronda
