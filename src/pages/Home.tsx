@@ -66,7 +66,7 @@ const Home: React.FC = () => {
                 <Card style={{ marginBottom: 0, padding: '15px' }}>
                     <div style={{ textAlign: 'center' }}>
                         <span style={{ fontSize: '10px', color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '1px' }}>Hándicap</span>
-                        <div style={{ fontSize: '24px', fontWeight: '800', margin: '2px 0' }}>{stats?.handicap_index || '--'}</div>
+                        <div style={{ fontSize: '24px', fontWeight: '800', margin: '2px 0' }}>{profile?.handicap !== null && profile?.handicap !== undefined ? profile.handicap : '--'}</div>
                         <div style={{ fontSize: '9px', color: '#10b981' }}>Actualizado</div>
                     </div>
                 </Card>
