@@ -35,6 +35,20 @@ const App: React.FC = () => {
     return () => subscription.unsubscribe();
   }, []);
 
+  React.useEffect(() => {
+    // Intentar bloquear la orientación
+    const lockOrientation = async () => {
+      if (screen.orientation && typeof (screen.orientation as any).lock === 'function') {
+        try {
+          await (screen.orientation as any).lock('portrait');
+        } catch (e) {
+          // Ignorar errores si no es soportado
+        }
+      }
+    };
+    lockOrientation();
+  }, []);
+
   if (loading) {
     return <div className="flex-center" style={{ height: '100vh', background: 'var(--bg-dark)' }}><div className="loader"></div></div>;
   }
