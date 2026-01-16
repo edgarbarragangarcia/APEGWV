@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../services/SupabaseManager';
-import { Settings, LogOut, Shield, ShoppingBag, CreditCard, ChevronRight, Loader2, Edit2 } from 'lucide-react';
+import { Settings, LogOut, Shield, ShoppingBag, CreditCard, ChevronRight, Loader2, Edit2, Mail, Phone } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import type { Database } from '../types/database.types';
 
@@ -66,6 +66,8 @@ const Profile: React.FC = () => {
         { icon: Shield, label: 'Datos de la Federación', extra: profile?.federation_code || 'No vinculado', onClick: () => navigate('/profile/edit') },
         { icon: ShoppingBag, label: 'Mis Ventas', extra: 'Sin activos' },
         { icon: CreditCard, label: 'Métodos de Pago', extra: 'Configurar' },
+        { icon: Mail, label: 'Correo Electrónico', extra: profile?.email || 'No configurado' },
+        { icon: Phone, label: 'Teléfono Celular', extra: profile?.phone || 'No configurado' },
         { icon: Settings, label: 'Configuración', extra: '', onClick: () => navigate('/profile/edit') },
     ];
 

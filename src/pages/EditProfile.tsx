@@ -16,11 +16,15 @@ const EditProfile: React.FC = () => {
         handicap: string;
         federation_code: string;
         id_photo_url: string;
+        email: string;
+        phone: string;
     }>({
         full_name: '',
         handicap: '',
         federation_code: '',
-        id_photo_url: ''
+        id_photo_url: '',
+        email: '',
+        phone: ''
     });
 
     useEffect(() => {
@@ -44,7 +48,9 @@ const EditProfile: React.FC = () => {
                         full_name: data.full_name || '',
                         handicap: data.handicap?.toString() || '',
                         federation_code: data.federation_code || '',
-                        id_photo_url: data.id_photo_url || ''
+                        id_photo_url: data.id_photo_url || '',
+                        email: data.email || '',
+                        phone: data.phone || ''
                     });
                 }
             } catch (err) {
@@ -108,6 +114,8 @@ const EditProfile: React.FC = () => {
                 handicap: formData.handicap ? parseFloat(formData.handicap) : null,
                 federation_code: formData.federation_code,
                 id_photo_url: formData.id_photo_url,
+                email: formData.email,
+                phone: formData.phone,
                 updated_at: new Date().toISOString(),
             };
 
@@ -233,6 +241,32 @@ const EditProfile: React.FC = () => {
                         style={{ width: '100%', padding: '15px', borderRadius: '12px', border: 'none', color: 'var(--text)' }}
                         value={formData.federation_code}
                         onChange={e => setFormData({ ...formData, federation_code: e.target.value })}
+                    />
+                </div>
+
+                <div className="form-group">
+                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', color: 'var(--text-dim)' }}>
+                        Correo Electrónico
+                    </label>
+                    <input
+                        type="email"
+                        className="glass"
+                        style={{ width: '100%', padding: '15px', borderRadius: '12px', border: 'none', color: 'var(--text)' }}
+                        value={formData.email}
+                        onChange={e => setFormData({ ...formData, email: e.target.value })}
+                    />
+                </div>
+
+                <div className="form-group">
+                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', color: 'var(--text-dim)' }}>
+                        Teléfono Celular
+                    </label>
+                    <input
+                        type="tel"
+                        className="glass"
+                        style={{ width: '100%', padding: '15px', borderRadius: '12px', border: 'none', color: 'var(--text)' }}
+                        value={formData.phone}
+                        onChange={e => setFormData({ ...formData, phone: e.target.value })}
                     />
                 </div>
 
