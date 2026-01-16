@@ -1,5 +1,6 @@
 import React from 'react';
 import { useLocation } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import Card from '../components/Card';
 import { ChevronLeft, ChevronRight, Target, History } from 'lucide-react';
 import type { GolfCourse } from '../data/courses';
@@ -30,10 +31,8 @@ const Round: React.FC = () => {
 
     const distanceToHole = calculateDistance(targetLat, targetLon);
 
-    // Si estamos a menos de 30 metros, asumimos "Zona de Green" -> Activamos sensores
-    // Para probar, usamos < 3000km porque el usuario seguro no está en el campo real.
-    // Lógica real: distanceToHole !== null && distanceToHole < 30
-    const isNearGreen = forceSensors || (distanceToHole !== null && distanceToHole < 50000); // 50km for testing
+    // Si estamos a menos de 50 metros, asumimos "Zona de Green" -> Activamos sensores
+    const isNearGreen = forceSensors || (distanceToHole !== null && distanceToHole < 50);
 
     // Factor de amplificación visual para la flecha
     // Aumentado a x5 para que sea más sensible y visible
@@ -209,8 +208,8 @@ const Round: React.FC = () => {
                     transition: 'all 0.5s ease',
                     position: 'relative'
                 }}>
-                    <span style={{ fontSize: '12px', color: 'var(--secondary)', fontWeight: '600' }}>
-                        {isNearGreen ? 'EN GREEN' : 'CENTER'}
+                    <span style={{ fontSize: '12px', color: isNearGreen ? 'var(--secondary)' : 'var(--text-dim)', fontWeight: '600' }}>
+                        {isNearGreen ? 'ZONA DE GREEN' : 'DISTANCIA AL CENTRO'}
                     </span>
 
                     {distanceToHole !== null ? (
@@ -227,7 +226,7 @@ const Round: React.FC = () => {
                     )}
 
                     <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '12px', color: 'var(--text-dim)' }}>
-                        <Target size={12} /> {isNearGreen ? 'Detectado' : 'm'}
+                        <Target size={12} /> {distanceToHole !== null ? ' m (GPS)' : 'Localizando...'}
                     </div>
                 </div>
 
@@ -418,52 +417,93 @@ const Round: React.FC = () => {
             </Card>
 
 
-            {/* Modal de Finalización */}
+            {/* Bottom Sheet de Finalización */}
             {showFinishModal && (
                 <div style={{
                     position: 'fixed',
                     inset: 0,
                     zIndex: 1000,
                     display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    padding: '20px',
-                    background: 'rgba(0,0,0,0.8)',
-                    backdropFilter: 'blur(5px)'
-                }}>
-                    <Card style={{ maxWidth: '320px', width: '100%', padding: '25px', textAlign: 'center' }}>
-                        <History size={40} color="var(--secondary)" style={{ marginBottom: '15px' }} />
-                        <h2 style={{ fontSize: '20px', marginBottom: '10px' }}>¿Terminar ronda?</h2>
-                        <p style={{ fontSize: '14px', color: 'var(--text-dim)', marginBottom: '25px' }}>
-                            Se guardarán tus golpes del día en el historial.
+                    alignItems: 'flex-end',
+                    background: 'rgba(0,0,0,0.4)',
+                    backdropFilter: 'blur(8px)',
+                    animation: 'fadeIn 0.2s ease-out'
+                }} onClick={() => setShowFinishModal(false)}>
+                    <motion.div
+                        initial={{ y: '100%' }}
+                        animate={{ y: 0 }}
+                        exit={{ y: '100%' }}
+                        transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                        onClick={(e: React.MouseEvent) => e.stopPropagation()}
+                        style={{
+                            width: '100%',
+                            background: 'rgba(20, 45, 30, 0.95)',
+                            borderTop: '1px solid rgba(255,255,255,0.1)',
+                            borderTopLeftRadius: '30px',
+                            borderTopRightRadius: '30px',
+                            padding: '30px 25px calc(30px + env(safe-area-inset-bottom))',
+                            boxShadow: '0 -10px 40px rgba(0,0,0,0.5)',
+                            textAlign: 'center'
+                        }}
+                    >
+                        {/* Pull indicator */}
+                        <div style={{
+                            width: '40px',
+                            height: '4px',
+                            background: 'rgba(255,255,255,0.2)',
+                            borderRadius: '2px',
+                            margin: '0 auto 20px'
+                        }} />
+
+                        <div style={{
+                            width: '60px',
+                            height: '60px',
+                            borderRadius: '20px',
+                            background: 'rgba(163, 230, 53, 0.1)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            margin: '0 auto 15px'
+                        }}>
+                            <History size={32} color="var(--secondary)" />
+                        </div>
+
+                        <h2 style={{ fontSize: '22px', fontWeight: '700', marginBottom: '8px' }}>Finalizar Partida</h2>
+                        <p style={{ fontSize: '15px', color: 'var(--text-dim)', marginBottom: '30px', lineHeight: '1.4' }}>
+                            ¿Estás seguro de que quieres terminar? Tus golpes se guardarán en tu historial de rondas.
                         </p>
+
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
                             <button
                                 onClick={() => setShowFinishModal(false)}
                                 style={{
-                                    padding: '12px',
-                                    borderRadius: '12px',
-                                    background: 'rgba(255,b255,255,0.05)',
+                                    padding: '16px',
+                                    borderRadius: '16px',
+                                    background: 'rgba(255,255,255,0.05)',
                                     color: 'white',
-                                    fontWeight: '600'
+                                    fontWeight: '600',
+                                    fontSize: '16px',
+                                    border: '1px solid rgba(255,255,255,0.1)'
                                 }}
                             >
-                                Cancelar
+                                Continuar
                             </button>
                             <button
                                 onClick={() => window.history.back()}
                                 style={{
-                                    padding: '12px',
-                                    borderRadius: '12px',
+                                    padding: '16px',
+                                    borderRadius: '16px',
                                     background: 'var(--secondary)',
                                     color: 'var(--primary)',
-                                    fontWeight: '700'
+                                    fontWeight: '800',
+                                    fontSize: '16px',
+                                    boxShadow: '0 4px 15px rgba(163, 230, 53, 0.3)'
                                 }}
                             >
-                                Finalizar
+                                Sí, Finalizar
                             </button>
                         </div>
-                    </Card>
+                    </motion.div>
                 </div>
             )}
         </div>
