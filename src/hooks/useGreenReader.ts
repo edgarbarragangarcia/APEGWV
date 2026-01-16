@@ -10,9 +10,15 @@ export const useGreenReader = () => {
     const [calibratedBeta, setCalibratedBeta] = useState(0);
     const [calibratedGamma, setCalibratedGamma] = useState(0);
 
+    // Smoothing factor (Low-Pass Filter)
+    const ALPHA = 0.15; // 0 to 1. Lower = smoother but slower.
+
     const handleOrientation = (event: DeviceOrientationEvent) => {
-        setBeta(event.beta || 0);
-        setGamma(event.gamma || 0);
+        const rawB = event.beta || 0;
+        const rawG = event.gamma || 0;
+
+        setBeta(prev => (ALPHA * rawB) + (1 - ALPHA) * prev);
+        setGamma(prev => (ALPHA * rawG) + (1 - ALPHA) * prev);
         setHasData(true);
     };
 
@@ -56,13 +62,19 @@ export const useGreenReader = () => {
         setCalibratedGamma(gamma);
     };
 
+    // Derived values
+    const currentBeta = beta - calibratedBeta;
+    const currentGamma = gamma - calibratedGamma;
+    const isLevel = Math.abs(currentBeta) < 2 && Math.abs(currentGamma) < 2;
+
     return {
-        beta: beta - calibratedBeta,
-        gamma: gamma - calibratedGamma,
+        beta: currentBeta,
+        gamma: currentGamma,
         rawBeta: beta,
         rawGamma: gamma,
         permissionGranted,
         hasData,
+        isLevel,
         calibrate,
         requestAccess
     };

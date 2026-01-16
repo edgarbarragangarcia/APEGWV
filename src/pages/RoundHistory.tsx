@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { supabase } from '../services/SupabaseManager';
-import { ArrowLeft, Calendar, TrendingUp, Loader2, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Calendar, TrendingUp, Loader2, ChevronRight, Trash2, Pencil } from 'lucide-react';
 import Card from '../components/Card';
 
 interface Round {
@@ -87,84 +87,133 @@ const RoundHistory: React.FC = () => {
                     </div>
                 </Card>
             ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', padding: '0 5px' }}>
                     {rounds.map((round) => (
-                        <motion.div
-                            key={round.id}
-                            drag="x"
-                            dragConstraints={{ left: -100, right: 0 }}
-                            dragElastic={0.1}
-                            onDragEnd={async (_event, info) => {
-                                if (info.offset.x < -80) {
-                                    // Swipe left to delete
-                                    if (confirm(`¿Eliminar la ronda de ${round.course_name}?`)) {
-                                        try {
-                                            const { error } = await supabase
-                                                .from('rounds')
-                                                .delete()
-                                                .eq('id', round.id);
-
-                                            if (error) throw error;
-
-                                            // Update local state
-                                            setRounds(rounds.filter(r => r.id !== round.id));
-                                        } catch (err) {
-                                            console.error('Error deleting round:', err);
-                                            alert('Error al eliminar la ronda');
+                        <div key={round.id} style={{ position: 'relative', overflow: 'hidden', borderRadius: '20px', userSelect: 'none', touchAction: 'pan-y' }}>
+                            {/* Actions Background Layer */}
+                            <div style={{
+                                position: 'absolute',
+                                right: 0,
+                                top: 0,
+                                bottom: 0,
+                                width: '140px',
+                                display: 'flex',
+                                alignItems: 'stretch',
+                                zIndex: 0
+                            }}>
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        navigate(`/rounds/edit/${round.id}`);
+                                    }}
+                                    style={{
+                                        flex: 1,
+                                        background: '#3b82f6',
+                                        border: 'none',
+                                        color: 'white',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        cursor: 'pointer'
+                                    }}
+                                >
+                                    <Pencil size={24} />
+                                </button>
+                                <button
+                                    onClick={async (e) => {
+                                        e.stopPropagation();
+                                        if (confirm(`¿Eliminar la ronda de ${round.course_name}?`)) {
+                                            try {
+                                                const { error } = await supabase
+                                                    .from('rounds')
+                                                    .delete()
+                                                    .eq('id', round.id);
+                                                if (error) throw error;
+                                                setRounds(rounds.filter(r => r.id !== round.id));
+                                                if (navigator.vibrate) navigator.vibrate(50);
+                                            } catch (err) {
+                                                console.error(err);
+                                                alert('Error al eliminar');
+                                            }
                                         }
-                                    }
-                                }
-                            }}
-                            style={{
-                                position: 'relative',
-                                cursor: 'grab'
-                            }}
-                            whileTap={{ cursor: 'grabbing' }}
-                        >
-                            <Card
-                                style={{ cursor: 'pointer', marginBottom: 0 }}
-                                onClick={() => navigate(`/rounds/${round.id}`)}
+                                    }}
+                                    style={{
+                                        flex: 1,
+                                        background: '#ef4444',
+                                        border: 'none',
+                                        color: 'white',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        cursor: 'pointer'
+                                    }}
+                                >
+                                    <Trash2 size={24} />
+                                </button>
+                            </div>
+
+                            {/* Main Card Layer */}
+                            <motion.div
+                                drag="x"
+                                dragConstraints={{ left: -140, right: 0 }}
+                                dragElastic={0.05}
+                                dragSnapToOrigin={false} // We want it to stay open or close based on distance
+                                onDragEnd={() => {
+                                    // If we dragged more than half the distance, stay open, else close
+                                    // Actually, simple constraint is usually enough, but we want it to feel "snappy"
+                                }}
+                                style={{
+                                    position: 'relative',
+                                    zIndex: 1,
+                                    x: 0
+                                }}
+                                whileTap={{ cursor: 'grabbing' }}
                             >
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <div style={{ flex: 1 }}>
-                                        <h3 style={{ fontSize: '16px', marginBottom: '5px' }}>{round.course_name}</h3>
-                                        <p style={{ fontSize: '13px', color: 'var(--text-dim)', marginBottom: '10px' }}>
-                                            {round.course_location} • {new Date(round.date_played).toLocaleDateString('es-ES', {
-                                                day: 'numeric',
-                                                month: 'short',
-                                                year: 'numeric'
-                                            })}
-                                        </p>
-                                        <div style={{ display: 'flex', gap: '15px', fontSize: '13px' }}>
-                                            <div>
-                                                <span style={{ color: 'var(--text-dim)' }}>Score: </span>
-                                                <span style={{ fontWeight: '700', color: 'var(--secondary)' }}>{round.total_score}</span>
-                                            </div>
-                                            {round.first_nine_score && round.second_nine_score && (
+                                <Card
+                                    style={{ cursor: 'pointer', marginBottom: 0 }}
+                                    onClick={() => navigate(`/rounds/${round.id}`)}
+                                >
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <div style={{ flex: 1 }}>
+                                            <h3 style={{ fontSize: '16px', marginBottom: '5px' }}>{round.course_name}</h3>
+                                            <p style={{ fontSize: '13px', color: 'var(--text-dim)', marginBottom: '10px' }}>
+                                                {round.course_location} • {new Date(round.date_played).toLocaleDateString('es-ES', {
+                                                    day: 'numeric',
+                                                    month: 'short',
+                                                    year: 'numeric'
+                                                })}
+                                            </p>
+                                            <div style={{ display: 'flex', gap: '15px', fontSize: '13px' }}>
                                                 <div>
-                                                    <span style={{ color: 'var(--text-dim)' }}>Vueltas: </span>
-                                                    <span style={{ fontWeight: '600' }}>{round.first_nine_score} / {round.second_nine_score}</span>
+                                                    <span style={{ color: 'var(--text-dim)' }}>Score: </span>
+                                                    <span style={{ fontWeight: '700', color: 'var(--secondary)' }}>{round.total_score}</span>
+                                                </div>
+                                                {round.first_nine_score && round.second_nine_score && (
+                                                    <div>
+                                                        <span style={{ color: 'var(--text-dim)' }}>Vueltas: </span>
+                                                        <span style={{ fontWeight: '600' }}>{round.first_nine_score} / {round.second_nine_score}</span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                            {round.status === 'completed' && (
+                                                <div style={{
+                                                    background: 'var(--primary-light)',
+                                                    padding: '4px 8px',
+                                                    borderRadius: '6px',
+                                                    fontSize: '11px',
+                                                    fontWeight: '600'
+                                                }}>
+                                                    Completada
                                                 </div>
                                             )}
+                                            <ChevronRight size={20} color="var(--text-dim)" />
                                         </div>
                                     </div>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                        {round.status === 'completed' && (
-                                            <div style={{
-                                                background: 'var(--primary-light)',
-                                                padding: '4px 8px',
-                                                borderRadius: '6px',
-                                                fontSize: '11px',
-                                                fontWeight: '600'
-                                            }}>
-                                                Completada
-                                            </div>
-                                        )}
-                                        <ChevronRight size={20} color="var(--text-dim)" />
-                                    </div>
-                                </div>
-                            </Card>
-                        </motion.div>
+                                </Card>
+                            </motion.div>
+                        </div>
                     ))}
                 </div>
             )}

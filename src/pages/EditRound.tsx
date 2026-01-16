@@ -1,0 +1,235 @@
+import React, { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { supabase } from '../services/SupabaseManager';
+import { ArrowLeft, Save, Loader2 } from 'lucide-react';
+import Card from '../components/Card';
+
+interface Round {
+    id: string;
+    course_name: string;
+    course_location: string;
+    date_played: string;
+    total_score: number;
+    first_nine_score?: number;
+    second_nine_score?: number;
+}
+
+const EditRound: React.FC = () => {
+    const { id } = useParams<{ id: string }>();
+    const navigate = useNavigate();
+    const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
+    const [round, setRound] = useState<Round | null>(null);
+
+    useEffect(() => {
+        const fetchRound = async () => {
+            try {
+                const { data, error } = await supabase
+                    .from('rounds')
+                    .select('*')
+                    .eq('id', id)
+                    .single();
+
+                if (error) throw error;
+                setRound(data);
+            } catch (err) {
+                console.error('Error fetching round:', err);
+                navigate('/rounds');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchRound();
+    }, [id, navigate]);
+
+    const handleSave = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!round) return;
+
+        setSaving(true);
+        try {
+            const { error } = await supabase
+                .from('rounds')
+                .update({
+                    course_name: round.course_name,
+                    course_location: round.course_location,
+                    date_played: round.date_played,
+                    total_score: round.total_score,
+                    first_nine_score: round.first_nine_score,
+                    second_nine_score: round.second_nine_score
+                })
+                .eq('id', round.id);
+
+            if (error) throw error;
+            navigate('/rounds');
+        } catch (err) {
+            console.error('Error updating round:', err);
+            alert('Error al guardar los cambios');
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    if (loading) {
+        return <div className="flex-center" style={{ height: '70vh' }}><Loader2 className="animate-spin" /></div>;
+    }
+
+    if (!round) return null;
+
+    return (
+        <div className="animate-fade">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '30px' }}>
+                <button onClick={() => navigate('/rounds')} style={{ background: 'none', border: 'none', color: 'var(--text)' }}>
+                    <ArrowLeft size={24} />
+                </button>
+                <h1 style={{ fontSize: '24px', margin: 0 }}>Editar Ronda</h1>
+            </div>
+
+            <form onSubmit={handleSave}>
+                <Card>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                        <div>
+                            <label style={{ display: 'block', fontSize: '12px', color: 'var(--text-dim)', marginBottom: '8px' }}>NOMBRE DEL CAMPO</label>
+                            <input
+                                type="text"
+                                value={round.course_name}
+                                onChange={(e) => setRound({ ...round, course_name: e.target.value })}
+                                style={{
+                                    width: '100%',
+                                    background: 'rgba(255,255,255,0.05)',
+                                    border: '1px solid rgba(255,255,255,0.1)',
+                                    borderRadius: '10px',
+                                    padding: '12px',
+                                    color: 'white',
+                                    fontSize: '14px'
+                                }}
+                                required
+                            />
+                        </div>
+
+                        <div>
+                            <label style={{ display: 'block', fontSize: '12px', color: 'var(--text-dim)', marginBottom: '8px' }}>UBICACIÓN</label>
+                            <input
+                                type="text"
+                                value={round.course_location}
+                                onChange={(e) => setRound({ ...round, course_location: e.target.value })}
+                                style={{
+                                    width: '100%',
+                                    background: 'rgba(255,255,255,0.05)',
+                                    border: '1px solid rgba(255,255,255,0.1)',
+                                    borderRadius: '10px',
+                                    padding: '12px',
+                                    color: 'white',
+                                    fontSize: '14px'
+                                }}
+                            />
+                        </div>
+
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                            <div>
+                                <label style={{ display: 'block', fontSize: '12px', color: 'var(--text-dim)', marginBottom: '8px' }}>FECHA</label>
+                                <input
+                                    type="date"
+                                    value={round.date_played.split('T')[0]}
+                                    onChange={(e) => setRound({ ...round, date_played: e.target.value })}
+                                    style={{
+                                        width: '100%',
+                                        background: 'rgba(255,255,255,0.05)',
+                                        border: '1px solid rgba(255,255,255,0.1)',
+                                        borderRadius: '10px',
+                                        padding: '12px',
+                                        color: 'white',
+                                        fontSize: '14px'
+                                    }}
+                                    required
+                                />
+                            </div>
+                            <div>
+                                <label style={{ display: 'block', fontSize: '12px', color: 'var(--text-dim)', marginBottom: '8px' }}>SCORE TOTAL</label>
+                                <input
+                                    type="number"
+                                    value={round.total_score}
+                                    onChange={(e) => setRound({ ...round, total_score: parseInt(e.target.value) || 0 })}
+                                    style={{
+                                        width: '100%',
+                                        background: 'rgba(255,255,255,0.05)',
+                                        border: '1px solid rgba(255,255,255,0.1)',
+                                        borderRadius: '10px',
+                                        padding: '12px',
+                                        color: 'white',
+                                        fontSize: '14px'
+                                    }}
+                                    required
+                                />
+                            </div>
+                        </div>
+
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                            <div>
+                                <label style={{ display: 'block', fontSize: '12px', color: 'var(--text-dim)', marginBottom: '8px' }}>FRONT 9</label>
+                                <input
+                                    type="number"
+                                    value={round.first_nine_score || ''}
+                                    onChange={(e) => setRound({ ...round, first_nine_score: parseInt(e.target.value) || undefined })}
+                                    style={{
+                                        width: '100%',
+                                        background: 'rgba(255,255,255,0.05)',
+                                        border: '1px solid rgba(255,255,255,0.1)',
+                                        borderRadius: '10px',
+                                        padding: '12px',
+                                        color: 'white',
+                                        fontSize: '14px'
+                                    }}
+                                />
+                            </div>
+                            <div>
+                                <label style={{ display: 'block', fontSize: '12px', color: 'var(--text-dim)', marginBottom: '8px' }}>BACK 9</label>
+                                <input
+                                    type="number"
+                                    value={round.second_nine_score || ''}
+                                    onChange={(e) => setRound({ ...round, second_nine_score: parseInt(e.target.value) || undefined })}
+                                    style={{
+                                        width: '100%',
+                                        background: 'rgba(255,255,255,0.05)',
+                                        border: '1px solid rgba(255,255,255,0.1)',
+                                        borderRadius: '10px',
+                                        padding: '12px',
+                                        color: 'white',
+                                        fontSize: '14px'
+                                    }}
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </Card>
+
+                <button
+                    type="submit"
+                    disabled={saving}
+                    style={{
+                        width: '100%',
+                        background: 'var(--secondary)',
+                        color: 'var(--primary)',
+                        padding: '16px',
+                        borderRadius: '12px',
+                        fontWeight: '700',
+                        fontSize: '16px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '10px',
+                        border: 'none',
+                        cursor: 'pointer',
+                        marginTop: '10px'
+                    }}
+                >
+                    {saving ? <Loader2 className="animate-spin" size={20} /> : <Save size={20} />}
+                    {saving ? 'Guardando...' : 'Guardar Cambios'}
+                </button>
+            </form>
+        </div>
+    );
+};
+
+export default EditRound;

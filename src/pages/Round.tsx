@@ -1,7 +1,7 @@
 import React from 'react';
 import { useLocation } from 'react-router-dom';
 import Card from '../components/Card';
-import { ChevronLeft, ChevronRight, Info, Target, History } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Target, History } from 'lucide-react';
 import type { GolfCourse } from '../data/courses';
 import { supabase } from '../services/SupabaseManager';
 import { useGreenReader } from '../hooks/useGreenReader';
@@ -16,8 +16,11 @@ const Round: React.FC = () => {
     const [holeData, setHoleData] = React.useState<any[]>([]);
 
     // Hooks
-    const { beta, gamma, calibrate, requestAccess, hasData: sensorsActive } = useGreenReader();
+    const { beta, gamma, calibrate, requestAccess, isLevel, hasData: sensorsActive } = useGreenReader();
     const { calculateDistance, error: gpsError, permissionStatus } = useGeoLocation();
+
+    // Manual sensor activation override
+    const [forceSensors, setForceSensors] = React.useState(false);
 
     // GPS Logic
     // Nota: Como no tenemos las coordenadas exactas de cada hoyo en DB aún, usamos la coordenada del club como proxy TEMPORAL.
@@ -29,9 +32,8 @@ const Round: React.FC = () => {
 
     // Si estamos a menos de 30 metros, asumimos "Zona de Green" -> Activamos sensores
     // Para probar, usamos < 3000km porque el usuario seguro no está en el campo real.
-    // Ajustaremos esto a 30m real para prod, pero dejaremos un umbral alto si distanceToHole es null para no bloquear.
     // Lógica real: distanceToHole !== null && distanceToHole < 30
-    const isNearGreen = distanceToHole !== null && distanceToHole < 50000; // 50km for testing, change to 30 for real usage
+    const isNearGreen = forceSensors || (distanceToHole !== null && distanceToHole < 50000); // 50km for testing
 
     // Factor de amplificación visual para la flecha
     // Aumentado a x5 para que sea más sensible y visible
@@ -105,6 +107,14 @@ const Round: React.FC = () => {
         if (diff === 2) return 'Doble Bogey';
         if (diff === 3) return 'Triple Bogey';
         return `+${diff}`;
+    };
+
+    const getSlopeIntensity = (g: number) => {
+        const absG = Math.abs(g);
+        if (absG < 1) return 'PLANO';
+        if (absG < 3) return g > 0 ? 'CAÍDA LEVE DER' : 'CAÍDA LEVE IZQ';
+        if (absG < 6) return g > 0 ? 'CAÍDA MEDIA DER' : 'CAÍDA MEDIA IZQ';
+        return g > 0 ? 'CAÍDA FUERTE DER' : 'CAÍDA FUERTE IZQ';
     };
 
     return (
@@ -228,6 +238,14 @@ const Round: React.FC = () => {
                     <span style={{ fontSize: '24px', fontWeight: '700' }}>
                         {distanceToHole ? (distanceToHole + 15) : (170 + currentHole * 4)}
                     </span>
+                    {!isNearGreen && !forceSensors && (
+                        <button
+                            onClick={() => setForceSensors(true)}
+                            style={{ fontSize: '9px', background: 'rgba(255,255,255,0.05)', border: 'none', color: 'var(--text-dim)', marginTop: '5px', padding: '2px 5px', borderRadius: '4px' }}
+                        >
+                            FORZAR GREEN
+                        </button>
+                    )}
                 </div>
             </div>
 
@@ -266,8 +284,8 @@ const Round: React.FC = () => {
                                 position: 'absolute',
                                 bottom: '50%',
                                 left: '50%',
-                                width: '2px', // Line thinner
-                                height: '180px', // Long enough to reach hole area
+                                width: '2px',
+                                height: '180px',
                                 background: 'transparent',
                                 transformOrigin: 'bottom center',
                                 transform: `translateX(-50%) rotate(${aimRotation}deg)`,
@@ -278,49 +296,96 @@ const Round: React.FC = () => {
                                 <div style={{
                                     width: '100%',
                                     height: '100%',
-                                    background: 'linear-gradient(to top, #ef4444, transparent)', // Red fade
-                                    opacity: 0.8
-                                }} />
+                                    background: 'linear-gradient(to top, #ef4444, transparent)',
+                                    opacity: 0.8,
+                                    position: 'relative'
+                                }}>
+                                    {/* Degree indicator on arrow */}
+                                    <span style={{
+                                        position: 'absolute',
+                                        top: '20px',
+                                        left: '5px',
+                                        fontSize: '10px',
+                                        color: '#ef4444',
+                                        fontWeight: 'bold',
+                                        background: 'rgba(0,0,0,0.4)',
+                                        padding: '1px 4px',
+                                        borderRadius: '3px',
+                                        transform: `rotate(${-aimRotation}deg)`,
+                                        whiteSpace: 'nowrap'
+                                    }}>
+                                        {Math.abs(Math.round(gamma))}° {gamma > 0 ? 'R' : 'L'}
+                                    </span>
+                                </div>
                             </div>
 
-                            {/* Blue Curve (Break Hint) - Optional visualization of gravity */}
-                            {Math.abs(gamma) > 1 && (
+                            {/* Blue Curve (Break Hint) */}
+                            {Math.abs(gamma) > 0.5 && (
                                 <div style={{
                                     position: 'absolute',
                                     bottom: '50%',
                                     left: '50%',
-                                    width: '100px',
-                                    height: '180px',
-                                    borderLeft: gamma > 0 ? 'none' : '2px solid rgba(59, 130, 246, 0.5)', // Blue
-                                    borderRight: gamma > 0 ? '2px solid rgba(59, 130, 246, 0.5)' : 'none',
-                                    borderRadius: gamma > 0 ? '0 100% 0 0' : '100% 0 0 0', // Simple naive curve
-                                    transform: `translate(-50%, -100%) scaleX(${Math.min(Math.abs(gamma) / 10, 1.5)})`, // Stretch curve based on break
+                                    width: '120px',
+                                    height: '200px',
+                                    borderLeft: gamma > 0 ? 'none' : '3px solid rgba(59, 130, 246, 0.4)',
+                                    borderRight: gamma > 0 ? '3px solid rgba(59, 130, 246, 0.4)' : 'none',
+                                    borderRadius: gamma > 0 ? '0 100% 0 0' : '100% 0 0 0',
+                                    transform: `translate(-50%, -100%) scaleX(${Math.min(Math.abs(gamma) / 8, 2)})`,
                                     transformOrigin: 'bottom center',
-                                    opacity: 0.6
+                                    opacity: 0.7,
+                                    filter: 'blur(1px)'
                                 }} />
                             )}
                         </div>
                     </div>
 
-                    <div style={{ position: 'absolute', top: '20px', right: '20px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                        <button className="glass" style={{ padding: '8px' }}><Info size={16} /></button>
+                    <div style={{ position: 'absolute', top: '20px', right: '20px', display: 'flex', flexDirection: 'column', gap: '10px', alignItems: 'flex-end' }}>
+                        {/* Bubble Level Indicator */}
+                        <div style={{
+                            width: '40px',
+                            height: '40px',
+                            borderRadius: '50%',
+                            background: 'rgba(0,0,0,0.4)',
+                            border: `2px solid ${isLevel ? 'var(--secondary)' : 'rgba(255,255,255,0.2)'}`,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            position: 'relative'
+                        }}>
+                            <div style={{
+                                width: '8px',
+                                height: '8px',
+                                borderRadius: '50%',
+                                background: isLevel ? 'var(--secondary)' : 'white',
+                                boxShadow: isLevel ? '0 0 10px var(--secondary)' : 'none',
+                                transform: `translate(${Math.min(Math.max(gamma * 2, -15), 15)}px, ${Math.min(Math.max(beta * 2, -15), 15)}px)`,
+                                transition: 'all 0.1s ease-out'
+                            }} />
+                            {/* Level targets */}
+                            <div style={{ position: 'absolute', width: '12px', height: '12px', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '50%' }} />
+                        </div>
+
                         <button
                             onClick={calibrate}
                             className="glass"
                             style={{
                                 padding: '8px 12px',
                                 fontSize: '10px',
-                                background: 'rgba(255,255,255,0.1)',
-                                color: 'var(--text-dim)'
+                                background: isLevel ? 'rgba(163, 230, 53, 0.2)' : 'rgba(255,255,255,0.1)',
+                                color: isLevel ? 'var(--secondary)' : 'var(--text-dim)',
+                                border: isLevel ? '1px solid var(--secondary)' : '1px solid transparent'
                             }}
                         >
                             CALIBRAR
                         </button>
                     </div>
 
-                    <div style={{ position: 'absolute', bottom: '20px', left: '20px', background: 'rgba(0,0,0,0.6)', padding: '5px 12px', borderRadius: '20px', fontSize: '12px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                        <span>Slope: {Math.round(beta)}°</span>
-                        <span>Break: {Math.round(gamma)}°</span>
+                    <div style={{ position: 'absolute', bottom: '20px', left: '20px', background: 'rgba(0,0,0,0.6)', padding: '8px 15px', borderRadius: '20px', fontSize: '12px', display: 'flex', flexDirection: 'column', gap: '2px', borderLeft: `4px solid ${Math.abs(gamma) > 5 ? '#ef4444' : 'var(--secondary)'}` }}>
+                        <span style={{ fontWeight: '800', color: 'white' }}>{getSlopeIntensity(gamma)}</span>
+                        <div style={{ display: 'flex', gap: '10px', opacity: 0.8 }}>
+                            <span>Slope: {Math.abs(Math.round(beta))}°</span>
+                            <span>Break: {Math.abs(Math.round(gamma))}°</span>
+                        </div>
                     </div>
 
                     {/* Sensor Activation Overlay */}

@@ -19,6 +19,7 @@ const EditProfile = lazy(() => import('./pages/EditProfile'));
 const EditStats = lazy(() => import('./pages/EditStats'));
 const RoundHistory = lazy(() => import('./pages/RoundHistory'));
 const RoundDetail = lazy(() => import('./pages/RoundDetail'));
+const EditRound = lazy(() => import('./pages/EditRound'));
 
 const App: React.FC = () => {
   const [session, setSession] = useState<Session | null>(null);
@@ -83,6 +84,7 @@ const App: React.FC = () => {
                   <Route path="/profile/stats" element={<EditStats />} />
                   <Route path="/rounds" element={<RoundHistory />} />
                   <Route path="/rounds/:id" element={<RoundDetail />} />
+                  <Route path="/rounds/edit/:id" element={<EditRound />} />
                   <Route path="/auth" element={<Navigate to="/" replace />} />
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </>
