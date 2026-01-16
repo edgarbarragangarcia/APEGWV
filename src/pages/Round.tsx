@@ -5,6 +5,7 @@ import { ChevronLeft, ChevronRight, Info, Target, History } from 'lucide-react';
 import type { GolfCourse } from '../data/courses';
 import { supabase } from '../services/SupabaseManager';
 import { useGreenReader } from '../hooks/useGreenReader';
+import { useGeoLocation } from '../hooks/useGeoLocation';
 
 const Round: React.FC = () => {
     const location = useLocation();
@@ -14,10 +15,25 @@ const Round: React.FC = () => {
     const fieldName = recorrido ? `${course?.name} - ${recorrido}` : (course?.name || 'Recorrido Principal');
     const [holeData, setHoleData] = React.useState<any[]>([]);
 
-    // Green Reader Hook
+    // Hooks
     const { beta, gamma, calibrate } = useGreenReader();
+    const { calculateDistance } = useGeoLocation();
+
+    // GPS Logic
+    // Nota: Como no tenemos las coordenadas exactas de cada hoyo en DB aún, usamos la coordenada del club como proxy TEMPORAL.
+    // En producción, holeData debería traer { lat, lon } del centro del green.
+    const targetLat = course?.lat || 0;
+    const targetLon = course?.lon || 0;
+
+    const distanceToHole = calculateDistance(targetLat, targetLon);
+
+    // Si estamos a menos de 30 metros, asumimos "Zona de Green" -> Activamos sensores
+    // Para probar, usamos < 3000km porque el usuario seguro no está en el campo real. 
+    // Ajustaremos esto a 30m real para prod, pero dejaremos un umbral alto si distanceToHole es null para no bloquear.
+    // Lógica real: distanceToHole !== null && distanceToHole < 30
+    const isNearGreen = distanceToHole !== null && distanceToHole < 50000; // 50km for testing, change to 30 for real usage
+
     // Factor de amplificación visual para la flecha
-    // Si gamma es positivo (caída derecha), rotamos la flecha a la izquierda (negativo)
     const aimRotation = -gamma * 2;
 
     // Restauramos estados perdidos
@@ -27,13 +43,12 @@ const Round: React.FC = () => {
     const currentStrokes = strokes[currentHole] || 0;
 
     // Datos del hoyo actual
-    const currentHoleInfo = holeData.find(h => h.hole_number === currentHole) || { par: 4, handicap: currentHole }; // Fallback inicial
+    const currentHoleInfo = holeData.find(h => h.hole_number === currentHole) || { par: 4, handicap: currentHole };
 
     React.useEffect(() => {
         const fetchHoles = async () => {
             if (!course?.id) return;
             try {
-                // Intento buscar por ID de curso y recorrido exacto
                 let query = supabase
                     .from('course_holes')
                     .select('*')
@@ -50,14 +65,10 @@ const Round: React.FC = () => {
                 } else if (data && data.length > 0) {
                     setHoleData(data);
                 } else {
-                    // Si no hay datos en DB, usamos datos "standard" para no romper la UI
-                    // Pero idealmente vendrían de la DB como pidió el usuario.
                     console.warn('No hole data found in DB');
                 }
             } catch (err) {
                 console.error(err);
-            } finally {
-                // Loading finished
             }
         };
 
@@ -111,7 +122,6 @@ const Round: React.FC = () => {
                 <button
                     onClick={() => {
                         if (confirm('¿Terminar ronda?')) {
-                            // En el futuro aquí se guardaría el score en Supabase
                             window.history.back();
                         }
                     }}
@@ -173,29 +183,38 @@ const Round: React.FC = () => {
                 </div>
             </div>
 
-            {/* GPS Distances */}
+            {/* GPS Distances OR Green Info */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr 1fr', gap: '15px', marginBottom: '20px', alignItems: 'center' }}>
-                <div className="glass flex-center" style={{ height: '100px', flexDirection: 'column' }}>
+                <div className="glass flex-center" style={{ height: '100px', flexDirection: 'column', opacity: isNearGreen ? 0.5 : 1 }}>
                     <span style={{ fontSize: '11px', color: 'var(--text-dim)' }}>FRONT</span>
-                    <span style={{ fontSize: '24px', fontWeight: '700' }}>{140 + currentHole * 2}</span>
+                    <span style={{ fontSize: '24px', fontWeight: '700' }}>
+                        {distanceToHole ? Math.max(0, distanceToHole - 15) : (140 + currentHole * 2)}
+                    </span>
                 </div>
 
                 <div className="glass flex-center" style={{
                     height: '140px',
                     flexDirection: 'column',
-                    border: '2px solid var(--secondary)',
-                    boxShadow: '0 0 20px rgba(163, 230, 53, 0.2)'
+                    border: isNearGreen ? '2px solid var(--secondary)' : '2px solid transparent',
+                    boxShadow: isNearGreen ? '0 0 30px rgba(163, 230, 53, 0.3)' : 'none',
+                    transition: 'all 0.5s ease'
                 }}>
-                    <span style={{ fontSize: '12px', color: 'var(--secondary)', fontWeight: '600' }}>CENTER</span>
-                    <span style={{ fontSize: '48px', fontWeight: '800' }}>{155 + currentHole * 3}</span>
+                    <span style={{ fontSize: '12px', color: 'var(--secondary)', fontWeight: '600' }}>
+                        {isNearGreen ? 'EN GREEN' : 'CENTER'}
+                    </span>
+                    <span style={{ fontSize: '48px', fontWeight: '800' }}>
+                        {distanceToHole || (155 + currentHole * 3)}
+                    </span>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '12px', color: 'var(--text-dim)' }}>
-                        <Target size={12} /> m
+                        <Target size={12} /> {isNearGreen ? 'Detectado' : 'm'}
                     </div>
                 </div>
 
-                <div className="glass flex-center" style={{ height: '100px', flexDirection: 'column' }}>
+                <div className="glass flex-center" style={{ height: '100px', flexDirection: 'column', opacity: isNearGreen ? 0.5 : 1 }}>
                     <span style={{ fontSize: '11px', color: 'var(--text-dim)' }}>BACK</span>
-                    <span style={{ fontSize: '24px', fontWeight: '700' }}>{170 + currentHole * 4}</span>
+                    <span style={{ fontSize: '24px', fontWeight: '700' }}>
+                        {distanceToHole ? (distanceToHole + 15) : (170 + currentHole * 4)}
+                    </span>
                 </div>
             </div>
 
