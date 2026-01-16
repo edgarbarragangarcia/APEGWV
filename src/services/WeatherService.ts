@@ -43,7 +43,7 @@ export const fetchWeather = async (lat: number, lon: number): Promise<WeatherDat
         };
     } catch (error) {
         console.error('Error fetching weather:', error);
-        // Fallback gracioso si falla la red
+        // Fallback simple si falla la red
         return {
             temp: 20,
             condition: 'Sin Datos',
@@ -53,4 +53,4 @@ export const fetchWeather = async (lat: number, lon: number): Promise<WeatherDat
             humidity: 0
         };
     }
-};
+}

@@ -7,6 +7,8 @@ import type { GolfCourse } from '../data/courses';
 import { supabase } from '../services/SupabaseManager';
 import { useGreenReader } from '../hooks/useGreenReader';
 import { useGeoLocation } from '../hooks/useGeoLocation';
+import { fetchWeather, type WeatherData } from '../services/WeatherService';
+import { Wind, Navigation, Info } from 'lucide-react';
 
 const Round: React.FC = () => {
     const location = useLocation();
@@ -43,6 +45,8 @@ const Round: React.FC = () => {
     const [currentHole, setCurrentHole] = React.useState(1);
     const [strokes, setStrokes] = React.useState<Record<number, number>>({});
     const [isSaving, setIsSaving] = React.useState(false);
+    const [weather, setWeather] = React.useState<WeatherData | null>(null);
+    const [isSimulatingPutt, setIsSimulatingPutt] = React.useState(false);
 
     const currentStrokes = strokes[currentHole] || 0;
 
@@ -78,6 +82,53 @@ const Round: React.FC = () => {
 
         fetchHoles();
     }, [course, recorrido]);
+
+    React.useEffect(() => {
+        const loadWeather = async () => {
+            if (course?.lat && course?.lon) {
+                const data = await fetchWeather(course.lat, course.lon);
+                setWeather(data);
+            }
+        };
+        loadWeather();
+    }, [course]);
+
+    const getWindDirection = (degrees?: number) => {
+        if (degrees === undefined) return 'Variable';
+        const sectors = ['N', 'NE', 'E', 'SE', 'S', 'SO', 'O', 'NO'];
+        return sectors[Math.round(degrees / 45) % 8];
+    };
+
+    const getClubRecommendation = (distance: number | null, windSpeed: number = 0, windDir: string = 'N') => {
+        if (distance === null) return 'Localizando...';
+
+        // Adjust distance for wind
+        let adjDistance = distance;
+
+        // Assume for simplicity that 'N' is always headwind in this mock
+        // In a real app we'd need the bearing to the hole
+        const isHeadwind = windDir.includes('N');
+        const isTailwind = windDir.includes('S');
+
+        if (windSpeed > 5) {
+            if (isHeadwind) adjDistance += (windSpeed * 0.7); // Add distance for headwind
+            if (isTailwind) adjDistance -= (windSpeed * 0.4); // Subtract for tailwind
+        }
+
+        if (adjDistance > 230) return 'Driver';
+        if (adjDistance > 200) return 'Madera 3';
+        if (adjDistance > 185) return 'Híbrido';
+        if (adjDistance > 170) return 'Hierro 4';
+        if (adjDistance > 160) return 'Hierro 5';
+        if (adjDistance > 150) return 'Hierro 6';
+        if (adjDistance > 140) return 'Hierro 7';
+        if (adjDistance > 130) return 'Hierro 8';
+        if (adjDistance > 120) return 'Hierro 9';
+        if (adjDistance > 100) return 'Pitching Wedge';
+        if (adjDistance > 80) return 'Gap Wedge';
+        if (adjDistance > 60) return 'Sand Wedge';
+        return 'Lob Wedge / Putter';
+    };
 
     const handleStrokeChange = (change: number) => {
         setStrokes(prev => ({
@@ -320,6 +371,50 @@ const Round: React.FC = () => {
                 </div>
             </div>
 
+            {/* Wind and Club Recommendation Card */}
+            {!isNearGreen && (
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '20px' }}>
+                    <Card style={{ marginBottom: 0, padding: '15px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
+                            <Wind size={16} color="var(--secondary)" />
+                            <span style={{ fontSize: '11px', color: 'var(--text-dim)', fontWeight: '600' }}>VIENTO</span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+                            <span style={{ fontSize: '28px', fontWeight: '800' }}>{weather?.wind || '--'}</span>
+                            <span style={{ fontSize: '12px', color: 'var(--text-dim)' }}>km/h</span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginTop: '5px' }}>
+                            <Navigation
+                                size={12}
+                                style={{
+                                    transform: `rotate(${(weather?.windDirection || 0) + 180}deg)`,
+                                    color: 'var(--secondary)'
+                                }}
+                            />
+                            <span style={{ fontSize: '13px', fontWeight: '600' }}>{getWindDirection(weather?.windDirection)}</span>
+                        </div>
+                    </Card>
+
+                    <Card style={{
+                        marginBottom: 0,
+                        padding: '15px',
+                        background: 'linear-gradient(135deg, rgba(163, 230, 53, 0.1), rgba(163, 230, 53, 0.02))',
+                        border: '1px solid rgba(163, 230, 53, 0.2)'
+                    }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
+                            <Info size={16} color="var(--secondary)" />
+                            <span style={{ fontSize: '11px', color: 'var(--text-dim)', fontWeight: '600' }}>PALO SUGERIDO</span>
+                        </div>
+                        <div style={{ fontSize: '18px', fontWeight: '800', color: 'white', lineHeight: '1.2' }}>
+                            {getClubRecommendation(distanceToHole, weather?.wind, getWindDirection(weather?.windDirection))}
+                        </div>
+                        <div style={{ fontSize: '10px', color: 'var(--text-dim)', marginTop: '8px' }}>
+                            Calculado con viento {getWindDirection(weather?.windDirection)}
+                        </div>
+                    </Card>
+                </div>
+            )}
+
             {/* Simulated Course Visualization + Green Reader */}
             <Card style={{ padding: 0, height: '350px', overflow: 'hidden', position: 'relative' }}>
                 <div style={{
@@ -350,6 +445,34 @@ const Round: React.FC = () => {
 
                         {/* Ball */}
                         <div style={{ width: '18px', height: '18px', background: 'white', borderRadius: '50%', boxShadow: '0 2px 5px rgba(0,0,0,0.3)', zIndex: 2, position: 'relative' }}>
+                            {/* Static Ball remains centered */}
+                            <div style={{ position: 'absolute', inset: 0, background: 'white', borderRadius: '50%' }} />
+
+                            {/* Animated Simulation Ball */}
+                            {isSimulatingPutt && (
+                                <motion.div
+                                    initial={{ y: 0, x: 0, opacity: 1 }}
+                                    animate={{
+                                        y: -230, // Moves toward hole
+                                        x: gamma * -8, // Curves based on break
+                                        opacity: [1, 1, 0.5, 0] // Fades as it "enters" or passes
+                                    }}
+                                    transition={{
+                                        duration: 2.5,
+                                        ease: "easeOut",
+                                        onComplete: () => setIsSimulatingPutt(false)
+                                    }}
+                                    style={{
+                                        position: 'absolute',
+                                        inset: 0,
+                                        background: '#fbbf24', // Golden trail ball
+                                        borderRadius: '50%',
+                                        boxShadow: '0 0 15px #fbbf24',
+                                        zIndex: 3
+                                    }}
+                                />
+                            )}
+
                             {/* Red Arrow (Aim Line) - Originates from Ball */}
                             <div style={{
                                 position: 'absolute',
@@ -448,6 +571,22 @@ const Round: React.FC = () => {
                             }}
                         >
                             CALIBRAR
+                        </button>
+
+                        <button
+                            onClick={() => setIsSimulatingPutt(true)}
+                            disabled={isSimulatingPutt}
+                            className="glass"
+                            style={{
+                                padding: '8px 12px',
+                                fontSize: '10px',
+                                background: 'rgba(59, 130, 246, 0.2)',
+                                color: '#60a5fa',
+                                border: '1px solid rgba(59, 130, 246, 0.3)',
+                                opacity: isSimulatingPutt ? 0.5 : 1
+                            }}
+                        >
+                            {isSimulatingPutt ? 'RODANDO...' : 'SIMULAR'}
                         </button>
                     </div>
 
