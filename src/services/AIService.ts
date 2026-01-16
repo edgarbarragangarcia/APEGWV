@@ -72,6 +72,8 @@ Sé específico, constructivo y enfócate en aspectos prácticos que el jugador 
         const response = await result.response;
         const text = response.text();
 
+        console.log('Gemini raw response:', text);
+
         // Try to parse JSON from the response
         const jsonMatch = text.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
@@ -87,14 +89,20 @@ Sé específico, constructivo y enfócate en aspectos prácticos que el jugador 
             recommendations: ['Continúa jugando y registrando tus rondas'],
             scoreAnalysis: text
         };
-    } catch (error) {
-        console.error('Error generating AI analysis:', error);
+    } catch (error: any) {
+        console.error('Error detail updating Gemini:', error);
+
+        // Check for specific error types
+        const errorMessage = error?.message || '';
+        const isQuotaError = errorMessage.includes('429') || errorMessage.includes('quota');
+        const isKeyError = errorMessage.includes('401') || errorMessage.includes('API key');
+
         return {
-            summary: 'No se pudo generar el análisis automático.',
-            strengths: ['Completaste la ronda'],
-            weaknesses: ['Datos insuficientes para análisis detallado'],
-            recommendations: ['Registra más detalles en tu próxima ronda'],
-            scoreAnalysis: 'Análisis no disponible en este momento.'
+            summary: isQuotaError ? 'Límite de API alcanzado.' : isKeyError ? 'Error de configuración de API.' : 'No se pudo generar el análisis automático.',
+            strengths: ['Intenta de nuevo en unos momentos'],
+            weaknesses: ['Error técnico: ' + (errorMessage.substring(0, 50) || 'Desconocido')],
+            recommendations: ['Asegúrate de tener conexión a internet estable'],
+            scoreAnalysis: 'Error al contactar con el servicio de Inteligencia Artificial.'
         };
     }
 };
