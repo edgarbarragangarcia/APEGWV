@@ -444,191 +444,194 @@ const Round: React.FC = () => {
                         <div style={{ width: '30px', height: '30px', background: '#15803d', borderRadius: '50%', boxShadow: 'inset 2px 2px 5px rgba(0,0,0,0.5)', zIndex: 2 }} />
 
                         {/* Ball */}
-                        <div style={{ width: '18px', height: '18px', background: 'white', borderRadius: '50%', boxShadow: '0 2px 5px rgba(0,0,0,0.3)', zIndex: 2, position: 'relative' }}>
-                            {/* Static Ball remains centered */}
-                            <div style={{ position: 'absolute', inset: 0, background: 'white', borderRadius: '50%' }} />
+                        <div style={{ width: '18px', height: '18px', background: 'white', borderRadius: '50%', boxShadow: '0 2px 5px rgba(0,0,0,0.3)', zIndex: 2, position: 'relative' }} />
 
-                            {/* Animated Simulation Ball */}
-                            {isSimulatingPutt && (
-                                <motion.div
-                                    initial={{ y: 0, x: 0, opacity: 1 }}
-                                    animate={{
-                                        y: -230, // Moves toward hole
-                                        x: gamma * -8, // Curves based on break
-                                        opacity: [1, 1, 0.5, 0] // Fades as it "enters" or passes
-                                    }}
-                                    transition={{
-                                        duration: 2.5,
-                                        ease: "easeOut",
-                                        onComplete: () => setIsSimulatingPutt(false)
-                                    }}
-                                    style={{
-                                        position: 'absolute',
-                                        inset: 0,
-                                        background: '#fbbf24', // Golden trail ball
-                                        borderRadius: '50%',
-                                        boxShadow: '0 0 15px #fbbf24',
-                                        zIndex: 3
-                                    }}
-                                />
-                            )}
+                        {/* Animated Simulation Ball - Sibling to avoid clipping */}
+                        {isSimulatingPutt && (
+                            <motion.div
+                                key="putt-sim"
+                                initial={{ y: 0, x: -aimRotation * 2, scale: 0.8, opacity: 0 }}
+                                animate={{
+                                    y: [0, -110, -220], // Moves toward hole
+                                    x: [-aimRotation * 2, -aimRotation, 0], // Curves from aim back to center (hole)
+                                    scale: [0.8, 1.1, 0.9],
+                                    opacity: [0, 1, 1, 0]
+                                }}
+                                onAnimationComplete={() => setIsSimulatingPutt(false)}
+                                transition={{
+                                    duration: 3,
+                                    times: [0, 0.4, 1],
+                                    ease: "easeInOut"
+                                }}
+                                style={{
+                                    position: 'absolute',
+                                    bottom: '30px',
+                                    width: '18px',
+                                    height: '18px',
+                                    background: 'white',
+                                    borderRadius: '50%',
+                                    boxShadow: '0 0 15px #fbbf24, 0 0 30px rgba(251, 191, 36, 0.6), 0 0 5px white',
+                                    zIndex: 20,
+                                    pointerEvents: 'none',
+                                    border: '2px solid #fbbf24'
+                                }}
+                            />
+                        )}
 
-                            {/* Red Arrow (Aim Line) - Originates from Ball */}
+                        {/* Red Arrow (Aim Line) - Originates from Ball */}
+                        <div style={{
+                            position: 'absolute',
+                            bottom: '50%',
+                            left: '50%',
+                            width: '2px',
+                            height: '180px',
+                            background: 'transparent',
+                            transformOrigin: 'bottom center',
+                            transform: `translateX(-50%) rotate(${aimRotation}deg)`,
+                            transition: 'transform 0.1s ease-out',
+                            zIndex: 1,
+                            pointerEvents: 'none'
+                        }}>
+                            <div style={{
+                                width: '100%',
+                                height: '100%',
+                                background: 'linear-gradient(to top, #ef4444, transparent)',
+                                opacity: 0.8,
+                                position: 'relative'
+                            }}>
+                                {/* Degree indicator on arrow */}
+                                <span style={{
+                                    position: 'absolute',
+                                    top: '20px',
+                                    left: '5px',
+                                    fontSize: '10px',
+                                    color: '#ef4444',
+                                    fontWeight: 'bold',
+                                    background: 'rgba(0,0,0,0.4)',
+                                    padding: '1px 4px',
+                                    borderRadius: '3px',
+                                    transform: `rotate(${-aimRotation}deg)`,
+                                    whiteSpace: 'nowrap'
+                                }}>
+                                    {Math.abs(Math.round(gamma))}° {gamma > 0 ? 'R' : 'L'}
+                                </span>
+                            </div>
+                        </div>
+
+                        {/* Blue Curve (Break Hint) */}
+                        {Math.abs(gamma) > 0.5 && (
                             <div style={{
                                 position: 'absolute',
                                 bottom: '50%',
                                 left: '50%',
-                                width: '2px',
-                                height: '180px',
-                                background: 'transparent',
+                                width: '120px',
+                                height: '200px',
+                                borderLeft: gamma > 0 ? 'none' : '3px solid rgba(59, 130, 246, 0.4)',
+                                borderRight: gamma > 0 ? '3px solid rgba(59, 130, 246, 0.4)' : 'none',
+                                borderRadius: gamma > 0 ? '0 100% 0 0' : '100% 0 0 0',
+                                transform: `translate(-50%, -100%) scaleX(${Math.min(Math.abs(gamma) / 8, 2)})`,
                                 transformOrigin: 'bottom center',
-                                transform: `translateX(-50%) rotate(${aimRotation}deg)`,
-                                transition: 'transform 0.1s ease-out',
-                                zIndex: 1,
-                                pointerEvents: 'none'
-                            }}>
-                                <div style={{
-                                    width: '100%',
-                                    height: '100%',
-                                    background: 'linear-gradient(to top, #ef4444, transparent)',
-                                    opacity: 0.8,
-                                    position: 'relative'
-                                }}>
-                                    {/* Degree indicator on arrow */}
-                                    <span style={{
-                                        position: 'absolute',
-                                        top: '20px',
-                                        left: '5px',
-                                        fontSize: '10px',
-                                        color: '#ef4444',
-                                        fontWeight: 'bold',
-                                        background: 'rgba(0,0,0,0.4)',
-                                        padding: '1px 4px',
-                                        borderRadius: '3px',
-                                        transform: `rotate(${-aimRotation}deg)`,
-                                        whiteSpace: 'nowrap'
-                                    }}>
-                                        {Math.abs(Math.round(gamma))}° {gamma > 0 ? 'R' : 'L'}
-                                    </span>
-                                </div>
-                            </div>
-
-                            {/* Blue Curve (Break Hint) */}
-                            {Math.abs(gamma) > 0.5 && (
-                                <div style={{
-                                    position: 'absolute',
-                                    bottom: '50%',
-                                    left: '50%',
-                                    width: '120px',
-                                    height: '200px',
-                                    borderLeft: gamma > 0 ? 'none' : '3px solid rgba(59, 130, 246, 0.4)',
-                                    borderRight: gamma > 0 ? '3px solid rgba(59, 130, 246, 0.4)' : 'none',
-                                    borderRadius: gamma > 0 ? '0 100% 0 0' : '100% 0 0 0',
-                                    transform: `translate(-50%, -100%) scaleX(${Math.min(Math.abs(gamma) / 8, 2)})`,
-                                    transformOrigin: 'bottom center',
-                                    opacity: 0.7,
-                                    filter: 'blur(1px)'
-                                }} />
-                            )}
-                        </div>
-                    </div>
-
-                    <div style={{ position: 'absolute', top: '20px', right: '20px', display: 'flex', flexDirection: 'column', gap: '10px', alignItems: 'flex-end' }}>
-                        {/* Bubble Level Indicator */}
-                        <div style={{
-                            width: '40px',
-                            height: '40px',
-                            borderRadius: '50%',
-                            background: 'rgba(0,0,0,0.4)',
-                            border: `2px solid ${isLevel ? 'var(--secondary)' : 'rgba(255,255,255,0.2)'}`,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            position: 'relative'
-                        }}>
-                            <div style={{
-                                width: '8px',
-                                height: '8px',
-                                borderRadius: '50%',
-                                background: isLevel ? 'var(--secondary)' : 'white',
-                                boxShadow: isLevel ? '0 0 10px var(--secondary)' : 'none',
-                                transform: `translate(${Math.min(Math.max(gamma * 2, -15), 15)}px, ${Math.min(Math.max(beta * 2, -15), 15)}px)`,
-                                transition: 'all 0.1s ease-out'
+                                opacity: 0.7,
+                                filter: 'blur(1px)'
                             }} />
-                            {/* Level targets */}
-                            <div style={{ position: 'absolute', width: '12px', height: '12px', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '50%' }} />
-                        </div>
-
-                        <button
-                            onClick={calibrate}
-                            className="glass"
-                            style={{
-                                padding: '8px 12px',
-                                fontSize: '10px',
-                                background: isLevel ? 'rgba(163, 230, 53, 0.2)' : 'rgba(255,255,255,0.1)',
-                                color: isLevel ? 'var(--secondary)' : 'var(--text-dim)',
-                                border: isLevel ? '1px solid var(--secondary)' : '1px solid transparent'
-                            }}
-                        >
-                            CALIBRAR
-                        </button>
-
-                        <button
-                            onClick={() => setIsSimulatingPutt(true)}
-                            disabled={isSimulatingPutt}
-                            className="glass"
-                            style={{
-                                padding: '8px 12px',
-                                fontSize: '10px',
-                                background: 'rgba(59, 130, 246, 0.2)',
-                                color: '#60a5fa',
-                                border: '1px solid rgba(59, 130, 246, 0.3)',
-                                opacity: isSimulatingPutt ? 0.5 : 1
-                            }}
-                        >
-                            {isSimulatingPutt ? 'RODANDO...' : 'SIMULAR'}
-                        </button>
+                        )}
                     </div>
-
-                    <div style={{ position: 'absolute', bottom: '20px', left: '20px', background: 'rgba(0,0,0,0.6)', padding: '8px 15px', borderRadius: '20px', fontSize: '12px', display: 'flex', flexDirection: 'column', gap: '2px', borderLeft: `4px solid ${Math.abs(gamma) > 5 ? '#ef4444' : 'var(--secondary)'}` }}>
-                        <span style={{ fontWeight: '800', color: 'white' }}>{getSlopeIntensity(gamma)}</span>
-                        <div style={{ display: 'flex', gap: '10px', opacity: 0.8 }}>
-                            <span>Slope: {Math.abs(Math.round(beta))}°</span>
-                            <span>Break: {Math.abs(Math.round(gamma))}°</span>
-                        </div>
-                    </div>
-
-                    {/* Sensor Activation Overlay */}
-                    {isNearGreen && !sensorsActive && (
-                        <div style={{
-                            position: 'absolute',
-                            inset: 0,
-                            background: 'rgba(0,0,0,0.4)',
-                            backdropFilter: 'blur(2px)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            zIndex: 10
-                        }}>
-                            <button
-                                onClick={requestAccess}
-                                className="glass"
-                                style={{
-                                    padding: '15px 30px',
-                                    background: 'var(--secondary)',
-                                    color: 'var(--primary)',
-                                    fontWeight: 'bold',
-                                    fontSize: '16px',
-                                    boxShadow: '0 0 20px rgba(34, 197, 94, 0.5)'
-                                }}
-                            >
-                                ACTIVAR LECTURA
-                            </button>
-                        </div>
-                    )}
                 </div>
-            </Card>
 
+                <div style={{ position: 'absolute', top: '20px', right: '20px', display: 'flex', flexDirection: 'column', gap: '10px', alignItems: 'flex-end' }}>
+                    {/* Bubble Level Indicator */}
+                    <div style={{
+                        width: '40px',
+                        height: '40px',
+                        borderRadius: '50%',
+                        background: 'rgba(0,0,0,0.4)',
+                        border: `2px solid ${isLevel ? 'var(--secondary)' : 'rgba(255,255,255,0.2)'}`,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        position: 'relative'
+                    }}>
+                        <div style={{
+                            width: '8px',
+                            height: '8px',
+                            borderRadius: '50%',
+                            background: isLevel ? 'var(--secondary)' : 'white',
+                            boxShadow: isLevel ? '0 0 10px var(--secondary)' : 'none',
+                            transform: `translate(${Math.min(Math.max(gamma * 2, -15), 15)}px, ${Math.min(Math.max(beta * 2, -15), 15)}px)`,
+                            transition: 'all 0.1s ease-out'
+                        }} />
+                        {/* Level targets */}
+                        <div style={{ position: 'absolute', width: '12px', height: '12px', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '50%' }} />
+                    </div>
+
+                    <button
+                        onClick={calibrate}
+                        className="glass"
+                        style={{
+                            padding: '8px 12px',
+                            fontSize: '10px',
+                            background: isLevel ? 'rgba(163, 230, 53, 0.2)' : 'rgba(255,255,255,0.1)',
+                            color: isLevel ? 'var(--secondary)' : 'var(--text-dim)',
+                            border: isLevel ? '1px solid var(--secondary)' : '1px solid transparent'
+                        }}
+                    >
+                        CALIBRAR
+                    </button>
+
+                    <button
+                        onClick={() => setIsSimulatingPutt(true)}
+                        disabled={isSimulatingPutt}
+                        className="glass"
+                        style={{
+                            padding: '8px 12px',
+                            fontSize: '10px',
+                            background: 'rgba(59, 130, 246, 0.2)',
+                            color: '#60a5fa',
+                            border: '1px solid rgba(59, 130, 246, 0.3)',
+                            opacity: isSimulatingPutt ? 0.5 : 1
+                        }}
+                    >
+                        {isSimulatingPutt ? 'RODANDO...' : 'SIMULAR'}
+                    </button>
+                </div>
+
+                <div style={{ position: 'absolute', bottom: '20px', left: '20px', background: 'rgba(0,0,0,0.6)', padding: '8px 15px', borderRadius: '20px', fontSize: '12px', display: 'flex', flexDirection: 'column', gap: '2px', borderLeft: `4px solid ${Math.abs(gamma) > 5 ? '#ef4444' : 'var(--secondary)'}` }}>
+                    <span style={{ fontWeight: '800', color: 'white' }}>{getSlopeIntensity(gamma)}</span>
+                    <div style={{ display: 'flex', gap: '10px', opacity: 0.8 }}>
+                        <span>Slope: {Math.abs(Math.round(beta))}°</span>
+                        <span>Caída: {Math.abs(Math.round(gamma))}° {gamma > 0 ? 'Dca' : 'Izq'}</span>
+                    </div>
+                </div>
+
+                {/* Sensor Activation Overlay */}
+                {isNearGreen && !sensorsActive && (
+                    <div style={{
+                        position: 'absolute',
+                        inset: 0,
+                        background: 'rgba(0,0,0,0.4)',
+                        backdropFilter: 'blur(2px)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        zIndex: 10
+                    }}>
+                        <button
+                            onClick={requestAccess}
+                            className="glass"
+                            style={{
+                                padding: '15px 30px',
+                                background: 'var(--secondary)',
+                                color: 'var(--primary)',
+                                fontWeight: 'bold',
+                                fontSize: '16px',
+                                boxShadow: '0 0 20px rgba(34, 197, 94, 0.5)'
+                            }}
+                        >
+                            ACTIVAR LECTURA
+                        </button>
+                    </div>
+                )}
+            </Card>
 
             {/* Top Sheet de Finalización */}
             {showFinishModal && (
@@ -718,7 +721,7 @@ const Round: React.FC = () => {
                         <div style={{
                             width: '40px',
                             height: '4px',
-                            background: 'rgba(255,255,255,0.1)',
+                            background: 'rgba(255, 255, 255, 0.1)',
                             borderRadius: '2px',
                             margin: '20px auto 0'
                         }} />
