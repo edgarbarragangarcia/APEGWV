@@ -7,6 +7,7 @@ export interface WeatherData {
     description: string;
     icon: string;
     wind: number;
+    windDirection?: number;
     humidity: number;
 }
 
@@ -25,7 +26,7 @@ const getConditionFromWMO = (code: number) => {
 export const fetchWeather = async (lat: number, lon: number): Promise<WeatherData> => {
     try {
         const response = await fetch(
-            `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code&wind_speed_unit=kmh`
+            `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,wind_direction_10m,weather_code&wind_speed_unit=kmh`
         );
         const data = await response.json();
         const current = data.current;
@@ -37,6 +38,7 @@ export const fetchWeather = async (lat: number, lon: number): Promise<WeatherDat
             description: weatherInfo.desc,
             icon: weatherInfo.icon,
             wind: Math.round(current.wind_speed_10m),
+            windDirection: current.wind_direction_10m,
             humidity: current.relative_humidity_2m
         };
     } catch (error) {
