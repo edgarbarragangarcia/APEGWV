@@ -17,7 +17,7 @@ const Round: React.FC = () => {
 
     // Hooks
     const { beta, gamma, calibrate } = useGreenReader();
-    const { calculateDistance } = useGeoLocation();
+    const { calculateDistance, error: gpsError, permissionStatus } = useGeoLocation();
 
     // GPS Logic
     // Nota: Como no tenemos las coordenadas exactas de cada hoyo en DB aún, usamos la coordenada del club como proxy TEMPORAL.
@@ -197,14 +197,26 @@ const Round: React.FC = () => {
                     flexDirection: 'column',
                     border: isNearGreen ? '2px solid var(--secondary)' : '2px solid transparent',
                     boxShadow: isNearGreen ? '0 0 30px rgba(163, 230, 53, 0.3)' : 'none',
-                    transition: 'all 0.5s ease'
+                    transition: 'all 0.5s ease',
+                    position: 'relative'
                 }}>
                     <span style={{ fontSize: '12px', color: 'var(--secondary)', fontWeight: '600' }}>
                         {isNearGreen ? 'EN GREEN' : 'CENTER'}
                     </span>
-                    <span style={{ fontSize: '48px', fontWeight: '800' }}>
-                        {distanceToHole || (155 + currentHole * 3)}
-                    </span>
+
+                    {distanceToHole !== null ? (
+                        <span style={{ fontSize: '48px', fontWeight: '800' }}>
+                            {distanceToHole}
+                        </span>
+                    ) : (
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px' }}>
+                            <span style={{ fontSize: '20px', fontWeight: '700', color: permissionStatus === 'denied' ? '#ef4444' : 'var(--text-dim)' }}>
+                                {permissionStatus === 'denied' ? 'Sin Permiso' : 'Buscando...'}
+                            </span>
+                            {gpsError && <span style={{ fontSize: '10px', maxWidth: '80%', textAlign: 'center', color: 'orange' }}>{gpsError}</span>}
+                        </div>
+                    )}
+
                     <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '12px', color: 'var(--text-dim)' }}>
                         <Target size={12} /> {isNearGreen ? 'Detectado' : 'm'}
                     </div>

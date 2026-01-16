@@ -8,6 +8,7 @@ interface Coordinates {
 export const useGeoLocation = () => {
     const [location, setLocation] = useState<Coordinates | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const [permissionStatus, setPermissionStatus] = useState<PermissionState | 'unknown'>('unknown');
 
     useEffect(() => {
         if (!navigator.geolocation) {
@@ -15,21 +16,34 @@ export const useGeoLocation = () => {
             return;
         }
 
+        // Check initial permission status if API is available
+        if (navigator.permissions && navigator.permissions.query) {
+            navigator.permissions.query({ name: 'geolocation' }).then((result) => {
+                setPermissionStatus(result.state);
+                result.onchange = () => {
+                    setPermissionStatus(result.state);
+                };
+            });
+        }
+
         const handleSuccess = (position: GeolocationPosition) => {
             setLocation({
                 latitude: position.coords.latitude,
                 longitude: position.coords.longitude
             });
+            setError(null);
         };
 
         const handleError = (error: GeolocationPositionError) => {
             setError(error.message);
+            // If it's a timeout, try again with lower accuracy?
+            // For now just report error.
         };
 
         const watcher = navigator.geolocation.watchPosition(handleSuccess, handleError, {
-            enableHighAccuracy: true, // Importante para golf (mejora precisión a ~5m)
-            timeout: 20000,
-            maximumAge: 1000
+            enableHighAccuracy: true,
+            timeout: 30000, // Increased to 30s
+            maximumAge: 10000 // Accept positions up to 10s old
         });
 
         return () => navigator.geolocation.clearWatch(watcher);
@@ -53,5 +67,5 @@ export const useGeoLocation = () => {
         return Math.round(R * c);
     };
 
-    return { location, error, calculateDistance };
+    return { location, error, calculateDistance, permissionStatus };
 };
