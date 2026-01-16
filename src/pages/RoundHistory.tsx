@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { supabase } from '../services/SupabaseManager';
 import { ArrowLeft, Calendar, TrendingUp, Loader2, ChevronRight } from 'lucide-react';
 import Card from '../components/Card';
@@ -88,50 +89,82 @@ const RoundHistory: React.FC = () => {
             ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                     {rounds.map((round) => (
-                        <Card
+                        <motion.div
                             key={round.id}
-                            style={{ cursor: 'pointer', marginBottom: 0 }}
-                            onClick={() => navigate(`/rounds/${round.id}`)}
+                            drag="x"
+                            dragConstraints={{ left: -100, right: 0 }}
+                            dragElastic={0.1}
+                            onDragEnd={async (_event, info) => {
+                                if (info.offset.x < -80) {
+                                    // Swipe left to delete
+                                    if (confirm(`¿Eliminar la ronda de ${round.course_name}?`)) {
+                                        try {
+                                            const { error } = await supabase
+                                                .from('rounds')
+                                                .delete()
+                                                .eq('id', round.id);
+
+                                            if (error) throw error;
+
+                                            // Update local state
+                                            setRounds(rounds.filter(r => r.id !== round.id));
+                                        } catch (err) {
+                                            console.error('Error deleting round:', err);
+                                            alert('Error al eliminar la ronda');
+                                        }
+                                    }
+                                }
+                            }}
+                            style={{
+                                position: 'relative',
+                                cursor: 'grab'
+                            }}
+                            whileTap={{ cursor: 'grabbing' }}
                         >
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <div style={{ flex: 1 }}>
-                                    <h3 style={{ fontSize: '16px', marginBottom: '5px' }}>{round.course_name}</h3>
-                                    <p style={{ fontSize: '13px', color: 'var(--text-dim)', marginBottom: '10px' }}>
-                                        {round.course_location} • {new Date(round.date_played).toLocaleDateString('es-ES', {
-                                            day: 'numeric',
-                                            month: 'short',
-                                            year: 'numeric'
-                                        })}
-                                    </p>
-                                    <div style={{ display: 'flex', gap: '15px', fontSize: '13px' }}>
-                                        <div>
-                                            <span style={{ color: 'var(--text-dim)' }}>Score: </span>
-                                            <span style={{ fontWeight: '700', color: 'var(--secondary)' }}>{round.total_score}</span>
-                                        </div>
-                                        {round.first_nine_score && round.second_nine_score && (
+                            <Card
+                                style={{ cursor: 'pointer', marginBottom: 0 }}
+                                onClick={() => navigate(`/rounds/${round.id}`)}
+                            >
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <div style={{ flex: 1 }}>
+                                        <h3 style={{ fontSize: '16px', marginBottom: '5px' }}>{round.course_name}</h3>
+                                        <p style={{ fontSize: '13px', color: 'var(--text-dim)', marginBottom: '10px' }}>
+                                            {round.course_location} • {new Date(round.date_played).toLocaleDateString('es-ES', {
+                                                day: 'numeric',
+                                                month: 'short',
+                                                year: 'numeric'
+                                            })}
+                                        </p>
+                                        <div style={{ display: 'flex', gap: '15px', fontSize: '13px' }}>
                                             <div>
-                                                <span style={{ color: 'var(--text-dim)' }}>Vueltas: </span>
-                                                <span style={{ fontWeight: '600' }}>{round.first_nine_score} / {round.second_nine_score}</span>
+                                                <span style={{ color: 'var(--text-dim)' }}>Score: </span>
+                                                <span style={{ fontWeight: '700', color: 'var(--secondary)' }}>{round.total_score}</span>
+                                            </div>
+                                            {round.first_nine_score && round.second_nine_score && (
+                                                <div>
+                                                    <span style={{ color: 'var(--text-dim)' }}>Vueltas: </span>
+                                                    <span style={{ fontWeight: '600' }}>{round.first_nine_score} / {round.second_nine_score}</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                        {round.status === 'completed' && (
+                                            <div style={{
+                                                background: 'var(--primary-light)',
+                                                padding: '4px 8px',
+                                                borderRadius: '6px',
+                                                fontSize: '11px',
+                                                fontWeight: '600'
+                                            }}>
+                                                Completada
                                             </div>
                                         )}
+                                        <ChevronRight size={20} color="var(--text-dim)" />
                                     </div>
                                 </div>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                    {round.status === 'completed' && (
-                                        <div style={{
-                                            background: 'var(--primary-light)',
-                                            padding: '4px 8px',
-                                            borderRadius: '6px',
-                                            fontSize: '11px',
-                                            fontWeight: '600'
-                                        }}>
-                                            Completada
-                                        </div>
-                                    )}
-                                    <ChevronRight size={20} color="var(--text-dim)" />
-                                </div>
-                            </div>
-                        </Card>
+                            </Card>
+                        </motion.div>
                     ))}
                 </div>
             )}

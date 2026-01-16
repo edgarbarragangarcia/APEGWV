@@ -33,7 +33,9 @@ export interface AIAnalysis {
 
 export const analyzeRound = async (roundData: RoundData): Promise<AIAnalysis> => {
     try {
-        const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+        const model = genAI.getGenerativeModel({
+            model: 'models/gemini-pro'
+        });
 
         const prompt = `
 Analiza esta ronda de golf y proporciona un análisis detallado en español:
@@ -99,7 +101,7 @@ Sé específico, constructivo y enfócate en aspectos prácticos que el jugador 
 
 export const analyzeMultipleRounds = async (rounds: RoundData[]): Promise<string> => {
     try {
-        const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+        const model = genAI.getGenerativeModel({ model: 'models/gemini-pro' });
 
         const prompt = `
 Analiza el progreso de este jugador de golf basándote en sus últimas ${rounds.length} rondas:
