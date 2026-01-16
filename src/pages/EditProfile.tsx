@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../services/SupabaseManager';
-import { Save, Loader2, ArrowLeft } from 'lucide-react';
+import { Save, Loader2, ArrowLeft, Camera, Trash2, Upload } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 
@@ -10,6 +10,7 @@ const EditProfile: React.FC = () => {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
+    const [uploading, setUploading] = useState(false);
     const [formData, setFormData] = useState<{
         full_name: string;
         handicap: string;
@@ -56,6 +57,44 @@ const EditProfile: React.FC = () => {
         fetchUserData();
     }, [navigate]);
 
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setUploading(true);
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) return;
+
+            const fileExt = file.name.split('.').pop();
+            const filePath = `${session.user.id}/${Math.random()}.${fileExt}`;
+
+            // 1. Subir el archivo
+            const { error: uploadError } = await supabase.storage
+                .from('avatars')
+                .upload(filePath, file);
+
+            if (uploadError) throw uploadError;
+
+            // 2. Obtener la URL pública
+            const { data: { publicUrl } } = supabase.storage
+                .from('avatars')
+                .getPublicUrl(filePath);
+
+            setFormData(prev => ({ ...prev, id_photo_url: publicUrl }));
+
+        } catch (error) {
+            console.error('Error uploading avatar:', error);
+            alert('Error al subir la imagen');
+        } finally {
+            setUploading(false);
+        }
+    };
+
+    const handleDeletePhoto = () => {
+        setFormData(prev => ({ ...prev, id_photo_url: '' }));
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setSaving(true);
@@ -78,7 +117,7 @@ const EditProfile: React.FC = () => {
             navigate('/profile');
         } catch (error) {
             console.error('Error updating profile:', error);
-            alert('Error updating profile');
+            alert('Error al guardar los cambios');
         } finally {
             setSaving(false);
         }
@@ -98,6 +137,61 @@ const EditProfile: React.FC = () => {
             </div>
 
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                {/* Foto de Perfil Section */}
+                <div style={{ textAlign: 'center', marginBottom: '10px' }}>
+                    <div style={{ position: 'relative', width: '120px', height: '120px', margin: '0 auto 15px' }}>
+                        <div style={{
+                            width: '100%',
+                            height: '100%',
+                            borderRadius: '30px',
+                            background: 'var(--glass-bg)',
+                            border: '1px solid var(--glass-border)',
+                            overflow: 'hidden',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                        }}>
+                            {formData.id_photo_url ? (
+                                <img
+                                    src={formData.id_photo_url}
+                                    alt="Profile"
+                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                />
+                            ) : (
+                                <Camera size={40} color="var(--text-dim)" />
+                            )}
+                        </div>
+
+                        <label
+                            className="flex-center"
+                            style={{
+                                position: 'absolute',
+                                bottom: '-10px',
+                                right: '-10px',
+                                padding: '10px',
+                                borderRadius: '15px',
+                                background: 'var(--secondary)',
+                                color: 'var(--primary)',
+                                cursor: 'pointer',
+                                boxShadow: '0 4px 10px rgba(0,0,0,0.3)'
+                            }}
+                        >
+                            <input type="file" hidden accept="image/*" onChange={handleFileUpload} />
+                            {uploading ? <Loader2 size={18} className="animate-spin" /> : <Upload size={18} />}
+                        </label>
+                    </div>
+
+                    {formData.id_photo_url && (
+                        <button
+                            type="button"
+                            onClick={handleDeletePhoto}
+                            style={{ fontSize: '12px', color: '#ff4444', display: 'flex', alignItems: 'center', gap: '5px', margin: '0 auto' }}
+                        >
+                            <Trash2 size={12} /> Eliminar foto
+                        </button>
+                    )}
+                </div>
+
                 <div className="form-group">
                     <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', color: 'var(--text-dim)' }}>
                         Nombre Completo
@@ -139,18 +233,6 @@ const EditProfile: React.FC = () => {
                     />
                 </div>
 
-                <div className="form-group">
-                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', color: 'var(--text-dim)' }}>
-                        URL Foto de Perfil
-                    </label>
-                    <input
-                        type="url"
-                        className="glass"
-                        style={{ width: '100%', padding: '15px', borderRadius: '12px', border: 'none', color: 'var(--text)' }}
-                        value={formData.id_photo_url}
-                        onChange={e => setFormData({ ...formData, id_photo_url: e.target.value })}
-                    />
-                </div>
 
                 <button
                     type="submit"
