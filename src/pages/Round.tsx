@@ -1,5 +1,5 @@
 import React from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import Card from '../components/Card';
 import { ChevronLeft, ChevronRight, Target, History } from 'lucide-react';
@@ -10,6 +10,7 @@ import { useGeoLocation } from '../hooks/useGeoLocation';
 
 const Round: React.FC = () => {
     const location = useLocation();
+    const navigate = useNavigate();
     const { course, recorrido } = (location.state as { course?: GolfCourse; recorrido?: string }) || {};
 
     const clubName = course?.club || 'Club de Golf';
@@ -41,6 +42,7 @@ const Round: React.FC = () => {
     // Restauramos estados perdidos
     const [currentHole, setCurrentHole] = React.useState(1);
     const [strokes, setStrokes] = React.useState<Record<number, number>>({});
+    const [isSaving, setIsSaving] = React.useState(false);
 
     const currentStrokes = strokes[currentHole] || 0;
 
@@ -114,6 +116,78 @@ const Round: React.FC = () => {
         if (absG < 3) return g > 0 ? 'CAÍDA LEVE DER' : 'CAÍDA LEVE IZQ';
         if (absG < 6) return g > 0 ? 'CAÍDA MEDIA DER' : 'CAÍDA MEDIA IZQ';
         return g > 0 ? 'CAÍDA FUERTE DER' : 'CAÍDA FUERTE IZQ';
+    };
+
+    const handleFinishRound = async () => {
+        if (isSaving) return;
+
+        setIsSaving(true);
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) {
+                alert('Debes iniciar sesión para guardar tu ronda');
+                setIsSaving(false);
+                return;
+            }
+
+            // Calcular totales
+            const holeNumbers = Object.keys(strokes).map(Number);
+            const totalScore = holeNumbers.reduce((acc, h) => acc + (strokes[h] || 0), 0);
+
+            const firstNine = holeNumbers
+                .filter(h => h >= 1 && h <= 9)
+                .reduce((acc, h) => acc + (strokes[h] || 0), 0);
+
+            const secondNine = holeNumbers
+                .filter(h => h >= 10 && h <= 18)
+                .reduce((acc, h) => acc + (strokes[h] || 0), 0);
+
+            // 1. Insertar Ronda
+            const { data: round, error: roundError } = await supabase
+                .from('rounds')
+                .insert([{
+                    user_id: user.id,
+                    course_name: clubName,
+                    course_location: course?.city || '',
+                    date_played: new Date().toISOString(),
+                    total_score: totalScore,
+                    first_nine_score: firstNine,
+                    second_nine_score: secondNine,
+                    status: 'completed'
+                }])
+                .select()
+                .single();
+
+            if (roundError) throw roundError;
+
+            // 2. Insertar Hoyos (solo los que tienen golpes)
+            if (round && holeNumbers.length > 0) {
+                const holesToInsert = holeNumbers.map(h => ({
+                    round_id: round.id,
+                    hole_number: h,
+                    par: holeData.find(hd => hd.hole_number === h)?.par || 4,
+                    score: strokes[h]
+                }));
+
+                const { error: holesError } = await supabase
+                    .from('round_holes')
+                    .insert(holesToInsert);
+
+                if (holesError) {
+                    console.error('Error saving hole details:', holesError);
+                    // No bloqueamos el flujo principal si los detalles fallan pero la ronda se guardó
+                }
+            }
+
+            // Éxito: vibrar y navegar
+            if (navigator.vibrate) navigator.vibrate([10, 30, 10]);
+            navigate('/rounds');
+
+        } catch (error) {
+            console.error('Error al finalizar ronda:', error);
+            alert('Error al guardar la ronda. Por favor intenta de nuevo.');
+            setIsSaving(false);
+        }
     };
 
     const [showFinishModal, setShowFinishModal] = React.useState(false);
@@ -480,7 +554,8 @@ const Round: React.FC = () => {
                                 Continuar
                             </button>
                             <button
-                                onClick={() => window.history.back()}
+                                onClick={handleFinishRound}
+                                disabled={isSaving}
                                 style={{
                                     padding: '14px',
                                     borderRadius: '14px',
@@ -488,10 +563,15 @@ const Round: React.FC = () => {
                                     color: 'var(--primary)',
                                     fontWeight: '800',
                                     fontSize: '15px',
-                                    boxShadow: '0 4px 15px rgba(163, 230, 53, 0.3)'
+                                    boxShadow: '0 4px 15px rgba(163, 230, 53, 0.3)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '8px',
+                                    opacity: isSaving ? 0.7 : 1
                                 }}
                             >
-                                Finalizar
+                                {isSaving ? 'Guardando...' : 'Finalizar'}
                             </button>
                         </div>
 
