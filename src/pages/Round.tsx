@@ -10,8 +10,28 @@ const Round: React.FC = () => {
 
     const clubName = course?.club || 'Club de Golf';
     const fieldName = recorrido ? `${course?.name} - ${recorrido}` : (course?.name || 'Recorrido Principal');
+    const [currentHole, setCurrentHole] = React.useState(1);
+    const [strokes, setStrokes] = React.useState<Record<number, number>>({});
+
+    const currentStrokes = strokes[currentHole] || 0;
+
+    const handleStrokeChange = (change: number) => {
+        setStrokes(prev => ({
+            ...prev,
+            [currentHole]: Math.max(0, (prev[currentHole] || 0) + change)
+        }));
+    };
+
+    const handleHoleChange = (direction: 'next' | 'prev') => {
+        if (direction === 'next' && currentHole < 18) {
+            setCurrentHole(prev => prev + 1);
+        } else if (direction === 'prev' && currentHole > 1) {
+            setCurrentHole(prev => prev - 1);
+        }
+    };
+
     return (
-        <div className="animate-fade" style={{ maxWidth: '600px', margin: '0 auto' }}>
+        <div className="animate-fade" style={{ maxWidth: '600px', margin: '0 auto', paddingBottom: '100px' }}>
             <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <div style={{ padding: '8px', border: '1px solid var(--glass-border)', borderRadius: '10px' }}>
@@ -33,20 +53,20 @@ const Round: React.FC = () => {
                 padding: '15px 25px',
                 marginBottom: '20px'
             }}>
-                <button><ChevronLeft /></button>
+                <button onClick={() => handleHoleChange('prev')} disabled={currentHole === 1} style={{ opacity: currentHole === 1 ? 0.3 : 1 }}><ChevronLeft /></button>
                 <div style={{ textAlign: 'center' }}>
                     <span style={{ fontSize: '14px', color: 'var(--secondary)', fontWeight: '600' }}>HOYO</span>
-                    <div style={{ fontSize: '32px', fontWeight: '800' }}>4</div>
-                    <span style={{ fontSize: '14px', color: 'var(--text-dim)' }}>Par 4 • Hcp 8</span>
+                    <div style={{ fontSize: '32px', fontWeight: '800' }}>{currentHole}</div>
+                    <span style={{ fontSize: '14px', color: 'var(--text-dim)' }}>Par 4 • Hcp {currentHole + 2}</span>
                 </div>
-                <button><ChevronRight /></button>
+                <button onClick={() => handleHoleChange('next')} disabled={currentHole === 18} style={{ opacity: currentHole === 18 ? 0.3 : 1 }}><ChevronRight /></button>
             </div>
 
             {/* GPS Distances */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr 1fr', gap: '15px', marginBottom: '20px', alignItems: 'center' }}>
                 <div className="glass flex-center" style={{ height: '100px', flexDirection: 'column' }}>
                     <span style={{ fontSize: '11px', color: 'var(--text-dim)' }}>FRONT</span>
-                    <span style={{ fontSize: '24px', fontWeight: '700' }}>142</span>
+                    <span style={{ fontSize: '24px', fontWeight: '700' }}>{140 + currentHole * 2}</span>
                 </div>
 
                 <div className="glass flex-center" style={{
@@ -56,7 +76,7 @@ const Round: React.FC = () => {
                     boxShadow: '0 0 20px rgba(163, 230, 53, 0.2)'
                 }}>
                     <span style={{ fontSize: '12px', color: 'var(--secondary)', fontWeight: '600' }}>CENTER</span>
-                    <span style={{ fontSize: '48px', fontWeight: '800' }}>158</span>
+                    <span style={{ fontSize: '48px', fontWeight: '800' }}>{155 + currentHole * 3}</span>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '12px', color: 'var(--text-dim)' }}>
                         <Target size={12} /> m
                     </div>
@@ -64,7 +84,7 @@ const Round: React.FC = () => {
 
                 <div className="glass flex-center" style={{ height: '100px', flexDirection: 'column' }}>
                     <span style={{ fontSize: '11px', color: 'var(--text-dim)' }}>BACK</span>
-                    <span style={{ fontSize: '24px', fontWeight: '700' }}>171</span>
+                    <span style={{ fontSize: '24px', fontWeight: '700' }}>{170 + currentHole * 4}</span>
                 </div>
             </div>
 
@@ -85,7 +105,7 @@ const Round: React.FC = () => {
                         height: '220px',
                         background: 'rgba(163, 230, 53, 0.2)',
                         borderRadius: '60px',
-                        border: '2px dashed rgba(255,b255,255,0.1)',
+                        border: '2px dashed rgba(255,255,255,0.1)',
                         display: 'flex',
                         flexDirection: 'column',
                         justifyContent: 'space-between',
@@ -101,18 +121,28 @@ const Round: React.FC = () => {
                     </div>
 
                     <div style={{ position: 'absolute', bottom: '20px', left: '20px', background: 'rgba(0,0,0,0.6)', padding: '5px 12px', borderRadius: '20px', fontSize: '12px' }}>
-                        Viento: 12km/h NO
+                        Viento: {10 + (currentHole % 5)}km/h NO
                     </div>
                 </div>
             </Card>
 
             {/* Quick Score */}
             <div style={{ marginTop: '20px' }}>
-                <h3 style={{ fontSize: '16px', marginBottom: '15px' }}>Golpes Hoyo 4</h3>
+                <h3 style={{ fontSize: '16px', marginBottom: '15px' }}>Golpes Hoyo {currentHole}</h3>
                 <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', alignItems: 'center' }}>
-                    <button className="glass" style={{ width: '50px', height: '50px', borderRadius: '50%', fontSize: '24px' }}>-</button>
-                    <div style={{ fontSize: '40px', fontWeight: '700' }}>0</div>
-                    <button className="glass" style={{ width: '50px', height: '50px', borderRadius: '50%', fontSize: '24px', borderColor: 'var(--secondary)' }}>+</button>
+                    <button
+                        onClick={() => handleStrokeChange(-1)}
+                        className="glass"
+                        style={{ width: '50px', height: '50px', borderRadius: '50%', fontSize: '24px', cursor: 'pointer' }}>
+                        -
+                    </button>
+                    <div style={{ fontSize: '40px', fontWeight: '700', minWidth: '40px', textAlign: 'center' }}>{currentStrokes}</div>
+                    <button
+                        onClick={() => handleStrokeChange(1)}
+                        className="glass"
+                        style={{ width: '50px', height: '50px', borderRadius: '50%', fontSize: '24px', borderColor: 'var(--secondary)', color: 'var(--secondary)', cursor: 'pointer' }}>
+                        +
+                    </button>
                 </div>
             </div>
         </div>
