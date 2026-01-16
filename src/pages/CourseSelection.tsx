@@ -148,16 +148,18 @@ const CourseSelection: React.FC = () => {
                                                 onClick={() => handleSelectCourse(course, r)}
                                                 style={{
                                                     flex: 1,
-                                                    background: 'rgba(255,255,255,0.05)',
+                                                    background: 'var(--secondary)',
+                                                    color: 'var(--primary)',
                                                     padding: '12px',
                                                     borderRadius: '12px',
                                                     fontSize: '13px',
-                                                    fontWeight: '600',
+                                                    fontWeight: '700',
                                                     display: 'flex',
                                                     alignItems: 'center',
                                                     justifyContent: 'center',
                                                     gap: '8px',
-                                                    border: '1px solid rgba(255,255,255,0.1)'
+                                                    border: 'none',
+                                                    cursor: 'pointer'
                                                 }}
                                             >
                                                 {r} <ChevronRight size={14} />

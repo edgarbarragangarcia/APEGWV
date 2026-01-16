@@ -1,4 +1,6 @@
-const API_KEY = import.meta.env.VITE_OPENWEATHER_API_KEY || ''; // Reemplazar con clave real
+
+// OpenMeteo no requiere API Key
+const API_KEY = '';
 
 export interface WeatherData {
     temp: number;
@@ -9,33 +11,45 @@ export interface WeatherData {
     humidity: number;
 }
 
+// Mapa simple de códigos WMO a condiciones locales
+const getConditionFromWMO = (code: number) => {
+    if (code === 0) return { condition: 'Despejado', icon: '01d', desc: 'cielo claro' };
+    if (code >= 1 && code <= 3) return { condition: 'Nublado', icon: '03d', desc: 'parcialmente nublado' };
+    if (code >= 45 && code <= 48) return { condition: 'Niebla', icon: '50d', desc: 'bancos de niebla' };
+    if (code >= 51 && code <= 67) return { condition: 'Lluvia', icon: '09d', desc: 'lluvia ligera' };
+    if (code >= 71 && code <= 77) return { condition: 'Nieve', icon: '13d', desc: 'nieve ligera' };
+    if (code >= 80 && code <= 82) return { condition: 'Lluvia', icon: '10d', desc: 'chubascos' };
+    if (code >= 95) return { condition: 'Tormenta', icon: '11d', desc: 'tormenta eléctrica' };
+    return { condition: 'Variable', icon: '02d', desc: 'clima variable' };
+};
+
 export const fetchWeather = async (lat: number, lon: number): Promise<WeatherData> => {
-    // Si no hay API key, devolvemos un mock pero con estructura real
-    if (!API_KEY) {
-        return {
-            temp: 22,
-            condition: 'Nublado',
-            description: 'nubes dispersas',
-            icon: '03d',
-            wind: 12,
-            humidity: 65
-        };
-    }
-
     try {
-        const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric&lang=es`);
+        const response = await fetch(
+            `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code&wind_speed_unit=kmh`
+        );
         const data = await response.json();
+        const current = data.current;
+        const weatherInfo = getConditionFromWMO(current.weather_code);
 
         return {
-            temp: Math.round(data.main.temp),
-            condition: data.weather[0].main,
-            description: data.weather[0].description,
-            icon: data.weather[0].icon,
-            wind: Math.round(data.wind.speed * 3.6), // Convert m/s to km/h
-            humidity: data.main.humidity
+            temp: Math.round(current.temperature_2m),
+            condition: weatherInfo.condition,
+            description: weatherInfo.desc,
+            icon: weatherInfo.icon,
+            wind: Math.round(current.wind_speed_10m),
+            humidity: current.relative_humidity_2m
         };
     } catch (error) {
         console.error('Error fetching weather:', error);
-        throw error;
+        // Fallback gracioso si falla la red
+        return {
+            temp: 20,
+            condition: 'Sin Datos',
+            description: 'no disponible',
+            icon: '03d',
+            wind: 0,
+            humidity: 0
+        };
     }
 };
