@@ -417,72 +417,63 @@ const Round: React.FC = () => {
             </Card>
 
 
-            {/* Bottom Sheet de Finalización */}
+            {/* Top Sheet de Finalización */}
             {showFinishModal && (
                 <div style={{
                     position: 'fixed',
                     inset: 0,
                     zIndex: 1000,
                     display: 'flex',
-                    alignItems: 'flex-end',
-                    background: 'rgba(0,0,0,0.4)',
+                    alignItems: 'flex-start',
+                    background: 'rgba(0,0,0,0.5)',
                     backdropFilter: 'blur(8px)',
                     animation: 'fadeIn 0.2s ease-out'
                 }} onClick={() => setShowFinishModal(false)}>
                     <motion.div
-                        initial={{ y: '100%' }}
+                        initial={{ y: '-100%' }}
                         animate={{ y: 0 }}
-                        exit={{ y: '100%' }}
+                        exit={{ y: '-100%' }}
                         transition={{ type: 'spring', damping: 25, stiffness: 200 }}
                         onClick={(e: React.MouseEvent) => e.stopPropagation()}
                         style={{
                             width: '100%',
-                            background: 'rgba(20, 45, 30, 0.95)',
-                            borderTop: '1px solid rgba(255,255,255,0.1)',
-                            borderTopLeftRadius: '30px',
-                            borderTopRightRadius: '30px',
-                            padding: '30px 25px calc(30px + env(safe-area-inset-bottom))',
-                            boxShadow: '0 -10px 40px rgba(0,0,0,0.5)',
+                            background: 'rgba(20, 45, 30, 0.98)',
+                            borderBottom: '1px solid rgba(255,255,255,0.1)',
+                            borderBottomLeftRadius: '30px',
+                            borderBottomRightRadius: '30px',
+                            padding: 'calc(20px + env(safe-area-inset-top)) 25px 30px',
+                            boxShadow: '0 10px 40px rgba(0,0,0,0.5)',
                             textAlign: 'center'
                         }}
                     >
-                        {/* Pull indicator */}
                         <div style={{
-                            width: '40px',
-                            height: '4px',
-                            background: 'rgba(255,255,255,0.2)',
-                            borderRadius: '2px',
-                            margin: '0 auto 20px'
-                        }} />
-
-                        <div style={{
-                            width: '60px',
-                            height: '60px',
-                            borderRadius: '20px',
+                            width: '50px',
+                            height: '50px',
+                            borderRadius: '15px',
                             background: 'rgba(163, 230, 53, 0.1)',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
                             margin: '0 auto 15px'
                         }}>
-                            <History size={32} color="var(--secondary)" />
+                            <History size={28} color="var(--secondary)" />
                         </div>
 
-                        <h2 style={{ fontSize: '22px', fontWeight: '700', marginBottom: '8px' }}>Finalizar Partida</h2>
-                        <p style={{ fontSize: '15px', color: 'var(--text-dim)', marginBottom: '30px', lineHeight: '1.4' }}>
-                            ¿Estás seguro de que quieres terminar? Tus golpes se guardarán en tu historial de rondas.
+                        <h2 style={{ fontSize: '20px', fontWeight: '700', marginBottom: '8px' }}>¿Finalizar Partida?</h2>
+                        <p style={{ fontSize: '14px', color: 'var(--text-dim)', marginBottom: '25px', lineHeight: '1.4' }}>
+                            Tus golpes se guardarán en el historial.
                         </p>
 
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
                             <button
                                 onClick={() => setShowFinishModal(false)}
                                 style={{
-                                    padding: '16px',
-                                    borderRadius: '16px',
+                                    padding: '14px',
+                                    borderRadius: '14px',
                                     background: 'rgba(255,255,255,0.05)',
                                     color: 'white',
                                     fontWeight: '600',
-                                    fontSize: '16px',
+                                    fontSize: '15px',
                                     border: '1px solid rgba(255,255,255,0.1)'
                                 }}
                             >
@@ -491,18 +482,27 @@ const Round: React.FC = () => {
                             <button
                                 onClick={() => window.history.back()}
                                 style={{
-                                    padding: '16px',
-                                    borderRadius: '16px',
+                                    padding: '14px',
+                                    borderRadius: '14px',
                                     background: 'var(--secondary)',
                                     color: 'var(--primary)',
                                     fontWeight: '800',
-                                    fontSize: '16px',
+                                    fontSize: '15px',
                                     boxShadow: '0 4px 15px rgba(163, 230, 53, 0.3)'
                                 }}
                             >
-                                Sí, Finalizar
+                                Finalizar
                             </button>
                         </div>
+
+                        {/* Drag indicator at bottom for top sheet */}
+                        <div style={{
+                            width: '40px',
+                            height: '4px',
+                            background: 'rgba(255,255,255,0.1)',
+                            borderRadius: '2px',
+                            margin: '20px auto 0'
+                        }} />
                     </motion.div>
                 </div>
             )}
