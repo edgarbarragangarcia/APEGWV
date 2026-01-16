@@ -114,6 +114,9 @@ const EditProfile: React.FC = () => {
             const { error } = await supabase.from('profiles').upsert(updates);
             if (error) throw error;
 
+            // Notificar a otros componentes (como el Navbar) que el perfil cambió
+            window.dispatchEvent(new Event('profile-updated'));
+
             navigate('/profile');
         } catch (error) {
             console.error('Error updating profile:', error);
@@ -236,14 +239,24 @@ const EditProfile: React.FC = () => {
 
                 <button
                     type="submit"
-                    className="primary-button"
                     disabled={saving}
                     style={{
                         marginTop: '20px',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        gap: '10px'
+                        gap: '10px',
+                        padding: '18px',
+                        borderRadius: '16px',
+                        background: 'var(--secondary)',
+                        color: 'var(--primary)',
+                        border: 'none',
+                        fontWeight: '800',
+                        fontSize: '16px',
+                        boxShadow: '0 4px 15px rgba(163, 230, 53, 0.3)',
+                        cursor: saving ? 'not-allowed' : 'pointer',
+                        opacity: saving ? 0.7 : 1,
+                        width: '100%'
                     }}
                 >
                     {saving ? <Loader2 className="animate-spin" size={20} /> : <Save size={20} />}

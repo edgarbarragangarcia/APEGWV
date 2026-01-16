@@ -19,6 +19,10 @@ const Navbar: React.FC = () => {
             }
         };
         fetchProfile();
+
+        // Escuchar actualizaciones del perfil
+        window.addEventListener('profile-updated', fetchProfile);
+        return () => window.removeEventListener('profile-updated', fetchProfile);
     }, []);
     return (
         <nav className="glass-dark" style={{

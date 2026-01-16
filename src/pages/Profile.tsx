@@ -165,18 +165,23 @@ const Profile: React.FC = () => {
 
                 <button
                     onClick={handleLogout}
+                    className="glass"
                     style={{
                         padding: '18px 20px',
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '15px',
-                        color: '#ef4444',
-                        marginTop: '10px',
-                        width: '100%'
+                        justifyContent: 'center',
+                        gap: '12px',
+                        color: '#ff4444',
+                        marginTop: '20px',
+                        width: '100%',
+                        border: '1px solid rgba(255, 68, 68, 0.2)',
+                        background: 'rgba(255, 68, 68, 0.05)',
+                        fontWeight: '700'
                     }}
                 >
                     <LogOut size={20} />
-                    <span style={{ fontWeight: '600' }}>Cerrar Sesión</span>
+                    <span>Cerrar Sesión</span>
                 </button>
             </div>
         </div>
