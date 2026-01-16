@@ -70,11 +70,14 @@ const Home: React.FC = () => {
                         <div style={{ fontSize: '9px', color: '#10b981' }}>Actualizado</div>
                     </div>
                 </Card>
-                <Card style={{ marginBottom: 0, padding: '15px' }}>
+                <Card
+                    style={{ marginBottom: 0, padding: '15px', cursor: 'pointer' }}
+                    onClick={() => navigate('/rounds')}
+                >
                     <div style={{ textAlign: 'center' }}>
                         <span style={{ fontSize: '10px', color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '1px' }}>Rondas</span>
                         <div style={{ fontSize: '24px', fontWeight: '800', margin: '2px 0' }}>{stats?.total_rounds || '0'}</div>
-                        <div style={{ fontSize: '9px', color: 'var(--text-dim)' }}>Temporada</div>
+                        <div style={{ fontSize: '9px', color: 'var(--secondary)' }}>Ver Historial →</div>
                     </div>
                 </Card>
             </div>

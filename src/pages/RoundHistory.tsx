@@ -1,0 +1,146 @@
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { supabase } from '../services/SupabaseManager';
+import { ArrowLeft, Calendar, TrendingUp, Loader2, ChevronRight } from 'lucide-react';
+import Card from '../components/Card';
+
+interface Round {
+    id: string;
+    course_name: string;
+    course_location: string;
+    date_played: string;
+    total_score: number;
+    first_nine_score?: number;
+    second_nine_score?: number;
+    status: string;
+}
+
+const RoundHistory: React.FC = () => {
+    const navigate = useNavigate();
+    const [loading, setLoading] = useState(true);
+    const [rounds, setRounds] = useState<Round[]>([]);
+
+    useEffect(() => {
+        const fetchRounds = async () => {
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                if (!session) {
+                    navigate('/auth');
+                    return;
+                }
+
+                const { data, error } = await supabase
+                    .from('rounds')
+                    .select('*')
+                    .eq('user_id', session.user.id)
+                    .order('date_played', { ascending: false });
+
+                if (error) throw error;
+                setRounds(data || []);
+            } catch (err) {
+                console.error('Error fetching rounds:', err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchRounds();
+    }, [navigate]);
+
+    if (loading) {
+        return <div className="flex-center" style={{ height: '70vh' }}><Loader2 className="animate-spin" /></div>;
+    }
+
+    return (
+        <div className="animate-fade">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '30px' }}>
+                <button onClick={() => navigate('/')} style={{ background: 'none', border: 'none', color: 'var(--text)' }}>
+                    <ArrowLeft size={24} />
+                </button>
+                <h1 style={{ fontSize: '24px', margin: 0 }}>Historial de Rondas</h1>
+            </div>
+
+            {rounds.length === 0 ? (
+                <Card>
+                    <div style={{ textAlign: 'center', padding: '40px 20px' }}>
+                        <Calendar size={48} color="var(--text-dim)" style={{ margin: '0 auto 20px' }} />
+                        <h3 style={{ marginBottom: '10px' }}>No hay rondas registradas</h3>
+                        <p style={{ color: 'var(--text-dim)', marginBottom: '20px' }}>
+                            Comienza a registrar tus rondas para ver tu progreso
+                        </p>
+                        <button
+                            onClick={() => navigate('/select-course')}
+                            className="primary-button"
+                        >
+                            Iniciar Nueva Ronda
+                        </button>
+                    </div>
+                </Card>
+            ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                    {rounds.map((round) => (
+                        <Card
+                            key={round.id}
+                            style={{ cursor: 'pointer', marginBottom: 0 }}
+                            onClick={() => navigate(`/rounds/${round.id}`)}
+                        >
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <div style={{ flex: 1 }}>
+                                    <h3 style={{ fontSize: '16px', marginBottom: '5px' }}>{round.course_name}</h3>
+                                    <p style={{ fontSize: '13px', color: 'var(--text-dim)', marginBottom: '10px' }}>
+                                        {round.course_location} • {new Date(round.date_played).toLocaleDateString('es-ES', {
+                                            day: 'numeric',
+                                            month: 'short',
+                                            year: 'numeric'
+                                        })}
+                                    </p>
+                                    <div style={{ display: 'flex', gap: '15px', fontSize: '13px' }}>
+                                        <div>
+                                            <span style={{ color: 'var(--text-dim)' }}>Score: </span>
+                                            <span style={{ fontWeight: '700', color: 'var(--secondary)' }}>{round.total_score}</span>
+                                        </div>
+                                        {round.first_nine_score && round.second_nine_score && (
+                                            <div>
+                                                <span style={{ color: 'var(--text-dim)' }}>Vueltas: </span>
+                                                <span style={{ fontWeight: '600' }}>{round.first_nine_score} / {round.second_nine_score}</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                    {round.status === 'completed' && (
+                                        <div style={{
+                                            background: 'var(--primary-light)',
+                                            padding: '4px 8px',
+                                            borderRadius: '6px',
+                                            fontSize: '11px',
+                                            fontWeight: '600'
+                                        }}>
+                                            Completada
+                                        </div>
+                                    )}
+                                    <ChevronRight size={20} color="var(--text-dim)" />
+                                </div>
+                            </div>
+                        </Card>
+                    ))}
+                </div>
+            )}
+
+            {rounds.length > 0 && (
+                <div style={{ marginTop: '30px', textAlign: 'center' }}>
+                    <button
+                        onClick={() => navigate('/select-course')}
+                        className="primary-button"
+                        style={{ width: '100%' }}
+                    >
+                        <TrendingUp size={18} />
+                        Iniciar Nueva Ronda
+                    </button>
+                </div>
+            )}
+        </div>
+    );
+};
+
+export default RoundHistory;

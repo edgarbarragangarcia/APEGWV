@@ -7,9 +7,10 @@ interface CardProps {
     subtitle?: string;
     className?: string;
     style?: React.CSSProperties;
+    onClick?: () => void;
 }
 
-const Card: React.FC<CardProps> = ({ children, title, subtitle, className = '', style }) => {
+const Card: React.FC<CardProps> = ({ children, title, subtitle, className = '', style, onClick }) => {
     return (
         <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -17,6 +18,7 @@ const Card: React.FC<CardProps> = ({ children, title, subtitle, className = '', 
             viewport={{ once: true }}
             className={`glass ${className}`}
             style={{ padding: '20px', marginBottom: '20px', ...style }}
+            onClick={onClick}
         >
             {(title || subtitle) && (
                 <div style={{ marginBottom: '15px' }}>
