@@ -1,17 +1,48 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Search, Filter, Plus, Heart } from 'lucide-react';
+import { Search, Filter, Heart, Loader2 } from 'lucide-react';
+import { supabase } from '../services/SupabaseManager';
 
-const products = [
-    { id: 1, name: 'TaylorMade Stealth 2 Driver', price: 450, category: 'Palos', image: 'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?auto=format&fit=crop&q=80&w=400', condition: 'Nuevo' },
-    { id: 2, name: 'Titleist Pro V1 (12pk)', price: 55, category: 'Bolas', image: 'https://images.unsplash.com/photo-1593118247619-e2d6f056869e?auto=format&fit=crop&q=80&w=400', condition: 'Nuevo' },
-    { id: 3, name: 'Bushnell Phantom 2 GPS', price: 120, category: 'Accesorios', image: 'https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?auto=format&fit=crop&q=80&w=400', condition: 'Usado' },
-    { id: 4, name: 'Nike Air Zoom Victory Tour', price: 180, category: 'Ropa', image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&q=80&w=400', condition: 'Nuevo' },
-];
+interface Product {
+    id: string;
+    name: string;
+    price: number;
+    category: string;
+    image_url: string;
+    condition?: string;
+}
 
 const Shop: React.FC = () => {
     const [activeTab, setActiveTab] = useState('Todo');
     const [searchQuery, setSearchQuery] = useState('');
+    const [products, setProducts] = useState<Product[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchProducts = async () => {
+            try {
+                const { data, error } = await supabase
+                    .from('products')
+                    .select('*');
+
+                if (error) throw error;
+
+                // Map the results to our interface if needed
+                const mappedProducts = (data || []).map(p => ({
+                    ...p,
+                    price: parseFloat(p.price)
+                }));
+
+                setProducts(mappedProducts);
+            } catch (err) {
+                console.error('Error fetching products:', err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchProducts();
+    }, []);
 
     const filteredProducts = products.filter(product => {
         const matchesCategory = activeTab === 'Todo' || product.category === activeTab;
@@ -20,25 +51,15 @@ const Shop: React.FC = () => {
         return matchesCategory && matchesSearch;
     });
 
+    if (loading) {
+        return <div className="flex-center" style={{ height: '70vh' }}><Loader2 className="animate-spin" /></div>;
+    }
+
     return (
         <div className="animate-fade">
-            <header style={{ marginBottom: '25px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-                <div>
-                    <h1 style={{ fontSize: '28px' }}>Marketplace</h1>
-                    <p style={{ color: 'var(--text-dim)' }}>Equipamiento premium de la comunidad</p>
-                </div>
-                <button style={{
-                    background: 'var(--secondary)',
-                    color: 'var(--primary)',
-                    width: '50px',
-                    height: '50px',
-                    borderRadius: '15px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                }}>
-                    <Plus size={24} />
-                </button>
+            <header style={{ marginBottom: '25px' }}>
+                <h1 style={{ fontSize: '28px' }}>Marketplace</h1>
+                <p style={{ color: 'var(--text-dim)' }}>Equipamiento premium de la comunidad</p>
             </header>
 
             {/* Search Bar */}
@@ -69,7 +90,7 @@ const Shop: React.FC = () => {
 
             {/* Filter Tabs */}
             <div style={{ display: 'flex', gap: '10px', marginBottom: '25px', overflowX: 'auto', paddingBottom: '10px' }}>
-                {['Todo', 'Palos', 'Bolas', 'Ropa', 'Accesorios', 'Libros'].map(tab => (
+                {['Todo', 'Palos', 'Balls', 'Clothing', 'Accessories'].map(tab => (
                     <button
                         key={tab}
                         onClick={() => setActiveTab(tab)}
@@ -84,7 +105,7 @@ const Shop: React.FC = () => {
                             whiteSpace: 'nowrap'
                         }}
                     >
-                        {tab}
+                        {tab === 'Balls' ? 'Bolas' : tab === 'Clothing' ? 'Ropa' : tab === 'Accessories' ? 'Accesorios' : tab}
                     </button>
                 ))}
             </div>
@@ -100,7 +121,7 @@ const Shop: React.FC = () => {
                     >
                         <div style={{ position: 'relative' }}>
                             <img
-                                src={product.image}
+                                src={product.image_url}
                                 alt={product.name}
                                 style={{ width: '100%', height: '160px', objectFit: 'cover', borderRadius: '12px' }}
                             />
@@ -115,23 +136,27 @@ const Shop: React.FC = () => {
                             }}>
                                 <Heart size={16} color="white" />
                             </button>
-                            <div style={{
-                                position: 'absolute',
-                                bottom: '10px',
-                                left: '10px',
-                                background: 'var(--primary)',
-                                padding: '4px 10px',
-                                borderRadius: '6px',
-                                fontSize: '10px',
-                                fontWeight: '600'
-                            }}>
-                                {product.condition}
-                            </div>
+                            {product.condition && (
+                                <div style={{
+                                    position: 'absolute',
+                                    bottom: '10px',
+                                    left: '10px',
+                                    background: 'var(--primary)',
+                                    padding: '4px 10px',
+                                    borderRadius: '6px',
+                                    fontSize: '10px',
+                                    fontWeight: '600'
+                                }}>
+                                    {product.condition}
+                                </div>
+                            )}
                         </div>
                         <div style={{ padding: '12px 5px 5px' }}>
                             <h4 style={{ fontSize: '14px', marginBottom: '5px', height: '40px', overflow: 'hidden' }}>{product.name}</h4>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <span style={{ fontSize: '18px', fontWeight: '700', color: 'var(--secondary)' }}>{product.price}€</span>
+                                <span style={{ fontSize: '18px', fontWeight: '700', color: 'var(--secondary)' }}>
+                                    {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(product.price)}
+                                </span>
                                 <span style={{ fontSize: '11px', color: 'var(--text-dim)' }}>{product.category}</span>
                             </div>
                         </div>

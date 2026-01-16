@@ -4,18 +4,12 @@ import Card from '../components/Card';
 import { Play, ArrowRight, Loader2, Heart } from 'lucide-react';
 import { supabase } from '../services/SupabaseManager';
 
-const FEATURED_PRODUCTS = [
-    { id: 1, name: 'TaylorMade Stealth 2', price: 450, category: 'Drivers', image: 'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?auto=format&fit=crop&q=80&w=400', condition: 'Nuevo' },
-    { id: 2, name: 'Titleist Pro V1', price: 55, category: 'Bolas', image: 'https://images.unsplash.com/photo-1593118247619-e2d6f056869e?auto=format&fit=crop&q=80&w=400', condition: 'Top Ventas' },
-    { id: 3, name: 'Bushnell Phantom 2', price: 120, category: 'GPS', image: 'https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?auto=format&fit=crop&q=80&w=400', condition: 'Oferta' },
-    { id: 4, name: 'Nike Air Zoom', price: 180, category: 'Calzado', image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&q=80&w=400', condition: 'Nuevo' },
-];
-
 const Home: React.FC = () => {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
     const [profile, setProfile] = useState<any>(null);
     const [roundCount, setRoundCount] = useState<number>(0);
+    const [featuredProducts, setFeaturedProducts] = useState<any[]>([]);
 
     useEffect(() => {
         const fetchHomeData = async () => {
@@ -42,6 +36,20 @@ const Home: React.FC = () => {
 
                 if (!countError) {
                     setRoundCount(count || 0);
+                }
+
+                // Fetch Featured Products
+                const { data: productsData } = await supabase
+                    .from('products')
+                    .select('*')
+                    .order('created_at', { ascending: false })
+                    .limit(4);
+
+                if (productsData) {
+                    setFeaturedProducts(productsData.map(p => ({
+                        ...p,
+                        price: parseFloat(p.price)
+                    })));
                 }
             } catch (err) {
                 console.error('Error fetching home data:', err);
@@ -97,7 +105,7 @@ const Home: React.FC = () => {
             >
                 <div style={{ position: 'relative', zIndex: 1 }}>
                     <h2 style={{ fontSize: '20px', marginBottom: '10px' }}>Partida en curso</h2>
-                    <p style={{ fontSize: '14px', color: 'rgba(255,b255,255,0.7)', marginBottom: '20px' }}>Club de Golf La Moraleja • Hoyo 4</p>
+                    <p style={{ fontSize: '14px', color: 'rgba(255,b255,b255,0.7)', marginBottom: '20px' }}>Club de Golf La Moraleja • Hoyo 4</p>
                     <button
                         onClick={() => navigate('/select-course')}
                         style={{
@@ -129,59 +137,70 @@ const Home: React.FC = () => {
             <div style={{ marginBottom: '30px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
                     <h3 style={{ fontSize: '18px' }}>Marketplace</h3>
-                    <button style={{ color: 'var(--secondary)', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                    <button
+                        onClick={() => navigate('/shop')}
+                        style={{ background: 'none', border: 'none', color: 'var(--secondary)', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer' }}
+                    >
                         Ver todo <ArrowRight size={14} />
                     </button>
                 </div>
                 <div style={{ display: 'flex', gap: '15px', overflowX: 'auto', paddingBottom: '15px', scrollSnapType: 'x mandatory' }}>
-                    {FEATURED_PRODUCTS.map((product) => (
-                        <div key={product.id} className="glass" style={{
-                            minWidth: '160px',
-                            width: '160px',
-                            padding: '10px',
-                            scrollSnapAlign: 'start',
-                            position: 'relative',
-                            overflow: 'hidden'
-                        }}>
-                            <div style={{ position: 'relative', marginBottom: '10px' }}>
-                                <img
-                                    src={product.image}
-                                    alt={product.name}
-                                    style={{ width: '100%', height: '120px', objectFit: 'cover', borderRadius: '10px' }}
-                                />
-                                <div style={{
-                                    position: 'absolute',
-                                    top: '5px',
-                                    right: '5px',
-                                    background: 'rgba(0,0,0,0.5)',
-                                    borderRadius: '50%',
-                                    padding: '5px',
-                                    backdropFilter: 'blur(4px)'
-                                }}>
-                                    <Heart size={12} color="white" />
+                    {featuredProducts.length > 0 ? (
+                        featuredProducts.map((product) => (
+                            <div key={product.id} className="glass" style={{
+                                minWidth: '160px',
+                                width: '160px',
+                                padding: '10px',
+                                scrollSnapAlign: 'start',
+                                position: 'relative',
+                                overflow: 'hidden'
+                            }}>
+                                <div style={{ position: 'relative', marginBottom: '10px' }}>
+                                    <img
+                                        src={product.image_url}
+                                        alt={product.name}
+                                        style={{ width: '100%', height: '120px', objectFit: 'cover', borderRadius: '10px' }}
+                                    />
+                                    <div style={{
+                                        position: 'absolute',
+                                        top: '5px',
+                                        right: '5px',
+                                        background: 'rgba(0,0,0,0.5)',
+                                        borderRadius: '50%',
+                                        padding: '5px',
+                                        backdropFilter: 'blur(4px)'
+                                    }}>
+                                        <Heart size={12} color="white" />
+                                    </div>
+                                    {product.condition && (
+                                        <div style={{
+                                            position: 'absolute',
+                                            bottom: '5px',
+                                            left: '5px',
+                                            background: 'var(--primary)',
+                                            color: 'var(--bg-dark)',
+                                            fontSize: '9px',
+                                            fontWeight: '700',
+                                            padding: '2px 6px',
+                                            borderRadius: '4px',
+                                            textTransform: 'uppercase'
+                                        }}>
+                                            {product.condition}
+                                        </div>
+                                    )}
                                 </div>
-                                <div style={{
-                                    position: 'absolute',
-                                    bottom: '5px',
-                                    left: '5px',
-                                    background: 'var(--primary)',
-                                    color: 'var(--bg-dark)',
-                                    fontSize: '9px',
-                                    fontWeight: '700',
-                                    padding: '2px 6px',
-                                    borderRadius: '4px',
-                                    textTransform: 'uppercase'
-                                }}>
-                                    {product.condition}
+                                <h4 style={{ fontSize: '13px', marginBottom: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{product.name}</h4>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <span style={{ fontSize: '10px', color: 'var(--text-dim)' }}>{product.category}</span>
+                                    <span style={{ fontSize: '14px', fontWeight: '700', color: 'var(--secondary)' }}>
+                                        {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(product.price)}
+                                    </span>
                                 </div>
                             </div>
-                            <h4 style={{ fontSize: '13px', marginBottom: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{product.name}</h4>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <span style={{ fontSize: '10px', color: 'var(--text-dim)' }}>{product.category}</span>
-                                <span style={{ fontSize: '14px', fontWeight: '700', color: 'var(--secondary)' }}>{product.price}€</span>
-                            </div>
-                        </div>
-                    ))}
+                        ))
+                    ) : (
+                        <div style={{ color: 'var(--text-dim)', fontSize: '14px', padding: '20px 0' }}>No hay productos destacados aún.</div>
+                    )}
                 </div>
             </div>
 

@@ -3,9 +3,9 @@ import Card from '../components/Card';
 import { Calendar, Users, MapPin } from 'lucide-react';
 
 const tournaments = [
-    { id: 1, name: 'Copa Primavera 2024', date: '15 Abr', club: 'Golf Santander', participants: '84/100', status: 'Inscripciones Abiertas', price: '75€' },
-    { id: 2, name: 'Open Amateur Madrid', date: '22 Abr', club: 'Real Club Vereda', participants: '120/120', status: 'Lista de Espera', price: '90€' },
-    { id: 3, name: 'Torneo Benéfico APEG', date: '05 May', club: 'La Herrería', participants: '45/150', status: 'Inscripciones Abiertas', price: '120€' },
+    { id: 1, name: 'Copa Primavera 2024', date: '15 Abr', club: 'Golf Santander', participants: '84/100', status: 'Inscripciones Abiertas', price: '$ 350.000' },
+    { id: 2, name: 'Open Amateur Madrid', date: '22 Abr', club: 'Real Club Vereda', participants: '120/120', status: 'Lista de Espera', price: '$ 450.000' },
+    { id: 3, name: 'Torneo Benéfico APEG', date: '05 May', club: 'La Herrería', participants: '45/150', status: 'Inscripciones Abiertas', price: '$ 600.000' },
 ];
 
 const Tournaments: React.FC = () => {

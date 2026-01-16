@@ -72,7 +72,9 @@ const Caddies: React.FC = () => {
 
                             <div style={{ marginTop: '15px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <div>
-                                    <span style={{ fontSize: '20px', fontWeight: '700', color: 'var(--secondary)' }}>{caddie.price}€</span>
+                                    <span style={{ fontSize: '20px', fontWeight: '700', color: 'var(--secondary)' }}>
+                                        {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(caddie.price)}
+                                    </span>
                                     <span style={{ fontSize: '12px', color: 'var(--text-dim)' }}> / ronda</span>
                                 </div>
                                 <div style={{ display: 'flex', gap: '10px' }}>
