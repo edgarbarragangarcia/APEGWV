@@ -15,12 +15,14 @@ const CourseSelection: React.FC = () => {
 
     const zones = ['Todas', 'Bogotá', 'Antioquia', 'Valle', 'Costa', 'Santanderes', 'Eje Cafetero', 'Centro'];
 
-    const { calculateDistance } = useGeoLocation();
+    const { calculateDistance, location, refreshLocation, permissionStatus } = useGeoLocation();
 
     const sortedCourses = [...COLOMBIAN_COURSES].map(course => ({
         ...course,
         distance: calculateDistance(course.lat, course.lon)
     })).sort((a, b) => {
+        // Si no hay distancia (location no cargada), mantenemos orden original (alfabético por club)
+        if (a.distance === null && b.distance === null) return a.club.localeCompare(b.club);
         if (a.distance === null) return 1;
         if (b.distance === null) return -1;
         return a.distance - b.distance;
@@ -34,10 +36,11 @@ const CourseSelection: React.FC = () => {
     });
 
     useEffect(() => {
-        // Cargar clima para los primeros cursos visibles o todos (cuidado con limites de API)
+        // Cargar clima para los primeros cursos visibles
         const loadWeather = async () => {
             const weatherMap: Record<string, WeatherData> = {};
-            for (const course of COLOMBIAN_COURSES.slice(0, 10)) { // Limitar a los 10 primeros para no saturar
+            // Usamos COLOMBIAN_COURSES directamente para evitar re-triggers en el loop de clima
+            for (const course of COLOMBIAN_COURSES.slice(0, 10)) {
                 try {
                     const data = await fetchWeather(course.lat, course.lon);
                     weatherMap[course.id] = data;
@@ -51,16 +54,38 @@ const CourseSelection: React.FC = () => {
     }, []);
 
     const handleSelectCourse = (course: GolfCourse, recorrido?: string) => {
-        // En una app real persistiríamos esto en el contexto o localStorage
         navigate('/round', { state: { course, recorrido } });
     };
 
     return (
         <div className="animate-fade" style={{ paddingBottom: '100px' }}>
-            <header style={{ marginBottom: '25px' }}>
-                <h1 style={{ fontSize: '28px', marginBottom: '8px' }}>Selecciona tu Campo</h1>
-                <p style={{ color: 'var(--text-dim)' }}>Listado oficial de clubes en Colombia</p>
+            <header style={{ marginBottom: '25px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div>
+                    <h1 style={{ fontSize: '28px', marginBottom: '4px' }}>Selecciona tu Campo</h1>
+                    <p style={{ color: 'var(--text-dim)', fontSize: '14px' }}>Listado oficial de clubes en Colombia</p>
+                </div>
+                <button
+                    onClick={() => refreshLocation()}
+                    className="glass"
+                    style={{
+                        padding: '10px',
+                        borderRadius: '12px',
+                        background: 'rgba(163, 230, 53, 0.1)',
+                        border: '1px solid rgba(163, 230, 53, 0.2)',
+                        color: 'var(--secondary)'
+                    }}
+                    title="Actualizar ubicación"
+                >
+                    <Navigation size={20} />
+                </button>
             </header>
+
+            {/* Status Indicator */}
+            {!location && permissionStatus === 'granted' && (
+                <div style={{ marginBottom: '15px', padding: '10px', background: 'rgba(59, 130, 246, 0.1)', borderRadius: '10px', fontSize: '12px', color: '#60a5fa', textAlign: 'center' }}>
+                    Obteniendo ubicación precisa...
+                </div>
+            )}
 
             {/* Search and Filters */}
             <div style={{ position: 'sticky', top: 'var(--header-height)', zIndex: 10, background: 'var(--primary)', padding: '10px 0' }}>
@@ -124,7 +149,7 @@ const CourseSelection: React.FC = () => {
                                             <>
                                                 <span style={{ margin: '0 5px' }}>•</span>
                                                 <span style={{ color: 'var(--secondary)', fontWeight: '600' }}>
-                                                    {(course.distance / 1000).toFixed(1)} km
+                                                    {course.distance > 1000 ? `${(course.distance / 1000).toFixed(1)} km` : `${course.distance} m`}
                                                 </span>
                                             </>
                                         )}
@@ -209,6 +234,24 @@ const CourseSelection: React.FC = () => {
                         </div>
                     </div>
                 ))}
+            </div>
+
+            {/* Debug Info at bottom */}
+            <div style={{ marginTop: '40px', padding: '20px', background: 'rgba(0,0,0,0.2)', borderRadius: '15px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                <h4 style={{ fontSize: '12px', color: 'var(--text-dim)', marginBottom: '10px', textTransform: 'uppercase' }}>Depuración GPS</h4>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', fontSize: '11px' }}>
+                    <div>Latitud: <span style={{ color: 'white' }}>{location?.latitude?.toFixed(5) || '---'}</span></div>
+                    <div>Longitud: <span style={{ color: 'white' }}>{location?.longitude?.toFixed(5) || '---'}</span></div>
+                    <div>Estado Permiso: <span style={{ color: 'var(--secondary)' }}>{permissionStatus.toUpperCase()}</span></div>
+                </div>
+                {!location && (
+                    <button
+                        onClick={() => refreshLocation()}
+                        style={{ marginTop: '10px', width: '100%', padding: '8px', background: 'rgba(255,255,255,0.05)', color: 'white', borderRadius: '8px', fontSize: '11px' }}
+                    >
+                        Forzar obtención de ubicación
+                    </button>
+                )}
             </div>
         </div>
     );

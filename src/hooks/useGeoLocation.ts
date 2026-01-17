@@ -16,6 +16,7 @@ export const useGeoLocation = () => {
         if (!navigator.geolocation || watcherRef.current !== null) return;
 
         const handleSuccess = (position: GeolocationPosition) => {
+            console.log('GPS Updated:', position.coords.latitude, position.coords.longitude);
             setLocation({
                 latitude: position.coords.latitude,
                 longitude: position.coords.longitude
@@ -26,7 +27,7 @@ export const useGeoLocation = () => {
         };
 
         const handleError = (error: GeolocationPositionError) => {
-            console.error('GPS Error:', error);
+            console.error('GPS Watch Error:', error);
             setError(error.message);
             setIsRequesting(false);
             if (error.code === error.PERMISSION_DENIED) {
@@ -36,27 +37,54 @@ export const useGeoLocation = () => {
 
         watcherRef.current = navigator.geolocation.watchPosition(handleSuccess, handleError, {
             enableHighAccuracy: true,
-            timeout: 15000,
-            maximumAge: 0
+            timeout: 20000,
+            maximumAge: 5000 // Aceptamos hasta 5 segundos de antigüedad para rapidez
         });
     };
 
-    useEffect(() => {
-        // Only check permission status on mount, don't trigger anything
-        if (navigator.permissions && navigator.permissions.query) {
-            navigator.permissions.query({ name: 'geolocation' as any }).then((result) => {
-                setPermissionStatus(result.state);
-                if (result.state === 'granted') {
-                    startWatching();
+    const getInitialLocation = () => {
+        if (!navigator.geolocation) return;
+
+        navigator.geolocation.getCurrentPosition(
+            (pos) => {
+                setLocation({
+                    latitude: pos.coords.latitude,
+                    longitude: pos.coords.longitude
+                });
+                setPermissionStatus('granted');
+                startWatching();
+            },
+            (err) => {
+                console.error('Initial GPS fetch failed:', err);
+                if (err.code === err.PERMISSION_DENIED) {
+                    setPermissionStatus('denied');
                 }
-                result.onchange = () => {
+            },
+            { enableHighAccuracy: true, timeout: 10000 }
+        );
+    };
+
+    useEffect(() => {
+        // Intento directo de obtener ubicación y permisos
+        if (navigator.permissions && navigator.permissions.query) {
+            navigator.permissions.query({ name: 'geolocation' as any })
+                .then((result) => {
                     setPermissionStatus(result.state);
-                    if (result.state === 'granted') startWatching();
-                };
-            }).catch(() => {
-                // Fallback for browsers with permissions API but issues
-                setPermissionStatus('unknown');
-            });
+                    if (result.state === 'granted') {
+                        getInitialLocation();
+                    }
+                    result.onchange = () => {
+                        setPermissionStatus(result.state);
+                        if (result.state === 'granted') getInitialLocation();
+                    };
+                })
+                .catch(() => {
+                    // Fallback para navegadores sin Permissions API robusto
+                    getInitialLocation();
+                });
+        } else {
+            // Fallback total (móviles antiguos/ciertos webviews)
+            getInitialLocation();
         }
 
         return () => {
@@ -93,7 +121,6 @@ export const useGeoLocation = () => {
         setIsRequesting(true);
         setError(null);
 
-        // Force a query with a direct call - this is what triggers the system prompt
         navigator.geolocation.getCurrentPosition(
             (pos) => {
                 setLocation({
@@ -101,7 +128,8 @@ export const useGeoLocation = () => {
                     longitude: pos.coords.longitude
                 });
                 setPermissionStatus('granted');
-                startWatching(); // Once granted, start watching
+                setIsRequesting(false);
+                startWatching();
             },
             (err) => {
                 console.error('Manual request failed:', err);
@@ -111,9 +139,17 @@ export const useGeoLocation = () => {
                     setPermissionStatus('denied');
                 }
             },
-            { enableHighAccuracy: true, timeout: 10000 }
+            { enableHighAccuracy: true, timeout: 15000 }
         );
     };
 
-    return { location, error, calculateDistance, permissionStatus, requestPermission, isRequesting };
+    return {
+        location,
+        error,
+        calculateDistance,
+        permissionStatus,
+        requestPermission,
+        refreshLocation: requestPermission, // Alias para claridad
+        isRequesting
+    };
 };
