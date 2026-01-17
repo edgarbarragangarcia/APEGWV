@@ -10,7 +10,6 @@ import './index.css';
 const Home = lazy(() => import('./pages/Home'));
 const Round = lazy(() => import('./pages/Round'));
 const Shop = lazy(() => import('./pages/Shop'));
-const Caddies = lazy(() => import('./pages/Caddies'));
 const Tournaments = lazy(() => import('./pages/Tournaments'));
 const Profile = lazy(() => import('./pages/Profile'));
 const Auth = lazy(() => import('./pages/Auth'));
@@ -77,7 +76,6 @@ const App: React.FC = () => {
                   <Route path="/round" element={<Round />} />
                   <Route path="/select-course" element={<CourseSelection />} />
                   <Route path="/shop" element={<Shop />} />
-                  <Route path="/caddies" element={<Caddies />} />
                   <Route path="/tournaments" element={<Tournaments />} />
                   <Route path="/profile" element={<Profile />} />
                   <Route path="/profile/edit" element={<EditProfile />} />
