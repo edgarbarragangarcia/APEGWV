@@ -5,6 +5,7 @@ import { COLOMBIAN_COURSES } from '../data/courses';
 import type { GolfCourse } from '../data/courses';
 import { fetchWeather } from '../services/WeatherService';
 import type { WeatherData } from '../services/WeatherService';
+import { useGeoLocation } from '../hooks/useGeoLocation';
 
 const CourseSelection: React.FC = () => {
     const navigate = useNavigate();
@@ -14,7 +15,18 @@ const CourseSelection: React.FC = () => {
 
     const zones = ['Todas', 'Bogotá', 'Antioquia', 'Valle', 'Costa', 'Santanderes', 'Eje Cafetero', 'Centro'];
 
-    const filteredCourses = COLOMBIAN_COURSES.filter(course => {
+    const { calculateDistance } = useGeoLocation();
+
+    const sortedCourses = [...COLOMBIAN_COURSES].map(course => ({
+        ...course,
+        distance: calculateDistance(course.lat, course.lon)
+    })).sort((a, b) => {
+        if (a.distance === null) return 1;
+        if (b.distance === null) return -1;
+        return a.distance - b.distance;
+    });
+
+    const filteredCourses = sortedCourses.filter(course => {
         const matchesSearch = course.club.toLowerCase().includes(searchQuery.toLowerCase()) ||
             course.city.toLowerCase().includes(searchQuery.toLowerCase());
         const matchesZone = selectedZone === 'Todas' || course.zone === selectedZone;
@@ -108,6 +120,14 @@ const CourseSelection: React.FC = () => {
                                     <h3 style={{ fontSize: '18px', marginBottom: '4px' }}>{course.club}</h3>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: 'var(--text-dim)', fontSize: '13px' }}>
                                         <MapPin size={14} /> {course.city}, {course.zone}
+                                        {course.distance !== null && (
+                                            <>
+                                                <span style={{ margin: '0 5px' }}>•</span>
+                                                <span style={{ color: 'var(--secondary)', fontWeight: '600' }}>
+                                                    {(course.distance / 1000).toFixed(1)} km
+                                                </span>
+                                            </>
+                                        )}
                                     </div>
                                 </div>
 
