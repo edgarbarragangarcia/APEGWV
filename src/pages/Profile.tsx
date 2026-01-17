@@ -64,7 +64,7 @@ const Profile: React.FC = () => {
 
     const menuItems = [
         { icon: Shield, label: 'Datos de la Federación', extra: profile?.federation_code || 'No vinculado', onClick: () => navigate('/profile/edit') },
-        { icon: ShoppingBag, label: 'Mis Ventas', extra: 'Sin activos' },
+        { icon: ShoppingBag, label: 'Mi tienda', extra: 'Panel Vendedor', onClick: () => navigate('/my-store') },
         { icon: CreditCard, label: 'Métodos de Pago', extra: 'Configurar' },
         { icon: Mail, label: 'Correo Electrónico', extra: profile?.email || 'No configurado' },
         { icon: Phone, label: 'Teléfono Celular', extra: profile?.phone || 'No configurado' },

@@ -20,6 +20,7 @@ const RoundHistory = lazy(() => import('./pages/RoundHistory'));
 const RoundDetail = lazy(() => import('./pages/RoundDetail'));
 const EditRound = lazy(() => import('./pages/EditRound'));
 const Settings = lazy(() => import('./pages/Settings'));
+const MyStore = lazy(() => import('./pages/MyStore'));
 
 const App: React.FC = () => {
   const [session, setSession] = useState<Session | null>(null);
@@ -80,6 +81,7 @@ const App: React.FC = () => {
                   <Route path="/tournaments" element={<Tournaments />} />
                   <Route path="/profile" element={<Profile />} />
                   <Route path="/settings" element={<Settings />} />
+                  <Route path="/my-store" element={<MyStore />} />
                   <Route path="/profile/edit" element={<EditProfile />} />
                   <Route path="/profile/stats" element={<EditStats />} />
                   <Route path="/rounds" element={<RoundHistory />} />
