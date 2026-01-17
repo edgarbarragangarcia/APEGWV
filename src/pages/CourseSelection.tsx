@@ -15,7 +15,7 @@ const CourseSelection: React.FC = () => {
 
     const zones = ['Todas', 'Bogotá', 'Antioquia', 'Valle', 'Costa', 'Santanderes', 'Eje Cafetero', 'Centro'];
 
-    const { calculateDistance } = useGeoLocation();
+    const { calculateDistance, requestPermission: askGpsPermission, location: userLocation, isRequesting: gpsLoading } = useGeoLocation();
 
     const sortedCourses = [...COLOMBIAN_COURSES].map(course => ({
         ...course,
@@ -109,6 +109,45 @@ const CourseSelection: React.FC = () => {
                     ))}
                 </div>
             </div>
+
+            {/* GPS Activation CTA */}
+            {!userLocation && (
+                <div style={{ marginTop: '20px' }}>
+                    <div className="glass" style={{
+                        padding: '20px',
+                        background: 'linear-gradient(135deg, rgba(163, 230, 53, 0.1), rgba(255, 255, 255, 0.05))',
+                        border: '1px solid rgba(163, 230, 53, 0.3)',
+                        textAlign: 'center',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: '12px'
+                    }}>
+                        <Navigation size={32} color="var(--secondary)" />
+                        <div>
+                            <h2 style={{ fontSize: '18px', marginBottom: '4px' }}>Campos cercanos a ti</h2>
+                            <p style={{ fontSize: '13px', color: 'var(--text-dim)' }}>Habilita tu ubicación para ver los clubes más cercanos primero.</p>
+                        </div>
+                        <button
+                            onClick={askGpsPermission}
+                            disabled={gpsLoading}
+                            className="glass"
+                            style={{
+                                background: 'var(--secondary)',
+                                color: 'var(--primary)',
+                                padding: '10px 20px',
+                                borderRadius: '15px',
+                                fontWeight: '700',
+                                fontSize: '14px',
+                                width: 'auto',
+                                opacity: gpsLoading ? 0.7 : 1
+                            }}
+                        >
+                            {gpsLoading ? 'SOLICITANDO...' : 'HABILITAR UBICACIÓN'}
+                        </button>
+                    </div>
+                </div>
+            )}
 
             {/* Course List */}
             <div style={{ marginTop: '20px', display: 'flex', flexDirection: 'column', gap: '15px' }}>

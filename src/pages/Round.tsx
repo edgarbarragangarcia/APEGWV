@@ -73,7 +73,14 @@ const Round: React.FC = () => {
                 } else if (data && data.length > 0) {
                     setHoleData(data);
                 } else {
-                    console.warn('No hole data found in DB');
+                    console.info('Hole data fallback: Standard Par 72 layout generated');
+                    // Fallback: Standard Par 72 layout (4 par 3s, 4 par 5s, 10 par 4s)
+                    const par72 = [4, 4, 3, 5, 4, 4, 3, 4, 5, 4, 4, 3, 5, 4, 4, 3, 4, 5];
+                    setHoleData(par72.map((p, i) => ({
+                        hole_number: i + 1,
+                        par: p,
+                        handicap: i + 1
+                    })));
                 }
             } catch (err) {
                 console.error(err);
