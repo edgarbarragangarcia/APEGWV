@@ -21,7 +21,7 @@ const Round: React.FC = () => {
 
     // Hooks
     const { beta, gamma, calibrate, requestAccess, isLevel, hasData: sensorsActive } = useGreenReader();
-    const { calculateDistance, error: gpsError, permissionStatus } = useGeoLocation();
+    const { calculateDistance, error: gpsError, requestPermission: askGpsPermission } = useGeoLocation();
 
     // Manual sensor activation override
     const [forceSensors, setForceSensors] = React.useState(false);
@@ -342,16 +342,30 @@ const Round: React.FC = () => {
                             {distanceToHole}
                         </span>
                     ) : (
-                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px' }}>
-                            <span style={{ fontSize: '20px', fontWeight: '700', color: permissionStatus === 'denied' ? '#ef4444' : 'var(--text-dim)' }}>
-                                {permissionStatus === 'denied' ? 'Sin Permiso' : 'Buscando...'}
-                            </span>
-                            {gpsError && <span style={{ fontSize: '10px', maxWidth: '80%', textAlign: 'center', color: 'orange' }}>{gpsError}</span>}
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+                            <button
+                                onClick={askGpsPermission}
+                                className="glass"
+                                style={{
+                                    padding: '8px 15px',
+                                    background: 'var(--secondary)',
+                                    color: 'var(--primary)',
+                                    fontWeight: '800',
+                                    fontSize: '12px',
+                                    border: 'none',
+                                    borderRadius: '10px',
+                                    boxShadow: '0 4px 15px rgba(163, 230, 53, 0.3)'
+                                }}
+                            >
+                                HABILITAR GPS
+                            </button>
+                            {gpsError && <span style={{ fontSize: '10px', maxWidth: '80%', textAlign: 'center', color: '#f87171' }}>Error: GPS no activo</span>}
                         </div>
                     )}
 
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '12px', color: 'var(--text-dim)' }}>
-                        <Target size={12} /> {distanceToHole !== null ? ' m (GPS)' : 'Localizando...'}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '12px', color: 'var(--text-dim)', marginTop: '5px' }}>
+                        <Target size={12} color={distanceToHole !== null ? 'var(--secondary)' : 'var(--text-dim)'} />
+                        <span>{distanceToHole !== null ? ' m (En vivo)' : 'Esperando GPS'}</span>
                     </div>
                 </div>
 

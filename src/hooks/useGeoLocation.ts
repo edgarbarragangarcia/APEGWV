@@ -67,5 +67,27 @@ export const useGeoLocation = () => {
         return Math.round(R * c);
     };
 
-    return { location, error, calculateDistance, permissionStatus };
+    const requestPermission = () => {
+        if (!navigator.geolocation) return;
+
+        // This force-triggers the native prompt if it hasn't been shown
+        navigator.geolocation.getCurrentPosition(
+            (pos) => {
+                setLocation({
+                    latitude: pos.coords.latitude,
+                    longitude: pos.coords.longitude
+                });
+                setPermissionStatus('granted');
+            },
+            (err) => {
+                setError(err.message);
+                if (err.code === err.PERMISSION_DENIED) {
+                    setPermissionStatus('denied');
+                }
+            },
+            { enableHighAccuracy: true }
+        );
+    };
+
+    return { location, error, calculateDistance, permissionStatus, requestPermission };
 };
