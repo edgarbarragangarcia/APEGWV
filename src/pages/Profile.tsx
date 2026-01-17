@@ -68,7 +68,7 @@ const Profile: React.FC = () => {
         { icon: CreditCard, label: 'Métodos de Pago', extra: 'Configurar' },
         { icon: Mail, label: 'Correo Electrónico', extra: profile?.email || 'No configurado' },
         { icon: Phone, label: 'Teléfono Celular', extra: profile?.phone || 'No configurado' },
-        { icon: Settings, label: 'Configuración', extra: '', onClick: () => navigate('/profile/edit') },
+        { icon: Settings, label: 'Configuración', extra: '', onClick: () => navigate('/settings') },
     ];
 
     return (

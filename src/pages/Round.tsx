@@ -21,7 +21,7 @@ const Round: React.FC = () => {
 
     // Hooks
     const { beta, gamma, calibrate, requestAccess, isLevel, hasData: sensorsActive } = useGreenReader();
-    const { calculateDistance, error: gpsError, requestPermission: askGpsPermission, isRequesting: gpsLoading } = useGeoLocation();
+    const { calculateDistance } = useGeoLocation();
 
     // Manual sensor activation override
     const [forceSensors, setForceSensors] = React.useState(false);
@@ -350,30 +350,9 @@ const Round: React.FC = () => {
                         </span>
                     ) : (
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
-                            <button
-                                onClick={askGpsPermission}
-                                disabled={gpsLoading}
-                                className="glass"
-                                style={{
-                                    padding: '8px 15px',
-                                    background: gpsLoading ? 'rgba(163, 230, 53, 0.2)' : 'var(--secondary)',
-                                    color: 'var(--primary)',
-                                    fontWeight: '800',
-                                    fontSize: '12px',
-                                    border: 'none',
-                                    borderRadius: '10px',
-                                    boxShadow: '0 4px 15px rgba(163, 230, 53, 0.3)',
-                                    opacity: gpsLoading ? 0.7 : 1,
-                                    cursor: gpsLoading ? 'wait' : 'pointer'
-                                }}
-                            >
-                                {gpsLoading ? 'SOLICITANDO...' : 'HABILITAR GPS'}
-                            </button>
-                            {gpsError && (
-                                <span style={{ fontSize: '9px', maxWidth: '120px', textAlign: 'center', color: '#f87171', background: 'rgba(248, 113, 113, 0.1)', padding: '2px 8px', borderRadius: '4px' }}>
-                                    {gpsError.includes('denied') ? 'Permiso denegado' : 'GPS inactivo'}
-                                </span>
-                            )}
+                            <span style={{ fontSize: '10px', color: 'var(--text-dim)' }}>
+                                ESPERANDO GPS...
+                            </span>
                         </div>
                     )}
 
