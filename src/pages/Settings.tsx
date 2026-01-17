@@ -43,9 +43,15 @@ const Settings: React.FC = () => {
             },
             (err) => {
                 console.error(err);
-                setGpsStatus('denied');
+                // Handle timeout specifically to allow retry
+                if (err.code === err.TIMEOUT) {
+                    setGpsStatus('prompt');
+                } else {
+                    setGpsStatus('denied');
+                }
                 setIsRequesting(null);
-            }
+            },
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
         );
     };
 
@@ -137,6 +143,12 @@ const Settings: React.FC = () => {
                             >
                                 {isRequesting === 'gps' ? 'SOLICITANDO...' : gpsStatus === 'granted' ? 'PERMISO CONCEDIDO' : 'SOLICITAR PERMISO'}
                             </button>
+
+                            {gpsStatus === 'denied' && (
+                                <p style={{ fontSize: '11px', color: '#ef4444', marginTop: '10px', textAlign: 'center' }}>
+                                    ⚠️ Permiso bloqueado. Ve a Ajustes del Celular &gt; Safari/Chrome &gt; Ubicación y actívalo.
+                                </p>
+                            )}
                         </div>
 
                         {/* Sensors Setting */}
@@ -172,6 +184,12 @@ const Settings: React.FC = () => {
                             >
                                 {isRequesting === 'sensors' ? 'SOLICITANDO...' : sensorsStatus === 'granted' ? 'PERMISO CONCEDIDO' : 'SOLICITAR PERMISO'}
                             </button>
+
+                            {sensorsStatus === 'denied' && (
+                                <p style={{ fontSize: '11px', color: '#ef4444', marginTop: '10px', textAlign: 'center' }}>
+                                    ⚠️ iOS requiere permiso. Si lo denegaste, debes recargar la página o habilitar "Acceso a movimiento y orientación" en Ajustes &gt; Safari.
+                                </p>
+                            )}
                         </div>
                     </div>
                 </section>
