@@ -172,36 +172,51 @@ const Shop: React.FC = () => {
                         {filteredProducts.map(product => (
                             <Card
                                 key={product.id}
-                                style={{ overflow: 'hidden', padding: '20px' }}
+                                style={{ overflow: 'hidden', padding: 0 }}
                             >
                                 <div style={{ position: 'relative' }}>
                                     <img
                                         src={product.image_url}
                                         alt={product.name}
-                                        style={{ width: '100%', height: '160px', objectFit: 'cover', borderRadius: '12px' }}
+                                        style={{ width: '100%', height: '160px', objectFit: 'cover', borderRadius: '0' }}
                                     />
                                     {product.condition && (
                                         <div style={{
                                             position: 'absolute',
                                             bottom: '10px',
                                             left: '10px',
-                                            background: 'var(--primary)',
+                                            background: 'rgba(0,0,0,0.6)',
+                                            backdropFilter: 'blur(4px)',
                                             padding: '4px 10px',
                                             borderRadius: '6px',
                                             fontSize: '10px',
-                                            fontWeight: '600'
+                                            fontWeight: '600',
+                                            color: 'white'
                                         }}>
                                             {product.condition}
                                         </div>
                                     )}
                                 </div>
-                                <div style={{ padding: '12px 5px 5px' }}>
-                                    <h4 style={{ fontSize: '14px', marginBottom: '5px', height: '40px', overflow: 'hidden' }}>{product.name}</h4>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                        <span style={{ fontSize: '18px', fontWeight: '700', color: 'var(--secondary)' }}>
+                                <div style={{ padding: '15px' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                                        <h4 style={{ fontSize: '16px', fontWeight: '700', lineHeight: '1.2', flex: 1, marginRight: '8px' }}>
+                                            {product.name}
+                                        </h4>
+                                        <div style={{
+                                            background: 'rgba(163, 230, 53, 0.1)',
+                                            color: 'var(--secondary)',
+                                            padding: '4px 8px',
+                                            borderRadius: '8px',
+                                            fontSize: '11px',
+                                            fontWeight: '700',
+                                            whiteSpace: 'nowrap'
+                                        }}>
                                             {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(product.price)}
-                                        </span>
-                                        <span style={{ fontSize: '11px', color: 'var(--text-dim)' }}>{product.category}</span>
+                                        </div>
+                                    </div>
+
+                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                        <span style={{ fontSize: '12px', color: 'var(--text-dim)' }}>{product.category}</span>
                                     </div>
                                 </div>
                             </Card>
