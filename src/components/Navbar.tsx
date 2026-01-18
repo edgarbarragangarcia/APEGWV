@@ -87,7 +87,10 @@ const Navbar: React.FC = () => {
                             </video>
                         </div>
                     </div>
-                    <span style={{ fontSize: '20px', fontWeight: '700', letterSpacing: '1px' }}>APEG</span>
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <span style={{ fontSize: '20px', fontWeight: '700', letterSpacing: '1px', lineHeight: '1.2' }}>APEG</span>
+                        <span style={{ fontSize: '10px', fontWeight: '500', color: 'var(--text-dim)', letterSpacing: '0.5px', marginTop: '-2px' }}>Amor Por El Golf</span>
+                    </div>
                 </Link>
             </div>
 
