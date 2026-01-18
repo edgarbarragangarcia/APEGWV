@@ -83,7 +83,7 @@ const Navbar: React.FC = () => {
                                     transformOrigin: '5% 48%'
                                 }}
                             >
-                                <source src="/gif/watermarked-4f9c0c88-80ff-4880-9dd5-4ccce3509025.MP4" type="video/mp4" />
+                                <source src="https://drqyvhwgnuvrcmwthwwn.supabase.co/storage/v1/object/public/video/watermarked-4f9c0c88-80ff-4880-9dd5-4ccce3509025.MP4" type="video/mp4" />
                             </video>
                         </div>
                     </div>
