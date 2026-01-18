@@ -8,11 +8,39 @@ const Navbar: React.FC = () => {
     const videoRef = React.useRef<HTMLVideoElement>(null);
 
     useEffect(() => {
-        if (videoRef.current) {
-            videoRef.current.play().catch(error => {
-                console.log("Video autoplay failed:", error);
-            });
-        }
+        const video = videoRef.current;
+        if (!video) return;
+
+        // Force muted at DOM level (sometimes React prop is not enough for autoplay)
+        video.muted = true;
+        video.defaultMuted = true;
+
+        const attemptPlay = () => {
+            if (video.paused) {
+                video.play().catch(error => {
+                    console.log("Autoplay blocked, waiting for interaction:", error);
+                });
+            }
+        };
+
+        attemptPlay();
+        video.addEventListener('loadeddata', attemptPlay);
+
+        // Fallback: Play on first touch/click anywhere to bypass mobile restrictions
+        const unlock = () => {
+            attemptPlay();
+            window.removeEventListener('touchstart', unlock);
+            window.removeEventListener('click', unlock);
+        };
+
+        window.addEventListener('touchstart', unlock);
+        window.addEventListener('click', unlock);
+
+        return () => {
+            video.removeEventListener('loadeddata', attemptPlay);
+            window.removeEventListener('touchstart', unlock);
+            window.removeEventListener('click', unlock);
+        };
     }, []);
 
     useEffect(() => {
