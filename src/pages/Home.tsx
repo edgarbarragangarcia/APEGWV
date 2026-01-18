@@ -144,7 +144,7 @@ const Home: React.FC = () => {
                         Ver todo <ArrowRight size={14} />
                     </button>
                 </div>
-                <div style={{ display: 'flex', gap: '15px', overflowX: 'auto', paddingBottom: '15px', scrollSnapType: 'x mandatory' }}>
+                <div style={{ display: 'flex', gap: '15px', overflowX: 'auto', padding: '20px 0 20px', scrollSnapType: 'x mandatory' }}>
                     {featuredProducts.length > 0 ? (
                         featuredProducts.map((product) => (
                             <Card
