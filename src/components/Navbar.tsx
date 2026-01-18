@@ -5,6 +5,15 @@ import { supabase } from '../services/SupabaseManager';
 
 const Navbar: React.FC = () => {
     const [profile, setProfile] = useState<any>(null);
+    const videoRef = React.useRef<HTMLVideoElement>(null);
+
+    useEffect(() => {
+        if (videoRef.current) {
+            videoRef.current.play().catch(error => {
+                console.log("Video autoplay failed:", error);
+            });
+        }
+    }, []);
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -60,16 +69,18 @@ const Navbar: React.FC = () => {
                             justifyContent: 'center'
                         }}>
                             <video
+                                ref={videoRef}
                                 autoPlay
                                 loop
                                 muted
                                 playsInline
+                                preload="auto"
                                 style={{
                                     width: '150%',
                                     height: '100%',
                                     objectFit: 'cover',
                                     transform: 'scale(2.0)',
-                                    transformOrigin: '15% 50%'
+                                    transformOrigin: '5% 48%'
                                 }}
                             >
                                 <source src="/gif/watermarked-4f9c0c88-80ff-4880-9dd5-4ccce3509025.MP4" type="video/mp4" />
