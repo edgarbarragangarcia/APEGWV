@@ -251,29 +251,30 @@ const MyStore: React.FC = () => {
 
     return (
         <div className="animate-fade">
-            {/* Header simplified for Tab View - Back button removed */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
-                <h2 style={{ fontSize: '20px', fontWeight: '700' }}>Gestión de Productos</h2>
-                {!showForm && (
-                    <button
-                        onClick={() => setShowForm(true)}
-                        style={{
-                            background: 'var(--secondary)',
-                            color: 'var(--primary)',
-                            padding: '8px 16px',
-                            borderRadius: '20px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '8px',
-                            fontWeight: '700',
-                            fontSize: '13px'
-                        }}
-                    >
-                        <Plus size={18} />
-                        <span>Nuevo Producto</span>
-                    </button>
-                )}
-            </div>
+            <h2 style={{ fontSize: '20px', fontWeight: '700', marginBottom: '15px' }}>Gestión de Productos</h2>
+
+            {!showForm && (
+                <button
+                    onClick={() => setShowForm(true)}
+                    style={{
+                        background: 'var(--secondary)',
+                        color: 'var(--primary)',
+                        padding: '12px',
+                        borderRadius: '15px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '8px',
+                        fontWeight: '700',
+                        fontSize: '14px',
+                        width: '100%',
+                        marginBottom: '20px'
+                    }}
+                >
+                    <Plus size={18} />
+                    <span>Nuevo Producto</span>
+                </button>
+            )}
 
             {showForm ? (
                 <form onSubmit={handleSubmit} className="glass" style={{ padding: '25px', marginBottom: '30px' }}>
