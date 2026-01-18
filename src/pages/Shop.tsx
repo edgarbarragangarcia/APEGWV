@@ -168,7 +168,7 @@ const Shop: React.FC = () => {
                     </div>
 
                     {/* Product Grid */}
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '20px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
                         {filteredProducts.map(product => (
                             <Card
                                 key={product.id}
@@ -198,18 +198,20 @@ const Shop: React.FC = () => {
                                     )}
                                 </div>
                                 <div style={{ padding: '15px' }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
-                                        <h4 style={{ fontSize: '16px', fontWeight: '700', lineHeight: '1.2', flex: 1, marginRight: '8px' }}>
-                                            {product.name}
-                                        </h4>
+                                    <h4 style={{ fontSize: '16px', fontWeight: '700', lineHeight: '1.2', marginBottom: '8px' }}>
+                                        {product.name}
+                                    </h4>
+
+                                    <div style={{ marginBottom: '8px' }}>
                                         <div style={{
                                             background: 'rgba(163, 230, 53, 0.1)',
                                             color: 'var(--secondary)',
                                             padding: '4px 8px',
                                             borderRadius: '8px',
-                                            fontSize: '11px',
+                                            fontSize: '14px',
                                             fontWeight: '700',
-                                            whiteSpace: 'nowrap'
+                                            whiteSpace: 'nowrap',
+                                            display: 'inline-block'
                                         }}>
                                             {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(product.price)}
                                         </div>

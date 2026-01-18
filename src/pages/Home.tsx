@@ -156,12 +156,36 @@ const Home: React.FC = () => {
                                         </div>
                                     )}
                                 </div>
-                                <h4 style={{ fontSize: '13px', marginBottom: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{product.name}</h4>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <span style={{ fontSize: '10px', color: 'var(--text-dim)' }}>{product.category}</span>
-                                    <span style={{ fontSize: '14px', fontWeight: '700', color: 'var(--secondary)' }}>
-                                        {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(product.price)}
-                                    </span>
+                                <div style={{ padding: '10px 0 0 0', display: 'flex', flexDirection: 'column' }}>
+                                    <h4 style={{
+                                        fontSize: '14px',
+                                        fontWeight: '700',
+                                        marginBottom: '6px',
+                                        whiteSpace: 'nowrap',
+                                        overflow: 'hidden',
+                                        textOverflow: 'ellipsis'
+                                    }}>
+                                        {product.name}
+                                    </h4>
+
+                                    <div style={{ marginBottom: '6px' }}>
+                                        <div style={{
+                                            background: 'rgba(163, 230, 53, 0.1)',
+                                            color: 'var(--secondary)',
+                                            padding: '2px 8px',
+                                            borderRadius: '6px',
+                                            fontSize: '12px',
+                                            fontWeight: '700',
+                                            whiteSpace: 'nowrap',
+                                            display: 'inline-block'
+                                        }}>
+                                            {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(product.price)}
+                                        </div>
+                                    </div>
+
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <span style={{ fontSize: '10px', color: 'var(--text-dim)' }}>{product.category}</span>
+                                    </div>
                                 </div>
                             </Card>
                         ))
