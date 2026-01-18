@@ -25,6 +25,7 @@ const MyStore = lazy(() => import('./pages/MyStore'));
 
 const GreenFee = lazy(() => import('./pages/GreenFee'));
 const CourseReservation = lazy(() => import('./pages/CourseReservation'));
+const MyReservations = lazy(() => import('./pages/MyReservations'));
 
 const App: React.FC = () => {
   const [session, setSession] = useState<Session | null>(null);
@@ -82,7 +83,8 @@ const App: React.FC = () => {
                   <Route path="/round" element={<Round />} />
                   <Route path="/select-course" element={<CourseSelection />} />
                   <Route path="/green-fee" element={<GreenFee />} />
-                  <Route path="/green-fee/:id" element={<CourseReservation />} />
+                  <Route path="/green-fee/:courseId" element={<CourseReservation />} />
+                  <Route path="/my-reservations" element={<MyReservations />} />
                   <Route path="/shop" element={<Shop />} />
                   <Route path="/tournaments" element={<Tournaments />} />
                   <Route path="/profile" element={<Profile />} />

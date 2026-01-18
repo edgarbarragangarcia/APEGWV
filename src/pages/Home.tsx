@@ -95,44 +95,6 @@ const Home: React.FC = () => {
                 </Card>
             </div>
 
-            {/* Active Round CTA */}
-            <Card
-                style={{
-                    background: 'linear-gradient(135deg, var(--primary-light), var(--primary))',
-                    position: 'relative',
-                    overflow: 'hidden'
-                }}
-            >
-                <div style={{ position: 'relative', zIndex: 1 }}>
-                    <h2 style={{ fontSize: '20px', marginBottom: '10px' }}>Partida en curso</h2>
-                    <p style={{ fontSize: '14px', color: 'rgba(255,b255,b255,0.7)', marginBottom: '20px' }}>Club de Golf La Moraleja • Hoyo 4</p>
-                    <button
-                        onClick={() => navigate('/select-course')}
-                        style={{
-                            background: 'var(--secondary)',
-                            color: 'var(--primary)',
-                            padding: '12px 25px',
-                            borderRadius: '12px',
-                            fontWeight: '600',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '10px'
-                        }}
-                    >
-                        <Play size={18} fill="currentColor" /> Reanudar GPS
-                    </button>
-                </div>
-                <div style={{
-                    position: 'absolute',
-                    right: '-20px',
-                    bottom: '-20px',
-                    opacity: 0.2,
-                    transform: 'rotate(-15deg)'
-                }}>
-                    <Compass size={120} color="white" />
-                </div>
-            </Card>
-
             {/* Market Categories */}
             <div style={{ marginBottom: '30px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
@@ -208,6 +170,44 @@ const Home: React.FC = () => {
                     )}
                 </div>
             </div>
+
+            {/* Active Round CTA */}
+            <Card
+                style={{
+                    background: 'linear-gradient(135deg, var(--primary-light), var(--primary))',
+                    position: 'relative',
+                    overflow: 'hidden'
+                }}
+            >
+                <div style={{ position: 'relative', zIndex: 1 }}>
+                    <h2 style={{ fontSize: '20px', marginBottom: '10px' }}>Partida en curso</h2>
+                    <p style={{ fontSize: '14px', color: 'rgba(255,b255,b255,0.7)', marginBottom: '20px' }}>Club de Golf La Moraleja • Hoyo 4</p>
+                    <button
+                        onClick={() => navigate('/select-course')}
+                        style={{
+                            background: 'var(--secondary)',
+                            color: 'var(--primary)',
+                            padding: '12px 25px',
+                            borderRadius: '12px',
+                            fontWeight: '600',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '10px'
+                        }}
+                    >
+                        <Play size={18} fill="currentColor" /> Reanudar GPS
+                    </button>
+                </div>
+                <div style={{
+                    position: 'absolute',
+                    right: '-20px',
+                    bottom: '-20px',
+                    opacity: 0.2,
+                    transform: 'rotate(-15deg)'
+                }}>
+                    <Compass size={120} color="white" />
+                </div>
+            </Card>
 
             {/* Featured Caddies / Tournaments */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '15px' }}>
