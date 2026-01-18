@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Search, Filter, Heart, Loader2, Store, ShoppingBag } from 'lucide-react';
+import { Search, Filter, Loader2, Store, ShoppingBag } from 'lucide-react';
 import Card from '../components/Card';
 import { supabase } from '../services/SupabaseManager';
 import MyStore from './MyStore';

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../services/SupabaseManager';
-import { Settings, LogOut, Shield, ShoppingBag, CreditCard, ChevronRight, Loader2, Edit2, Mail, Phone } from 'lucide-react';
+import { Settings, LogOut, Shield, CreditCard, ChevronRight, Loader2, Edit2, Mail, Phone } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import type { Database } from '../types/database.types';
 
