@@ -291,15 +291,13 @@ const CourseReservation: React.FC = () => {
             <AnimatePresence>
                 {!isReserved && selectedDate && selectedTime && (
                     <motion.div
-                        initial={{ y: 100 }}
-                        animate={{ y: 0 }}
-                        exit={{ y: 100 }}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 20 }}
                         style={{
-                            position: 'fixed',
-                            bottom: '100px',
-                            left: '20px',
-                            right: '20px',
-                            zIndex: 900
+                            marginTop: '40px',
+                            marginBottom: '40px',
+                            width: '100%'
                         }}
                     >
                         <button
