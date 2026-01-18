@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../services/SupabaseManager';
 import Card from '../components/Card';
-import { Calendar, Clock, MapPin, ChevronLeft, Loader2 } from 'lucide-react';
+import { Calendar, Clock, MapPin, Loader2 } from 'lucide-react';
 
 
 interface Reservation {
@@ -15,7 +15,12 @@ interface Reservation {
     created_at: string;
 }
 
-const MyReservations: React.FC = () => {
+
+interface MyReservationsProps {
+    onRequestSwitchTab?: () => void;
+}
+
+const MyReservations: React.FC<MyReservationsProps> = ({ onRequestSwitchTab }) => {
     const navigate = useNavigate();
     const [reservations, setReservations] = useState<Reservation[]>([]);
     const [loading, setLoading] = useState(true);
@@ -45,39 +50,19 @@ const MyReservations: React.FC = () => {
     }, []);
 
     if (loading) {
-        return <div className="flex-center" style={{ height: '100vh' }}><Loader2 className="animate-spin" /></div>;
+        return <div className="flex-center" style={{ height: '200px' }}><Loader2 className="animate-spin" /></div>;
     }
 
     return (
-        <div className="page-transition" style={{ paddingBottom: '100px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '25px' }}>
-                <button
-                    onClick={() => navigate(-1)}
-                    style={{
-                        background: 'rgba(255,255,255,0.1)',
-                        border: 'none',
-                        borderRadius: '50%',
-                        width: '40px',
-                        height: '40px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: 'white',
-                        marginRight: '15px',
-                        cursor: 'pointer'
-                    }}
-                >
-                    <ChevronLeft size={24} />
-                </button>
-                <h1 style={{ fontSize: '24px', fontWeight: '800', margin: 0 }}>Mis Reservas</h1>
-            </div>
+        <div style={{ paddingBottom: '20px' }}>
+            {/* Header removed for tab view integration */}
 
             {reservations.length === 0 ? (
                 <div style={{ textAlign: 'center', marginTop: '50px', color: 'var(--text-dim)' }}>
                     <Calendar size={48} style={{ marginBottom: '15px', opacity: 0.5 }} />
                     <p>No tienes reservas activas.</p>
                     <button
-                        onClick={() => navigate('/green-fee')}
+                        onClick={onRequestSwitchTab || (() => navigate('/green-fee'))}
                         style={{
                             marginTop: '20px',
                             background: 'var(--secondary)',

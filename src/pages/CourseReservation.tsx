@@ -56,8 +56,8 @@ const CourseReservation: React.FC = () => {
                 if (error) throw error;
             }
 
-            // Redirect to My Reservations
-            navigate('/my-reservations');
+            // Redirect to My Reservations tab in Green Fee page
+            navigate('/green-fee', { state: { tab: 'reservations' } });
 
         } catch (error) {
             console.error("Payment/Reservation error:", error);
