@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../services/SupabaseManager';
 import Card from '../components/Card';
 import { Calendar, Clock, MapPin, ChevronLeft, Loader2 } from 'lucide-react';
-import { motion } from 'framer-motion';
+
 
 interface Reservation {
     id: string;

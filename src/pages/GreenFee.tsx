@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MapPin, ChevronRight, Star, Filter } from 'lucide-react';
+import { MapPin, ChevronRight, Star, Filter, Calendar } from 'lucide-react';
 import Card from '../components/Card';
 
 const courses = [
@@ -58,11 +58,30 @@ const GreenFee: React.FC = () => {
 
     return (
         <div className="page-transition" style={{ paddingBottom: '100px' }}>
-            <div style={{ marginBottom: '25px', padding: '0 10px' }}>
-                <h1 style={{ fontSize: '28px', fontWeight: '800' }}>Green Fees</h1>
-                <p style={{ color: 'var(--text-dim)', fontSize: '14px' }}>
-                    Reserva tu salida en los mejores campos
-                </p>
+            <div style={{ marginBottom: '25px', padding: '0 10px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div>
+                    <h1 style={{ fontSize: '28px', fontWeight: '800' }}>Green Fees</h1>
+                    <p style={{ color: 'var(--text-dim)', fontSize: '14px' }}>
+                        Reserva tu salida en los mejores campos
+                    </p>
+                </div>
+                <button
+                    onClick={() => navigate('/my-reservations')}
+                    style={{
+                        background: 'rgba(255,255,255,0.1)',
+                        border: 'none',
+                        borderRadius: '12px',
+                        width: '40px',
+                        height: '40px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: 'var(--secondary)',
+                        cursor: 'pointer'
+                    }}
+                >
+                    <Calendar size={20} />
+                </button>
             </div>
 
             {/* City Filters */}
