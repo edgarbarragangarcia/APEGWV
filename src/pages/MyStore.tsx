@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { supabase } from '../services/SupabaseManager';
 import {
-    ChevronLeft, Plus, Package, Trash2,
+    Plus, Package, Trash2,
     Camera, Loader2, CheckCircle2,
-    Info
+    Info, Pencil
 } from 'lucide-react';
 import Card from '../components/Card';
 import type { Database } from '../types/database.types';
@@ -19,6 +20,12 @@ const MyStore: React.FC = () => {
     const [showForm, setShowForm] = useState(false);
     const [saving, setSaving] = useState(false);
     const [uploading, setUploading] = useState(false);
+    const [editingId, setEditingId] = useState<string | null>(null);
+    const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; productId: string | null; productName: string }>({
+        isOpen: false,
+        productId: null,
+        productName: ''
+    });
 
     // Form State
     const [formData, setFormData] = useState({
@@ -115,25 +122,52 @@ const MyStore: React.FC = () => {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) return;
 
-            const { data, error } = await supabase
-                .from('products')
-                .insert([{
-                    name: formData.name,
-                    description: formData.description,
-                    price: parseFloat(formData.price),
-                    category: formData.category,
-                    image_url: formData.image_url,
-                    seller_id: user.id,
-                    stock_quantity: 1
-                }])
-                .select()
-                .single();
+            let result;
+
+            if (editingId) {
+                // Update existing product
+                result = await supabase
+                    .from('products')
+                    .update({
+                        name: formData.name,
+                        description: formData.description,
+                        price: parseFloat(formData.price),
+                        category: formData.category,
+                        image_url: formData.image_url,
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq('id', editingId)
+                    .select()
+                    .single();
+            } else {
+                // Insert new product
+                result = await supabase
+                    .from('products')
+                    .insert([{
+                        name: formData.name,
+                        description: formData.description,
+                        price: parseFloat(formData.price),
+                        category: formData.category,
+                        image_url: formData.image_url,
+                        seller_id: user.id,
+                        stock_quantity: 1
+                    }])
+                    .select()
+                    .single();
+            }
+
+            const { data, error } = result;
 
             if (error) throw error;
 
-            setProducts([data, ...products]);
+            if (editingId) {
+                setProducts(products.map(p => p.id === editingId ? data : p));
+            } else {
+                setProducts([data, ...products]);
+            }
+
             setShowForm(false);
-            setFormData({ name: '', description: '', price: '', category: 'Accesorios', image_url: '' });
+            resetForm();
         } catch (err) {
             console.error('Error saving product:', err);
             alert('Error al guardar el producto');
@@ -142,17 +176,44 @@ const MyStore: React.FC = () => {
         }
     };
 
-    const handleDelete = async (id: string) => {
-        if (!confirm('¿Estás seguro de eliminar este producto?')) return;
+    const resetForm = () => {
+        setFormData({ name: '', description: '', price: '', category: 'Accesorios', image_url: '' });
+        setEditingId(null);
+    };
+
+    const handleEditClick = (product: Product) => {
+        setFormData({
+            name: product.name,
+            description: product.description || '',
+            price: product.price?.toString() || '',
+            category: product.category || 'Accesorios',
+            image_url: product.image_url || ''
+        });
+        setEditingId(product.id);
+        setShowForm(true);
+    };
+
+    const handleDeleteClick = (product: Product) => {
+        setDeleteModal({
+            isOpen: true,
+            productId: product.id,
+            productName: product.name
+        });
+    };
+
+    const confirmDelete = async () => {
+        if (!deleteModal.productId) return;
 
         try {
             const { error } = await supabase
                 .from('products')
                 .delete()
-                .eq('id', id);
+                .eq('id', deleteModal.productId);
 
             if (error) throw error;
-            setProducts(products.filter(p => p.id !== id));
+            setProducts(products.filter(p => p.id !== deleteModal.productId));
+            if (navigator.vibrate) navigator.vibrate(50);
+            setDeleteModal({ isOpen: false, productId: null, productName: '' });
         } catch (err) {
             console.error('Error deleting product:', err);
             alert('Error al eliminar');
@@ -190,28 +251,35 @@ const MyStore: React.FC = () => {
 
     return (
         <div className="animate-fade">
-            <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '30px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                    <button onClick={() => navigate(-1)} className="glass" style={{ padding: '10px', borderRadius: '12px' }}>
-                        <ChevronLeft size={20} />
-                    </button>
-                    <h1 style={{ fontSize: '24px' }}>Mi Tienda</h1>
-                </div>
+            {/* Header simplified for Tab View - Back button removed */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+                <h2 style={{ fontSize: '20px', fontWeight: '700' }}>Gestión de Productos</h2>
                 {!showForm && (
                     <button
                         onClick={() => setShowForm(true)}
-                        style={{ background: 'var(--secondary)', color: 'var(--primary)', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                        style={{
+                            background: 'var(--secondary)',
+                            color: 'var(--primary)',
+                            padding: '8px 16px',
+                            borderRadius: '20px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            fontWeight: '700',
+                            fontSize: '13px'
+                        }}
                     >
-                        <Plus size={24} />
+                        <Plus size={18} />
+                        <span>Nuevo Producto</span>
                     </button>
                 )}
-            </header>
+            </div>
 
             {showForm ? (
                 <form onSubmit={handleSubmit} className="glass" style={{ padding: '25px', marginBottom: '30px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
-                        <h2 style={{ fontSize: '18px', fontWeight: '700' }}>Nuevo Producto</h2>
-                        <button type="button" onClick={() => setShowForm(false)} style={{ color: 'var(--text-dim)', fontSize: '14px' }}>Cancelar</button>
+                        <h2 style={{ fontSize: '18px', fontWeight: '700' }}>{editingId ? 'Editar Producto' : 'Nuevo Producto'}</h2>
+                        <button type="button" onClick={() => { setShowForm(false); resetForm(); }} style={{ color: 'var(--text-dim)', fontSize: '14px' }}>Cancelar</button>
                     </div>
 
                     {/* Image Upload Area */}
@@ -318,33 +386,175 @@ const MyStore: React.FC = () => {
                         </div>
                     ) : (
                         products.map(product => (
-                            <Card key={product.id} style={{ padding: '15px', display: 'flex', gap: '15px', alignItems: 'center' }}>
-                                <img
-                                    src={product.image_url || ''}
-                                    style={{ width: '70px', height: '70px', borderRadius: '12px', objectFit: 'cover' }}
-                                    alt={product.name}
-                                />
-                                <div style={{ flex: 1 }}>
-                                    <h3 style={{ fontSize: '15px', fontWeight: '600', marginBottom: '2px' }}>{product.name}</h3>
-                                    <div style={{ display: 'flex', gap: '8px', fontSize: '12px', color: 'var(--text-dim)' }}>
-                                        <span>{product.category}</span>
-                                        <span>•</span>
-                                        <span style={{ color: 'var(--secondary)', fontWeight: '700' }}>
-                                            {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(product.price || 0)}
-                                        </span>
-                                    </div>
-                                </div>
-                                <div style={{ display: 'flex', gap: '5px' }}>
+                            <div key={product.id} style={{ position: 'relative', overflow: 'hidden', borderRadius: '20px', userSelect: 'none', touchAction: 'pan-y' }}>
+                                {/* Actions Background Layer */}
+                                <div style={{
+                                    position: 'absolute',
+                                    right: 0,
+                                    top: 0,
+                                    bottom: 0,
+                                    width: '140px',
+                                    display: 'flex',
+                                    alignItems: 'stretch',
+                                    zIndex: 0
+                                }}>
                                     <button
-                                        onClick={() => handleDelete(product.id)}
-                                        style={{ padding: '8px', borderRadius: '10px', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444' }}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleEditClick(product);
+                                        }}
+                                        style={{
+                                            flex: 1,
+                                            background: '#3b82f6',
+                                            border: 'none',
+                                            borderRight: '1px solid rgba(255,255,255,0.1)',
+                                            color: 'white',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            cursor: 'pointer'
+                                        }}
                                     >
-                                        <Trash2 size={18} />
+                                        <Pencil size={24} />
+                                    </button>
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleDeleteClick(product);
+                                        }}
+                                        style={{
+                                            flex: 1,
+                                            background: '#ef4444',
+                                            border: 'none',
+                                            color: 'white',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            cursor: 'pointer'
+                                        }}
+                                    >
+                                        <Trash2 size={24} />
                                     </button>
                                 </div>
-                            </Card>
+
+                                {/* Main Card Layer */}
+                                <motion.div
+                                    drag="x"
+                                    dragConstraints={{ left: -140, right: 0 }}
+                                    dragElastic={0.1}
+                                    dragSnapToOrigin={false}
+                                    style={{
+                                        position: 'relative',
+                                        zIndex: 1,
+                                        x: 0,
+                                        background: '#0d2b1d',
+                                        borderRadius: '20px'
+                                    }}
+                                    whileTap={{ cursor: 'grabbing' }}
+                                >
+                                    <Card style={{ marginBottom: 0, padding: '15px', display: 'flex', gap: '15px', alignItems: 'center', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                        <img
+                                            src={product.image_url || ''}
+                                            style={{ width: '70px', height: '70px', borderRadius: '12px', objectFit: 'cover' }}
+                                            alt={product.name}
+                                        />
+                                        <div style={{ flex: 1 }}>
+                                            <h3 style={{ fontSize: '15px', fontWeight: '600', marginBottom: '2px' }}>{product.name}</h3>
+                                            <div style={{ display: 'flex', gap: '8px', fontSize: '12px', color: 'var(--text-dim)' }}>
+                                                <span>{product.category}</span>
+                                                <span>•</span>
+                                                <span style={{ color: 'var(--secondary)', fontWeight: '700' }}>
+                                                    {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(product.price || 0)}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </Card>
+                                </motion.div>
+                            </div>
                         ))
                     )}
+                </div>
+            )}
+            {/* Custom Confirmation Modal */}
+            {deleteModal.isOpen && (
+                <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    background: 'rgba(0,0,0,0.85)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 1000,
+                    padding: '20px',
+                    backdropFilter: 'blur(8px)'
+                }}>
+                    <motion.div
+                        initial={{ scale: 0.9, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        className="glass"
+                        style={{
+                            width: '100%',
+                            maxWidth: '320px',
+                            padding: '25px',
+                            borderRadius: '24px',
+                            textAlign: 'center',
+                            border: '1px solid rgba(255,255,255,0.1)',
+                            background: 'var(--primary)',
+                            boxShadow: '0 20px 40px rgba(0,0,0,0.4)'
+                        }}
+                    >
+                        <div style={{
+                            background: 'rgba(239, 68, 68, 0.15)',
+                            width: '60px',
+                            height: '60px',
+                            borderRadius: '50%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            margin: '0 auto 20px'
+                        }}>
+                            <Trash2 color="#ef4444" size={28} />
+                        </div>
+                        <h2 style={{ fontSize: '20px', marginBottom: '10px', fontWeight: '700' }}>¿Eliminar producto?</h2>
+                        <p style={{ color: 'var(--text-dim)', fontSize: '14px', marginBottom: '30px', lineHeight: '1.5' }}>
+                            ¿Estás seguro que deseas eliminar <strong>{deleteModal.productName}</strong>? Esta acción es permanente.
+                        </p>
+                        <div style={{ display: 'flex', gap: '12px' }}>
+                            <button
+                                onClick={() => setDeleteModal({ ...deleteModal, isOpen: false })}
+                                style={{
+                                    flex: 1,
+                                    background: 'rgba(255,255,255,0.05)',
+                                    color: 'white',
+                                    padding: '14px',
+                                    borderRadius: '14px',
+                                    border: '1px solid rgba(255,255,255,0.1)',
+                                    fontWeight: '600',
+                                    fontSize: '14px'
+                                }}
+                            >
+                                Cancelar
+                            </button>
+                            <button
+                                onClick={confirmDelete}
+                                style={{
+                                    flex: 1,
+                                    background: '#ef4444',
+                                    color: 'white',
+                                    padding: '14px',
+                                    borderRadius: '14px',
+                                    border: 'none',
+                                    fontWeight: '700',
+                                    fontSize: '14px'
+                                }}
+                            >
+                                Eliminar
+                            </button>
+                        </div>
+                    </motion.div>
                 </div>
             )}
         </div>
