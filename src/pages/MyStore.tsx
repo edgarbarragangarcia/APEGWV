@@ -6,6 +6,7 @@ import {
     Camera, Loader2, CheckCircle2,
     Info
 } from 'lucide-react';
+import Card from '../components/Card';
 import type { Database } from '../types/database.types';
 
 type Product = Database['public']['Tables']['products']['Row'];
@@ -317,7 +318,7 @@ const MyStore: React.FC = () => {
                         </div>
                     ) : (
                         products.map(product => (
-                            <div key={product.id} className="glass" style={{ padding: '15px', display: 'flex', gap: '15px', alignItems: 'center' }}>
+                            <Card key={product.id} style={{ padding: '15px', display: 'flex', gap: '15px', alignItems: 'center' }}>
                                 <img
                                     src={product.image_url || ''}
                                     style={{ width: '70px', height: '70px', borderRadius: '12px', objectFit: 'cover' }}
@@ -341,7 +342,7 @@ const MyStore: React.FC = () => {
                                         <Trash2 size={18} />
                                     </button>
                                 </div>
-                            </div>
+                            </Card>
                         ))
                     )}
                 </div>

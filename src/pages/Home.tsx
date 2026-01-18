@@ -147,14 +147,19 @@ const Home: React.FC = () => {
                 <div style={{ display: 'flex', gap: '15px', overflowX: 'auto', paddingBottom: '15px', scrollSnapType: 'x mandatory' }}>
                     {featuredProducts.length > 0 ? (
                         featuredProducts.map((product) => (
-                            <div key={product.id} className="glass" style={{
-                                minWidth: '160px',
-                                width: '160px',
-                                padding: '10px',
-                                scrollSnapAlign: 'start',
-                                position: 'relative',
-                                overflow: 'hidden'
-                            }}>
+                            <Card
+                                key={product.id}
+                                style={{
+                                    minWidth: '160px',
+                                    width: '160px',
+                                    padding: '10px',
+                                    scrollSnapAlign: 'start',
+                                    position: 'relative',
+                                    overflow: 'hidden',
+                                    marginBottom: 0 // Override default margin
+                                }}
+                                onClick={() => navigate('/shop')} // Optional: navigate to shop or product details
+                            >
                                 <div style={{ position: 'relative', marginBottom: '10px' }}>
                                     <img
                                         src={product.image_url}
@@ -196,7 +201,7 @@ const Home: React.FC = () => {
                                         {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(product.price)}
                                     </span>
                                 </div>
-                            </div>
+                            </Card>
                         ))
                     ) : (
                         <div style={{ color: 'var(--text-dim)', fontSize: '14px', padding: '20px 0' }}>No hay productos destacados aún.</div>

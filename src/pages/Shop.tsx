@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
 import { Search, Filter, Heart, Loader2 } from 'lucide-react';
+import Card from '../components/Card';
 import { supabase } from '../services/SupabaseManager';
 
 interface Product {
@@ -113,10 +113,8 @@ const Shop: React.FC = () => {
             {/* Product Grid */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '20px' }}>
                 {filteredProducts.map(product => (
-                    <motion.div
+                    <Card
                         key={product.id}
-                        whileHover={{ y: -5 }}
-                        className="glass"
                         style={{ overflow: 'hidden', padding: '10px' }}
                     >
                         <div style={{ position: 'relative' }}>
@@ -160,7 +158,7 @@ const Shop: React.FC = () => {
                                 <span style={{ fontSize: '11px', color: 'var(--text-dim)' }}>{product.category}</span>
                             </div>
                         </div>
-                    </motion.div>
+                    </Card>
                 ))}
             </div>
         </div>
