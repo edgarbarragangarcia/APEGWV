@@ -42,15 +42,40 @@ const Navbar: React.FC = () => {
                     <div style={{
                         width: '40px',
                         height: '40px',
-                        background: 'var(--secondary)',
                         borderRadius: '10px',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        color: 'var(--primary)',
-                        fontWeight: 'bold',
-                        fontSize: '20px'
-                    }}>A</div>
+                        background: 'orange',
+                        padding: '3px'
+                    }}>
+                        <div style={{
+                            width: '100%',
+                            height: '100%',
+                            borderRadius: '7px',
+                            overflow: 'hidden',
+                            background: 'white',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                        }}>
+                            <video
+                                autoPlay
+                                loop
+                                muted
+                                playsInline
+                                style={{
+                                    width: '150%',
+                                    height: '100%',
+                                    objectFit: 'cover',
+                                    transform: 'scale(2.0)',
+                                    transformOrigin: '15% 50%'
+                                }}
+                            >
+                                <source src="/gif/watermarked-4f9c0c88-80ff-4880-9dd5-4ccce3509025.MP4" type="video/mp4" />
+                            </video>
+                        </div>
+                    </div>
                     <span style={{ fontSize: '20px', fontWeight: '700', letterSpacing: '1px' }}>APEG</span>
                 </Link>
             </div>
