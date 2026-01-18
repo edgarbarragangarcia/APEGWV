@@ -15,9 +15,16 @@ const Card: React.FC<CardProps> = ({ children, title, subtitle, className = '', 
         <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
+            whileHover={{ y: -5, scale: 1.02, boxShadow: '0 10px 30px rgba(0,0,0,0.3)' }}
+            transition={{ type: 'spring', stiffness: 300, damping: 20 }}
             viewport={{ once: true }}
             className={`glass ${className}`}
-            style={{ padding: '20px', marginBottom: '20px', ...style }}
+            style={{
+                padding: '20px',
+                marginBottom: '20px',
+                cursor: onClick ? 'pointer' : 'default',
+                ...style
+            }}
             onClick={onClick}
         >
             {(title || subtitle) && (

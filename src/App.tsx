@@ -22,6 +22,8 @@ const EditRound = lazy(() => import('./pages/EditRound'));
 const Settings = lazy(() => import('./pages/Settings'));
 const MyStore = lazy(() => import('./pages/MyStore'));
 
+const GreenFee = lazy(() => import('./pages/GreenFee'));
+
 const App: React.FC = () => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
@@ -77,6 +79,7 @@ const App: React.FC = () => {
                   <Route path="/" element={<Home />} />
                   <Route path="/round" element={<Round />} />
                   <Route path="/select-course" element={<CourseSelection />} />
+                  <Route path="/green-fee" element={<GreenFee />} />
                   <Route path="/shop" element={<Shop />} />
                   <Route path="/tournaments" element={<Tournaments />} />
                   <Route path="/profile" element={<Profile />} />
