@@ -152,7 +152,7 @@ const Home: React.FC = () => {
                                 style={{
                                     minWidth: '160px',
                                     width: '160px',
-                                    padding: '10px',
+                                    padding: '20px',
                                     scrollSnapAlign: 'start',
                                     position: 'relative',
                                     overflow: 'hidden',

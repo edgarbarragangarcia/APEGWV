@@ -4,6 +4,7 @@ import type { Session } from '@supabase/supabase-js';
 import { supabase } from './services/SupabaseManager';
 import Navbar from './components/Navbar';
 import BottomNav from './components/BottomNav';
+import LoadingScreen from './components/LoadingScreen';
 import './index.css';
 
 // Lazy load pages for performance
@@ -59,7 +60,7 @@ const App: React.FC = () => {
   }, []);
 
   if (loading) {
-    return <div className="flex-center" style={{ height: '100vh', background: 'var(--bg-dark)' }}><div className="loader"></div></div>;
+    return <LoadingScreen />;
   }
 
   return (

@@ -115,7 +115,7 @@ const Shop: React.FC = () => {
                 {filteredProducts.map(product => (
                     <Card
                         key={product.id}
-                        style={{ overflow: 'hidden', padding: '10px' }}
+                        style={{ overflow: 'hidden', padding: '20px' }}
                     >
                         <div style={{ position: 'relative' }}>
                             <img
