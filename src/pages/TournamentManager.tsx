@@ -42,10 +42,27 @@ const TournamentManager: React.FC = () => {
         description: '',
         date: '',
         club: '',
-        price: '',
+        price: '', // Numeric string without formatting
+        displayPrice: '', // String with thousand separators for UI
         participants_limit: '100',
         image_url: 'https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?q=80&w=1000&auto=format&fit=crop'
     });
+
+    const formatPrice = (val: string) => {
+        const numeric = val.replace(/\D/g, '');
+        if (!numeric) return '';
+        return new Intl.NumberFormat('es-CO').format(parseInt(numeric));
+    };
+
+    const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const val = e.target.value;
+        const numeric = val.replace(/\D/g, '');
+        setFormData(prev => ({
+            ...prev,
+            price: numeric,
+            displayPrice: formatPrice(numeric)
+        }));
+    };
 
     useEffect(() => {
         fetchTournamentData();
@@ -160,6 +177,7 @@ const TournamentManager: React.FC = () => {
             date: '',
             club: '',
             price: '',
+            displayPrice: '',
             participants_limit: '100',
             image_url: 'https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?q=80&w=1000&auto=format&fit=crop'
         });
@@ -167,12 +185,14 @@ const TournamentManager: React.FC = () => {
     };
 
     const handleEditClick = (tournament: Tournament) => {
+        const p = tournament.price.toString();
         setFormData({
             name: tournament.name,
             description: tournament.description || '',
             date: tournament.date.split('T')[0],
             club: tournament.club,
-            price: tournament.price.toString(),
+            price: p,
+            displayPrice: formatPrice(p),
             participants_limit: tournament.participants_limit.toString(),
             image_url: tournament.image_url
         });
@@ -280,7 +300,7 @@ const TournamentManager: React.FC = () => {
                             />
                         </div>
 
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                             <div>
                                 <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Fecha</label>
                                 <input
@@ -292,15 +312,21 @@ const TournamentManager: React.FC = () => {
                                 />
                             </div>
                             <div>
-                                <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Precio Green Fee</label>
-                                <input
-                                    required
-                                    type="number"
-                                    value={formData.price}
-                                    onChange={e => setFormData({ ...formData, price: e.target.value })}
-                                    style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '12px', color: 'white', fontSize: '15px' }}
-                                    placeholder="0"
-                                />
+                                <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Precio Green Fee (COP)</label>
+                                <div style={{ position: 'relative' }}>
+                                    <input
+                                        required
+                                        type="text"
+                                        inputMode="numeric"
+                                        value={formData.displayPrice}
+                                        onChange={handlePriceChange}
+                                        style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '12px', color: 'white', fontSize: '15px' }}
+                                        placeholder="0"
+                                    />
+                                    <span style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-dim)', fontSize: '12px', pointerEvents: 'none' }}>
+                                        $
+                                    </span>
+                                </div>
                             </div>
                         </div>
 

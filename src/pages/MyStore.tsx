@@ -5,7 +5,8 @@ import { supabase } from '../services/SupabaseManager';
 import {
     Plus, Package, Trash2,
     Camera, Loader2, CheckCircle2,
-    Info, Pencil
+    Info, Pencil, TrendingDown,
+    Truck, User, Phone, MapPin
 } from 'lucide-react';
 import Card from '../components/Card';
 import type { Database } from '../types/database.types';
@@ -26,15 +27,52 @@ const MyStore: React.FC = () => {
         productId: null,
         productName: ''
     });
+    const [orders, setOrders] = useState<any[]>([]);
+    const [activeTab, setActiveTab] = useState<'products' | 'orders'>('products');
+    const [updatingOrder, setUpdatingOrder] = useState<string | null>(null);
 
     // Form State
     const [formData, setFormData] = useState({
         name: '',
         description: '',
-        price: '',
+        price: '', // Numeric string without formatting
+        displayPrice: '', // String with thousand separators for UI
         category: 'Accesorios',
-        image_url: ''
+        image_url: '',
+        size_clothing: '',
+        size_shoes_us: '',
+        size_shoes_eu: '',
+        size_shoes_col: '',
+        size_shoes_cm: ''
     });
+
+    const convertShoeSizes = (colVal: string) => {
+        const col = parseFloat(colVal);
+        if (isNaN(col)) return { us: '', eu: '', cm: '' };
+
+        // Accurate conversion based on Colombian standard for Golf/Sports
+        return {
+            us: (col - 31).toString(),
+            eu: (col + 2).toString(),
+            cm: (col - 13).toString()
+        };
+    };
+
+    const formatPrice = (val: string) => {
+        const numeric = val.replace(/\D/g, '');
+        if (!numeric) return '';
+        return new Intl.NumberFormat('es-CO').format(parseInt(numeric));
+    };
+
+    const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const val = e.target.value;
+        const numeric = val.replace(/\D/g, '');
+        setFormData(prev => ({
+            ...prev,
+            price: numeric,
+            displayPrice: formatPrice(numeric)
+        }));
+    };
 
     const categories = ['Clubes', 'Ropa', 'Accesorios', 'Bolas', 'Zapatos', 'Grips', 'Otros'];
 
@@ -74,6 +112,15 @@ const MyStore: React.FC = () => {
 
             if (error) throw error;
             setProducts(userProducts || []);
+
+            // Fetch Orders
+            const { data: userOrders } = await supabase
+                .from('orders')
+                .select('*, product:products(*), buyer:profiles(*)')
+                .eq('seller_id', session.user.id)
+                .order('created_at', { ascending: false });
+
+            setOrders(userOrders || []);
 
         } catch (err) {
             console.error('Error fetching store data:', err);
@@ -134,6 +181,11 @@ const MyStore: React.FC = () => {
                         price: parseFloat(formData.price),
                         category: formData.category,
                         image_url: formData.image_url,
+                        size_clothing: formData.category === 'Ropa' ? formData.size_clothing : null,
+                        size_shoes_us: formData.category === 'Zapatos' ? formData.size_shoes_us : null,
+                        size_shoes_eu: formData.category === 'Zapatos' ? formData.size_shoes_eu : null,
+                        size_shoes_col: formData.category === 'Zapatos' ? formData.size_shoes_col : null,
+                        size_shoes_cm: formData.category === 'Zapatos' ? formData.size_shoes_cm : null,
                         updated_at: new Date().toISOString()
                     })
                     .eq('id', editingId)
@@ -149,6 +201,11 @@ const MyStore: React.FC = () => {
                         price: parseFloat(formData.price),
                         category: formData.category,
                         image_url: formData.image_url,
+                        size_clothing: formData.category === 'Ropa' ? formData.size_clothing : null,
+                        size_shoes_us: formData.category === 'Zapatos' ? formData.size_shoes_us : null,
+                        size_shoes_eu: formData.category === 'Zapatos' ? formData.size_shoes_eu : null,
+                        size_shoes_col: formData.category === 'Zapatos' ? formData.size_shoes_col : null,
+                        size_shoes_cm: formData.category === 'Zapatos' ? formData.size_shoes_cm : null,
                         seller_id: user.id,
                         stock_quantity: 1
                     }])
@@ -177,17 +234,36 @@ const MyStore: React.FC = () => {
     };
 
     const resetForm = () => {
-        setFormData({ name: '', description: '', price: '', category: 'Accesorios', image_url: '' });
+        setFormData({
+            name: '',
+            description: '',
+            price: '',
+            displayPrice: '',
+            category: 'Accesorios',
+            image_url: '',
+            size_clothing: '',
+            size_shoes_us: '',
+            size_shoes_eu: '',
+            size_shoes_col: '',
+            size_shoes_cm: ''
+        });
         setEditingId(null);
     };
 
     const handleEditClick = (product: Product) => {
+        const p = product.price?.toString() || '';
         setFormData({
             name: product.name,
             description: product.description || '',
-            price: product.price?.toString() || '',
+            price: p,
+            displayPrice: formatPrice(p),
             category: product.category || 'Accesorios',
-            image_url: product.image_url || ''
+            image_url: product.image_url || '',
+            size_clothing: (product as any).size_clothing || '',
+            size_shoes_us: (product as any).size_shoes_us || '',
+            size_shoes_eu: (product as any).size_shoes_eu || '',
+            size_shoes_col: (product as any).size_shoes_col || '',
+            size_shoes_cm: (product as any).size_shoes_cm || ''
         });
         setEditingId(product.id);
         setShowForm(true);
@@ -217,6 +293,29 @@ const MyStore: React.FC = () => {
         } catch (err) {
             console.error('Error deleting product:', err);
             alert('Error al eliminar');
+        }
+    };
+
+    const updateTracking = async (orderId: string, trackingNum: string, provider: string) => {
+        setUpdatingOrder(orderId);
+        try {
+            const { error } = await supabase
+                .from('orders')
+                .update({
+                    tracking_number: trackingNum,
+                    shipping_provider: provider,
+                    status: 'Enviado',
+                    updated_at: new Date().toISOString()
+                })
+                .eq('id', orderId);
+
+            if (error) throw error;
+            setOrders(orders.map(o => o.id === orderId ? { ...o, tracking_number: trackingNum, shipping_provider: provider, status: 'Enviado' } : o));
+        } catch (err) {
+            console.error('Error updating tracking:', err);
+            alert('Error al actualizar guía');
+        } finally {
+            setUpdatingOrder(null);
         }
     };
 
@@ -251,235 +350,468 @@ const MyStore: React.FC = () => {
 
     return (
         <div className="animate-fade">
-            <h2 style={{ fontSize: '20px', fontWeight: '700', marginBottom: '15px' }}>Gestión de Productos</h2>
-
-            {!showForm && (
+            <div style={{ display: 'flex', gap: '20px', marginBottom: '25px', borderBottom: '1px solid var(--glass-border)' }}>
                 <button
-                    onClick={() => setShowForm(true)}
+                    onClick={() => setActiveTab('products')}
                     style={{
-                        background: 'var(--secondary)',
-                        color: 'var(--primary)',
-                        padding: '12px',
-                        borderRadius: '15px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '8px',
+                        padding: '10px 5px',
+                        color: activeTab === 'products' ? 'var(--secondary)' : 'var(--text-dim)',
+                        borderBottom: activeTab === 'products' ? '2px solid var(--secondary)' : 'none',
                         fontWeight: '700',
-                        fontSize: '14px',
-                        width: '100%',
-                        marginBottom: '20px'
+                        fontSize: '15px'
                     }}
                 >
-                    <Plus size={18} />
-                    <span>Nuevo Producto</span>
+                    MIS PRODUCTOS
                 </button>
-            )}
+                <button
+                    onClick={() => setActiveTab('orders')}
+                    style={{
+                        padding: '10px 5px',
+                        color: activeTab === 'orders' ? 'var(--secondary)' : 'var(--text-dim)',
+                        borderBottom: activeTab === 'orders' ? '2px solid var(--secondary)' : 'none',
+                        fontWeight: '700',
+                        fontSize: '15px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px'
+                    }}
+                >
+                    PEDIDOS {orders.filter(o => o.status === 'Pendiente').length > 0 && <span style={{ background: '#ef4444', color: 'white', fontSize: '10px', padding: '2px 6px', borderRadius: '10px' }}>{orders.filter(o => o.status === 'Pendiente').length}</span>}
+                </button>
+            </div>
 
-            {showForm ? (
-                <form onSubmit={handleSubmit} className="glass" style={{ padding: '25px', marginBottom: '30px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
-                        <h2 style={{ fontSize: '18px', fontWeight: '700' }}>{editingId ? 'Editar Producto' : 'Nuevo Producto'}</h2>
-                        <button type="button" onClick={() => { setShowForm(false); resetForm(); }} style={{ color: 'var(--text-dim)', fontSize: '14px' }}>Cancelar</button>
-                    </div>
+            {activeTab === 'products' ? (
+                <>
+                    <h2 style={{ fontSize: '20px', fontWeight: '700', marginBottom: '15px' }}>Gestión de Inventario</h2>
 
-                    {/* Image Upload Area */}
-                    <div style={{ marginBottom: '20px' }}>
-                        <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Foto del Producto</label>
-                        <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9', borderRadius: '15px', overflow: 'hidden', background: 'rgba(255,255,255,0.05)', border: '1px dashed var(--glass-border)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-                            {formData.image_url ? (
-                                <img src={formData.image_url} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                            ) : (
-                                <div style={{ textAlign: 'center' }}>
-                                    <Camera size={32} color="var(--text-dim)" style={{ marginBottom: '8px' }} />
-                                    <p style={{ fontSize: '12px', color: 'var(--text-dim)' }}>{uploading ? 'Subiendo...' : 'Toca para subir'}</p>
-                                </div>
-                            )}
-                            <input
-                                type="file"
-                                accept="image/*"
-                                onChange={handleImageUpload}
-                                style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer' }}
-                            />
-                        </div>
-                    </div>
-
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                        <div>
-                            <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Nombre</label>
-                            <input
-                                required
-                                value={formData.name}
-                                onChange={e => setFormData({ ...formData, name: e.target.value })}
-                                style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '12px', color: 'white', fontSize: '15px' }}
-                                placeholder="Ej: Sandwedge Titleist SM9"
-                            />
-                        </div>
-
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
-                            <div>
-                                <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Categoría</label>
-                                <select
-                                    value={formData.category}
-                                    onChange={e => setFormData({ ...formData, category: e.target.value })}
-                                    style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '12px', color: 'white', fontSize: '15px' }}
-                                >
-                                    {categories.map(c => <option key={c} value={c}>{c}</option>)}
-                                </select>
-                            </div>
-                            <div>
-                                <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Precio (COP)</label>
-                                <input
-                                    required
-                                    type="number"
-                                    value={formData.price}
-                                    onChange={e => setFormData({ ...formData, price: e.target.value })}
-                                    style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '12px', color: 'white', fontSize: '15px' }}
-                                    placeholder="0"
-                                />
-                            </div>
-                        </div>
-
-                        <div>
-                            <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Descripción</label>
-                            <textarea
-                                value={formData.description}
-                                onChange={e => setFormData({ ...formData, description: e.target.value })}
-                                style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '12px', color: 'white', fontSize: '15px', minHeight: '80px', resize: 'none' }}
-                                placeholder="Describe el estado de tu producto..."
-                            />
-                        </div>
-
+                    {!showForm && (
                         <button
-                            type="submit"
-                            disabled={saving || !formData.image_url}
+                            onClick={() => setShowForm(true)}
                             style={{
-                                width: '100%',
-                                background: (saving || !formData.image_url) ? 'rgba(163, 230, 53, 0.3)' : 'var(--secondary)',
+                                background: 'var(--secondary)',
                                 color: 'var(--primary)',
-                                padding: '15px',
+                                padding: '12px',
                                 borderRadius: '15px',
-                                fontWeight: '800',
-                                marginTop: '10px',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                gap: '10px'
+                                gap: '8px',
+                                fontWeight: '700',
+                                fontSize: '14px',
+                                width: '100%',
+                                marginBottom: '20px'
                             }}
                         >
-                            {saving ? <Loader2 className="animate-spin" size={20} /> : <CheckCircle2 size={20} />}
-                            {saving ? 'GUARDANDO...' : 'PUBLICAR PRODUCTO'}
+                            <Plus size={18} />
+                            <span>Nuevo Producto</span>
                         </button>
-                    </div>
-                </form>
-            ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                    {products.length === 0 ? (
-                        <div className="glass" style={{ padding: '40px 20px', textAlign: 'center' }}>
-                            <Package size={48} color="var(--text-dim)" style={{ marginBottom: '15px', opacity: 0.3 }} />
-                            <p style={{ color: 'var(--text-dim)' }}>No tienes productos publicados.</p>
-                            <button
-                                onClick={() => setShowForm(true)}
-                                style={{ color: 'var(--secondary)', marginTop: '10px', fontWeight: '600' }}
-                            >
-                                Publicar mi primer producto
-                            </button>
-                        </div>
-                    ) : (
-                        products.map(product => (
-                            <div key={product.id} style={{ position: 'relative', overflow: 'hidden', borderRadius: '20px', userSelect: 'none', touchAction: 'pan-y' }}>
-                                {/* Actions Background Layer */}
-                                <div style={{
-                                    position: 'absolute',
-                                    right: 0,
-                                    top: 0,
-                                    bottom: 0,
-                                    width: '140px',
-                                    display: 'flex',
-                                    alignItems: 'stretch',
-                                    zIndex: 0
-                                }}>
-                                    <button
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleEditClick(product);
-                                        }}
-                                        style={{
-                                            flex: 1,
-                                            background: '#3b82f6',
-                                            border: 'none',
-                                            borderRight: '1px solid rgba(255,255,255,0.1)',
-                                            color: 'white',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            cursor: 'pointer'
-                                        }}
-                                    >
-                                        <Pencil size={24} />
-                                    </button>
-                                    <button
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleDeleteClick(product);
-                                        }}
-                                        style={{
-                                            flex: 1,
-                                            background: '#ef4444',
-                                            border: 'none',
-                                            color: 'white',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            cursor: 'pointer'
-                                        }}
-                                    >
-                                        <Trash2 size={24} />
-                                    </button>
+                    )}
+
+                    {showForm ? (
+                        <form onSubmit={handleSubmit} className="glass" style={{ padding: '25px', marginBottom: '30px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+                                <h2 style={{ fontSize: '18px', fontWeight: '700' }}>{editingId ? 'Editar Producto' : 'Nuevo Producto'}</h2>
+                                <button type="button" onClick={() => { setShowForm(false); resetForm(); }} style={{ color: 'var(--text-dim)', fontSize: '14px' }}>Cancelar</button>
+                            </div>
+
+                            {/* Image Upload Area */}
+                            <div style={{ marginBottom: '20px' }}>
+                                <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Foto del Producto</label>
+                                <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9', borderRadius: '15px', overflow: 'hidden', background: 'rgba(255,255,255,0.05)', border: '1px dashed var(--glass-border)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                                    {formData.image_url ? (
+                                        <img src={formData.image_url} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                    ) : (
+                                        <div style={{ textAlign: 'center' }}>
+                                            <Camera size={32} color="var(--text-dim)" style={{ marginBottom: '8px' }} />
+                                            <p style={{ fontSize: '12px', color: 'var(--text-dim)' }}>{uploading ? 'Subiendo...' : 'Toca para subir'}</p>
+                                        </div>
+                                    )}
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={handleImageUpload}
+                                        style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer' }}
+                                    />
+                                </div>
+                            </div>
+
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                                <div>
+                                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Nombre</label>
+                                    <input
+                                        required
+                                        value={formData.name}
+                                        onChange={e => setFormData({ ...formData, name: e.target.value })}
+                                        style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '12px', color: 'white', fontSize: '15px' }}
+                                        placeholder="Ej: Sandwedge Titleist SM9"
+                                    />
                                 </div>
 
-                                {/* Main Card Layer */}
-                                <motion.div
-                                    drag="x"
-                                    dragConstraints={{ left: -140, right: 0 }}
-                                    dragElastic={0.1}
-                                    dragSnapToOrigin={false}
-                                    style={{
-                                        position: 'relative',
-                                        zIndex: 1,
-                                        x: 0,
-                                        background: '#0d2b1d',
-                                        borderRadius: '20px'
-                                    }}
-                                    whileTap={{ cursor: 'grabbing' }}
-                                >
-                                    <Card style={{ marginBottom: 0, padding: '15px', display: 'flex', gap: '15px', alignItems: 'center', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
-                                        <img
-                                            src={product.image_url || ''}
-                                            style={{ width: '70px', height: '70px', borderRadius: '12px', objectFit: 'cover' }}
-                                            alt={product.name}
-                                        />
-                                        <div style={{ flex: 1 }}>
-                                            <h3 style={{
-                                                fontSize: '15px',
-                                                fontWeight: '600',
-                                                marginBottom: '2px',
-                                                whiteSpace: 'nowrap',
-                                                overflow: 'hidden',
-                                                textOverflow: 'ellipsis'
-                                            }}>{product.name}</h3>
-                                            <div style={{ display: 'flex', gap: '8px', fontSize: '12px', color: 'var(--text-dim)' }}>
-                                                <span>{product.category}</span>
-                                                <span>•</span>
-                                                <span style={{ color: 'var(--secondary)', fontWeight: '700' }}>
-                                                    {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(product.price || 0)}
-                                                </span>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                                    <div>
+                                        <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Categoría</label>
+                                        <select
+                                            value={formData.category}
+                                            onChange={e => setFormData({ ...formData, category: e.target.value })}
+                                            style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '12px', color: 'white', fontSize: '15px' }}
+                                        >
+                                            {categories.map(c => <option key={c} value={c}>{c}</option>)}
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Precio (COP)</label>
+                                        <div style={{ position: 'relative' }}>
+                                            <input
+                                                required
+                                                type="text"
+                                                inputMode="numeric"
+                                                value={formData.displayPrice}
+                                                onChange={handlePriceChange}
+                                                style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '12px', color: 'white', fontSize: '15px' }}
+                                                placeholder="0"
+                                            />
+                                            <span style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-dim)', fontSize: '12px', pointerEvents: 'none' }}>
+                                                $
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Conditional Size Fields */}
+                                {formData.category === 'Ropa' && (
+                                    <div className="animate-fade">
+                                        <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Talla de Ropa</label>
+                                        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                                            {['S', 'M', 'L', 'XL', 'XXL'].map(size => (
+                                                <button
+                                                    key={size}
+                                                    type="button"
+                                                    onClick={() => setFormData({ ...formData, size_clothing: size })}
+                                                    style={{
+                                                        flex: 1,
+                                                        minWidth: '50px',
+                                                        padding: '10px',
+                                                        borderRadius: '10px',
+                                                        border: '1px solid var(--glass-border)',
+                                                        background: formData.size_clothing === size ? 'var(--secondary)' : 'rgba(255,255,255,0.05)',
+                                                        color: formData.size_clothing === size ? 'var(--primary)' : 'white',
+                                                        fontWeight: '700',
+                                                        fontSize: '13px'
+                                                    }}
+                                                >
+                                                    {size}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {formData.category === 'Zapatos' && (
+                                    <div className="animate-fade" style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                                        <label style={{ display: 'block', marginBottom: '-5px', fontSize: '13px', color: 'var(--text-dim)' }}>Tallas de Calzado (Conversión automática)</label>
+                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px' }}>
+                                            <div>
+                                                <label style={{ display: 'block', marginBottom: '5px', fontSize: '11px', color: 'var(--secondary)', fontWeight: '800' }}>COL</label>
+                                                <input
+                                                    placeholder="Ej: 40"
+                                                    value={formData.size_shoes_col}
+                                                    onChange={e => {
+                                                        const val = e.target.value;
+                                                        const converted = convertShoeSizes(val);
+                                                        setFormData({
+                                                            ...formData,
+                                                            size_shoes_col: val,
+                                                            size_shoes_us: converted.us,
+                                                            size_shoes_eu: converted.eu,
+                                                            size_shoes_cm: converted.cm
+                                                        });
+                                                    }}
+                                                    style={{ width: '100%', background: 'rgba(163, 230, 53, 0.1)', border: '1px solid var(--secondary)', borderRadius: '10px', padding: '10px', color: 'white', fontSize: '14px', fontWeight: '700' }}
+                                                />
+                                            </div>
+                                            <div>
+                                                <label style={{ display: 'block', marginBottom: '5px', fontSize: '11px', color: 'var(--text-dim)' }}>US</label>
+                                                <input
+                                                    placeholder="Ej: 9.5"
+                                                    value={formData.size_shoes_us}
+                                                    onChange={e => setFormData({ ...formData, size_shoes_us: e.target.value })}
+                                                    style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '10px', padding: '10px', color: 'white', fontSize: '14px' }}
+                                                />
+                                            </div>
+                                            <div>
+                                                <label style={{ display: 'block', marginBottom: '5px', fontSize: '11px', color: 'var(--text-dim)' }}>EU</label>
+                                                <input
+                                                    placeholder="Ej: 42"
+                                                    value={formData.size_shoes_eu}
+                                                    onChange={e => setFormData({ ...formData, size_shoes_eu: e.target.value })}
+                                                    style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '10px', padding: '10px', color: 'white', fontSize: '14px' }}
+                                                />
+                                            </div>
+                                            <div>
+                                                <label style={{ display: 'block', marginBottom: '5px', fontSize: '11px', color: 'var(--text-dim)' }}>CM</label>
+                                                <input
+                                                    placeholder="Ej: 27"
+                                                    value={formData.size_shoes_cm}
+                                                    onChange={e => setFormData({ ...formData, size_shoes_cm: e.target.value })}
+                                                    style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '10px', padding: '10px', color: 'white', fontSize: '14px' }}
+                                                />
                                             </div>
                                         </div>
-                                    </Card>
-                                </motion.div>
+                                    </div>
+                                )}
+
+                                <div>
+                                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Descripción</label>
+                                    <textarea
+                                        value={formData.description}
+                                        onChange={e => setFormData({ ...formData, description: e.target.value })}
+                                        style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '12px', color: 'white', fontSize: '15px', minHeight: '80px', resize: 'none' }}
+                                        placeholder="Describe el estado de tu producto..."
+                                    />
+                                </div>
+
+                                {/* Commission Calculation */}
+                                {formData.price && (
+                                    <div className="glass" style={{ padding: '15px', background: 'rgba(163, 230, 53, 0.05)', borderRadius: '15px', border: '1px solid rgba(163, 230, 53, 0.1)' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '13px' }}>
+                                            <span style={{ color: 'var(--text-dim)' }}>Comisión APEG (5%)</span>
+                                            <span style={{ color: '#ef4444', fontWeight: '600' }}>- {formatPrice((parseFloat(formData.price) * 0.05).toString())}</span>
+                                        </div>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '15px', fontWeight: '800', paddingTop: '8px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                                            <span>Recibes en tu cuenta</span>
+                                            <span style={{ color: 'var(--secondary)' }}>$ {formatPrice((parseFloat(formData.price) * 0.95).toString())}</span>
+                                        </div>
+                                    </div>
+                                )}
+
+                                <button
+                                    type="submit"
+                                    disabled={saving || !formData.image_url}
+                                    style={{
+                                        width: '100%',
+                                        background: (saving || !formData.image_url) ? 'rgba(163, 230, 53, 0.3)' : 'var(--secondary)',
+                                        color: 'var(--primary)',
+                                        padding: '15px',
+                                        borderRadius: '15px',
+                                        fontWeight: '800',
+                                        marginTop: '10px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        gap: '10px'
+                                    }}
+                                >
+                                    {saving ? <Loader2 className="animate-spin" size={20} /> : <CheckCircle2 size={20} />}
+                                    {saving ? 'GUARDANDO...' : 'PUBLICAR PRODUCTO'}
+                                </button>
                             </div>
-                        ))
+                        </form>
+                    ) : (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                            {products.length === 0 ? (
+                                <div className="glass" style={{ padding: '40px 20px', textAlign: 'center' }}>
+                                    <Package size={48} color="var(--text-dim)" style={{ marginBottom: '15px', opacity: 0.3 }} />
+                                    <p style={{ color: 'var(--text-dim)' }}>No tienes productos publicados.</p>
+                                    <button
+                                        onClick={() => setShowForm(true)}
+                                        style={{ color: 'var(--secondary)', marginTop: '10px', fontWeight: '600' }}
+                                    >
+                                        Publicar mi primer producto
+                                    </button>
+                                </div>
+                            ) : (
+                                products.map(product => (
+                                    <div key={product.id} style={{ position: 'relative', overflow: 'hidden', borderRadius: '20px', userSelect: 'none', touchAction: 'pan-y' }}>
+                                        {/* Actions Background Layer */}
+                                        <div style={{
+                                            position: 'absolute',
+                                            right: 0,
+                                            top: 0,
+                                            bottom: 0,
+                                            width: '140px',
+                                            display: 'flex',
+                                            alignItems: 'stretch',
+                                            zIndex: 0
+                                        }}>
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleEditClick(product);
+                                                }}
+                                                style={{
+                                                    flex: 1,
+                                                    background: '#3b82f6',
+                                                    border: 'none',
+                                                    borderRight: '1px solid rgba(255,255,255,0.1)',
+                                                    color: 'white',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    cursor: 'pointer'
+                                                }}
+                                            >
+                                                <Pencil size={24} />
+                                            </button>
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleDeleteClick(product);
+                                                }}
+                                                style={{
+                                                    flex: 1,
+                                                    background: '#ef4444',
+                                                    border: 'none',
+                                                    color: 'white',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    cursor: 'pointer'
+                                                }}
+                                            >
+                                                <Trash2 size={24} />
+                                            </button>
+                                        </div>
+
+                                        {/* Main Card Layer */}
+                                        <motion.div
+                                            drag="x"
+                                            dragConstraints={{ left: -140, right: 0 }}
+                                            dragElastic={0.1}
+                                            dragSnapToOrigin={false}
+                                            style={{
+                                                position: 'relative',
+                                                zIndex: 1,
+                                                x: 0,
+                                                background: '#0d2b1d',
+                                                borderRadius: '20px'
+                                            }}
+                                            whileTap={{ cursor: 'grabbing' }}
+                                        >
+                                            <Card style={{ marginBottom: 0, padding: '15px', display: 'flex', gap: '15px', alignItems: 'center', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                                <img
+                                                    src={product.image_url || ''}
+                                                    style={{ width: '70px', height: '70px', borderRadius: '12px', objectFit: 'cover' }}
+                                                    alt={product.name}
+                                                />
+                                                <div style={{ flex: 1 }}>
+                                                    <h3 style={{
+                                                        fontSize: '15px',
+                                                        fontWeight: '600',
+                                                        marginBottom: '2px',
+                                                        whiteSpace: 'nowrap',
+                                                        overflow: 'hidden',
+                                                        textOverflow: 'ellipsis'
+                                                    }}>{product.name}</h3>
+                                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', fontSize: '11px', color: 'var(--text-dim)', marginTop: '4px' }}>
+                                                        <span>{product.category}</span>
+                                                        {(product as any).size_clothing && <span>• Talla: {(product as any).size_clothing}</span>}
+                                                        {(product as any).size_shoes_col && <span>• Talla: {(product as any).size_shoes_col} COL</span>}
+                                                        {(product as any).size_shoes_cm && <span>({(product as any).size_shoes_cm} cm)</span>}
+                                                        <span>•</span>
+                                                        <span style={{ color: 'var(--secondary)', fontWeight: '700' }}>
+                                                            {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(product.price || 0)}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </Card>
+                                        </motion.div>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    )}
+                </>
+            ) : (
+                <div className="animate-fade">
+                    <h2 style={{ fontSize: '20px', fontWeight: '700', marginBottom: '15px' }}>Ventas y Seguimiento</h2>
+                    {orders.length === 0 ? (
+                        <div className="glass" style={{ padding: '60px 20px', textAlign: 'center' }}>
+                            <TrendingDown size={48} color="var(--text-dim)" style={{ marginBottom: '15px', opacity: 0.3 }} />
+                            <p style={{ color: 'var(--text-dim)' }}>Aún no tienes ventas registradas.</p>
+                        </div>
+                    ) : (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                            {orders.map(order => (
+                                <div key={order.id} className="glass" style={{ padding: '20px' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px' }}>
+                                        <span style={{
+                                            padding: '4px 10px',
+                                            borderRadius: '8px',
+                                            fontSize: '11px',
+                                            fontWeight: '800',
+                                            background: order.status === 'Pendiente' ? '#f59e0b' : '#10b981',
+                                            color: 'white'
+                                        }}>
+                                            {order.status.toUpperCase()}
+                                        </span>
+                                        <span style={{ fontSize: '11px', color: 'var(--text-dim)' }}>
+                                            {new Date(order.created_at).toLocaleDateString()}
+                                        </span>
+                                    </div>
+
+                                    <div style={{ display: 'flex', gap: '12px', marginBottom: '20px' }}>
+                                        <img src={order.product?.image_url} style={{ width: '50px', height: '50px', borderRadius: '10px', objectFit: 'cover' }} alt="" />
+                                        <div>
+                                            <h4 style={{ fontSize: '14px', fontWeight: '700' }}>{order.product?.name}</h4>
+                                            <p style={{ fontSize: '14px', color: 'var(--secondary)', fontWeight: '800' }}>$ {new Intl.NumberFormat('es-CO').format(order.seller_net_amount)} netos</p>
+                                        </div>
+                                    </div>
+
+                                    <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: '15px', padding: '15px', marginBottom: '15px' }}>
+                                        <p style={{ fontSize: '12px', fontWeight: '800', color: 'var(--secondary)', marginBottom: '10px', textTransform: 'uppercase' }}>Información del Comprador</p>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px' }}>
+                                                <User size={14} color="var(--text-dim)" />
+                                                <span>{order.buyer_name || order.buyer?.full_name}</span>
+                                            </div>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px' }}>
+                                                <Phone size={14} color="var(--text-dim)" />
+                                                <span>{order.buyer_phone || order.buyer?.phone}</span>
+                                            </div>
+                                            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '13px' }}>
+                                                <MapPin size={14} color="var(--text-dim)" style={{ marginTop: '3px' }} />
+                                                <span style={{ lineHeight: '1.4' }}>{order.shipping_address}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {order.status === 'Pendiente' ? (
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                            <p style={{ fontSize: '12px', fontWeight: '800', color: 'white', marginBottom: '2px' }}>Actualizar Guía de Envío</p>
+                                            <div style={{ display: 'flex', gap: '10px' }}>
+                                                <input
+                                                    id={`provider-${order.id}`}
+                                                    placeholder="Transportadora (Servientrega, etc)"
+                                                    style={{ flex: 1, background: 'rgba(0,0,0,0.2)', border: '1px solid var(--glass-border)', borderRadius: '10px', padding: '10px', fontSize: '13px', color: 'white' }}
+                                                />
+                                                <input
+                                                    id={`tracking-${order.id}`}
+                                                    placeholder="Número de guía"
+                                                    style={{ flex: 1, background: 'rgba(0,0,0,0.2)', border: '1px solid var(--glass-border)', borderRadius: '10px', padding: '10px', fontSize: '13px', color: 'white' }}
+                                                />
+                                            </div>
+                                            <button
+                                                onClick={() => {
+                                                    const prov = (document.getElementById(`provider-${order.id}`) as HTMLInputElement).value;
+                                                    const track = (document.getElementById(`tracking-${order.id}`) as HTMLInputElement).value;
+                                                    if (prov && track) updateTracking(order.id, track, prov);
+                                                    else alert('Por favor llena ambos campos');
+                                                }}
+                                                disabled={updatingOrder === order.id}
+                                                style={{ background: 'var(--secondary)', color: 'var(--primary)', padding: '12px', borderRadius: '12px', fontWeight: '800', width: '100%', marginTop: '5px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                                            >
+                                                {updatingOrder === order.id ? <Loader2 size={16} className="animate-spin" /> : <Truck size={16} />}
+                                                MARCAR COMO ENVIADO
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '15px' }}>
+                                            <p style={{ fontSize: '13px', color: 'var(--text-dim)' }}>Seguimiento: <strong style={{ color: 'white' }}>{order.shipping_provider} - {order.tracking_number}</strong></p>
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
                     )}
                 </div>
             )}

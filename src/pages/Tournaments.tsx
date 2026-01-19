@@ -150,17 +150,17 @@ const Tournaments: React.FC = () => {
                                     <div style={{ height: '6px', background: 'var(--secondary)' }} />
                                     <div style={{ padding: '20px' }}>
                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '15px' }}>
-                                            <div style={{ flex: 1 }}>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--secondary)', fontSize: '12px', fontWeight: '800', textTransform: 'uppercase', marginBottom: '8px' }}>
-                                                    <Calendar size={14} /> {new Date(tourney.date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                            <div style={{ flex: 1, minWidth: 0 }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--secondary)', fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', marginBottom: '6px' }}>
+                                                    <Calendar size={13} /> {new Date(tourney.date).toLocaleDateString('es-CO', { day: '2-digit', month: '2-digit', year: 'numeric' })}
                                                 </div>
-                                                <h3 style={{ fontSize: '20px', fontWeight: '800', lineHeight: '1.2' }}>{tourney.name}</h3>
+                                                <h3 style={{ fontSize: '19px', fontWeight: '800', lineHeight: '1.2', wordBreak: 'break-word' }}>{tourney.name}</h3>
                                             </div>
-                                            <div style={{ textAlign: 'right', marginLeft: '10px' }}>
-                                                <div style={{ fontSize: '18px', fontWeight: '800', color: 'white' }}>
+                                            <div style={{ textAlign: 'right', marginLeft: '15px', flexShrink: 0 }}>
+                                                <div style={{ fontSize: '17px', fontWeight: '900', color: 'white' }}>
                                                     {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(tourney.price)}
                                                 </div>
-                                                <div style={{ fontSize: '11px', color: 'var(--text-dim)', fontWeight: '600' }}>GREEN FEE INCL.</div>
+                                                <div style={{ fontSize: '10px', color: 'var(--text-dim)', fontWeight: '700' }}>GREEN FEE INCL.</div>
                                             </div>
                                         </div>
 
