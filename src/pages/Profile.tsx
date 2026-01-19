@@ -12,6 +12,7 @@ const Profile: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [profile, setProfile] = useState<Profile | null>(null);
     const [stats, setStats] = useState<PlayerStats | null>(null);
+    const [loggingOut, setLoggingOut] = useState(false);
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -44,13 +45,23 @@ const Profile: React.FC = () => {
     }, []);
 
     const handleLogout = async () => {
+        if (loggingOut) return;
+        setLoggingOut(true);
         try {
-            await supabase.auth.signOut();
+            // Force sign out including all tabs
+            const { error } = await supabase.auth.signOut();
+            if (error) throw error;
+
+            // Clear any local storage just in case
+            localStorage.clear();
+            sessionStorage.clear();
+
+            // Use window.location as the most forceful way to clear session state in mobile browsers/webviews
+            window.location.href = '/auth';
         } catch (error) {
             console.error('Error logging out:', error);
-        } finally {
-            // Use react-router-dom navigate instead of full page reload
-            navigate('/auth');
+            // Even if it fails, try to force redirect
+            window.location.href = '/auth';
         }
     };
 
@@ -162,6 +173,7 @@ const Profile: React.FC = () => {
 
                 <button
                     onClick={handleLogout}
+                    disabled={loggingOut}
                     className="glass"
                     style={{
                         padding: '18px 20px',
@@ -174,11 +186,14 @@ const Profile: React.FC = () => {
                         width: '100%',
                         border: '1px solid rgba(255, 68, 68, 0.2)',
                         background: 'rgba(255, 68, 68, 0.05)',
-                        fontWeight: '700'
+                        fontWeight: '700',
+                        cursor: loggingOut ? 'not-allowed' : 'pointer',
+                        opacity: loggingOut ? 0.7 : 1,
+                        touchAction: 'manipulation' // Better for mobile clicks
                     }}
                 >
-                    <LogOut size={20} />
-                    <span>Cerrar Sesión</span>
+                    {loggingOut ? <Loader2 className="animate-spin" size={20} /> : <LogOut size={20} />}
+                    <span>{loggingOut ? 'Cerrando...' : 'Cerrar Sesión'}</span>
                 </button>
             </div>
         </div>
