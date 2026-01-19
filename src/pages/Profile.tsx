@@ -47,21 +47,31 @@ const Profile: React.FC = () => {
     const handleLogout = async () => {
         if (loggingOut) return;
         setLoggingOut(true);
-        try {
-            // Force sign out including all tabs
-            const { error } = await supabase.auth.signOut();
-            if (error) throw error;
 
-            // Clear any local storage just in case
+        try {
+            // 1. Clear local storage immediately
             localStorage.clear();
             sessionStorage.clear();
 
-            // Use window.location as the most forceful way to clear session state in mobile browsers/webviews
-            window.location.href = '/auth';
+            // 2. Clear any Supabase specific keys manually
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && key.includes('supabase.auth.token')) {
+                    localStorage.removeItem(key);
+                }
+            }
+
+            // 3. Attempt Supabase signOut with a strict timeout for mobile/slow networks
+            await Promise.race([
+                supabase.auth.signOut(),
+                new Promise(resolve => setTimeout(resolve, 1500))
+            ]);
+
+            // 4. Forceful redirect using replace to clear history stack
+            window.location.replace('/auth');
         } catch (error) {
-            console.error('Error logging out:', error);
-            // Even if it fails, try to force redirect
-            window.location.href = '/auth';
+            console.error('Logout error, forcing redirect:', error);
+            window.location.replace('/auth');
         }
     };
 
