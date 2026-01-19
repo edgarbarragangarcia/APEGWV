@@ -53,8 +53,8 @@ const Profile: React.FC = () => {
         } catch (error) {
             console.error('Error logging out:', error);
         } finally {
-            // Force session clean up or redirect
-            window.location.href = '/auth';
+            // Use react-router-dom navigate instead of full page reload
+            navigate('/auth');
         }
     };
 
