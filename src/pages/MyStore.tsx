@@ -301,7 +301,29 @@ const MyStore: React.FC = () => {
         }
     };
 
+    const updateOrderStatus = async (orderId: string, newStatus: string) => {
+        setUpdatingOrder(orderId);
+        try {
+            const { error } = await supabase
+                .from('orders')
+                .update({
+                    status: newStatus,
+                    updated_at: new Date().toISOString()
+                })
+                .eq('id', orderId);
+
+            if (error) throw error;
+            setOrders(orders.map(o => o.id === orderId ? { ...o, status: newStatus } : o));
+        } catch (err) {
+            console.error('Error updating order status:', err);
+            alert('Error al actualizar estado');
+        } finally {
+            setUpdatingOrder(null);
+        }
+    };
+
     const updateTracking = async (orderId: string, trackingNum: string, provider: string) => {
+        if (!trackingNum || !provider) return alert('Por favor ingresa transportadora y guía');
         setUpdatingOrder(orderId);
         try {
             const { error } = await supabase
@@ -793,18 +815,42 @@ const MyStore: React.FC = () => {
                                         </div>
                                     </div>
 
-                                    {order.status === 'Pendiente' ? (
+                                    {order.status === 'Pendiente' && (
+                                        <button
+                                            onClick={() => updateOrderStatus(order.id, 'Preparando')}
+                                            disabled={updatingOrder === order.id}
+                                            style={{
+                                                width: '100%',
+                                                background: 'rgba(59, 130, 246, 0.1)',
+                                                border: '1px solid #3b82f6',
+                                                color: '#60a5fa',
+                                                padding: '12px',
+                                                borderRadius: '12px',
+                                                fontWeight: '700',
+                                                fontSize: '14px',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                gap: '8px'
+                                            }}
+                                        >
+                                            <Package size={18} />
+                                            {updatingOrder === order.id ? 'Actualizando...' : 'LISTO PARA DESPACHO'}
+                                        </button>
+                                    )}
+
+                                    {order.status === 'Preparando' && (
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                                             <p style={{ fontSize: '12px', fontWeight: '800', color: 'white', marginBottom: '2px' }}>Actualizar Guía de Envío</p>
                                             <div style={{ display: 'flex', gap: '10px' }}>
                                                 <input
                                                     id={`provider-${order.id}`}
-                                                    placeholder="Transportadora (Servientrega, etc)"
+                                                    placeholder="Transportadora"
                                                     style={{ flex: 1, background: 'rgba(0,0,0,0.2)', border: '1px solid var(--glass-border)', borderRadius: '10px', padding: '10px', fontSize: '13px', color: 'white' }}
                                                 />
                                                 <input
                                                     id={`tracking-${order.id}`}
-                                                    placeholder="Número de guía"
+                                                    placeholder="No. Guía"
                                                     style={{ flex: 1, background: 'rgba(0,0,0,0.2)', border: '1px solid var(--glass-border)', borderRadius: '10px', padding: '10px', fontSize: '13px', color: 'white' }}
                                                 />
                                             </div>
@@ -812,8 +858,7 @@ const MyStore: React.FC = () => {
                                                 onClick={() => {
                                                     const prov = (document.getElementById(`provider-${order.id}`) as HTMLInputElement).value;
                                                     const track = (document.getElementById(`tracking-${order.id}`) as HTMLInputElement).value;
-                                                    if (prov && track) updateTracking(order.id, track, prov);
-                                                    else alert('Por favor llena ambos campos');
+                                                    updateTracking(order.id, track, prov);
                                                 }}
                                                 disabled={updatingOrder === order.id}
                                                 style={{ background: 'var(--secondary)', color: 'var(--primary)', padding: '12px', borderRadius: '12px', fontWeight: '800', width: '100%', marginTop: '5px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
@@ -822,9 +867,15 @@ const MyStore: React.FC = () => {
                                                 MARCAR COMO ENVIADO
                                             </button>
                                         </div>
-                                    ) : (
-                                        <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '15px' }}>
-                                            <p style={{ fontSize: '13px', color: 'var(--text-dim)' }}>Seguimiento: <strong style={{ color: 'white' }}>{order.shipping_provider} - {order.tracking_number}</strong></p>
+                                    )}
+
+                                    {order.status === 'Enviado' && (
+                                        <div style={{ background: 'rgba(16, 185, 129, 0.05)', border: '1px solid rgba(16, 185, 129, 0.2)', padding: '12px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                            <CheckCircle2 size={18} color="#10b981" />
+                                            <div style={{ fontSize: '12px' }}>
+                                                <p style={{ fontWeight: '700', color: '#10b981' }}>Producto Enviado</p>
+                                                <p style={{ fontSize: '11px', color: 'var(--text-dim)' }}>{order.shipping_provider} - {order.tracking_number}</p>
+                                            </div>
                                         </div>
                                     )}
                                 </div>
