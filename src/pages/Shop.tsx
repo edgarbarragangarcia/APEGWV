@@ -105,8 +105,17 @@ const Shop: React.FC = () => {
     }
 
     return (
-        <div className="animate-fade" style={{ paddingBottom: '100px' }}>
-            <header style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <div className="animate-fade" style={{
+            paddingBottom: 'calc(var(--nav-height) + 20px)',
+            paddingTop: 'var(--safe-top)',
+        }}>
+            <header style={{
+                marginBottom: '20px',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'flex-start',
+                paddingTop: '10px'
+            }}>
                 <div>
                     <h1 style={{ fontSize: '28px' }}>Tienda</h1>
                     <p style={{ color: 'var(--text-dim)' }}>Equipamiento premium de la comunidad</p>
@@ -369,9 +378,10 @@ const Shop: React.FC = () => {
             <AnimatePresence>
                 {selectedProduct && (
                     <motion.div
-                        initial={{ x: '100%' }}
-                        animate={{ x: 0 }}
-                        exit={{ x: '100%' }}
+                        initial={{ y: '100%' }}
+                        animate={{ y: 0 }}
+                        exit={{ y: '100%' }}
+                        transition={{ type: 'spring', damping: 25, stiffness: 200 }}
                         style={{
                             position: 'fixed',
                             top: 0,
@@ -379,71 +389,130 @@ const Shop: React.FC = () => {
                             right: 0,
                             bottom: 0,
                             background: 'var(--primary)',
-                            zIndex: 2000,
-                            overflowY: 'auto',
-                            paddingBottom: '40px'
+                            zIndex: 3000,
+                            display: 'flex',
+                            flexDirection: 'column',
+                            overflow: 'hidden'
                         }}
                     >
-                        <div style={{ position: 'relative' }}>
-                            <img src={selectedProduct.image_url} style={{ width: '100%', aspectRatio: '1/1', objectFit: 'cover' }} alt="" />
+                        {/* High Impact Image Section */}
+                        <div style={{ position: 'relative', height: '40vh', width: '100%', overflow: 'hidden' }}>
+                            <img src={selectedProduct.image_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" />
+                            <div style={{
+                                position: 'absolute',
+                                top: 0,
+                                left: 0,
+                                right: 0,
+                                height: '100px',
+                                background: 'linear-gradient(to bottom, rgba(0,0,0,0.4), transparent)',
+                                zIndex: 1
+                            }} />
                             <button
                                 onClick={() => setSelectedProduct(null)}
-                                style={{ position: 'absolute', top: '20px', left: '20px', background: 'rgba(0,0,0,0.5)', border: 'none', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}
+                                style={{
+                                    position: 'absolute',
+                                    top: 'calc(var(--safe-top) + 15px)',
+                                    left: '20px',
+                                    background: 'rgba(255,255,255,0.1)',
+                                    backdropFilter: 'blur(10px)',
+                                    border: '1px solid rgba(255,255,255,0.2)',
+                                    width: '44px',
+                                    height: '44px',
+                                    borderRadius: '50%',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    color: 'white',
+                                    zIndex: 2
+                                }}
                             >
-                                <ArrowLeft size={20} />
+                                <ArrowLeft size={22} />
                             </button>
                         </div>
 
-                        <div style={{ padding: '25px' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '15px' }}>
-                                <div>
-                                    <span style={{ background: 'rgba(163, 230, 53, 0.1)', color: 'var(--secondary)', padding: '5px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: '800' }}>{selectedProduct.category}</span>
-                                    <h2 style={{ fontSize: '24px', fontWeight: '800', marginTop: '10px' }}>{selectedProduct.name}</h2>
+                        {/* Product Info Section - One Page Layout */}
+                        <div style={{
+                            flex: 1,
+                            background: 'var(--primary)',
+                            borderTopLeftRadius: '30px',
+                            borderTopRightRadius: '30px',
+                            marginTop: '-30px',
+                            position: 'relative',
+                            zIndex: 2,
+                            padding: '25px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '20px',
+                            boxShadow: '0 -20px 40px rgba(0,0,0,0.5)'
+                        }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                <div style={{ flex: 1 }}>
+                                    <span style={{
+                                        background: 'rgba(163, 230, 53, 0.1)',
+                                        color: 'var(--secondary)',
+                                        padding: '6px 14px',
+                                        borderRadius: '30px',
+                                        fontSize: '11px',
+                                        fontWeight: '900',
+                                        textTransform: 'uppercase',
+                                        letterSpacing: '0.05em'
+                                    }}>
+                                        {selectedProduct.category}
+                                    </span>
+                                    <h2 style={{ fontSize: '26px', fontWeight: '800', marginTop: '12px', lineHeight: '1.2' }}>{selectedProduct.name}</h2>
                                 </div>
-                                <p style={{ fontSize: '24px', fontWeight: '900', color: 'var(--secondary)' }}>$ {new Intl.NumberFormat('es-CO').format(selectedProduct.price)}</p>
+                                <div style={{ textAlign: 'right' }}>
+                                    <span style={{ fontSize: '12px', color: 'var(--text-dim)', fontWeight: '600' }}>Precio Final</span>
+                                    <p style={{ fontSize: '24px', fontWeight: '900', color: 'var(--secondary)', marginTop: '2px' }}>
+                                        $ {new Intl.NumberFormat('es-CO').format(selectedProduct.price)}
+                                    </p>
+                                </div>
                             </div>
 
-                            <div style={{ display: 'flex', gap: '15px', marginBottom: '25px', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '20px' }}>
-                                {selectedProduct.size_clothing && (
-                                    <div style={{ flex: 1, background: 'rgba(255,255,255,0.03)', padding: '12px', borderRadius: '15px', textAlign: 'center' }}>
-                                        <p style={{ fontSize: '11px', color: 'var(--text-dim)', marginBottom: '4px' }}>Talla</p>
-                                        <p style={{ fontWeight: '800' }}>{selectedProduct.size_clothing}</p>
+                            {/* Attributes Grid */}
+                            <div style={{ display: 'flex', gap: '10px' }}>
+                                {(selectedProduct.size_clothing || selectedProduct.size_shoes_col) && (
+                                    <div style={{ flex: 1, background: 'rgba(255,255,255,0.03)', padding: '15px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)', textAlign: 'center' }}>
+                                        <p style={{ fontSize: '10px', color: 'var(--text-dim)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Talla</p>
+                                        <p style={{ fontWeight: '800', fontSize: '16px' }}>{selectedProduct.size_clothing || selectedProduct.size_shoes_col}</p>
                                     </div>
                                 )}
-                                {selectedProduct.size_shoes_col && (
-                                    <div style={{ flex: 1, background: 'rgba(255,255,255,0.03)', padding: '12px', borderRadius: '15px', textAlign: 'center' }}>
-                                        <p style={{ fontSize: '11px', color: 'var(--text-dim)', marginBottom: '4px' }}>Talla COL</p>
-                                        <p style={{ fontWeight: '800' }}>{selectedProduct.size_shoes_col}</p>
-                                    </div>
-                                )}
-                                <div style={{ flex: 1, background: 'rgba(255,255,255,0.03)', padding: '12px', borderRadius: '15px', textAlign: 'center' }}>
-                                    <p style={{ fontSize: '11px', color: 'var(--text-dim)', marginBottom: '4px' }}>Estado</p>
-                                    <p style={{ fontWeight: '800', color: 'var(--secondary)' }}>Excelente</p>
+                                <div style={{ flex: 1, background: 'rgba(255,255,255,0.03)', padding: '15px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)', textAlign: 'center' }}>
+                                    <p style={{ fontSize: '10px', color: 'var(--text-dim)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Estado</p>
+                                    <p style={{ fontWeight: '800', fontSize: '16px', color: 'var(--secondary)' }}>Mint</p>
+                                </div>
+                                <div style={{ flex: 1, background: 'rgba(255,255,255,0.03)', padding: '15px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)', textAlign: 'center' }}>
+                                    <p style={{ fontSize: '10px', color: 'var(--text-dim)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Entrega</p>
+                                    <p style={{ fontWeight: '800', fontSize: '16px' }}>24h</p>
                                 </div>
                             </div>
 
-                            <div style={{ marginBottom: '30px' }}>
-                                <h4 style={{ fontSize: '16px', fontWeight: '800', marginBottom: '10px' }}>Descripción</h4>
-                                <p style={{ color: 'var(--text-dim)', lineHeight: '1.6', fontSize: '15px' }}>{selectedProduct.description || 'Sin descripción detallada disponible.'}</p>
+                            {/* Description - Scrollable only if needed but compact */}
+                            <div style={{ flex: 1 }}>
+                                <h4 style={{ fontSize: '14px', fontWeight: '900', marginBottom: '8px', color: 'var(--text-dim)', textTransform: 'uppercase' }}>Resumen</h4>
+                                <p style={{
+                                    color: 'rgba(255,255,255,0.7)',
+                                    lineHeight: '1.5',
+                                    fontSize: '15px',
+                                    display: '-webkit-box',
+                                    WebkitLineClamp: 3,
+                                    WebkitBoxOrient: 'vertical',
+                                    overflow: 'hidden'
+                                }}>
+                                    {selectedProduct.description || 'Este producto premium está verificado y listo para ser enviado a tu campo de golf.'}
+                                </p>
                             </div>
 
-                            <div className="glass" style={{ padding: '20px', marginBottom: '30px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', fontSize: '14px' }}>
-                                    <span style={{ color: 'var(--text-dim)' }}>Precio del producto</span>
-                                    <span>$ {new Intl.NumberFormat('es-CO').format(selectedProduct.price)}</span>
-                                </div>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', fontSize: '14px' }}>
-                                    <span style={{ color: 'var(--text-dim)' }}>Envío</span>
-                                    <span style={{ color: 'var(--secondary)', fontWeight: '600' }}>Garantizado por APEG</span>
-                                </div>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '15px', paddingTop: '15px', borderTop: '1px solid rgba(255,255,255,0.05)', fontSize: '18px', fontWeight: '900' }}>
-                                    <span>Total</span>
-                                    <span style={{ color: 'var(--secondary)' }}>$ {new Intl.NumberFormat('es-CO').format(selectedProduct.price)}</span>
-                                </div>
-                            </div>
-
-                            <div style={{ display: 'flex', gap: '12px' }}>
-                                <button
+                            {/* Bottom Fixed Action Bar */}
+                            <div style={{
+                                marginTop: 'auto',
+                                paddingTop: '20px',
+                                paddingBottom: 'calc(var(--safe-bottom) + 15px)',
+                                display: 'flex',
+                                gap: '15px'
+                            }}>
+                                <motion.button
+                                    whileTap={{ scale: 0.95 }}
                                     onClick={() => {
                                         if (cart.find(p => p.id === selectedProduct.id)) {
                                             alert('¡Ya está en el carrito!');
@@ -459,10 +528,10 @@ const Shop: React.FC = () => {
                                         flex: 1,
                                         background: 'rgba(255,255,255,0.05)',
                                         color: 'white',
-                                        padding: '18px',
-                                        borderRadius: '18px',
+                                        height: '65px',
+                                        borderRadius: '22px',
                                         fontWeight: '800',
-                                        fontSize: '15px',
+                                        fontSize: '14px',
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
@@ -470,12 +539,14 @@ const Shop: React.FC = () => {
                                         border: '1px solid rgba(255,255,255,0.1)'
                                     }}
                                 >
-                                    {addingToCart === selectedProduct.id ? <CheckCircle2 size={20} color="var(--secondary)" /> : <Plus size={20} />}
-                                    {addingToCart === selectedProduct.id ? 'AÑADIDO' : 'AL CARRITO'}
-                                </button>
-                                <button
+                                    {addingToCart === selectedProduct.id ? <CheckCircle2 size={22} color="var(--secondary)" /> : <Plus size={22} />}
+                                    {addingToCart === selectedProduct.id ? 'VISTO' : 'CARRITO'}
+                                </motion.button>
+
+                                <motion.button
+                                    whileTap={{ scale: 0.95 }}
                                     onClick={async () => {
-                                        if (!user) return alert('Debes iniciar sesión para comprar');
+                                        if (!user) return alert('Inicia sesión para comprar');
                                         setBuying(true);
                                         try {
                                             const commission = selectedProduct.price * 0.05;
@@ -489,14 +560,14 @@ const Shop: React.FC = () => {
                                                 commission_fee: commission,
                                                 seller_net_amount: net,
                                                 status: 'Pendiente',
-                                                shipping_address: 'Calle 100 #15-30, Bogotá', // Demo address
+                                                shipping_address: 'Calle 100 #15-30, Bogotá',
                                                 buyer_name: user.email?.split('@')[0],
                                                 buyer_phone: '310 123 4567'
                                             }]);
 
                                             if (error) throw error;
 
-                                            alert('¡Compra realizada con éxito!');
+                                            alert('¡Compra exitosa! Revisa la sección de Pedidos.');
                                             setSelectedProduct(null);
                                             setViewTab('myorders');
                                             fetchMyOrders(user.id);
@@ -512,19 +583,20 @@ const Shop: React.FC = () => {
                                         flex: 2,
                                         background: (selectedProduct?.seller_id === user?.id) ? 'rgba(255,255,255,0.1)' : 'var(--secondary)',
                                         color: (selectedProduct?.seller_id === user?.id) ? 'var(--text-dim)' : 'var(--primary)',
-                                        padding: '18px',
-                                        borderRadius: '18px',
+                                        height: '65px',
+                                        borderRadius: '22px',
                                         fontWeight: '900',
                                         fontSize: '16px',
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
-                                        gap: '12px'
+                                        gap: '12px',
+                                        boxShadow: (selectedProduct?.seller_id === user?.id) ? 'none' : '0 10px 30px rgba(163, 230, 53, 0.3)'
                                     }}
                                 >
                                     {buying ? <Loader2 size={24} className="animate-spin" /> : <ShoppingCart size={24} />}
-                                    {(selectedProduct?.seller_id === user?.id) ? 'ES MI PRODUCTO' : (buying ? 'PROCESANDO...' : 'COMPRAR YA')}
-                                </button>
+                                    {(selectedProduct?.seller_id === user?.id) ? 'MI PRODUCTO' : (buying ? 'PROCESANDO...' : 'COMPRAR YA')}
+                                </motion.button>
                             </div>
                         </div>
                     </motion.div>
@@ -551,7 +623,14 @@ const Shop: React.FC = () => {
                             flexDirection: 'column'
                         }}
                     >
-                        <div style={{ padding: '25px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                        <div style={{
+                            padding: '25px',
+                            paddingTop: 'calc(var(--safe-top) + 15px)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            borderBottom: '1px solid rgba(255,255,255,0.05)'
+                        }}>
                             <h2 style={{ fontSize: '24px', fontWeight: '900' }}>Tu Carrito</h2>
                             <button onClick={() => setShowCart(false)} style={{ background: 'rgba(255,255,255,0.05)', border: 'none', padding: '10px', borderRadius: '50%', color: 'white' }}>
                                 <X size={24} />
@@ -586,7 +665,12 @@ const Shop: React.FC = () => {
                         </div>
 
                         {cart.length > 0 && (
-                            <div style={{ padding: '25px', background: 'rgba(0,0,0,0.3)', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                            <div style={{
+                                padding: '25px',
+                                paddingBottom: 'calc(var(--safe-bottom) + 20px)',
+                                background: 'rgba(0,0,0,0.3)',
+                                borderTop: '1px solid rgba(255,255,255,0.05)'
+                            }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px', fontSize: '18px', fontWeight: '900' }}>
                                     <span style={{ color: 'var(--text-dim)' }}>Subtotal</span>
                                     <span style={{ color: 'var(--secondary)' }}>$ {new Intl.NumberFormat('es-CO').format(cart.reduce((sum: number, p: Product) => sum + p.price, 0))}</span>
