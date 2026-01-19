@@ -40,6 +40,7 @@ const MyStore: React.FC = () => {
         category: 'Accesorios',
         image_url: '',
         size_clothing: '',
+        clothing_type: 'Camiseta',
         size_shoes_us: '',
         size_shoes_eu: '',
         size_shoes_col: '',
@@ -186,6 +187,7 @@ const MyStore: React.FC = () => {
                         size_shoes_eu: formData.category === 'Zapatos' ? formData.size_shoes_eu : null,
                         size_shoes_col: formData.category === 'Zapatos' ? formData.size_shoes_col : null,
                         size_shoes_cm: formData.category === 'Zapatos' ? formData.size_shoes_cm : null,
+                        clothing_type: formData.category === 'Ropa' ? formData.clothing_type : null,
                         updated_at: new Date().toISOString()
                     })
                     .eq('id', editingId)
@@ -206,6 +208,7 @@ const MyStore: React.FC = () => {
                         size_shoes_eu: formData.category === 'Zapatos' ? formData.size_shoes_eu : null,
                         size_shoes_col: formData.category === 'Zapatos' ? formData.size_shoes_col : null,
                         size_shoes_cm: formData.category === 'Zapatos' ? formData.size_shoes_cm : null,
+                        clothing_type: formData.category === 'Ropa' ? formData.clothing_type : null,
                         seller_id: user.id,
                         stock_quantity: 1
                     }])
@@ -242,6 +245,7 @@ const MyStore: React.FC = () => {
             category: 'Accesorios',
             image_url: '',
             size_clothing: '',
+            clothing_type: 'Camiseta',
             size_shoes_us: '',
             size_shoes_eu: '',
             size_shoes_col: '',
@@ -260,6 +264,7 @@ const MyStore: React.FC = () => {
             category: product.category || 'Accesorios',
             image_url: product.image_url || '',
             size_clothing: (product as any).size_clothing || '',
+            clothing_type: (product as any).clothing_type || 'Camiseta',
             size_shoes_us: (product as any).size_shoes_us || '',
             size_shoes_eu: (product as any).size_shoes_eu || '',
             size_shoes_col: (product as any).size_shoes_col || '',
@@ -477,31 +482,44 @@ const MyStore: React.FC = () => {
                                     </div>
                                 </div>
 
-                                {/* Conditional Size Fields */}
+                                {/* Conditional Size & Type Fields */}
                                 {formData.category === 'Ropa' && (
-                                    <div className="animate-fade">
-                                        <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Talla de Ropa</label>
-                                        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                                            {['S', 'M', 'L', 'XL', 'XXL'].map(size => (
-                                                <button
-                                                    key={size}
-                                                    type="button"
-                                                    onClick={() => setFormData({ ...formData, size_clothing: size })}
-                                                    style={{
-                                                        flex: 1,
-                                                        minWidth: '50px',
-                                                        padding: '10px',
-                                                        borderRadius: '10px',
-                                                        border: '1px solid var(--glass-border)',
-                                                        background: formData.size_clothing === size ? 'var(--secondary)' : 'rgba(255,255,255,0.05)',
-                                                        color: formData.size_clothing === size ? 'var(--primary)' : 'white',
-                                                        fontWeight: '700',
-                                                        fontSize: '13px'
-                                                    }}
-                                                >
-                                                    {size}
-                                                </button>
-                                            ))}
+                                    <div className="animate-fade" style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                                        <div>
+                                            <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Tipo de Prenda</label>
+                                            <select
+                                                value={formData.clothing_type}
+                                                onChange={e => setFormData({ ...formData, clothing_type: e.target.value, size_clothing: '' })}
+                                                style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '12px', color: 'white', fontSize: '15px' }}
+                                            >
+                                                {['Camisa', 'Camiseta', 'Pantalón', 'Short', 'Buso / Chaqueta', 'Gorra', 'Otro'].map(t => <option key={t} value={t}>{t}</option>)}
+                                            </select>
+                                        </div>
+
+                                        <div>
+                                            <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Talla</label>
+                                            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                                                {(formData.clothing_type === 'Pantalón' || formData.clothing_type === 'Short' ? ['30', '32', '34', '36', '38', '40'] : ['S', 'M', 'L', 'XL', 'XXL']).map(size => (
+                                                    <button
+                                                        key={size}
+                                                        type="button"
+                                                        onClick={() => setFormData({ ...formData, size_clothing: size })}
+                                                        style={{
+                                                            flex: 1,
+                                                            minWidth: '50px',
+                                                            padding: '10px',
+                                                            borderRadius: '10px',
+                                                            border: '1px solid var(--glass-border)',
+                                                            background: formData.size_clothing === size ? 'var(--secondary)' : 'rgba(255,255,255,0.05)',
+                                                            color: formData.size_clothing === size ? 'var(--primary)' : 'white',
+                                                            fontWeight: '700',
+                                                            fontSize: '13px'
+                                                        }}
+                                                    >
+                                                        {size}
+                                                    </button>
+                                                ))}
+                                            </div>
                                         </div>
                                     </div>
                                 )}
@@ -703,7 +721,7 @@ const MyStore: React.FC = () => {
                                                         textOverflow: 'ellipsis'
                                                     }}>{product.name}</h3>
                                                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', fontSize: '11px', color: 'var(--text-dim)', marginTop: '4px' }}>
-                                                        <span>{product.category}</span>
+                                                        <span style={{ color: 'white' }}>{(product as any).clothing_type ? (product as any).clothing_type : product.category}</span>
                                                         {(product as any).size_clothing && <span>• Talla: {(product as any).size_clothing}</span>}
                                                         {(product as any).size_shoes_col && <span>• Talla: {(product as any).size_shoes_col} COL</span>}
                                                         {(product as any).size_shoes_cm && <span>({(product as any).size_shoes_cm} cm)</span>}
