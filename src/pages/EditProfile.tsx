@@ -40,7 +40,7 @@ const EditProfile: React.FC = () => {
                     .from('profiles')
                     .select('*')
                     .eq('id', session.user.id)
-                    .single();
+                    .maybeSingle();
 
                 if (error) throw error;
                 if (data) {

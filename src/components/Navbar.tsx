@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Search, Bell } from 'lucide-react';
+import { Bell } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../services/SupabaseManager';
 
@@ -64,32 +64,38 @@ const Navbar: React.FC = () => {
     return (
         <nav className="glass-dark" style={{
             position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            height: 'var(--header-height)',
+            top: '10px',
+            left: '10px',
+            right: '10px',
+            height: '60px',
             display: 'flex',
             alignItems: 'center',
-            padding: 'var(--safe-top) 20px 0',
+            padding: '0 15px',
             zIndex: 1000,
-            justifyContent: 'space-between'
+            justifyContent: 'space-between',
+            borderRadius: '20px',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            backdropFilter: 'blur(15px)',
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)'
         }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                 <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <div style={{
-                        width: '40px',
-                        height: '40px',
-                        borderRadius: '10px',
+                        width: '42px',
+                        height: '42px',
+                        borderRadius: '50%',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        background: 'orange',
-                        padding: '3px'
+                        background: 'white',
+                        padding: '2px',
+                        border: '2px solid var(--secondary)',
+                        boxShadow: '0 0 15px rgba(163, 230, 53, 0.2)'
                     }}>
                         <div style={{
                             width: '100%',
                             height: '100%',
-                            borderRadius: '7px',
+                            borderRadius: '50%',
                             overflow: 'hidden',
                             background: 'white',
                             display: 'flex',
@@ -116,26 +122,37 @@ const Navbar: React.FC = () => {
                         </div>
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
-                        <span style={{ fontSize: '20px', fontWeight: '700', letterSpacing: '1px', lineHeight: '1.2' }}>APEG</span>
-                        <span style={{ fontSize: '10px', fontWeight: '500', color: 'var(--text-dim)', letterSpacing: '0.5px', marginTop: '-2px' }}>Amor Por El Golf</span>
+                        <span style={{
+                            fontSize: '18px',
+                            fontWeight: '700',
+                            letterSpacing: '1px',
+                            lineHeight: '1.2',
+                            textShadow: '0 0 10px rgba(163, 230, 53, 0.15)'
+                        }}>APEG</span>
+                        <span style={{ fontSize: '9px', fontWeight: '500', color: 'var(--text-dim)', letterSpacing: '0.5px', marginTop: '-2px' }}>Amor Por El Golf</span>
                     </div>
                 </Link>
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-                <button style={{ color: 'var(--text-dim)' }}><Search size={22} /></button>
-                <button style={{ color: 'var(--text-dim)' }}><Bell size={22} /></button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                <button style={{ color: 'var(--text-dim)', background: 'none', border: 'none', padding: '5px' }}>
+                    <Bell size={20} />
+                </button>
                 <Link to="/profile" style={{
-                    width: '35px',
-                    height: '35px',
+                    width: '42px',
+                    height: '42px',
                     borderRadius: '50%',
                     overflow: 'hidden',
-                    border: '2px solid var(--secondary)'
+                    border: '2px solid var(--secondary)',
+                    boxShadow: '0 0 15px rgba(163, 230, 53, 0.1)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
                 }}>
                     <img
                         src={profile?.id_photo_url || `https://ui-avatars.com/api/?name=${profile?.full_name || 'User'}&background=0E2F1F&color=A3E635`}
                         alt="Profile"
-                        style={{ width: '100%', height: '100%' }}
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                     />
                 </Link>
             </div>

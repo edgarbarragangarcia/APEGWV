@@ -28,12 +28,12 @@ const EditStats: React.FC = () => {
                 }
 
                 const { data, error } = await supabase
-                    .from('player_stats')
-                    .select('*')
-                    .eq('user_id', session.user.id)
+                    .from('profiles')
+                    .select('average_score, putts_avg, fairways_hit_rate')
+                    .eq('id', session.user.id)
                     .maybeSingle();
 
-                if (error && error.code !== 'PGRST116') throw error;
+                if (error) throw error;
 
                 if (data) {
                     setFormData({
@@ -60,14 +60,14 @@ const EditStats: React.FC = () => {
             if (!session) return;
 
             const updates = {
-                user_id: session.user.id,
+                id: session.user.id,
                 average_score: formData.average_score ? parseFloat(formData.average_score) : 0,
                 putts_avg: formData.putts_avg ? parseFloat(formData.putts_avg) : 0,
                 fairways_hit_rate: formData.fairways_hit_rate ? parseFloat(formData.fairways_hit_rate) : 0,
                 updated_at: new Date().toISOString(),
             };
 
-            const { error } = await supabase.from('player_stats').upsert(updates, { onConflict: 'user_id' });
+            const { error } = await supabase.from('profiles').upsert(updates);
             if (error) throw error;
 
             navigate('/profile');

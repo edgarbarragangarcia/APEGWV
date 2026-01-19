@@ -19,24 +19,20 @@ const Profile: React.FC = () => {
                 const { data: { session } } = await supabase.auth.getSession();
                 if (!session) return;
 
-                // Fetch Profile
+                // Fetch Profile (which now contains stats)
                 const { data: profileData, error: profileError } = await supabase
                     .from('profiles')
                     .select('*')
                     .eq('id', session.user.id)
-                    .single();
+                    .maybeSingle();
 
                 if (profileError) throw profileError;
                 setProfile(profileData);
 
-                // Fetch Stats
-                const { data: statsData } = await supabase
-                    .from('player_stats')
-                    .select('*')
-                    .eq('user_id', session.user.id)
-                    .maybeSingle();
-
-                setStats(statsData);
+                // Set stats from the same profile data to keep the UI logic working
+                if (profileData) {
+                    setStats(profileData as any);
+                }
             } catch (err) {
                 console.error('Error fetching profile:', err);
             } finally {
