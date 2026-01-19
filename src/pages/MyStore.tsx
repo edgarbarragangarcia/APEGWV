@@ -460,7 +460,14 @@ const MyStore: React.FC = () => {
                                             alt={product.name}
                                         />
                                         <div style={{ flex: 1 }}>
-                                            <h3 style={{ fontSize: '15px', fontWeight: '600', marginBottom: '2px' }}>{product.name}</h3>
+                                            <h3 style={{
+                                                fontSize: '15px',
+                                                fontWeight: '600',
+                                                marginBottom: '2px',
+                                                whiteSpace: 'nowrap',
+                                                overflow: 'hidden',
+                                                textOverflow: 'ellipsis'
+                                            }}>{product.name}</h3>
                                             <div style={{ display: 'flex', gap: '8px', fontSize: '12px', color: 'var(--text-dim)' }}>
                                                 <span>{product.category}</span>
                                                 <span>•</span>

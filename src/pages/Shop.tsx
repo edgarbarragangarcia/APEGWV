@@ -198,7 +198,15 @@ const Shop: React.FC = () => {
                                     )}
                                 </div>
                                 <div style={{ padding: '15px' }}>
-                                    <h4 style={{ fontSize: '16px', fontWeight: '700', lineHeight: '1.2', marginBottom: '8px' }}>
+                                    <h4 style={{
+                                        fontSize: '16px',
+                                        fontWeight: '700',
+                                        lineHeight: '1.2',
+                                        marginBottom: '8px',
+                                        whiteSpace: 'nowrap',
+                                        overflow: 'hidden',
+                                        textOverflow: 'ellipsis'
+                                    }}>
                                         {product.name}
                                     </h4>
 
