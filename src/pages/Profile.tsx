@@ -69,107 +69,173 @@ const Profile: React.FC = () => {
         return <div className="flex-center" style={{ height: '70vh' }}><Loader2 className="animate-spin" /></div>;
     }
 
-    const menuItems = [
-        { icon: Shield, label: 'Datos de la Federación', extra: profile?.federation_code || 'No vinculado', onClick: () => navigate('/profile/edit') },
-        { icon: CreditCard, label: 'Métodos de Pago', extra: 'Configurar' },
-        { icon: Mail, label: 'Correo Electrónico', extra: profile?.email || 'No configurado' },
-        { icon: Phone, label: 'Teléfono Celular', extra: profile?.phone || 'No configurado' },
-        { icon: Settings, label: 'Configuración', extra: '', onClick: () => navigate('/settings') },
-    ];
+
 
     return (
-        <div className="animate-fade">
-            <div style={{ textAlign: 'center', marginBottom: '30px', position: 'relative' }}>
+        <div className="animate-fade" style={{ paddingBottom: '30px' }}>
+            {/* Header Section */}
+            <div style={{ textAlign: 'center', marginBottom: '35px', position: 'relative' }}>
                 <div
                     onClick={() => navigate('/profile/edit')}
                     style={{
                         position: 'absolute',
-                        top: 0,
-                        right: 0,
-                        padding: '10px',
+                        top: '-10px',
+                        right: '0',
+                        padding: '12px',
                         cursor: 'pointer',
-                        color: 'var(--text-dim)'
+                        color: 'var(--secondary)',
+                        background: 'rgba(163, 230, 53, 0.1)',
+                        borderRadius: '12px'
                     }}>
-                    <Edit2 size={20} />
+                    <Edit2 size={18} />
                 </div>
 
                 <div style={{ position: 'relative', display: 'inline-block' }}>
                     <div style={{
-                        width: '120px',
-                        height: '120px',
-                        borderRadius: '50%',
+                        width: '110px',
+                        height: '110px',
+                        borderRadius: '35px',
                         border: '3px solid var(--secondary)',
                         padding: '4px',
-                        marginBottom: '15px'
+                        marginBottom: '15px',
+                        background: 'linear-gradient(135deg, var(--secondary), #7cc42b)',
+                        transform: 'rotate(-2deg)'
                     }}>
-                        <img
-                            src={profile?.id_photo_url || `https://ui-avatars.com/api/?name=${profile?.full_name || 'User'}&background=0E2F1F&color=A3E635&size=120`}
-                            alt="Profile"
-                            style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }}
-                        />
+                        <div style={{
+                            width: '100%',
+                            height: '100%',
+                            borderRadius: '28px',
+                            overflow: 'hidden',
+                            transform: 'rotate(2deg)',
+                            background: 'var(--primary)'
+                        }}>
+                            <img
+                                src={profile?.id_photo_url || `https://ui-avatars.com/api/?name=${profile?.full_name || 'User'}&background=0E2F1F&color=A3E635&size=120`}
+                                alt="Profile"
+                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                            />
+                        </div>
                     </div>
                     {profile?.is_premium && (
                         <div style={{
                             position: 'absolute',
-                            bottom: '20px',
-                            right: 0,
+                            bottom: '10px',
+                            right: '-5px',
                             background: 'var(--accent)',
                             color: 'var(--primary)',
-                            padding: '4px 12px',
-                            borderRadius: '20px',
-                            fontSize: '10px',
-                            fontWeight: '800',
-                            textTransform: 'uppercase'
+                            padding: '4px 10px',
+                            borderRadius: '10px',
+                            fontSize: '9px',
+                            fontWeight: '900',
+                            letterSpacing: '0.5px',
+                            boxShadow: '0 4px 10px rgba(0,0,0,0.3)',
+                            transform: 'rotate(5deg)'
                         }}>
                             PREMIUM
                         </div>
                     )}
                 </div>
-                <h1 style={{ fontSize: '24px', marginBottom: '5px' }}>{profile?.full_name || 'Golfista'}</h1>
-                <p style={{ color: 'var(--text-dim)', fontSize: '14px' }}>
-                    Hándicap {profile?.handicap !== null && profile?.handicap !== undefined ? profile.handicap : '--'} • {profile?.federation_code ? 'Federado' : 'No Federado'}
+                <h1 style={{ fontSize: '26px', fontWeight: '800', marginBottom: '4px', letterSpacing: '-0.5px' }}>
+                    {profile?.full_name || 'Golfista'}
+                </h1>
+                <p style={{ color: 'var(--text-dim)', fontSize: '14px', fontWeight: '500' }}>
+                    Socio APEG • Hándicap {profile?.handicap ?? '--'}
                 </p>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', marginBottom: '30px' }} onClick={() => navigate('/profile/stats')}>
-                <div className="glass" style={{ padding: '15px', textAlign: 'center', cursor: 'pointer' }}>
-                    <div style={{ fontSize: '18px', fontWeight: '700' }}>{stats?.average_score || '--'}</div>
-                    <div style={{ fontSize: '10px', color: 'var(--text-dim)', textTransform: 'uppercase' }}>Avg Score</div>
+            {/* Stats Summary Grid */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '30px' }}>
+                <div onClick={() => navigate('/profile/stats')} className="glass" style={{ padding: '15px 10px', textAlign: 'center', cursor: 'pointer', border: '1px solid rgba(163, 230, 53, 0.2)' }}>
+                    <div style={{ fontSize: '20px', fontWeight: '800', color: 'var(--secondary)' }}>{stats?.average_score || '--'}</div>
+                    <div style={{ fontSize: '9px', color: 'var(--text-dim)', fontWeight: '700', textTransform: 'uppercase', marginTop: '4px' }}>Avg Score</div>
                 </div>
-                <div className="glass" style={{ padding: '15px', textAlign: 'center', cursor: 'pointer' }}>
-                    <div style={{ fontSize: '18px', fontWeight: '700' }}>{stats?.putts_avg || '--'}</div>
-                    <div style={{ fontSize: '10px', color: 'var(--text-dim)', textTransform: 'uppercase' }}>Putts Avg</div>
+                <div onClick={() => navigate('/profile/stats')} className="glass" style={{ padding: '15px 10px', textAlign: 'center', cursor: 'pointer', border: '1px solid rgba(163, 230, 53, 0.2)' }}>
+                    <div style={{ fontSize: '20px', fontWeight: '800', color: 'var(--secondary)' }}>{stats?.putts_avg || '--'}</div>
+                    <div style={{ fontSize: '9px', color: 'var(--text-dim)', fontWeight: '700', textTransform: 'uppercase', marginTop: '4px' }}>Putts Avg</div>
                 </div>
-                <div className="glass" style={{ padding: '15px', textAlign: 'center', cursor: 'pointer' }}>
-                    <div style={{ fontSize: '18px', fontWeight: '700' }}>{stats?.fairways_hit_rate ? `${stats.fairways_hit_rate}%` : '--'}</div>
-                    <div style={{ fontSize: '10px', color: 'var(--text-dim)', textTransform: 'uppercase' }}>Fairways</div>
+                <div onClick={() => navigate('/profile/stats')} className="glass" style={{ padding: '15px 10px', textAlign: 'center', cursor: 'pointer', border: '1px solid rgba(163, 230, 53, 0.2)' }}>
+                    <div style={{ fontSize: '20px', fontWeight: '800', color: 'var(--secondary)' }}>{stats?.fairways_hit_rate ? `${stats.fairways_hit_rate}%` : '--'}</div>
+                    <div style={{ fontSize: '9px', color: 'var(--text-dim)', fontWeight: '700', textTransform: 'uppercase', marginTop: '4px' }}>Fairways</div>
                 </div>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                {menuItems.map((item, i) => (
-                    <button
-                        key={i}
-                        className="glass"
-                        onClick={item.onClick}
-                        style={{
-                            padding: '18px 20px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
-                            width: '100%',
-                            cursor: item.onClick ? 'pointer' : 'default'
-                        }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                            <item.icon size={20} color="var(--secondary)" />
-                            <span style={{ fontWeight: '500' }}>{item.label}</span>
+            {/* Fixed Personal Data Card */}
+            <div className="glass" style={{ padding: '20px', marginBottom: '25px', background: 'rgba(255,255,255,0.02)' }}>
+                <h3 style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-dim)', marginBottom: '18px', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                    Información de la Cuenta
+                </h3>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                        <div style={{ background: 'rgba(163, 230, 53, 0.1)', padding: '8px', borderRadius: '10px' }}>
+                            <Shield size={18} color="var(--secondary)" />
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                            <span style={{ fontSize: '13px', color: 'var(--text-dim)' }}>{item.extra}</span>
-                            <ChevronRight size={18} color="var(--text-dim)" />
+                        <div style={{ flex: 1 }}>
+                            <p style={{ fontSize: '11px', color: 'var(--text-dim)', fontWeight: '600' }}>FEDERACIÓN</p>
+                            <p style={{ fontSize: '14px', fontWeight: '500' }}>{profile?.federation_code || 'No vinculado'}</p>
                         </div>
-                    </button>
-                ))}
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                        <div style={{ background: 'rgba(163, 230, 53, 0.1)', padding: '8px', borderRadius: '10px' }}>
+                            <Mail size={18} color="var(--secondary)" />
+                        </div>
+                        <div style={{ flex: 1 }}>
+                            <p style={{ fontSize: '11px', color: 'var(--text-dim)', fontWeight: '600' }}>CORREO ELECTRÓNICO</p>
+                            <p style={{ fontSize: '14px', fontWeight: '500' }}>{profile?.email || 'No configurado'}</p>
+                        </div>
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                        <div style={{ background: 'rgba(163, 230, 53, 0.1)', padding: '8px', borderRadius: '10px' }}>
+                            <Phone size={18} color="var(--secondary)" />
+                        </div>
+                        <div style={{ flex: 1 }}>
+                            <p style={{ fontSize: '11px', color: 'var(--text-dim)', fontWeight: '600' }}>TELÉFONO</p>
+                            <p style={{ fontSize: '14px', fontWeight: '500' }}>{profile?.phone || 'No configurado'}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Interactive Settings and Actions */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <button
+                    onClick={() => navigate('/settings')}
+                    className="glass"
+                    style={{
+                        padding: '16px 20px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        width: '100%',
+                        background: 'rgba(255,255,255,0.05)',
+                        border: '1px solid rgba(255,b255,b255,0.1)'
+                    }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                        <Settings size={20} color="var(--secondary)" />
+                        <span style={{ fontWeight: '600', fontSize: '14px' }}>Configuración del Sistema</span>
+                    </div>
+                    <ChevronRight size={18} color="var(--text-dim)" />
+                </button>
+
+                <button
+                    className="glass"
+                    style={{
+                        padding: '16px 20px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        width: '100%',
+                        background: 'rgba(255,255,255,0.05)',
+                        border: '1px solid rgba(255,b255,b255,0.1)'
+                    }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                        <CreditCard size={20} color="var(--secondary)" />
+                        <span style={{ fontWeight: '600', fontSize: '14px' }}>Métodos de Pago</span>
+                    </div>
+                    <ChevronRight size={18} color="var(--text-dim)" />
+                </button>
 
                 <button
                     onClick={handleLogout}
@@ -181,15 +247,16 @@ const Profile: React.FC = () => {
                         alignItems: 'center',
                         justifyContent: 'center',
                         gap: '12px',
-                        color: '#ff4444',
-                        marginTop: '20px',
+                        color: '#ff6b6b',
+                        marginTop: '15px',
                         width: '100%',
-                        border: '1px solid rgba(255, 68, 68, 0.2)',
-                        background: 'rgba(255, 68, 68, 0.05)',
-                        fontWeight: '700',
+                        border: '1px solid rgba(255, 107, 107, 0.2)',
+                        background: 'rgba(255, 107, 107, 0.05)',
+                        fontWeight: '800',
+                        fontSize: '14px',
                         cursor: loggingOut ? 'not-allowed' : 'pointer',
                         opacity: loggingOut ? 0.7 : 1,
-                        touchAction: 'manipulation' // Better for mobile clicks
+                        touchAction: 'manipulation'
                     }}
                 >
                     {loggingOut ? <Loader2 className="animate-spin" size={20} /> : <LogOut size={20} />}
