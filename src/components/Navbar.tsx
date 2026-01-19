@@ -64,7 +64,7 @@ const Navbar: React.FC = () => {
     return (
         <nav className="glass-dark" style={{
             position: 'fixed',
-            top: '10px',
+            top: 'calc(env(safe-area-inset-top) + 10px)',
             left: '10px',
             right: '10px',
             height: '60px',
