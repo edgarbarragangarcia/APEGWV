@@ -47,10 +47,25 @@ const Shop: React.FC = () => {
         fetchProducts();
     }, []);
 
+    const categories = ['Todo', 'Clubes', 'Bolas', 'Ropa', 'Accesorios', 'Zapatos', 'Otros'];
+
     const filteredProducts = products.filter(product => {
-        const matchesCategory = activeTab === 'Todo' || product.category === activeTab;
+        // Normalize for robust comparison
+        const normalize = (val: string) => val.toLowerCase().trim();
+        const activeTabNorm = normalize(activeTab);
+        const prodCategoryNorm = normalize(product.category || '');
+
+        // Match category: Handle both English/Spanish variants often found in databases
+        const matchesCategory = activeTab === 'Todo' ||
+            prodCategoryNorm === activeTabNorm ||
+            (activeTab === 'Palos' && prodCategoryNorm === 'clubes') ||
+            (activeTab === 'Balls' && prodCategoryNorm === 'bolas') ||
+            (activeTab === 'Clothing' && prodCategoryNorm === 'ropa') ||
+            (activeTab === 'Accessories' && prodCategoryNorm === 'accesorios');
+
         const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            product.category.toLowerCase().includes(searchQuery.toLowerCase());
+            prodCategoryNorm.includes(searchQuery.toLowerCase());
+
         return matchesCategory && matchesSearch;
     });
 
@@ -147,22 +162,24 @@ const Shop: React.FC = () => {
 
                     {/* Filter Tabs */}
                     <div style={{ display: 'flex', gap: '10px', marginBottom: '25px', overflowX: 'auto', paddingBottom: '10px' }}>
-                        {['Todo', 'Palos', 'Balls', 'Clothing', 'Accessories'].map(tab => (
+                        {categories.map(tab => (
                             <button
                                 key={tab}
                                 onClick={() => setActiveTab(tab)}
                                 style={{
-                                    padding: '10px 20px',
+                                    padding: '10px 22px',
                                     borderRadius: '30px',
-                                    background: activeTab === tab ? 'var(--secondary)' : 'var(--glass-bg)',
+                                    background: activeTab === tab ? 'var(--secondary)' : 'rgba(255,255,255,0.05)',
                                     color: activeTab === tab ? 'var(--primary)' : 'var(--text-main)',
                                     fontSize: '14px',
-                                    fontWeight: activeTab === tab ? '600' : '400',
-                                    border: '1px solid ' + (activeTab === tab ? 'var(--secondary)' : 'var(--glass-border)'),
-                                    whiteSpace: 'nowrap'
+                                    fontWeight: activeTab === tab ? '700' : '500',
+                                    border: '1px solid ' + (activeTab === tab ? 'var(--secondary)' : 'rgba(255,255,255,0.1)'),
+                                    whiteSpace: 'nowrap',
+                                    transition: 'all 0.2s ease',
+                                    boxShadow: activeTab === tab ? '0 4px 12px rgba(163, 230, 53, 0.2)' : 'none'
                                 }}
                             >
-                                {tab === 'Balls' ? 'Bolas' : tab === 'Clothing' ? 'Ropa' : tab === 'Accessories' ? 'Accesorios' : tab}
+                                {tab}
                             </button>
                         ))}
                     </div>

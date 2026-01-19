@@ -1,103 +1,218 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { Calendar, Users, MapPin, Search, Trophy, Loader2, Trophy as TrophyIcon, UserPlus } from 'lucide-react';
 import Card from '../components/Card';
-import { Calendar, Users, MapPin } from 'lucide-react';
+import { supabase } from '../services/SupabaseManager';
+import TournamentManager from './TournamentManager';
 
-const tournaments = [
-    { id: 1, name: 'Copa Primavera 2024', date: '15 Abr', club: 'Golf Santander', participants: '84/100', status: 'Inscripciones Abiertas', price: '$ 350.000' },
-    { id: 2, name: 'Open Amateur Madrid', date: '22 Abr', club: 'Real Club Vereda', participants: '120/120', status: 'Lista de Espera', price: '$ 450.000' },
-    { id: 3, name: 'Torneo Benéfico APEG', date: '05 May', club: 'La Herrería', participants: '45/150', status: 'Inscripciones Abiertas', price: '$ 600.000' },
-];
+interface Tournament {
+    id: string;
+    name: string;
+    description: string;
+    date: string;
+    club: string;
+    price: number;
+    participants_limit: number;
+    current_participants: number;
+    status: string;
+    image_url: string;
+}
 
 const Tournaments: React.FC = () => {
+    const [viewTab, setViewTab] = useState<'all' | 'manage'>('all');
+    const [searchQuery, setSearchQuery] = useState('');
+    const [tournaments, setTournaments] = useState<Tournament[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchTournaments = async () => {
+            try {
+                const { data, error } = await supabase
+                    .from('tournaments')
+                    .select('*')
+                    .order('date', { ascending: true });
+
+                if (error) throw error;
+                setTournaments(data || []);
+            } catch (err) {
+                console.error('Error fetching tournaments:', err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchTournaments();
+    }, []);
+
+    const filteredTournaments = tournaments.filter(t =>
+        t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        t.club.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    if (loading) {
+        return <div className="flex-center" style={{ height: '70vh' }}><Loader2 className="animate-spin" /></div>;
+    }
+
     return (
-        <div className="animate-fade">
-            <header style={{ marginBottom: '25px' }}>
-                <h1 style={{ fontSize: '28px' }}>Torneos y Eventos</h1>
-                <p style={{ color: 'var(--text-dim)' }}>Compite con los mejores de la comunidad</p>
+        <div className="animate-fade" style={{ paddingBottom: '100px' }}>
+            <header style={{ marginBottom: '20px' }}>
+                <h1 style={{ fontSize: '28px' }}>Eventos</h1>
+                <p style={{ color: 'var(--text-dim)' }}>Compite y crece en la comunidad APEG</p>
             </header>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                {tournaments.map((tourney) => (
-                    <Card key={tourney.id} style={{ padding: '0', overflow: 'hidden' }}>
-                        <div style={{
-                            height: '8px',
-                            background: tourney.status.includes('Abiertas') ? 'var(--secondary)' : '#f59e0b'
-                        }} />
-                        <div style={{ padding: '20px' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '15px' }}>
-                                <div>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--secondary)', fontSize: '12px', fontWeight: '700', textTransform: 'uppercase', marginBottom: '5px' }}>
-                                        <Calendar size={14} /> {tourney.date}
+            {/* Tab Bar - Similar to Shop */}
+            <div style={{
+                display: 'flex',
+                background: 'rgba(255,255,255,0.05)',
+                padding: '4px',
+                borderRadius: '16px',
+                marginBottom: '20px'
+            }}>
+                <button
+                    onClick={() => setViewTab('all')}
+                    style={{
+                        flex: 1,
+                        padding: '12px',
+                        borderRadius: '12px',
+                        border: 'none',
+                        background: viewTab === 'all' ? 'var(--secondary)' : 'transparent',
+                        color: viewTab === 'all' ? 'var(--primary)' : 'var(--text-dim)',
+                        fontWeight: '700',
+                        fontSize: '14px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '8px',
+                        cursor: 'pointer',
+                        transition: 'all 0.3s ease'
+                    }}
+                >
+                    <Trophy size={18} /> Torneos
+                </button>
+                <button
+                    onClick={() => setViewTab('manage')}
+                    style={{
+                        flex: 1,
+                        padding: '12px',
+                        borderRadius: '12px',
+                        border: 'none',
+                        background: viewTab === 'manage' ? 'var(--secondary)' : 'transparent',
+                        color: viewTab === 'manage' ? 'var(--primary)' : 'var(--text-dim)',
+                        fontWeight: '700',
+                        fontSize: '14px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '8px',
+                        cursor: 'pointer',
+                        transition: 'all 0.3s ease'
+                    }}
+                >
+                    <TrophyIcon size={18} /> Mis Eventos
+                </button>
+            </div>
+
+            {viewTab === 'all' ? (
+                <>
+                    {/* Search Bar */}
+                    <div className="glass" style={{
+                        padding: '12px 20px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '15px',
+                        marginBottom: '25px'
+                    }}>
+                        <Search size={20} color="var(--text-dim)" />
+                        <input
+                            type="text"
+                            placeholder="Buscar torneos, clubes o fechas..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            style={{
+                                background: 'none',
+                                border: 'none',
+                                color: 'white',
+                                width: '100%',
+                                outline: 'none',
+                                fontSize: '15px'
+                            }}
+                        />
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                        {filteredTournaments.length === 0 ? (
+                            <div style={{ textAlign: 'center', padding: '40px' }}>
+                                <Calendar size={48} color="var(--text-dim)" style={{ marginBottom: '15px', opacity: 0.3, marginInline: 'auto' }} />
+                                <p style={{ color: 'var(--text-dim)' }}>No hay torneos disponibles en este momento.</p>
+                            </div>
+                        ) : (
+                            filteredTournaments.map((tourney) => (
+                                <Card key={tourney.id} style={{ padding: '0', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                    <div style={{ height: '6px', background: 'var(--secondary)' }} />
+                                    <div style={{ padding: '20px' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '15px' }}>
+                                            <div style={{ flex: 1 }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--secondary)', fontSize: '12px', fontWeight: '800', textTransform: 'uppercase', marginBottom: '8px' }}>
+                                                    <Calendar size={14} /> {new Date(tourney.date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                                </div>
+                                                <h3 style={{ fontSize: '20px', fontWeight: '800', lineHeight: '1.2' }}>{tourney.name}</h3>
+                                            </div>
+                                            <div style={{ textAlign: 'right', marginLeft: '10px' }}>
+                                                <div style={{ fontSize: '18px', fontWeight: '800', color: 'white' }}>
+                                                    {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(tourney.price)}
+                                                </div>
+                                                <div style={{ fontSize: '11px', color: 'var(--text-dim)', fontWeight: '600' }}>GREEN FEE INCL.</div>
+                                            </div>
+                                        </div>
+
+                                        <div style={{ display: 'flex', gap: '20px', marginBottom: '20px' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: 'var(--text-dim)', fontWeight: '500' }}>
+                                                <MapPin size={16} color="var(--secondary)" /> {tourney.club}
+                                            </div>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: 'var(--text-dim)', fontWeight: '500' }}>
+                                                <Users size={16} color="var(--secondary)" /> {tourney.current_participants}/{tourney.participants_limit}
+                                            </div>
+                                        </div>
+
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.02)', padding: '12px', borderRadius: '15px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                            <span style={{
+                                                fontSize: '11px',
+                                                padding: '5px 12px',
+                                                borderRadius: '30px',
+                                                background: 'rgba(163, 230, 53, 0.1)',
+                                                color: 'var(--secondary)',
+                                                fontWeight: '800',
+                                                textTransform: 'uppercase'
+                                            }}>
+                                                {tourney.status}
+                                            </span>
+                                            <button style={{
+                                                background: 'var(--secondary)',
+                                                color: 'var(--primary)',
+                                                padding: '10px 22px',
+                                                borderRadius: '12px',
+                                                fontWeight: '800',
+                                                fontSize: '13px',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '8px',
+                                                border: 'none',
+                                                boxShadow: '0 4px 15px rgba(163, 230, 53, 0.2)'
+                                            }}>
+                                                <UserPlus size={16} /> INSCRIBIRME
+                                            </button>
+                                        </div>
                                     </div>
-                                    <h3 style={{ fontSize: '20px' }}>{tourney.name}</h3>
-                                </div>
-                                <div style={{ textAlign: 'right' }}>
-                                    <div style={{ fontSize: '18px', fontWeight: '700' }}>{tourney.price}</div>
-                                    <div style={{ fontSize: '11px', color: 'var(--text-dim)' }}>Green Fee Incl.</div>
-                                </div>
-                            </div>
-
-                            <div style={{ display: 'flex', gap: '20px', marginBottom: '20px' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: 'var(--text-dim)' }}>
-                                    <MapPin size={16} /> {tourney.club}
-                                </div>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: 'var(--text-dim)' }}>
-                                    <Users size={16} /> {tourney.participants}
-                                </div>
-                            </div>
-
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <span style={{
-                                    fontSize: '12px',
-                                    padding: '4px 10px',
-                                    borderRadius: '6px',
-                                    background: 'rgba(255,255,255,0.05)',
-                                    color: tourney.status.includes('Abiertas') ? 'var(--secondary)' : '#f59e0b'
-                                }}>
-                                    {tourney.status}
-                                </span>
-                                <button style={{
-                                    background: tourney.status.includes('Abiertas') ? 'var(--secondary)' : 'var(--glass-bg)',
-                                    color: tourney.status.includes('Abiertas') ? 'var(--primary)' : 'var(--text-dim)',
-                                    padding: '10px 25px',
-                                    borderRadius: '12px',
-                                    fontWeight: '600',
-                                    fontSize: '14px'
-                                }}>
-                                    {tourney.status.includes('Abiertas') ? 'Inscribirme' : 'Ver info'}
-                                </button>
-                            </div>
-                        </div>
-                    </Card>
-                ))}
-            </div>
-
-            <div style={{ marginTop: '30px' }}>
-                <h3 style={{ fontSize: '18px', marginBottom: '15px' }}>Ranking de la Temporada</h3>
-                <Card>
-                    {[1, 2, 3].map((rank) => (
-                        <div key={rank} style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '15px',
-                            padding: '12px 0',
-                            borderBottom: rank < 3 ? '1px solid var(--glass-border)' : 'none'
-                        }}>
-                            <div style={{ width: '30px', fontWeight: '800', fontSize: '18px', color: rank === 1 ? 'var(--accent)' : 'var(--text-dim)' }}>
-                                #{rank}
-                            </div>
-                            <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'var(--primary-light)' }} />
-                            <div style={{ flex: 1 }}>
-                                <div style={{ fontWeight: '600' }}>{rank === 1 ? 'Marcos Alonso' : rank === 2 ? 'Sofía Galán' : 'Eduardo Sanz'}</div>
-                                <div style={{ fontSize: '11px', color: 'var(--text-dim)' }}>Handicap {rank === 1 ? '2.1' : rank === 2 ? '4.5' : '5.0'}</div>
-                            </div>
-                            <div style={{ fontWeight: '700', color: 'var(--secondary)' }}>{1250 - (rank * 100)} pts</div>
-                        </div>
-                    ))}
-                </Card>
-            </div>
+                                </Card>
+                            ))
+                        )}
+                    </div>
+                </>
+            ) : (
+                <TournamentManager />
+            )}
         </div>
     );
 };
 
 export default Tournaments;
+
