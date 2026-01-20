@@ -108,6 +108,7 @@ const CheckoutPage: React.FC = () => {
                     buyer_id: user.id,
                     seller_id: sellerId === 'admin' ? null : sellerId, // Reverted to original logic for seller_id
                     total_price: sellerTotal, // Reverted to original variable name
+                    total_amount: sellerTotal, // Added to fix not-null constraint for total_amount
                     commission_fee: commission,
                     seller_net_amount: net, // Reverted to original variable name
                     status: 'Pagado',
