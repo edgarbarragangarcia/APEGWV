@@ -10,6 +10,7 @@ import Card from '../components/Card';
 import { supabase } from '../services/SupabaseManager';
 import { useCart } from '../context/CartContext';
 import MyStore from './MyStore';
+import PageHeader from '../components/PageHeader';
 
 interface Product {
     id: string;
@@ -133,40 +134,36 @@ const Shop: React.FC = () => {
             overflowX: 'hidden',
             position: 'relative'
         }}>
-            <header style={{
-                marginBottom: '20px',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'flex-start'
-            }}>
-                <div>
-                    <h1 style={{ fontSize: '28px' }}>Tienda</h1>
-                    <p style={{ color: 'var(--text-dim)' }}>Equipamiento premium de la comunidad</p>
-                </div>
-                {totalItems > 0 && (
-                    <motion.button
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        whileTap={{ scale: 0.9 }}
-                        onClick={() => navigate('/cart')}
-                        style={{
-                            background: 'var(--secondary)',
-                            color: 'var(--primary)',
-                            border: 'none',
-                            padding: '12px',
-                            borderRadius: '16px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '8px',
-                            position: 'relative',
-                            boxShadow: '0 8px 20px rgba(163, 230, 53, 0.3)'
-                        }}
-                    >
-                        <ShoppingCart size={20} />
-                        <span style={{ fontWeight: '900', fontSize: '14px' }}>{totalItems}</span>
-                    </motion.button>
-                )}
-            </header>
+            <PageHeader
+                title="Tienda"
+                subtitle="Equipamiento premium de la comunidad"
+                showBack={false}
+                rightElement={
+                    totalItems > 0 && (
+                        <motion.button
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            whileTap={{ scale: 0.9 }}
+                            onClick={() => navigate('/cart')}
+                            style={{
+                                background: 'var(--secondary)',
+                                color: 'var(--primary)',
+                                border: 'none',
+                                padding: '12px',
+                                borderRadius: '16px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                                position: 'relative',
+                                boxShadow: '0 8px 20px rgba(163, 230, 53, 0.3)'
+                            }}
+                        >
+                            <ShoppingCart size={20} />
+                            <span style={{ fontWeight: '900', fontSize: '14px' }}>{totalItems}</span>
+                        </motion.button>
+                    )
+                }
+            />
 
             {/* Tab Bar Container */}
             <div>

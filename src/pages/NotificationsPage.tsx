@@ -2,12 +2,13 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     Bell, CheckCircle2, ShoppingBag,
-    ArrowLeft, Calendar,
+    Calendar,
     ChevronRight, Sparkles, MessageCircle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNotifications } from '../context/NotificationContext';
 import Card from '../components/Card';
+import PageHeader from '../components/PageHeader';
 
 const NotificationsPage: React.FC = () => {
     const navigate = useNavigate();
@@ -44,55 +45,31 @@ const NotificationsPage: React.FC = () => {
             maxWidth: 'var(--app-max-width)',
             margin: '0 auto'
         }}>
-            {/* Header */}
-            <header style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                marginBottom: '30px'
-            }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                    <button
-                        onClick={() => navigate(-1)}
-                        style={{
-                            background: 'rgba(255,255,255,0.05)',
-                            border: '1px solid rgba(255,255,255,0.1)',
-                            width: '40px',
-                            height: '40px',
-                            borderRadius: '12px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            color: 'white'
-                        }}
-                    >
-                        <ArrowLeft size={20} />
-                    </button>
-                    <div>
-                        <h1 style={{ fontSize: '24px', fontWeight: '800' }}>Notificaciones</h1>
-                        {unreadCount > 0 && <p style={{ fontSize: '13px', color: 'var(--secondary)', fontWeight: '600' }}>{unreadCount} nuevas</p>}
-                    </div>
-                </div>
-
-                {notifications.length > 0 && (
-                    <button
-                        onClick={() => markAllAsRead()}
-                        style={{
-                            background: 'none',
-                            border: 'none',
-                            color: 'var(--secondary)',
-                            fontSize: '13px',
-                            fontWeight: '700',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '6px'
-                        }}
-                    >
-                        <CheckCircle2 size={16} />
-                        Limpiar
-                    </button>
-                )}
-            </header>
+            <PageHeader
+                title="Notificaciones"
+                subtitle={unreadCount > 0 ? `${unreadCount} nuevas` : undefined}
+                rightElement={
+                    notifications.length > 0 && (
+                        <button
+                            onClick={() => markAllAsRead()}
+                            style={{
+                                background: 'none',
+                                border: 'none',
+                                color: 'var(--secondary)',
+                                fontSize: '13px',
+                                fontWeight: '700',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                                cursor: 'pointer'
+                            }}
+                        >
+                            <CheckCircle2 size={16} />
+                            Limpiar
+                        </button>
+                    )
+                }
+            />
 
             {notifications.length === 0 ? (
                 <div style={{
@@ -126,10 +103,10 @@ const NotificationsPage: React.FC = () => {
                             >
                                 <Card style={{
                                     padding: '18px',
-                                    background: notif.read ? 'rgba(255,255,255,0.02)' : 'rgba(163, 230, 53, 0.03)',
-                                    border: notif.read ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(163, 230, 53, 0.2)',
+                                    border: notif.read ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(163, 230, 53, 0.4)',
                                     position: 'relative',
-                                    overflow: 'hidden'
+                                    overflow: 'hidden',
+                                    marginBottom: 0
                                 }}>
                                     {!notif.read && (
                                         <div style={{

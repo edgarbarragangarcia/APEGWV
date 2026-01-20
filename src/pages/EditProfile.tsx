@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../services/SupabaseManager';
-import { Save, Loader2, ArrowLeft, Camera, Trash2, Upload, MapPin, X, Check, ChevronRight } from 'lucide-react';
+import { Save, Loader2, Camera, Trash2, Upload, MapPin, X, Check, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 
 
 
+
+import PageHeader from '../components/PageHeader';
 
 const EditProfile: React.FC = () => {
     const navigate = useNavigate();
@@ -165,12 +167,7 @@ const EditProfile: React.FC = () => {
 
     return (
         <div className="animate-fade">
-            <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '30px' }}>
-                <button onClick={() => navigate('/profile')} style={{ background: 'none', border: 'none', color: 'var(--text)' }}>
-                    <ArrowLeft size={24} />
-                </button>
-                <h1 style={{ fontSize: '24px', margin: 0 }}>Editar Perfil</h1>
-            </div>
+            <PageHeader title="Editar Perfil" onBack={() => navigate('/profile')} />
 
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                 {/* Foto de Perfil Section */}

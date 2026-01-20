@@ -827,7 +827,7 @@ const MyStore: React.FC = () => {
                     ) : (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                             {orders.map(order => (
-                                <div key={order.id} className="glass" style={{ padding: '20px' }}>
+                                <Card key={order.id} style={{ padding: '20px' }}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px' }}>
                                         <span style={{
                                             padding: '4px 10px',
@@ -933,7 +933,7 @@ const MyStore: React.FC = () => {
                                             </div>
                                         </div>
                                     )}
-                                </div>
+                                </Card>
                             ))}
                         </div>
                     )}

@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-    ArrowLeft, MapPin, CreditCard,
+    MapPin, CreditCard,
     ShieldCheck, Loader2, Camera, Scan,
     CheckCircle2, Sparkles, Plus, X, AlertCircle
 } from 'lucide-react';
+import PageHeader from '../components/PageHeader';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '../context/CartContext';
 import { supabase } from '../services/SupabaseManager';
@@ -331,31 +332,10 @@ const CheckoutPage: React.FC = () => {
                 </div>
             )}
 
-            {/* Header */}
-            <header style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '15px',
-                marginBottom: '30px'
-            }}>
-                <button
-                    onClick={() => step === 1 ? navigate(-1) : setStep(1)}
-                    style={{
-                        background: 'rgba(255,255,255,0.05)',
-                        border: '1px solid rgba(255,255,255,0.1)',
-                        width: '40px',
-                        height: '40px',
-                        borderRadius: '12px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: 'white'
-                    }}
-                >
-                    <ArrowLeft size={20} />
-                </button>
-                <h1 style={{ fontSize: '24px', fontWeight: '800' }}>Finalizar Compra</h1>
-            </header>
+            <PageHeader
+                title="Finalizar Compra"
+                onBack={() => step === 1 ? navigate(-1) : setStep(1)}
+            />
 
             {/* Error Banner */}
             {/* Added explicit error display */}
