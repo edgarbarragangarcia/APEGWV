@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../services/SupabaseManager';
-import { Save, Loader2, ArrowLeft, Camera, Trash2, Upload } from 'lucide-react';
+import { Save, Loader2, ArrowLeft, Camera, Trash2, Upload, MapPin, X, Check, ChevronRight } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 
 
@@ -18,13 +19,24 @@ const EditProfile: React.FC = () => {
         id_photo_url: string;
         email: string;
         phone: string;
+        address: string;
     }>({
         full_name: '',
         handicap: '',
         federation_code: '',
         id_photo_url: '',
         email: '',
-        phone: ''
+        phone: '',
+        address: ''
+    });
+
+    const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
+    // Draft address for the modal
+    const [addressDetails, setAddressDetails] = useState({
+        street: '',
+        city: '',
+        dept: '',
+        zip: ''
     });
 
     useEffect(() => {
@@ -50,8 +62,20 @@ const EditProfile: React.FC = () => {
                         federation_code: data.federation_code || '',
                         id_photo_url: data.id_photo_url || '',
                         email: data.email || '',
-                        phone: data.phone || ''
+                        phone: data.phone || '',
+                        address: data.address || ''
                     });
+
+                    // Parse address if it exists to pre-fill modal
+                    if (data.address) {
+                        const parts = data.address.split(',').map((p: string) => p.trim());
+                        setAddressDetails({
+                            street: parts[0] || '',
+                            city: parts[1] || '',
+                            dept: parts[2] || '',
+                            zip: parts[3] || ''
+                        });
+                    }
                 }
             } catch (err) {
                 console.error('Error fetching profile:', err);
@@ -116,6 +140,7 @@ const EditProfile: React.FC = () => {
                 id_photo_url: formData.id_photo_url,
                 email: formData.email,
                 phone: formData.phone,
+                address: formData.address,
                 updated_at: new Date().toISOString(),
             };
 
@@ -270,6 +295,35 @@ const EditProfile: React.FC = () => {
                     />
                 </div>
 
+                <div className="form-group">
+                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', color: 'var(--text-dim)' }}>
+                        Dirección de Envío
+                    </label>
+                    <div
+                        onClick={() => setIsAddressModalOpen(true)}
+                        className="glass"
+                        style={{
+                            width: '100%',
+                            padding: '15px',
+                            borderRadius: '12px',
+                            border: 'none',
+                            color: formData.address ? 'var(--text)' : 'var(--text-dim)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            cursor: 'pointer'
+                        }}
+                    >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <MapPin size={18} color={formData.address ? 'var(--secondary)' : 'var(--text-dim)'} />
+                            <span style={{ fontSize: '15px' }}>
+                                {formData.address || 'Ingresa tu dirección'}
+                            </span>
+                        </div>
+                        <ChevronRight size={16} style={{ transform: 'rotate(90deg)', opacity: 0.5 }} />
+                    </div>
+                </div>
+
 
                 <button
                     type="submit"
@@ -297,6 +351,129 @@ const EditProfile: React.FC = () => {
                     {saving ? 'Guardando...' : 'Guardar Cambios'}
                 </button>
             </form>
+
+            {/* Address Modal */}
+            <AnimatePresence>
+                {isAddressModalOpen && (
+                    <>
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setIsAddressModalOpen(false)}
+                            style={{
+                                position: 'fixed',
+                                inset: 0,
+                                background: 'rgba(0,0,0,0.8)',
+                                backdropFilter: 'blur(5px)',
+                                zIndex: 2000
+                            }}
+                        />
+                        <motion.div
+                            initial={{ y: '100%' }}
+                            animate={{ y: 0 }}
+                            exit={{ y: '100%' }}
+                            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                            style={{
+                                position: 'fixed',
+                                bottom: 0,
+                                left: 0,
+                                right: 0,
+                                background: 'var(--primary)',
+                                borderTop: '1px solid rgba(163, 230, 53, 0.3)',
+                                borderRadius: '30px 30px 0 0',
+                                padding: '30px',
+                                paddingBottom: 'calc(var(--safe-bottom) + 30px)',
+                                zIndex: 2001,
+                                maxWidth: 'var(--app-max-width)',
+                                margin: '0 auto'
+                            }}
+                        >
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px' }}>
+                                <h2 style={{ fontSize: '20px', fontWeight: '900' }}>Detalles de Dirección</h2>
+                                <button onClick={() => setIsAddressModalOpen(false)} style={{ background: 'none', border: 'none', color: 'white' }}>
+                                    <X size={24} />
+                                </button>
+                            </div>
+
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                                <div className="form-group">
+                                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Calle / Carrera / Apto</label>
+                                    <input
+                                        type="text"
+                                        className="glass"
+                                        style={{ width: '100%', padding: '15px', borderRadius: '12px', border: 'none', color: 'var(--text)', background: 'rgba(255,255,255,0.05)' }}
+                                        value={addressDetails.street}
+                                        onChange={e => setAddressDetails({ ...addressDetails, street: e.target.value })}
+                                        placeholder="Ej: Calle 100 #15-30 Apto 402"
+                                    />
+                                </div>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                                    <div className="form-group">
+                                        <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Ciudad</label>
+                                        <input
+                                            type="text"
+                                            className="glass"
+                                            style={{ width: '100%', padding: '15px', borderRadius: '12px', border: 'none', color: 'var(--text)', background: 'rgba(255,255,255,0.05)' }}
+                                            value={addressDetails.city}
+                                            onChange={e => setAddressDetails({ ...addressDetails, city: e.target.value })}
+                                            placeholder="Bogotá"
+                                        />
+                                    </div>
+                                    <div className="form-group">
+                                        <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Departamento</label>
+                                        <input
+                                            type="text"
+                                            className="glass"
+                                            style={{ width: '100%', padding: '15px', borderRadius: '12px', border: 'none', color: 'var(--text)', background: 'rgba(255,255,255,0.05)' }}
+                                            value={addressDetails.dept}
+                                            onChange={e => setAddressDetails({ ...addressDetails, dept: e.target.value })}
+                                            placeholder="Cundinamarca"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="form-group">
+                                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Código Postal</label>
+                                    <input
+                                        type="text"
+                                        className="glass"
+                                        style={{ width: '100%', padding: '15px', borderRadius: '12px', border: 'none', color: 'var(--text)', background: 'rgba(255,255,255,0.05)' }}
+                                        value={addressDetails.zip}
+                                        onChange={e => setAddressDetails({ ...addressDetails, zip: e.target.value })}
+                                        placeholder="110111"
+                                    />
+                                </div>
+
+                                <button
+                                    onClick={() => {
+                                        const fullAddress = [addressDetails.street, addressDetails.city, addressDetails.dept, addressDetails.zip]
+                                            .filter(Boolean)
+                                            .join(', ');
+                                        setFormData({ ...formData, address: fullAddress });
+                                        setIsAddressModalOpen(false);
+                                    }}
+                                    style={{
+                                        marginTop: '15px',
+                                        background: 'var(--secondary)',
+                                        color: 'var(--primary)',
+                                        padding: '18px',
+                                        borderRadius: '16px',
+                                        fontWeight: '900',
+                                        border: 'none',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        gap: '10px'
+                                    }}
+                                >
+                                    <Check size={20} />
+                                    CONFIRMAR DIRECCIÓN
+                                </button>
+                            </div>
+                        </motion.div>
+                    </>
+                )}
+            </AnimatePresence>
         </div>
     );
 };

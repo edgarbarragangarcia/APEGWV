@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../services/SupabaseManager';
-import { Settings, LogOut, Shield, CreditCard, ChevronRight, Edit2, Mail, Phone } from 'lucide-react';
+import { Settings, LogOut, Shield, CreditCard, ChevronRight, Edit2, Mail, Phone, MapPin } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import type { Database } from '../types/database.types';
 
@@ -203,6 +203,16 @@ const Profile: React.FC = () => {
                         <div style={{ flex: 1 }}>
                             <p style={{ fontSize: '11px', color: 'var(--text-dim)', fontWeight: '600' }}>TELÉFONO</p>
                             <p style={{ fontSize: '14px', fontWeight: '500' }}>{profile?.phone || 'No configurado'}</p>
+                        </div>
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                        <div style={{ background: 'rgba(163, 230, 53, 0.1)', padding: '8px', borderRadius: '10px' }}>
+                            <MapPin size={18} color="var(--secondary)" />
+                        </div>
+                        <div style={{ flex: 1 }}>
+                            <p style={{ fontSize: '11px', color: 'var(--text-dim)', fontWeight: '600' }}>DIRECCIÓN</p>
+                            <p style={{ fontSize: '14px', fontWeight: '500' }}>{profile?.address || 'No configurada'}</p>
                         </div>
                     </div>
                 </div>
