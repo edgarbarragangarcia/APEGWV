@@ -94,7 +94,7 @@ const Profile: React.FC = () => {
                     onClick={() => navigate('/profile/edit')}
                     style={{
                         position: 'absolute',
-                        top: '-10px',
+                        top: '25px',
                         right: '0',
                         padding: '12px',
                         cursor: 'pointer',
