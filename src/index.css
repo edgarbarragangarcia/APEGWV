@@ -32,6 +32,9 @@ body {
   line-height: 1.6;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
+  position: relative;
+  width: 100%;
+  overscroll-behavior-x: none;
 
   /* App-like behavior: Prevent selection and copy-paste */
   -webkit-user-select: none;
@@ -55,6 +58,8 @@ textarea,
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  overflow-x: hidden;
+  width: 100%;
 }
 
 h1,

@@ -108,13 +108,18 @@ const Shop: React.FC = () => {
         <div className="animate-fade" style={{
             paddingBottom: 'calc(var(--nav-height) + 20px)',
             paddingTop: 'var(--safe-top)',
+            width: '100%',
+            overflowX: 'hidden',
+            position: 'relative'
         }}>
             <header style={{
                 marginBottom: '20px',
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'flex-start',
-                paddingTop: '10px'
+                paddingTop: '10px',
+                paddingLeft: '20px',
+                paddingRight: '20px'
             }}>
                 <div>
                     <h1 style={{ fontSize: '28px' }}>Tienda</h1>
@@ -145,234 +150,251 @@ const Shop: React.FC = () => {
                 )}
             </header>
 
-            {/* Tab Bar */}
-            <div style={{
-                display: 'flex',
-                background: 'rgba(255,255,255,0.05)',
-                padding: '4px',
-                borderRadius: '16px',
-                marginBottom: '20px'
-            }}>
-                <button
-                    onClick={() => setViewTab('marketplace')}
-                    style={{
-                        flex: 1,
-                        padding: '10px',
-                        borderRadius: '12px',
-                        border: 'none',
-                        background: viewTab === 'marketplace' ? 'var(--secondary)' : 'transparent',
-                        color: viewTab === 'marketplace' ? 'var(--primary)' : 'var(--text-dim)',
-                        fontWeight: '700',
-                        fontSize: '13px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '6px',
-                        cursor: 'pointer'
-                    }}
-                >
-                    <ShoppingBag size={16} /> Market
-                </button>
-                <button
-                    onClick={() => setViewTab('mystore')}
-                    style={{
-                        flex: 1,
-                        padding: '10px',
-                        borderRadius: '12px',
-                        border: 'none',
-                        background: viewTab === 'mystore' ? 'var(--secondary)' : 'transparent',
-                        color: viewTab === 'mystore' ? 'var(--primary)' : 'var(--text-dim)',
-                        fontWeight: '700',
-                        fontSize: '13px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '6px',
-                        cursor: 'pointer'
-                    }}
-                >
-                    <Store size={16} /> Mi Tienda
-                </button>
-                <button
-                    onClick={() => setViewTab('myorders')}
-                    style={{
-                        flex: 1,
-                        padding: '10px',
-                        borderRadius: '12px',
-                        border: 'none',
-                        background: viewTab === 'myorders' ? 'var(--secondary)' : 'transparent',
-                        color: viewTab === 'myorders' ? 'var(--primary)' : 'var(--text-dim)',
-                        fontWeight: '700',
-                        fontSize: '13px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '6px',
-                        cursor: 'pointer'
-                    }}
-                >
-                    <ShoppingCart size={16} /> Pedidos
-                </button>
-            </div>
+            {/* Tab Bar Container */}
+            <div style={{ padding: '0 20px' }}>
+                <div style={{
+                    display: 'flex',
+                    background: 'rgba(255,255,255,0.05)',
+                    padding: '4px',
+                    borderRadius: '16px',
+                    marginBottom: '20px'
+                }}>
+                    <button
+                        onClick={() => setViewTab('marketplace')}
+                        style={{
+                            flex: 1,
+                            padding: '10px',
+                            borderRadius: '12px',
+                            border: 'none',
+                            background: viewTab === 'marketplace' ? 'var(--secondary)' : 'transparent',
+                            color: viewTab === 'marketplace' ? 'var(--primary)' : 'var(--text-dim)',
+                            fontWeight: '700',
+                            fontSize: '13px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '6px',
+                            cursor: 'pointer'
+                        }}
+                    >
+                        <ShoppingBag size={16} /> Market
+                    </button>
+                    <button
+                        onClick={() => setViewTab('mystore')}
+                        style={{
+                            flex: 1,
+                            padding: '10px',
+                            borderRadius: '12px',
+                            border: 'none',
+                            background: viewTab === 'mystore' ? 'var(--secondary)' : 'transparent',
+                            color: viewTab === 'mystore' ? 'var(--primary)' : 'var(--text-dim)',
+                            fontWeight: '700',
+                            fontSize: '13px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '6px',
+                            cursor: 'pointer'
+                        }}
+                    >
+                        <Store size={16} /> Mi Tienda
+                    </button>
+                    <button
+                        onClick={() => setViewTab('myorders')}
+                        style={{
+                            flex: 1,
+                            padding: '10px',
+                            borderRadius: '12px',
+                            border: 'none',
+                            background: viewTab === 'myorders' ? 'var(--secondary)' : 'transparent',
+                            color: viewTab === 'myorders' ? 'var(--primary)' : 'var(--text-dim)',
+                            fontWeight: '700',
+                            fontSize: '13px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '6px',
+                            cursor: 'pointer'
+                        }}
+                    >
+                        <ShoppingCart size={16} /> Pedidos
+                    </button>
+                </div>
 
-            {viewTab === 'marketplace' ? (
-                <>
-                    {/* Search Bar */}
-                    <div className="glass" style={{
-                        padding: '12px 20px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '15px',
-                        marginBottom: '20px'
-                    }}>
-                        <Search size={20} color="var(--text-dim)" />
-                        <input
-                            type="text"
-                            placeholder="Buscar palos, bolas, caddies..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            style={{
-                                background: 'none',
-                                border: 'none',
-                                color: 'white',
-                                width: '100%',
-                                outline: 'none',
-                                fontSize: '15px'
-                            }}
-                        />
-                        <Filter size={20} color="var(--secondary)" />
-                    </div>
-
-                    {/* Filter Tabs */}
-                    <div style={{ display: 'flex', gap: '10px', marginBottom: '25px', overflowX: 'auto', paddingBottom: '10px', scrollbarWidth: 'none' }}>
-                        {categories.map(tab => (
-                            <button
-                                key={tab}
-                                onClick={() => setActiveTab(tab)}
+                {viewTab === 'marketplace' ? (
+                    <>
+                        {/* Search Bar */}
+                        <div className="glass" style={{
+                            margin: '0 20px 20px 20px',
+                            padding: '12px 20px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '15px'
+                        }}>
+                            <Search size={20} color="var(--text-dim)" />
+                            <input
+                                type="text"
+                                placeholder="Buscar palos, bolas, caddies..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
                                 style={{
-                                    padding: '10px 22px',
-                                    borderRadius: '30px',
-                                    background: activeTab === tab ? 'var(--secondary)' : 'rgba(255,255,255,0.05)',
-                                    color: activeTab === tab ? 'var(--primary)' : 'white',
-                                    fontSize: '14px',
-                                    fontWeight: activeTab === tab ? '700' : '500',
-                                    border: '1px solid ' + (activeTab === tab ? 'var(--secondary)' : 'rgba(255,255,255,0.1)'),
-                                    whiteSpace: 'nowrap'
+                                    background: 'none',
+                                    border: 'none',
+                                    color: 'white',
+                                    width: '100%',
+                                    outline: 'none',
+                                    fontSize: '15px'
                                 }}
-                            >
-                                {tab}
-                            </button>
-                        ))}
-                    </div>
-
-                    {/* Product Grid */}
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
-                        {filteredProducts.map(product => (
-                            <motion.div
-                                key={product.id}
-                                whileTap={{ scale: 0.96 }}
-                                onClick={() => setSelectedProduct(product)}
-                            >
-                                <Card style={{ overflow: 'hidden', padding: 0, height: '100%', cursor: 'pointer' }}>
-                                    <div style={{ position: 'relative' }}>
-                                        <img
-                                            src={product.image_url}
-                                            alt={product.name}
-                                            style={{ width: '100%', height: '160px', objectFit: 'cover' }}
-                                        />
-                                        <div style={{ position: 'absolute', top: '10px', right: '10px', background: 'rgba(0,0,0,0.5)', padding: '5px', borderRadius: '50%' }}>
-                                            <ChevronRight size={14} color="white" />
-                                        </div>
-                                    </div>
-                                    <div style={{ padding: '12px' }}>
-                                        <h4 style={{ fontSize: '14px', fontWeight: '750', marginBottom: '6px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                            {product.name}
-                                        </h4>
-                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 'auto' }}>
-                                            <span style={{ color: 'var(--secondary)', fontWeight: '800', fontSize: '15px' }}>
-                                                $ {new Intl.NumberFormat('es-CO').format(product.price)}
-                                            </span>
-                                        </div>
-                                        <p style={{ fontSize: '11px', color: 'var(--text-dim)', marginTop: '4px' }}>{product.category}</p>
-                                    </div>
-                                </Card>
-                            </motion.div>
-                        ))}
-                    </div>
-                </>
-            ) : viewTab === 'mystore' ? (
-                <MyStore />
-            ) : (
-                <div className="animate-fade">
-                    <h2 style={{ fontSize: '22px', fontWeight: '800', marginBottom: '20px' }}>Mis Compras</h2>
-                    {myOrders.length === 0 ? (
-                        <div className="glass" style={{ padding: '60px 20px', textAlign: 'center' }}>
-                            <ShoppingBag size={48} color="var(--text-dim)" style={{ marginBottom: '15px', opacity: 0.2 }} />
-                            <p style={{ color: 'var(--text-dim)' }}>Aún no has realizado compras.</p>
-                            <button onClick={() => setViewTab('marketplace')} style={{ color: 'var(--secondary)', marginTop: '10px', fontWeight: '700' }}>Explorar Marketplace</button>
+                            />
+                            <Filter size={20} color="var(--secondary)" />
                         </div>
-                    ) : (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                            {myOrders.map((order: any) => (
-                                <Card key={order.id} style={{ padding: '20px' }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px' }}>
-                                        <span style={{
-                                            background: order.status === 'Pendiente' ? '#f59e0b' : '#10b981',
-                                            padding: '4px 10px', borderRadius: '8px', fontSize: '11px', fontWeight: '800', color: 'white'
-                                        }}>
-                                            {order.status.toUpperCase()}
-                                        </span>
-                                        <span style={{ fontSize: '11px', color: 'var(--text-dim)' }}>{new Date(order.created_at).toLocaleDateString()}</span>
-                                    </div>
-                                    <div style={{ display: 'flex', gap: '15px', marginBottom: '15px' }}>
-                                        <img src={order.product?.image_url} style={{ width: '60px', height: '60px', borderRadius: '12px', objectFit: 'cover' }} alt="" />
-                                        <div>
-                                            <h4 style={{ fontSize: '15px', fontWeight: '800' }}>{order.product?.name}</h4>
-                                            <p style={{ color: 'var(--secondary)', fontWeight: '800' }}>$ {new Intl.NumberFormat('es-CO').format(order.total_price)}</p>
-                                        </div>
-                                    </div>
 
-                                    {/* Tracking Timeline */}
-                                    <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '15px', marginTop: '15px' }}>
-                                        <p style={{ fontSize: '12px', fontWeight: '800', color: 'var(--secondary)', marginBottom: '15px', textTransform: 'uppercase' }}>Seguimiento del pedido</p>
-                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                                            <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-                                                <div style={{ width: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                                    <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: 'var(--secondary)' }}></div>
-                                                    <div style={{ width: '1px', flex: 1, background: 'var(--secondary)', minHeight: '15px' }}></div>
-                                                </div>
-                                                <div style={{ fontSize: '12px' }}>
-                                                    <p style={{ fontWeight: '700' }}>Orden confirmada</p>
-                                                    <p style={{ fontSize: '10px', color: 'var(--text-dim)' }}>{new Date(order.created_at).toLocaleString()}</p>
-                                                </div>
-                                            </div>
-                                            <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-                                                <div style={{ width: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                                    <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: (order.status === 'Preparando' || order.status === 'Enviado') ? 'var(--secondary)' : 'rgba(255,255,255,0.1)' }}></div>
-                                                    <div style={{ width: '1px', flex: 1, background: order.status === 'Enviado' ? 'var(--secondary)' : 'rgba(255,255,255,0.1)', minHeight: '15px' }}></div>
-                                                </div>
-                                                <div style={{ fontSize: '12px' }}>
-                                                    <p style={{ fontWeight: '700', color: (order.status === 'Preparando' || order.status === 'Enviado') ? 'white' : 'var(--text-dim)' }}>En preparación</p>
-                                                    <p style={{ fontSize: '10px', color: 'var(--text-dim)' }}>El vendedor está alistando tu pedido</p>
-                                                </div>
-                                            </div>
-                                            <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-                                                <div style={{ width: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                                    <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: order.status === 'Enviado' ? 'var(--secondary)' : 'rgba(255,255,255,0.1)' }}></div>
-                                                </div>
-                                                <div style={{ fontSize: '12px' }}>
-                                                    <p style={{ fontWeight: '700', color: order.status === 'Enviado' ? 'white' : 'var(--text-dim)' }}>Pedido enviado</p>
-                                                    {order.tracking_number && <p style={{ fontSize: '11px', color: 'var(--secondary)', fontWeight: '600', marginTop: '4px' }}>Guía: {order.shipping_provider} - {order.tracking_number}</p>}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </Card>
+                        {/* Filter Tabs */}
+                        <div style={{
+                            display: 'flex',
+                            gap: '10px',
+                            marginBottom: '25px',
+                            overflowX: 'auto',
+                            paddingBottom: '10px',
+                            scrollbarWidth: 'none',
+                            paddingLeft: '20px',
+                            paddingRight: '20px',
+                            width: '100%'
+                        }}>
+                            {categories.map(tab => (
+                                <button
+                                    key={tab}
+                                    onClick={() => setActiveTab(tab)}
+                                    style={{
+                                        padding: '10px 22px',
+                                        borderRadius: '30px',
+                                        background: activeTab === tab ? 'var(--secondary)' : 'rgba(255,255,255,0.05)',
+                                        color: activeTab === tab ? 'var(--primary)' : 'white',
+                                        fontSize: '14px',
+                                        fontWeight: activeTab === tab ? '700' : '500',
+                                        border: '1px solid ' + (activeTab === tab ? 'var(--secondary)' : 'rgba(255,255,255,0.1)'),
+                                        whiteSpace: 'nowrap'
+                                    }}
+                                >
+                                    {tab}
+                                </button>
                             ))}
                         </div>
-                    )}
-                </div>
-            )}
+
+                        {/* Product Grid */}
+                        <div style={{
+                            display: 'grid',
+                            gridTemplateColumns: '1fr 1fr',
+                            gap: '15px',
+                            padding: '0 20px'
+                        }}>
+                            {filteredProducts.map(product => (
+                                <motion.div
+                                    key={product.id}
+                                    whileTap={{ scale: 0.96 }}
+                                    onClick={() => setSelectedProduct(product)}
+                                >
+                                    <Card style={{ overflow: 'hidden', padding: 0, height: '100%', cursor: 'pointer' }}>
+                                        <div style={{ position: 'relative' }}>
+                                            <img
+                                                src={product.image_url}
+                                                alt={product.name}
+                                                style={{ width: '100%', height: '160px', objectFit: 'cover' }}
+                                            />
+                                            <div style={{ position: 'absolute', top: '10px', right: '10px', background: 'rgba(0,0,0,0.5)', padding: '5px', borderRadius: '50%' }}>
+                                                <ChevronRight size={14} color="white" />
+                                            </div>
+                                        </div>
+                                        <div style={{ padding: '12px' }}>
+                                            <h4 style={{ fontSize: '14px', fontWeight: '750', marginBottom: '6px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                                {product.name}
+                                            </h4>
+                                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 'auto' }}>
+                                                <span style={{ color: 'var(--secondary)', fontWeight: '800', fontSize: '15px' }}>
+                                                    $ {new Intl.NumberFormat('es-CO').format(product.price)}
+                                                </span>
+                                            </div>
+                                            <p style={{ fontSize: '11px', color: 'var(--text-dim)', marginTop: '4px' }}>{product.category}</p>
+                                        </div>
+                                    </Card>
+                                </motion.div>
+                            ))}
+                        </div>
+                    </>
+                ) : viewTab === 'mystore' ? (
+                    <MyStore />
+                ) : (
+                    <div className="animate-fade" style={{ padding: '0 20px' }}>
+                        <h2 style={{ fontSize: '22px', fontWeight: '800', marginBottom: '20px' }}>Mis Compras</h2>
+                        {myOrders.length === 0 ? (
+                            <div className="glass" style={{ padding: '60px 20px', textAlign: 'center' }}>
+                                <ShoppingBag size={48} color="var(--text-dim)" style={{ marginBottom: '15px', opacity: 0.2 }} />
+                                <p style={{ color: 'var(--text-dim)' }}>Aún no has realizado compras.</p>
+                                <button onClick={() => setViewTab('marketplace')} style={{ color: 'var(--secondary)', marginTop: '10px', fontWeight: '700' }}>Explorar Marketplace</button>
+                            </div>
+                        ) : (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                                {myOrders.map((order: any) => (
+                                    <Card key={order.id} style={{ padding: '20px' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px' }}>
+                                            <span style={{
+                                                background: order.status === 'Pendiente' ? '#f59e0b' : '#10b981',
+                                                padding: '4px 10px', borderRadius: '8px', fontSize: '11px', fontWeight: '800', color: 'white'
+                                            }}>
+                                                {order.status.toUpperCase()}
+                                            </span>
+                                            <span style={{ fontSize: '11px', color: 'var(--text-dim)' }}>{new Date(order.created_at).toLocaleDateString()}</span>
+                                        </div>
+                                        <div style={{ display: 'flex', gap: '15px', marginBottom: '15px' }}>
+                                            <img src={order.product?.image_url} style={{ width: '60px', height: '60px', borderRadius: '12px', objectFit: 'cover' }} alt="" />
+                                            <div>
+                                                <h4 style={{ fontSize: '15px', fontWeight: '800' }}>{order.product?.name}</h4>
+                                                <p style={{ color: 'var(--secondary)', fontWeight: '800' }}>$ {new Intl.NumberFormat('es-CO').format(order.total_price)}</p>
+                                            </div>
+                                        </div>
+
+                                        {/* Tracking Timeline */}
+                                        <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '15px', marginTop: '15px' }}>
+                                            <p style={{ fontSize: '12px', fontWeight: '800', color: 'var(--secondary)', marginBottom: '15px', textTransform: 'uppercase' }}>Seguimiento del pedido</p>
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                                <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                                                    <div style={{ width: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                                        <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: 'var(--secondary)' }}></div>
+                                                        <div style={{ width: '1px', flex: 1, background: 'var(--secondary)', minHeight: '15px' }}></div>
+                                                    </div>
+                                                    <div style={{ fontSize: '12px' }}>
+                                                        <p style={{ fontWeight: '700' }}>Orden confirmada</p>
+                                                        <p style={{ fontSize: '10px', color: 'var(--text-dim)' }}>{new Date(order.created_at).toLocaleString()}</p>
+                                                    </div>
+                                                </div>
+                                                <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                                                    <div style={{ width: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                                        <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: (order.status === 'Preparando' || order.status === 'Enviado') ? 'var(--secondary)' : 'rgba(255,255,255,0.1)' }}></div>
+                                                        <div style={{ width: '1px', flex: 1, background: order.status === 'Enviado' ? 'var(--secondary)' : 'rgba(255,255,255,0.1)', minHeight: '15px' }}></div>
+                                                    </div>
+                                                    <div style={{ fontSize: '12px' }}>
+                                                        <p style={{ fontWeight: '700', color: (order.status === 'Preparando' || order.status === 'Enviado') ? 'white' : 'var(--text-dim)' }}>En preparación</p>
+                                                        <p style={{ fontSize: '10px', color: 'var(--text-dim)' }}>El vendedor está alistando tu pedido</p>
+                                                    </div>
+                                                </div>
+                                                <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                                                    <div style={{ width: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                                        <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: order.status === 'Enviado' ? 'var(--secondary)' : 'rgba(255,255,255,0.1)' }}></div>
+                                                    </div>
+                                                    <div style={{ fontSize: '12px' }}>
+                                                        <p style={{ fontWeight: '700', color: order.status === 'Enviado' ? 'white' : 'var(--text-dim)' }}>Pedido enviado</p>
+                                                        {order.tracking_number && <p style={{ fontSize: '11px', color: 'var(--secondary)', fontWeight: '600', marginTop: '4px' }}>Guía: {order.shipping_provider} - {order.tracking_number}</p>}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </Card>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                )}
+            </div>
 
             {/* Product Detail Modal */}
             <AnimatePresence>
@@ -528,18 +550,20 @@ const Shop: React.FC = () => {
                                         flex: 1,
                                         background: 'rgba(255,255,255,0.05)',
                                         color: 'white',
-                                        height: '65px',
-                                        borderRadius: '22px',
-                                        fontWeight: '800',
-                                        fontSize: '14px',
+                                        height: '56px',
+                                        borderRadius: '18px',
+                                        fontWeight: '700',
+                                        fontSize: '12px',
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
-                                        gap: '10px',
-                                        border: '1px solid rgba(255,255,255,0.1)'
+                                        gap: '8px',
+                                        border: '1px solid rgba(255,255,255,0.1)',
+                                        textTransform: 'uppercase',
+                                        letterSpacing: '0.05em'
                                     }}
                                 >
-                                    {addingToCart === selectedProduct.id ? <CheckCircle2 size={22} color="var(--secondary)" /> : <Plus size={22} />}
+                                    {addingToCart === selectedProduct.id ? <CheckCircle2 size={18} color="var(--secondary)" /> : <Plus size={18} />}
                                     {addingToCart === selectedProduct.id ? 'VISTO' : 'CARRITO'}
                                 </motion.button>
 
@@ -580,22 +604,24 @@ const Shop: React.FC = () => {
                                     }}
                                     disabled={buying || (selectedProduct?.seller_id === user?.id)}
                                     style={{
-                                        flex: 2,
+                                        flex: 1.5,
                                         background: (selectedProduct?.seller_id === user?.id) ? 'rgba(255,255,255,0.1)' : 'var(--secondary)',
                                         color: (selectedProduct?.seller_id === user?.id) ? 'var(--text-dim)' : 'var(--primary)',
-                                        height: '65px',
-                                        borderRadius: '22px',
-                                        fontWeight: '900',
-                                        fontSize: '16px',
+                                        height: '56px',
+                                        borderRadius: '18px',
+                                        fontWeight: '800',
+                                        fontSize: '13px',
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
-                                        gap: '12px',
-                                        boxShadow: (selectedProduct?.seller_id === user?.id) ? 'none' : '0 10px 30px rgba(163, 230, 53, 0.3)'
+                                        gap: '8px',
+                                        boxShadow: (selectedProduct?.seller_id === user?.id) ? 'none' : '0 8px 25px rgba(163, 230, 53, 0.25)',
+                                        textTransform: 'uppercase',
+                                        letterSpacing: '0.05em'
                                     }}
                                 >
-                                    {buying ? <Loader2 size={24} className="animate-spin" /> : <ShoppingCart size={24} />}
-                                    {(selectedProduct?.seller_id === user?.id) ? 'MI PRODUCTO' : (buying ? 'PROCESANDO...' : 'COMPRAR YA')}
+                                    {buying ? <Loader2 size={20} className="animate-spin" /> : <ShoppingCart size={20} />}
+                                    {(selectedProduct?.seller_id === user?.id) ? 'MI PRODUCTO' : (buying ? '...' : 'COMPRAR YA')}
                                 </motion.button>
                             </div>
                         </div>

@@ -66,8 +66,16 @@ const Home: React.FC = () => {
     }
 
     return (
-        <div className="animate-fade">
-            <header style={{ marginBottom: '30px' }}>
+        <div className="animate-fade" style={{
+            paddingBottom: 'calc(var(--nav-height) + 20px)',
+            paddingTop: 'var(--safe-top)',
+            width: '100%',
+            overflowX: 'hidden',
+            position: 'relative',
+            paddingLeft: '20px',
+            paddingRight: '20px'
+        }}>
+            <header style={{ marginBottom: '30px', paddingTop: '10px' }}>
                 <h1 style={{ fontSize: '28px', marginBottom: '5px' }}>
                     Hola, <span className="gradient-text">{profile?.full_name?.split(' ')[0] || 'golfista'}</span>
                 </h1>
@@ -106,7 +114,16 @@ const Home: React.FC = () => {
                         Ver todo <ArrowRight size={14} />
                     </button>
                 </div>
-                <div style={{ display: 'flex', gap: '15px', overflowX: 'auto', padding: '20px 0 20px', scrollSnapType: 'x mandatory' }}>
+                <div style={{
+                    display: 'flex',
+                    gap: '15px',
+                    overflowX: 'auto',
+                    margin: '0 -20px',
+                    padding: '20px',
+                    scrollSnapType: 'x mandatory',
+                    scrollbarWidth: 'none',
+                    WebkitOverflowScrolling: 'touch'
+                }}>
                     {featuredProducts.length > 0 ? (
                         featuredProducts.map((product) => (
                             <Card

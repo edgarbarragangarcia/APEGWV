@@ -82,7 +82,15 @@ const Profile: React.FC = () => {
 
 
     return (
-        <div className="animate-fade" style={{ paddingBottom: '30px' }}>
+        <div className="animate-fade" style={{
+            paddingBottom: 'calc(var(--nav-height) + 20px)',
+            paddingTop: 'var(--safe-top)',
+            width: '100%',
+            overflowX: 'hidden',
+            position: 'relative',
+            paddingLeft: '20px',
+            paddingRight: '20px'
+        }}>
             {/* Header Section */}
             <div style={{ textAlign: 'center', marginBottom: '35px', position: 'relative' }}>
                 <div
