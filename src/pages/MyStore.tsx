@@ -115,13 +115,37 @@ const MyStore: React.FC = () => {
             setProducts(userProducts || []);
 
             // Fetch Orders
-            const { data: userOrders } = await supabase
-                .from('orders')
-                .select('*, product:products(*), buyer:profiles(*)')
-                .eq('seller_id', session.user.id)
-                .order('created_at', { ascending: false });
+            const fetchOrders = async () => {
+                const { data: userOrders } = await supabase
+                    .from('orders')
+                    .select('*, product:products(*), buyer:profiles(*)')
+                    .eq('seller_id', session.user.id)
+                    .order('created_at', { ascending: false });
+                setOrders(userOrders || []);
+            };
 
-            setOrders(userOrders || []);
+            fetchOrders();
+
+            // Setup Realtime for Orders
+            const channel = supabase
+                .channel('seller-orders')
+                .on(
+                    'postgres_changes',
+                    {
+                        event: '*',
+                        schema: 'public',
+                        table: 'orders',
+                        filter: `seller_id=eq.${session.user.id}`
+                    },
+                    () => {
+                        fetchOrders();
+                    }
+                )
+                .subscribe();
+
+            return () => {
+                supabase.removeChannel(channel);
+            };
 
         } catch (err) {
             console.error('Error fetching store data:', err);

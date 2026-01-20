@@ -126,6 +126,15 @@ const CheckoutPage: React.FC = () => {
                 }
             }
 
+            // Notify buyer
+            await supabase.from('notifications').insert([{
+                user_id: user.id,
+                title: '¡Compra exitosa!',
+                message: `Tu pedido por $${new Intl.NumberFormat('es-CO').format(totalAmount)} ha sido confirmado.`,
+                type: 'order_new',
+                link: `/shop?tab=orders`
+            }]);
+
             setIsSuccess(true);
             setTimeout(() => {
                 clearCart();
