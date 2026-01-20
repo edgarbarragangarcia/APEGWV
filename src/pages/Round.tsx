@@ -251,7 +251,7 @@ const Round: React.FC = () => {
     const [showFinishModal, setShowFinishModal] = React.useState(false);
 
     return (
-        <div className="animate-fade" style={{ maxWidth: '600px', margin: '0 auto' }}>
+        <div className="animate-fade" style={{ maxWidth: 'var(--app-max-width)', margin: '0 auto' }}>
 
             <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>

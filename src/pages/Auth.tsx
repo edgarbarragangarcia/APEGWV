@@ -88,7 +88,7 @@ const Auth: React.FC = () => {
                 transition={{ duration: 0.8, ease: "easeOut" }}
                 style={{
                     width: '92%',
-                    maxWidth: '400px',
+                    maxWidth: 'var(--app-max-width)',
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',

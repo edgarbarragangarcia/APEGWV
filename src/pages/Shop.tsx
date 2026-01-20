@@ -117,9 +117,7 @@ const Shop: React.FC = () => {
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'flex-start',
-                paddingTop: '10px',
-                paddingLeft: '20px',
-                paddingRight: '20px'
+                paddingTop: '10px'
             }}>
                 <div>
                     <h1 style={{ fontSize: '28px' }}>Tienda</h1>
@@ -151,7 +149,7 @@ const Shop: React.FC = () => {
             </header>
 
             {/* Tab Bar Container */}
-            <div style={{ padding: '0 20px' }}>
+            <div>
                 <div style={{
                     display: 'flex',
                     background: 'rgba(255,255,255,0.05)',
@@ -225,7 +223,7 @@ const Shop: React.FC = () => {
                     <>
                         {/* Search Bar */}
                         <div className="glass" style={{
-                            margin: '0 20px 20px 20px',
+                            margin: '0 0 20px 0',
                             padding: '12px 20px',
                             display: 'flex',
                             alignItems: 'center',
@@ -257,8 +255,6 @@ const Shop: React.FC = () => {
                             overflowX: 'auto',
                             paddingBottom: '10px',
                             scrollbarWidth: 'none',
-                            paddingLeft: '20px',
-                            paddingRight: '20px',
                             width: '100%'
                         }}>
                             {categories.map(tab => (
@@ -285,46 +281,90 @@ const Shop: React.FC = () => {
                         <div style={{
                             display: 'grid',
                             gridTemplateColumns: '1fr 1fr',
-                            gap: '15px',
-                            padding: '0 20px'
+                            gap: '15px'
                         }}>
                             {filteredProducts.map(product => (
-                                <motion.div
+                                <Card
                                     key={product.id}
-                                    whileTap={{ scale: 0.96 }}
                                     onClick={() => setSelectedProduct(product)}
+                                    style={{
+                                        overflow: 'hidden',
+                                        padding: 0,
+                                        height: '100%',
+                                        marginBottom: 0,
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        cursor: 'pointer'
+                                    }}
                                 >
-                                    <Card style={{ overflow: 'hidden', padding: 0, height: '100%', cursor: 'pointer' }}>
-                                        <div style={{ position: 'relative' }}>
-                                            <img
-                                                src={product.image_url}
-                                                alt={product.name}
-                                                style={{ width: '100%', height: '160px', objectFit: 'cover' }}
-                                            />
-                                            <div style={{ position: 'absolute', top: '10px', right: '10px', background: 'rgba(0,0,0,0.5)', padding: '5px', borderRadius: '50%' }}>
-                                                <ChevronRight size={14} color="white" />
-                                            </div>
+                                    <div style={{ position: 'relative', height: '160px', overflow: 'hidden' }}>
+                                        <img
+                                            src={product.image_url}
+                                            alt={product.name}
+                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                        />
+                                        <div style={{
+                                            position: 'absolute',
+                                            top: '10px',
+                                            right: '10px',
+                                            background: 'rgba(0,0,0,0.4)',
+                                            backdropFilter: 'blur(4px)',
+                                            padding: '6px',
+                                            borderRadius: '50%',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center'
+                                        }}>
+                                            <ChevronRight size={14} color="white" />
                                         </div>
-                                        <div style={{ padding: '12px' }}>
-                                            <h4 style={{ fontSize: '14px', fontWeight: '750', marginBottom: '6px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                                {product.name}
-                                            </h4>
-                                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 'auto' }}>
-                                                <span style={{ color: 'var(--secondary)', fontWeight: '800', fontSize: '15px' }}>
+                                    </div>
+
+                                    <div style={{
+                                        padding: '14px',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        flex: 1,
+                                        minHeight: '100px'
+                                    }}>
+                                        <h4 style={{
+                                            fontSize: '14px',
+                                            fontWeight: '800',
+                                            marginBottom: '10px',
+                                            whiteSpace: 'nowrap',
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis',
+                                            width: '100%',
+                                            lineHeight: '1.4',
+                                            color: 'white'
+                                        }}>
+                                            {product.name}
+                                        </h4>
+
+                                        <div style={{ marginTop: 'auto' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                                                <span style={{ color: 'var(--secondary)', fontWeight: '900', fontSize: '16px' }}>
                                                     $ {new Intl.NumberFormat('es-CO').format(product.price)}
                                                 </span>
                                             </div>
-                                            <p style={{ fontSize: '11px', color: 'var(--text-dim)', marginTop: '4px' }}>{product.category}</p>
+                                            <p style={{
+                                                fontSize: '11px',
+                                                color: 'var(--text-dim)',
+                                                fontWeight: '600',
+                                                textTransform: 'uppercase',
+                                                letterSpacing: '0.02em'
+                                            }}>
+                                                {product.category}
+                                            </p>
                                         </div>
-                                    </Card>
-                                </motion.div>
+                                    </div>
+                                </Card>
                             ))}
                         </div>
                     </>
                 ) : viewTab === 'mystore' ? (
                     <MyStore />
                 ) : (
-                    <div className="animate-fade" style={{ padding: '0 20px' }}>
+                    <div className="animate-fade">
                         <h2 style={{ fontSize: '22px', fontWeight: '800', marginBottom: '20px' }}>Mis Compras</h2>
                         {myOrders.length === 0 ? (
                             <div className="glass" style={{ padding: '60px 20px', textAlign: 'center' }}>

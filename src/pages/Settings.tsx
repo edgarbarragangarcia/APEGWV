@@ -117,7 +117,7 @@ const Settings: React.FC = () => {
     };
 
     return (
-        <div className="animate-fade">
+        <div className="animate-fade" style={{ paddingBottom: '40px' }}>
             <header style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '30px' }}>
                 <button
                     onClick={() => navigate(-1)}

@@ -62,16 +62,14 @@ const Tournaments: React.FC = () => {
         }}>
             <header style={{
                 marginBottom: '20px',
-                paddingTop: '10px',
-                paddingLeft: '20px',
-                paddingRight: '20px'
+                paddingTop: '10px'
             }}>
                 <h1 style={{ fontSize: '28px' }}>Eventos</h1>
                 <p style={{ color: 'var(--text-dim)' }}>Compite y crece en la comunidad APEG</p>
             </header>
 
             {/* Tab Bar Container */}
-            <div style={{ padding: '0 20px' }}>
+            <div>
                 <div style={{
                     display: 'flex',
                     background: 'rgba(255,255,255,0.05)',

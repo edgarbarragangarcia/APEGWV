@@ -87,9 +87,7 @@ const Profile: React.FC = () => {
             paddingTop: 'var(--safe-top)',
             width: '100%',
             overflowX: 'hidden',
-            position: 'relative',
-            paddingLeft: '20px',
-            paddingRight: '20px'
+            position: 'relative'
         }}>
             {/* Header Section */}
             <div style={{ textAlign: 'center', marginBottom: '35px', position: 'relative' }}>

@@ -71,9 +71,7 @@ const Home: React.FC = () => {
             paddingTop: 'var(--safe-top)',
             width: '100%',
             overflowX: 'hidden',
-            position: 'relative',
-            paddingLeft: '20px',
-            paddingRight: '20px'
+            position: 'relative'
         }}>
             <header style={{ marginBottom: '30px', paddingTop: '10px' }}>
                 <h1 style={{ fontSize: '28px', marginBottom: '5px' }}>
@@ -143,7 +141,7 @@ const Home: React.FC = () => {
                                     <img
                                         src={product.image_url}
                                         alt={product.name}
-                                        style={{ width: '100%', height: '120px', objectFit: 'cover', borderRadius: '10px' }}
+                                        style={{ width: '100%', height: '120px', objectFit: 'cover', borderRadius: '14px' }}
                                     />
                                     <div style={{
                                         position: 'absolute',
@@ -176,11 +174,12 @@ const Home: React.FC = () => {
                                 <div style={{ padding: '10px 0 0 0', display: 'flex', flexDirection: 'column' }}>
                                     <h4 style={{
                                         fontSize: '14px',
-                                        fontWeight: '700',
+                                        fontWeight: '800',
                                         marginBottom: '6px',
                                         whiteSpace: 'nowrap',
                                         overflow: 'hidden',
-                                        textOverflow: 'ellipsis'
+                                        textOverflow: 'ellipsis',
+                                        width: '100%'
                                     }}>
                                         {product.name}
                                     </h4>

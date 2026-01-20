@@ -14,8 +14,10 @@ const BottomNav: React.FC = () => {
         <nav className="glass" style={{
             position: 'fixed',
             bottom: 'calc(20px + var(--safe-bottom))',
-            left: '20px',
-            right: '20px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            width: 'calc(100% - 40px)',
+            maxWidth: 'calc(var(--app-max-width) - 40px)',
             height: '70px',
             display: 'flex',
             alignItems: 'center',

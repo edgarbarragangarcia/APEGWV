@@ -16,6 +16,7 @@
   --nav-height: calc(80px + env(safe-area-inset-bottom));
   --safe-top: env(safe-area-inset-top);
   --safe-bottom: env(safe-area-inset-bottom);
+  --app-max-width: 600px;
 }
 
 * {
@@ -149,7 +150,7 @@ button {
 
 /* Layout Classes */
 .container {
-  max-width: 600px;
+  max-width: var(--app-max-width);
   /* Mobile optimal width */
   margin: 0 auto;
   padding: 0 20px;

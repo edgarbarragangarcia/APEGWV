@@ -67,7 +67,7 @@ const GreenFee: React.FC = () => {
 
     return (
         <div className="page-transition" style={{ paddingBottom: '100px' }}>
-            <div style={{ marginBottom: '25px', padding: '0 10px' }}>
+            <div style={{ marginBottom: '25px' }}>
                 <h1 style={{ fontSize: '28px', fontWeight: '800' }}>Green Fees</h1>
                 <p style={{ color: 'var(--text-dim)', fontSize: '14px' }}>
                     Reserva tu salida en los mejores campos
@@ -81,7 +81,7 @@ const GreenFee: React.FC = () => {
                 padding: '4px',
                 borderRadius: '16px',
                 marginBottom: '20px',
-                margin: '0 10px 20px 10px'
+                margin: '0 0 20px 0'
             }}>
                 <button
                     onClick={() => setActiveTab('courses')}
@@ -134,7 +134,7 @@ const GreenFee: React.FC = () => {
                         display: 'flex',
                         gap: '10px',
                         overflowX: 'auto',
-                        padding: '0 10px 15px',
+                        padding: '0 0 15px 0',
                         marginBottom: '10px',
                         scrollbarWidth: 'none'
                     }}>
