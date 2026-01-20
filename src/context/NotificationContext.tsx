@@ -65,7 +65,15 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
                         }
                     }
                 )
-                .subscribe();
+                .subscribe((status) => {
+                    if (status === 'SUBSCRIBED') {
+                        console.log('Notificaciones conectadas');
+                    } else if (status === 'CHANNEL_ERROR') {
+                        console.error('Error en conexión de notificaciones');
+                    } else if (status === 'CLOSED') {
+                        console.log('Conexión de notificaciones cerrada');
+                    }
+                });
         };
 
         initNotifications();
