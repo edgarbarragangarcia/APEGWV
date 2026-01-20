@@ -68,12 +68,11 @@ const Home: React.FC = () => {
     return (
         <div className="animate-fade" style={{
             paddingBottom: 'calc(var(--nav-height) + 20px)',
-            paddingTop: 'var(--safe-top)',
             width: '100%',
             overflowX: 'hidden',
             position: 'relative'
         }}>
-            <header style={{ marginBottom: '30px', paddingTop: '10px' }}>
+            <header style={{ marginBottom: '30px' }}>
                 <h1 style={{ fontSize: '28px', marginBottom: '5px' }}>
                     Hola, <span className="gradient-text">{profile?.full_name?.split(' ')[0] || 'golfista'}</span>
                 </h1>

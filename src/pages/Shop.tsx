@@ -116,8 +116,7 @@ const Shop: React.FC = () => {
                 marginBottom: '20px',
                 display: 'flex',
                 justifyContent: 'space-between',
-                alignItems: 'flex-start',
-                paddingTop: '10px'
+                alignItems: 'flex-start'
             }}>
                 <div>
                     <h1 style={{ fontSize: '28px' }}>Tienda</h1>

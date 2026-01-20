@@ -164,7 +164,7 @@ button {
 }
 
 .page-content {
-  padding-top: calc(env(safe-area-inset-top) + 85px);
+  padding-top: calc(env(safe-area-inset-top) + 72px);
   padding-bottom: calc(var(--nav-height) + 40px);
   flex: 1;
 }
