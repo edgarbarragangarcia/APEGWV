@@ -172,6 +172,21 @@ const MyStore: React.FC = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Input validation
+        if (formData.name.length > 100) {
+            alert('El nombre del producto no puede exceder 100 caracteres');
+            return;
+        }
+        if (formData.description && formData.description.length > 500) {
+            alert('La descripción no puede exceder 500 caracteres');
+            return;
+        }
+        if (parseFloat(formData.price) <= 0) {
+            alert('El precio debe ser mayor a 0');
+            return;
+        }
+
         setSaving(true);
 
         try {

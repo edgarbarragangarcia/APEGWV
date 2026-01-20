@@ -62,7 +62,9 @@ const Shop: React.FC = () => {
                 const { data, error } = await supabase
                     .from('products')
                     .select('*')
-                    .eq('status', 'active');
+                    .eq('status', 'active')
+                    .order('created_at', { ascending: false })
+                    .limit(100);
 
                 if (error) throw error;
 
@@ -302,6 +304,7 @@ const Shop: React.FC = () => {
                                         <img
                                             src={product.image_url}
                                             alt={product.name}
+                                            loading="lazy"
                                             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                         />
                                         <div style={{

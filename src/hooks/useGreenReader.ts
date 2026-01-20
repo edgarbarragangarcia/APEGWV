@@ -23,33 +23,69 @@ export const useGreenReader = () => {
     };
 
     const requestAccess = async () => {
-        if (typeof (DeviceOrientationEvent as any).requestPermission === 'function') {
-            try {
-                const response = await (DeviceOrientationEvent as any).requestPermission();
-                if (response === 'granted') {
+        try {
+            // Check if we need to request permissions (iOS 13+)
+            const needsMotionPermission = typeof (DeviceMotionEvent as any).requestPermission === 'function';
+            const needsOrientationPermission = typeof (DeviceOrientationEvent as any).requestPermission === 'function';
+
+            if (needsMotionPermission || needsOrientationPermission) {
+                let motionGranted = true;
+                let orientationGranted = true;
+
+                // Request DeviceMotionEvent permission (accelerometer)
+                if (needsMotionPermission) {
+                    try {
+                        const motionResponse = await (DeviceMotionEvent as any).requestPermission();
+                        motionGranted = motionResponse === 'granted';
+                        console.log('DeviceMotionEvent permission:', motionResponse);
+                    } catch (error) {
+                        console.error('Error requesting DeviceMotionEvent:', error);
+                        motionGranted = false;
+                    }
+                }
+
+                // Request DeviceOrientationEvent permission (gyroscope)
+                if (needsOrientationPermission) {
+                    try {
+                        const orientationResponse = await (DeviceOrientationEvent as any).requestPermission();
+                        orientationGranted = orientationResponse === 'granted';
+                        console.log('DeviceOrientationEvent permission:', orientationResponse);
+                    } catch (error) {
+                        console.error('Error requesting DeviceOrientationEvent:', error);
+                        orientationGranted = false;
+                    }
+                }
+
+                // Both permissions must be granted
+                if (motionGranted && orientationGranted) {
                     setPermissionGranted(true);
                     window.addEventListener('deviceorientation', handleOrientation);
                     return true;
                 } else {
-                    alert('Permiso denegado para sensores');
+                    alert('Permiso denegado para sensores. Por favor habilita los sensores en Configuración.');
                     return false;
                 }
-            } catch (e) {
-                console.error(e);
-                return false;
+            } else {
+                // Non-iOS or older devices - no permission needed
+                setPermissionGranted(true);
+                window.addEventListener('deviceorientation', handleOrientation);
+                return true;
             }
-        } else {
-            // Non-iOS or older devices
-            setPermissionGranted(true);
-            window.addEventListener('deviceorientation', handleOrientation);
-            return true;
+        } catch (error) {
+            console.error('Unexpected error requesting sensor access:', error);
+            return false;
         }
     };
 
     useEffect(() => {
-        // Try auto-connect for Android/Desktop
-        if (typeof (DeviceOrientationEvent as any).requestPermission !== 'function') {
+        // Try auto-connect for Android/Desktop (no permission needed)
+        const needsMotionPermission = typeof (DeviceMotionEvent as any).requestPermission === 'function';
+        const needsOrientationPermission = typeof (DeviceOrientationEvent as any).requestPermission === 'function';
+
+        if (!needsMotionPermission && !needsOrientationPermission) {
+            // Auto-enable for devices that don't require explicit permission
             window.addEventListener('deviceorientation', handleOrientation);
+            setPermissionGranted(true);
         }
 
         return () => {

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
 import { supabase } from '../services/SupabaseManager';
 import type { Product } from '../services/SupabaseManager';
 
@@ -142,8 +142,15 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setCartItems([]);
     };
 
-    const totalItems = cartItems.reduce((acc, item) => acc + item.quantity, 0);
-    const totalAmount = cartItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+    const totalItems = useMemo(() =>
+        cartItems.reduce((acc, item) => acc + item.quantity, 0),
+        [cartItems]
+    );
+
+    const totalAmount = useMemo(() =>
+        cartItems.reduce((acc, item) => acc + (item.price * item.quantity), 0),
+        [cartItems]
+    );
 
     return (
         <CartContext.Provider value={{

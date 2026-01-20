@@ -85,6 +85,20 @@ const CheckoutPage: React.FC = () => {
     };
 
     const handlePlaceOrder = async () => {
+        // Input validation
+        if (!shipping.name || shipping.name.trim().length < 3) {
+            setError('Por favor ingresa un nombre válido (mínimo 3 caracteres)');
+            return;
+        }
+        if (!shipping.phone || !/^\d{7,10}$/.test(shipping.phone.replace(/\s/g, ''))) {
+            setError('Por favor ingresa un número de teléfono válido (7-10 dígitos)');
+            return;
+        }
+        if (!shipping.address || shipping.address.trim().length < 10) {
+            setError('Por favor ingresa una dirección completa (mínimo 10 caracteres)');
+            return;
+        }
+
         setIsProcessing(true);
         setError(null);
         try {
@@ -99,18 +113,15 @@ const CheckoutPage: React.FC = () => {
             // Create orders
             for (const [sellerId, items] of Object.entries(ordersBySeller)) {
                 const sellerTotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-                const commission = sellerTotal * 0.05;
-                const net = sellerTotal - commission;
-                const fullAddress = `${shipping.address}, ${shipping.city}`; // Define fullAddress
+                const fullAddress = `${shipping.address}, ${shipping.city}`;
 
                 const { error: orderError } = await supabase.from('orders').insert({
-                    user_id: user.id, // Added to fix not-null constraint
+                    user_id: user.id,
                     buyer_id: user.id,
-                    seller_id: sellerId === 'admin' ? null : sellerId, // Reverted to original logic for seller_id
-                    total_price: sellerTotal, // Reverted to original variable name
-                    total_amount: sellerTotal, // Added to fix not-null constraint for total_amount
-                    commission_fee: commission,
-                    seller_net_amount: net, // Reverted to original variable name
+                    seller_id: sellerId === 'admin' ? null : sellerId,
+                    total_price: sellerTotal,
+                    total_amount: sellerTotal,
+                    // platform_fee and seller_payout calculated by trigger
                     status: 'Pagado',
                     shipping_address: fullAddress,
                     buyer_name: shipping.name,

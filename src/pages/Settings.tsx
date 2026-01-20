@@ -36,9 +36,13 @@ const Settings: React.FC = () => {
             }
         }
 
-        // Check Sensors (mostly relevant for iOS requestPermission)
-        if (typeof (DeviceOrientationEvent as any).requestPermission === 'function') {
+        // Check Sensors (iOS 13+ requires explicit permission for both motion and orientation)
+        const needsMotionPermission = typeof (DeviceMotionEvent as any).requestPermission === 'function';
+        const needsOrientationPermission = typeof (DeviceOrientationEvent as any).requestPermission === 'function';
+
+        if (needsMotionPermission || needsOrientationPermission) {
             // iOS requires explicit request, we can't easily "query" it like GPS
+            // Set to prompt initially, will update after user requests
             setSensorsStatus('prompt');
         } else {
             // Android/Desktop usually don't require explicit permission or it's implicitly granted
@@ -83,19 +87,56 @@ const Settings: React.FC = () => {
     };
 
     const handleRequestSensors = async () => {
-        if (typeof (DeviceOrientationEvent as any).requestPermission === 'function') {
-            setIsRequesting('sensors');
-            try {
-                const response = await (DeviceOrientationEvent as any).requestPermission();
-                setSensorsStatus(response === 'granted' ? 'granted' : 'denied');
-            } catch (e) {
-                console.error(e);
-                setSensorsStatus('denied');
-            } finally {
-                setIsRequesting(null);
+        setIsRequesting('sensors');
+
+        try {
+            // Check if we're on iOS 13+ which requires explicit permission
+            const needsPermission = typeof (DeviceOrientationEvent as any).requestPermission === 'function' ||
+                typeof (DeviceMotionEvent as any).requestPermission === 'function';
+
+            if (needsPermission) {
+                let motionGranted = true;
+                let orientationGranted = true;
+
+                // Request DeviceMotionEvent permission (accelerometer)
+                if (typeof (DeviceMotionEvent as any).requestPermission === 'function') {
+                    try {
+                        const motionResponse = await (DeviceMotionEvent as any).requestPermission();
+                        motionGranted = motionResponse === 'granted';
+                        console.log('DeviceMotionEvent permission:', motionResponse);
+                    } catch (error) {
+                        console.error('Error requesting DeviceMotionEvent permission:', error);
+                        motionGranted = false;
+                    }
+                }
+
+                // Request DeviceOrientationEvent permission (gyroscope)
+                if (typeof (DeviceOrientationEvent as any).requestPermission === 'function') {
+                    try {
+                        const orientationResponse = await (DeviceOrientationEvent as any).requestPermission();
+                        orientationGranted = orientationResponse === 'granted';
+                        console.log('DeviceOrientationEvent permission:', orientationResponse);
+                    } catch (error) {
+                        console.error('Error requesting DeviceOrientationEvent permission:', error);
+                        orientationGranted = false;
+                    }
+                }
+
+                // Both permissions must be granted for full sensor access
+                if (motionGranted && orientationGranted) {
+                    setSensorsStatus('granted');
+                } else {
+                    setSensorsStatus('denied');
+                }
+            } else {
+                // Android/Desktop - no explicit permission needed
+                setSensorsStatus('granted');
             }
-        } else {
-            setSensorsStatus('granted');
+        } catch (error) {
+            console.error('Unexpected error requesting sensor permissions:', error);
+            setSensorsStatus('denied');
+        } finally {
+            setIsRequesting(null);
         }
     };
 
