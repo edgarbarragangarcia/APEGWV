@@ -200,6 +200,7 @@ export type Database = {
                     id: string
                     image_url: string | null
                     name: string
+                    status: string
                     price: number
                     seller_id: string | null
                 }
@@ -211,6 +212,7 @@ export type Database = {
                     id?: string
                     image_url?: string | null
                     name: string
+                    status?: string
                     price: number
                     seller_id?: string | null
                 }
@@ -222,6 +224,7 @@ export type Database = {
                     id?: string
                     image_url?: string | null
                     name?: string
+                    status?: string
                     price?: number
                     seller_id?: string | null
                 }

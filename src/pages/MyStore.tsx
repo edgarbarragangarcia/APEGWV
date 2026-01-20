@@ -75,7 +75,7 @@ const MyStore: React.FC = () => {
         }));
     };
 
-    const categories = ['Clubes', 'Ropa', 'Accesorios', 'Bolas', 'Zapatos', 'Grips', 'Otros'];
+    const categories = ['Clubes', 'Ropa', 'Accesorios', 'Bolas', 'Zapatos', 'Grips', 'Torneo', 'Otros'];
 
     useEffect(() => {
         fetchStoreData();
@@ -89,20 +89,14 @@ const MyStore: React.FC = () => {
                 return;
             }
 
-            // Check Premium Status
+            // Check Premium Status (for display purposes only)
             const { data: profile } = await supabase
                 .from('profiles')
                 .select('is_premium')
                 .eq('id', session.user.id)
                 .single();
 
-            if (!profile?.is_premium) {
-                setIsPremium(false);
-                setLoading(false);
-                return;
-            }
-
-            setIsPremium(true);
+            setIsPremium(profile?.is_premium || false);
 
             // Fetch User Products
             const { data: userProducts, error } = await supabase
@@ -378,26 +372,7 @@ const MyStore: React.FC = () => {
         );
     }
 
-    if (!isPremium) {
-        return (
-            <div className="animate-fade container" style={{ textAlign: 'center', paddingTop: '50px' }}>
-                <div style={{ background: 'rgba(212, 175, 55, 0.1)', padding: '30px', borderRadius: '30px', border: '1px solid rgba(212, 175, 55, 0.2)' }}>
-                    <Info size={48} color="var(--accent)" style={{ marginBottom: '20px' }} />
-                    <h1 style={{ fontSize: '24px', marginBottom: '10px' }}>Opciones Premium</h1>
-                    <p style={{ color: 'var(--text-dim)', marginBottom: '25px', fontSize: '15px' }}>
-                        Solo los miembros Premium pueden tener su propia tienda y vender productos a la comunidad.
-                    </p>
-                    <button
-                        onClick={() => navigate('/profile')}
-                        className="glass"
-                        style={{ background: 'var(--accent)', color: 'var(--primary)', padding: '12px 25px', borderRadius: '15px', fontWeight: '800' }}
-                    >
-                        VOLVER AL PERFIL
-                    </button>
-                </div>
-            </div>
-        );
-    }
+
 
     return (
         <div className="animate-fade">

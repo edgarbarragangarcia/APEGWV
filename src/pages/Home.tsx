@@ -77,21 +77,34 @@ const Home: React.FC = () => {
 
             {/* Stats Summary */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '25px' }}>
-                <Card style={{ marginBottom: 0, padding: '15px' }}>
+                <Card style={{
+                    marginBottom: 0,
+                    padding: '15px',
+                    background: 'linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%)',
+                    boxShadow: '0 8px 20px rgba(16, 185, 129, 0.3)',
+                    animation: 'float 3s ease-in-out infinite'
+                }}>
                     <div style={{ textAlign: 'center' }}>
-                        <span style={{ fontSize: '10px', color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '1px' }}>Hándicap</span>
-                        <div style={{ fontSize: '24px', fontWeight: '800', margin: '2px 0' }}>{profile?.handicap !== null && profile?.handicap !== undefined ? profile.handicap : '--'}</div>
-                        <div style={{ fontSize: '9px', color: '#10b981' }}>Actualizado</div>
+                        <span style={{ fontSize: '10px', color: 'rgba(255, 255, 255, 0.8)', textTransform: 'uppercase', letterSpacing: '1px' }}>Hándicap</span>
+                        <div style={{ fontSize: '24px', fontWeight: '800', margin: '2px 0', color: '#fff' }}>{profile?.handicap !== null && profile?.handicap !== undefined ? profile.handicap : '--'}</div>
+                        <div style={{ fontSize: '9px', color: 'rgba(255, 255, 255, 0.9)' }}>Actualizado</div>
                     </div>
                 </Card>
                 <Card
-                    style={{ marginBottom: 0, padding: '15px', cursor: 'pointer' }}
+                    style={{
+                        marginBottom: 0,
+                        padding: '15px',
+                        cursor: 'pointer',
+                        background: 'linear-gradient(135deg, #a855f7 0%, #9333ea 50%, #7e22ce 100%)',
+                        boxShadow: '0 8px 20px rgba(168, 85, 247, 0.3)',
+                        animation: 'float 3s ease-in-out infinite 0.5s'
+                    }}
                     onClick={() => navigate('/rounds')}
                 >
                     <div style={{ textAlign: 'center' }}>
-                        <span style={{ fontSize: '10px', color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '1px' }}>Rondas</span>
-                        <div style={{ fontSize: '24px', fontWeight: '800', margin: '2px 0' }}>{roundCount}</div>
-                        <div style={{ fontSize: '9px', color: 'var(--secondary)' }}>Ver Historial →</div>
+                        <span style={{ fontSize: '10px', color: 'rgba(255, 255, 255, 0.8)', textTransform: 'uppercase', letterSpacing: '1px' }}>Rondas</span>
+                        <div style={{ fontSize: '24px', fontWeight: '800', margin: '2px 0', color: '#fff' }}>{roundCount}</div>
+                        <div style={{ fontSize: '9px', color: '#a3e635' }}>Ver Historial →</div>
                     </div>
                 </Card>
             </div>
