@@ -3,12 +3,22 @@ import { useNavigate } from 'react-router-dom';
 import {
     ArrowLeft, MapPin, CreditCard,
     ShieldCheck, Loader2, Camera, Scan,
-    CheckCircle2, Sparkles
+    CheckCircle2, Sparkles, Plus
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '../context/CartContext';
 import { supabase } from '../services/SupabaseManager';
 import CardInput from '../components/CardInput';
+import Card from '../components/Card';
+
+interface PaymentMethod {
+    id: string;
+    card_holder: string;
+    last_four: string;
+    expiry: string;
+    card_type: string;
+    is_default: boolean;
+}
 
 const CheckoutPage: React.FC = () => {
     const navigate = useNavigate();
@@ -17,6 +27,11 @@ const CheckoutPage: React.FC = () => {
     const [isProcessing, setIsProcessing] = useState(false);
     const [showScanner, setShowScanner] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
+
+    // Payment Methods State
+    const [savedMethods, setSavedMethods] = useState<PaymentMethod[]>([]);
+    const [selectedMethodId, setSelectedMethodId] = useState<string | 'new'>('new');
+    const [loadingMethods, setLoadingMethods] = useState(false);
 
     const [shipping, setShipping] = useState({
         name: '',
@@ -37,12 +52,37 @@ const CheckoutPage: React.FC = () => {
                     name: session.user.user_metadata?.full_name || '',
                     phone: session.user.user_metadata?.phone || ''
                 }));
+                fetchSavedMethods(session.user.id);
             } else {
                 navigate('/auth');
             }
         };
         checkUser();
     }, [navigate]);
+
+    const fetchSavedMethods = async (userId: string) => {
+        setLoadingMethods(true);
+        try {
+            const { data, error } = await supabase
+                .from('payment_methods')
+                .select('*')
+                .eq('user_id', userId);
+
+            if (error) throw error;
+            setSavedMethods(data || []);
+
+            const defaultMethod = data?.find(m => m.is_default);
+            if (defaultMethod) {
+                setSelectedMethodId(defaultMethod.id);
+            } else if (data && data.length > 0) {
+                setSelectedMethodId(data[0].id);
+            }
+        } catch (err) {
+            console.error('Error fetching methods:', err);
+        } finally {
+            setLoadingMethods(false);
+        }
+    };
 
     const handlePlaceOrder = async () => {
         setIsProcessing(true);
@@ -156,7 +196,7 @@ const CheckoutPage: React.FC = () => {
                     onClick={() => step === 1 ? navigate(-1) : setStep(1)}
                     style={{
                         background: 'rgba(255,255,255,0.05)',
-                        border: '1px solid rgba(255,255,255,0.1)',
+                        border: '1px solid rgba(255,b255,b255,0.1)',
                         width: '40px',
                         height: '40px',
                         borderRadius: '12px',
@@ -253,26 +293,115 @@ const CheckoutPage: React.FC = () => {
                             <h3 style={{ fontSize: '18px', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '10px' }}>
                                 <CreditCard size={20} color="var(--secondary)" /> Pago Seguro
                             </h3>
-                            <button
-                                onClick={runScanAnimation}
-                                style={{
-                                    background: 'rgba(163, 230, 53, 0.1)',
-                                    border: '1px solid var(--secondary)',
-                                    color: 'var(--secondary)',
-                                    padding: '8px 12px',
-                                    borderRadius: '10px',
-                                    fontSize: '12px',
-                                    fontWeight: '700',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '6px'
-                                }}
-                            >
-                                <Camera size={14} /> ESCANEAR
-                            </button>
+                            {selectedMethodId === 'new' && (
+                                <button
+                                    onClick={runScanAnimation}
+                                    style={{
+                                        background: 'rgba(163, 230, 53, 0.1)',
+                                        border: '1px solid var(--secondary)',
+                                        color: 'var(--secondary)',
+                                        padding: '8px 12px',
+                                        borderRadius: '10px',
+                                        fontSize: '12px',
+                                        fontWeight: '700',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '6px'
+                                    }}
+                                >
+                                    <Camera size={14} /> ESCANEAR
+                                </button>
+                            )}
                         </div>
 
-                        <CardInput onComplete={() => { }} />
+                        {/* Saved Methods List */}
+                        {!loadingMethods && savedMethods.length > 0 && (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '25px' }}>
+                                <p style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text-dim)', marginBottom: '5px' }}>Tus tarjetas guardadas</p>
+                                {savedMethods.map((method) => (
+                                    <div
+                                        key={method.id}
+                                        onClick={() => setSelectedMethodId(method.id)}
+                                        style={{
+                                            padding: '15px 20px',
+                                            borderRadius: '16px',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '15px',
+                                            cursor: 'pointer',
+                                            background: selectedMethodId === method.id ? 'rgba(163, 230, 53, 0.1)' : 'rgba(255,255,255,0.05)',
+                                            border: selectedMethodId === method.id ? '1px solid var(--secondary)' : '1px solid rgba(255,255,255,0.1)',
+                                            transition: '0.2s'
+                                        }}
+                                    >
+                                        <div style={{
+                                            width: '40px',
+                                            height: '28px',
+                                            background: 'rgba(255,255,255,0.1)',
+                                            borderRadius: '4px',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            fontSize: '8px',
+                                            fontWeight: '900'
+                                        }}>
+                                            {method.card_type.toUpperCase()}
+                                        </div>
+                                        <div style={{ flex: 1 }}>
+                                            <p style={{ fontWeight: '700', fontSize: '14px' }}>•••• {method.last_four}</p>
+                                            <p style={{ fontSize: '11px', color: 'var(--text-dim)' }}>Exp: {method.expiry}</p>
+                                        </div>
+                                        <div style={{
+                                            width: '20px',
+                                            height: '20px',
+                                            borderRadius: '50%',
+                                            border: '2px solid',
+                                            borderColor: selectedMethodId === method.id ? 'var(--secondary)' : 'rgba(255,255,255,0.2)',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            padding: '3px'
+                                        }}>
+                                            {selectedMethodId === method.id && <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: 'var(--secondary)' }} />}
+                                        </div>
+                                    </div>
+                                ))}
+
+                                <div
+                                    onClick={() => setSelectedMethodId('new')}
+                                    style={{
+                                        padding: '15px 20px',
+                                        borderRadius: '16px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '15px',
+                                        cursor: 'pointer',
+                                        background: selectedMethodId === 'new' ? 'rgba(163, 230, 53, 0.1)' : 'rgba(255,255,255,0.05)',
+                                        border: selectedMethodId === 'new' ? '1px solid var(--secondary)' : '1px solid rgba(255,255,255,0.1)',
+                                        transition: '0.2s'
+                                    }}
+                                >
+                                    <div style={{
+                                        width: '40px',
+                                        height: '28px',
+                                        background: 'rgba(255,255,255,0.1)',
+                                        borderRadius: '4px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center'
+                                    }}>
+                                        <Plus size={16} />
+                                    </div>
+                                    <span style={{ fontWeight: '700', fontSize: '14px' }}>Usar otra tarjeta</span>
+                                </div>
+                            </div>
+                        )}
+
+                        {selectedMethodId === 'new' && (
+                            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}>
+                                <CardInput onComplete={() => { }} />
+                            </motion.div>
+                        )}
 
                         <div style={{ marginTop: '30px' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>

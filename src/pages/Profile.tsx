@@ -230,6 +230,7 @@ const Profile: React.FC = () => {
                 </button>
 
                 <button
+                    onClick={() => navigate('/payment-methods')}
                     className="glass"
                     style={{
                         padding: '16px 20px',
