@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-    ShoppingBag, Trash2, ArrowLeft,
+    ShoppingBag, Trash2,
     Package, ShieldCheck
 } from 'lucide-react';
+import PageHeader from '../components/PageHeader';
 import { motion } from 'framer-motion';
 import { useCart } from '../context/CartContext';
 import { supabase } from '../services/SupabaseManager';
@@ -41,30 +42,7 @@ const CartPage: React.FC = () => {
             margin: '0 auto'
         }}>
             {/* Header */}
-            <header style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '15px',
-                marginBottom: '30px'
-            }}>
-                <button
-                    onClick={() => navigate(-1)}
-                    style={{
-                        background: 'rgba(255,255,255,0.05)',
-                        border: '1px solid rgba(255,255,255,0.1)',
-                        width: '40px',
-                        height: '40px',
-                        borderRadius: '12px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: 'white'
-                    }}
-                >
-                    <ArrowLeft size={20} />
-                </button>
-                <h1 style={{ fontSize: '24px', fontWeight: '800' }}>Mi Carrito</h1>
-            </header>
+            <PageHeader title="Mi Carrito" />
 
             {cartItems.length === 0 ? (
                 <div style={{

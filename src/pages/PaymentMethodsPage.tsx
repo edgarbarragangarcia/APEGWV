@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-    ArrowLeft, CreditCard, Plus,
+    CreditCard, Plus,
     Trash2, ShieldCheck, Camera,
     CheckCircle2, Loader2, Star
 } from 'lucide-react';
+import PageHeader from '../components/PageHeader';
 import { motion } from 'framer-motion';
 import { supabase } from '../services/SupabaseManager';
 import CardInput from '../components/CardInput';
@@ -135,30 +136,10 @@ const PaymentMethodsPage: React.FC = () => {
             margin: '0 auto'
         }}>
             {/* Header */}
-            <header style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '15px',
-                marginBottom: '30px'
-            }}>
-                <button
-                    onClick={() => showAddForm ? setShowAddForm(false) : navigate(-1)}
-                    style={{
-                        background: 'rgba(255,b255,b255,0.05)',
-                        border: '1px solid rgba(255,b255,b255,0.1)',
-                        width: '40px',
-                        height: '40px',
-                        borderRadius: '12px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: 'white'
-                    }}
-                >
-                    <ArrowLeft size={20} />
-                </button>
-                <h1 style={{ fontSize: '24px', fontWeight: '800' }}>Métodos de Pago</h1>
-            </header>
+            <PageHeader
+                title="Métodos de Pago"
+                onBack={() => showAddForm ? setShowAddForm(false) : navigate(-1)}
+            />
 
             {!showAddForm ? (
                 <>
