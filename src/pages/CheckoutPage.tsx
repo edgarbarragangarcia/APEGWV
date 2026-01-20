@@ -101,18 +101,20 @@ const CheckoutPage: React.FC = () => {
                 const sellerTotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
                 const commission = sellerTotal * 0.05;
                 const net = sellerTotal - commission;
+                const fullAddress = `${shipping.address}, ${shipping.city}`; // Define fullAddress
 
-                const { error: orderError } = await supabase.from('orders').insert([{
+                const { error: orderError } = await supabase.from('orders').insert({
+                    user_id: user.id, // Added to fix not-null constraint
                     buyer_id: user.id,
-                    seller_id: sellerId === 'admin' ? null : sellerId,
-                    total_price: sellerTotal,
+                    seller_id: sellerId === 'admin' ? null : sellerId, // Reverted to original logic for seller_id
+                    total_price: sellerTotal, // Reverted to original variable name
                     commission_fee: commission,
-                    seller_net_amount: net,
+                    seller_net_amount: net, // Reverted to original variable name
                     status: 'Pagado',
-                    shipping_address: `${shipping.address}, ${shipping.city}`,
+                    shipping_address: fullAddress,
                     buyer_name: shipping.name,
                     buyer_phone: shipping.phone
-                }]);
+                });
 
                 if (orderError) throw orderError;
 
