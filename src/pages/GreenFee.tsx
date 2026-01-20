@@ -67,12 +67,12 @@ const GreenFee: React.FC = () => {
 
     return (
         <div className="page-transition" style={{ paddingBottom: '100px' }}>
-            <div style={{ marginBottom: '25px' }}>
-                <h1 style={{ fontSize: '28px', fontWeight: '800' }}>Green Fees</h1>
+            <header style={{ marginBottom: '30px' }}>
+                <h1 style={{ fontSize: '28px', fontWeight: '800', marginBottom: '5px' }}>Green Fees</h1>
                 <p style={{ color: 'var(--text-dim)', fontSize: '14px' }}>
                     Reserva tu salida en los mejores campos
                 </p>
-            </div>
+            </header>
 
             {/* Tab Bar */}
             <div style={{

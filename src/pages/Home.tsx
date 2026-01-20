@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Card from '../components/Card';
-import { Play, ArrowRight, Loader2, Heart } from 'lucide-react';
+import { Play, ArrowRight, Heart } from 'lucide-react';
 import { supabase } from '../services/SupabaseManager';
 
 const Home: React.FC = () => {
     const navigate = useNavigate();
-    const [loading, setLoading] = useState(true);
+
     const [profile, setProfile] = useState<any>(null);
     const [roundCount, setRoundCount] = useState<number>(0);
     const [featuredProducts, setFeaturedProducts] = useState<any[]>([]);
@@ -53,17 +53,13 @@ const Home: React.FC = () => {
                 }
             } catch (err) {
                 console.error('Error fetching home data:', err);
-            } finally {
-                setLoading(false);
             }
         };
 
         fetchHomeData();
     }, []);
 
-    if (loading) {
-        return <div className="flex-center" style={{ height: '70vh' }}><Loader2 className="animate-spin" /></div>;
-    }
+
 
     return (
         <div className="animate-fade" style={{

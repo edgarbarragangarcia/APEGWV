@@ -59,9 +59,9 @@ const CourseSelection: React.FC = () => {
 
     return (
         <div className="animate-fade" style={{ paddingBottom: '100px' }}>
-            <header style={{ marginBottom: '25px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <header style={{ marginBottom: '30px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div>
-                    <h1 style={{ fontSize: '28px', marginBottom: '4px' }}>Selecciona tu Campo</h1>
+                    <h1 style={{ fontSize: '28px', fontWeight: '800', marginBottom: '5px' }}>Selecciona tu Campo</h1>
                     <p style={{ color: 'var(--text-dim)', fontSize: '14px' }}>Listado oficial de clubes en Colombia</p>
                 </div>
                 <button

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Calendar, Users, MapPin, Search, Trophy, Loader2, Trophy as TrophyIcon, UserPlus } from 'lucide-react';
+import { Calendar, Users, MapPin, Search, Trophy, Trophy as TrophyIcon, UserPlus } from 'lucide-react';
 import Card from '../components/Card';
 import { supabase } from '../services/SupabaseManager';
 import TournamentManager from './TournamentManager';
@@ -21,7 +21,6 @@ const Tournaments: React.FC = () => {
     const [viewTab, setViewTab] = useState<'all' | 'manage'>('all');
     const [searchQuery, setSearchQuery] = useState('');
     const [tournaments, setTournaments] = useState<Tournament[]>([]);
-    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchTournaments = async () => {
@@ -35,8 +34,6 @@ const Tournaments: React.FC = () => {
                 setTournaments(data || []);
             } catch (err) {
                 console.error('Error fetching tournaments:', err);
-            } finally {
-                setLoading(false);
             }
         };
 
@@ -48,9 +45,7 @@ const Tournaments: React.FC = () => {
         t.club.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    if (loading) {
-        return <div className="flex-center" style={{ height: '70vh' }}><Loader2 className="animate-spin" /></div>;
-    }
+
 
     return (
         <div className="animate-fade" style={{
@@ -59,11 +54,9 @@ const Tournaments: React.FC = () => {
             overflowX: 'hidden',
             position: 'relative'
         }}>
-            <header style={{
-                marginBottom: '20px'
-            }}>
-                <h1 style={{ fontSize: '28px' }}>Eventos</h1>
-                <p style={{ color: 'var(--text-dim)' }}>Compite y crece en la comunidad APEG</p>
+            <header style={{ marginBottom: '30px' }}>
+                <h1 style={{ fontSize: '28px', fontWeight: '800', marginBottom: '5px' }}>Eventos</h1>
+                <p style={{ color: 'var(--text-dim)', fontSize: '14px' }}>Compite y crece en la comunidad APEG</p>
             </header>
 
             {/* Tab Bar Container */}

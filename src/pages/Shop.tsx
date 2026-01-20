@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-    Search, Filter, Loader2, Store, ShoppingBag,
+    Search, Filter, Store, ShoppingBag,
     ArrowLeft, ShoppingCart, ChevronRight, Trash2, X, Plus, CheckCircle2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -28,7 +28,6 @@ const Shop: React.FC = () => {
     const [activeTab, setActiveTab] = useState('Todo');
     const [searchQuery, setSearchQuery] = useState('');
     const [products, setProducts] = useState<Product[]>([]);
-    const [loading, setLoading] = useState(true);
     const [viewTab, setViewTab] = useState<'marketplace' | 'mystore' | 'myorders'>('marketplace');
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
     const [buying, setBuying] = useState(false);
@@ -75,8 +74,6 @@ const Shop: React.FC = () => {
                 setProducts(mappedProducts);
             } catch (err) {
                 console.error('Error fetching products:', err);
-            } finally {
-                setLoading(false);
             }
         };
 
@@ -103,9 +100,7 @@ const Shop: React.FC = () => {
         return matchesCategory && matchesSearch;
     });
 
-    if (loading) {
-        return <div className="flex-center" style={{ height: '70vh' }}><Loader2 className="animate-spin" /></div>;
-    }
+
 
     return (
         <div className="animate-fade" style={{
@@ -658,7 +653,7 @@ const Shop: React.FC = () => {
                                         letterSpacing: '0.05em'
                                     }}
                                 >
-                                    {buying ? <Loader2 size={20} className="animate-spin" /> : <ShoppingCart size={20} />}
+                                    <ShoppingCart size={20} />
                                     {(selectedProduct?.seller_id === user?.id) ? 'MI PRODUCTO' : (buying ? '...' : 'COMPRAR YA')}
                                 </motion.button>
                             </div>
@@ -791,7 +786,7 @@ const Shop: React.FC = () => {
                                         boxShadow: '0 10px 25px rgba(163, 230, 53, 0.4)'
                                     }}
                                 >
-                                    {buying ? <Loader2 size={24} className="animate-spin" /> : <ShoppingCart size={24} />}
+                                    <ShoppingCart size={24} />
                                     {buying ? 'PROCESANDO...' : 'FINALIZAR COMPRA'}
                                 </button>
                             </div>

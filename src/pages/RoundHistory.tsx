@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { supabase } from '../services/SupabaseManager';
-import { ArrowLeft, Calendar, TrendingUp, Loader2, ChevronRight, Trash2, Pencil } from 'lucide-react';
+import { ArrowLeft, Calendar, TrendingUp, ChevronRight, Trash2, Pencil } from 'lucide-react';
 import Card from '../components/Card';
 
 interface Round {
@@ -18,7 +18,6 @@ interface Round {
 
 const RoundHistory: React.FC = () => {
     const navigate = useNavigate();
-    const [loading, setLoading] = useState(true);
     const [rounds, setRounds] = useState<Round[]>([]);
     const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; roundId: string | null; courseName: string }>({
         isOpen: false,
@@ -45,8 +44,6 @@ const RoundHistory: React.FC = () => {
                 setRounds(data || []);
             } catch (err) {
                 console.error('Error fetching rounds:', err);
-            } finally {
-                setLoading(false);
             }
         };
 
@@ -73,9 +70,7 @@ const RoundHistory: React.FC = () => {
         }
     };
 
-    if (loading) {
-        return <div className="flex-center" style={{ height: '70vh' }}><Loader2 className="animate-spin" /></div>;
-    }
+
 
     return (
         <div className="animate-fade" style={{ paddingBottom: '100px' }}>

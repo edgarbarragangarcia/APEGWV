@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../services/SupabaseManager';
-import { Settings, LogOut, Shield, CreditCard, ChevronRight, Loader2, Edit2, Mail, Phone } from 'lucide-react';
+import { Settings, LogOut, Shield, CreditCard, ChevronRight, Edit2, Mail, Phone } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import type { Database } from '../types/database.types';
 
@@ -9,7 +9,6 @@ type PlayerStats = Database['public']['Tables']['player_stats']['Row'];
 
 const Profile: React.FC = () => {
     const navigate = useNavigate();
-    const [loading, setLoading] = useState(true);
     const [profile, setProfile] = useState<Profile | null>(null);
     const [stats, setStats] = useState<PlayerStats | null>(null);
     const [loggingOut, setLoggingOut] = useState(false);
@@ -36,8 +35,6 @@ const Profile: React.FC = () => {
                 }
             } catch (err) {
                 console.error('Error fetching profile:', err);
-            } finally {
-                setLoading(false);
             }
         };
 
@@ -75,9 +72,7 @@ const Profile: React.FC = () => {
         }
     };
 
-    if (loading) {
-        return <div className="flex-center" style={{ height: '70vh' }}><Loader2 className="animate-spin" /></div>;
-    }
+
 
 
 
@@ -274,7 +269,7 @@ const Profile: React.FC = () => {
                         touchAction: 'manipulation'
                     }}
                 >
-                    {loggingOut ? <Loader2 className="animate-spin" size={20} /> : <LogOut size={20} />}
+                    <LogOut size={20} />
                     <span>{loggingOut ? 'Cerrando...' : 'Cerrar Sesión'}</span>
                 </button>
             </div>

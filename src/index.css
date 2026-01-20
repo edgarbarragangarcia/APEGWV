@@ -145,7 +145,7 @@ button {
 }
 
 .animate-fade {
-  animation: fadeIn 0.3s ease forwards;
+  animation: fadeIn 0.15s ease forwards;
 }
 
 /* Layout Classes */
