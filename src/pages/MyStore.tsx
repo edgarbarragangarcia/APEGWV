@@ -5,7 +5,7 @@ import { supabase } from '../services/SupabaseManager';
 import {
     Plus, Package, Trash2,
     Camera, Loader2, CheckCircle2,
-    Info, Pencil, TrendingDown,
+    Pencil, TrendingDown,
     Truck, User, Phone, MapPin
 } from 'lucide-react';
 import Card from '../components/Card';
@@ -17,7 +17,6 @@ const MyStore: React.FC = () => {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
     const [products, setProducts] = useState<Product[]>([]);
-    const [isPremium, setIsPremium] = useState(false);
     const [showForm, setShowForm] = useState(false);
     const [saving, setSaving] = useState(false);
     const [uploading, setUploading] = useState(false);
@@ -88,15 +87,6 @@ const MyStore: React.FC = () => {
                 navigate('/auth');
                 return;
             }
-
-            // Check Premium Status (for display purposes only)
-            const { data: profile } = await supabase
-                .from('profiles')
-                .select('is_premium')
-                .eq('id', session.user.id)
-                .single();
-
-            setIsPremium(profile?.is_premium || false);
 
             // Fetch User Products
             const { data: userProducts, error } = await supabase
@@ -751,9 +741,60 @@ const MyStore: React.FC = () => {
                                                             {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(product.price || 0)}
                                                         </span>
                                                     </div>
+                                                    {(product as any).status === 'pending_payment' && (
+                                                        <div style={{ marginTop: '8px' }}>
+                                                            <span style={{
+                                                                background: '#f59e0b',
+                                                                color: 'white',
+                                                                padding: '4px 8px',
+                                                                borderRadius: '6px',
+                                                                fontSize: '10px',
+                                                                fontWeight: '800',
+                                                                textTransform: 'uppercase'
+                                                            }}>
+                                                                Pendiente de Pago
+                                                            </span>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </Card>
                                         </motion.div>
+                                        {(product as any).status === 'pending_payment' && (
+                                            <button
+                                                onClick={async () => {
+                                                    try {
+                                                        // Simulate payment or redirect to checkout
+                                                        const confirmed = confirm('Pagar 120,000 COP para publicar este torneo?');
+                                                        if (confirmed) {
+                                                            const { error } = await supabase
+                                                                .from('products')
+                                                                .update({ status: 'active' })
+                                                                .eq('id', product.id);
+                                                            if (error) throw error;
+                                                            setProducts(products.map(p => p.id === product.id ? { ...p, status: 'active' } : p));
+                                                            alert('Torneo publicado exitosamente!');
+                                                        }
+                                                    } catch (err) {
+                                                        console.error(err);
+                                                        alert('Error al procesar el pago');
+                                                    }
+                                                }}
+                                                style={{
+                                                    width: '100%',
+                                                    marginTop: '10px',
+                                                    background: 'var(--secondary)',
+                                                    color: 'var(--primary)',
+                                                    padding: '12px',
+                                                    borderRadius: '12px',
+                                                    fontWeight: '800',
+                                                    fontSize: '13px',
+                                                    border: 'none',
+                                                    cursor: 'pointer'
+                                                }}
+                                            >
+                                                Pagar Publicación ($ 120,000)
+                                            </button>
+                                        )}
                                     </div>
                                 ))
                             )}

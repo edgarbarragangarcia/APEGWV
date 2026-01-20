@@ -61,7 +61,8 @@ const Shop: React.FC = () => {
             try {
                 const { data, error } = await supabase
                     .from('products')
-                    .select('*');
+                    .select('*')
+                    .eq('status', 'active');
 
                 if (error) throw error;
 
