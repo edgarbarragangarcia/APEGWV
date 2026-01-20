@@ -145,7 +145,11 @@ const CheckoutPage: React.FC = () => {
 
         } catch (err: any) {
             console.error('Order error:', err);
-            setError(err.message || 'Error al procesar el pedido. Por favor intenta de nuevo.');
+            if (err.code === '42501') {
+                setError('Error de permisos en la base de datos. Por favor ejecuta el script SQL para habilitar la creación de pedidos.');
+            } else {
+                setError(err.message || 'Error al procesar el pedido. Por favor intenta de nuevo.');
+            }
         } finally {
             setIsProcessing(false);
         }
