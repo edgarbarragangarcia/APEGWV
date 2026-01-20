@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import {
     Search, Filter, Store, ShoppingBag,
     ArrowLeft, ShoppingCart, ChevronRight, Plus, CheckCircle2,
-    Loader2, AlertCircle
+    Loader2, AlertCircle, Ruler, Sparkles, Truck
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Card from '../components/Card';
@@ -510,20 +510,21 @@ const Shop: React.FC = () => {
                                     position: 'absolute',
                                     top: 'calc(var(--safe-top) + 15px)',
                                     left: '20px',
-                                    background: 'rgba(255,255,255,0.1)',
+                                    background: 'rgba(255,255,255,0.05)',
                                     backdropFilter: 'blur(10px)',
-                                    border: '1px solid rgba(255,255,255,0.2)',
-                                    width: '44px',
-                                    height: '44px',
-                                    borderRadius: '50%',
+                                    border: '1px solid rgba(255,b255,b255,0.1)',
+                                    width: '40px',
+                                    height: '40px',
+                                    borderRadius: '12px',
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
                                     color: 'white',
-                                    zIndex: 2
+                                    zIndex: 2,
+                                    cursor: 'pointer'
                                 }}
                             >
-                                <ArrowLeft size={22} />
+                                <ArrowLeft size={20} />
                             </button>
                         </div>
 
@@ -539,8 +540,8 @@ const Shop: React.FC = () => {
                             padding: '25px',
                             display: 'flex',
                             flexDirection: 'column',
-                            gap: '20px',
-                            boxShadow: '0 -20px 40px rgba(0,0,0,0.5)'
+                            overflowY: 'auto',
+                            paddingBottom: '100px'
                         }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                                 <div style={{ flex: 1 }}>
@@ -569,18 +570,27 @@ const Shop: React.FC = () => {
                             {/* Attributes Grid */}
                             <div style={{ display: 'flex', gap: '10px' }}>
                                 {(selectedProduct.size_clothing || selectedProduct.size_shoes_col) && (
-                                    <div style={{ flex: 1, background: 'rgba(255,255,255,0.03)', padding: '15px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)', textAlign: 'center' }}>
-                                        <p style={{ fontSize: '10px', color: 'var(--text-dim)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Talla</p>
-                                        <p style={{ fontWeight: '800', fontSize: '16px' }}>{selectedProduct.size_clothing || selectedProduct.size_shoes_col}</p>
+                                    <div style={{ flex: 1, background: 'rgba(255,255,255,0.03)', padding: '15px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+                                        <Ruler size={18} color="var(--text-dim)" />
+                                        <div>
+                                            <p style={{ fontSize: '10px', color: 'var(--text-dim)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Talla</p>
+                                            <p style={{ fontWeight: '800', fontSize: '16px' }}>{selectedProduct.size_clothing || selectedProduct.size_shoes_col}</p>
+                                        </div>
                                     </div>
                                 )}
-                                <div style={{ flex: 1, background: 'rgba(255,255,255,0.03)', padding: '15px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)', textAlign: 'center' }}>
-                                    <p style={{ fontSize: '10px', color: 'var(--text-dim)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Estado</p>
-                                    <p style={{ fontWeight: '800', fontSize: '16px', color: 'var(--secondary)' }}>Mint</p>
+                                <div style={{ flex: 1, background: 'rgba(255,255,255,0.03)', padding: '15px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+                                    <Sparkles size={18} color="var(--secondary)" />
+                                    <div>
+                                        <p style={{ fontSize: '10px', color: 'var(--text-dim)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Estado</p>
+                                        <p style={{ fontWeight: '800', fontSize: '16px', color: 'var(--secondary)' }}>Mint</p>
+                                    </div>
                                 </div>
-                                <div style={{ flex: 1, background: 'rgba(255,255,255,0.03)', padding: '15px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)', textAlign: 'center' }}>
-                                    <p style={{ fontSize: '10px', color: 'var(--text-dim)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Entrega</p>
-                                    <p style={{ fontWeight: '800', fontSize: '16px' }}>24h</p>
+                                <div style={{ flex: 1, background: 'rgba(255,255,255,0.03)', padding: '15px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+                                    <Truck size={18} color="var(--text-dim)" />
+                                    <div>
+                                        <p style={{ fontSize: '10px', color: 'var(--text-dim)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Entrega</p>
+                                        <p style={{ fontWeight: '800', fontSize: '16px' }}>24h</p>
+                                    </div>
                                 </div>
                             </div>
 
@@ -590,11 +600,7 @@ const Shop: React.FC = () => {
                                 <p style={{
                                     color: 'rgba(255,255,255,0.7)',
                                     lineHeight: '1.5',
-                                    fontSize: '15px',
-                                    display: '-webkit-box',
-                                    WebkitLineClamp: 3,
-                                    WebkitBoxOrient: 'vertical',
-                                    overflow: 'hidden'
+                                    fontSize: '15px'
                                 }}>
                                     {selectedProduct.description || 'Este producto premium está verificado y listo para ser enviado a tu campo de golf.'}
                                 </p>
@@ -685,7 +691,7 @@ const Shop: React.FC = () => {
                 )}
             </AnimatePresence>
 
-        </div>
+        </div >
     );
 };
 
