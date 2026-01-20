@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
     Search, Filter, Loader2, Store, ShoppingBag,
     ArrowLeft, ShoppingCart, ChevronRight, Trash2, X, Plus, CheckCircle2
@@ -6,6 +7,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import Card from '../components/Card';
 import { supabase } from '../services/SupabaseManager';
+import { useCart } from '../context/CartContext';
 import MyStore from './MyStore';
 
 interface Product {
@@ -22,6 +24,7 @@ interface Product {
 }
 
 const Shop: React.FC = () => {
+    const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState('Todo');
     const [searchQuery, setSearchQuery] = useState('');
     const [products, setProducts] = useState<Product[]>([]);
@@ -31,9 +34,9 @@ const Shop: React.FC = () => {
     const [buying, setBuying] = useState(false);
     const [myOrders, setMyOrders] = useState<any[]>([]);
     const [user, setUser] = useState<any>(null);
-    const [cart, setCart] = useState<Product[]>([]);
-    const [showCart, setShowCart] = useState(false);
+    const { cartItems, addToCart, removeFromCart, clearCart, totalItems } = useCart();
     const [addingToCart, setAddingToCart] = useState<string | null>(null);
+    const [showCart, setShowCart] = useState(false);
 
     useEffect(() => {
         const checkUser = async () => {
@@ -107,7 +110,6 @@ const Shop: React.FC = () => {
     return (
         <div className="animate-fade" style={{
             paddingBottom: 'calc(var(--nav-height) + 20px)',
-            paddingTop: 'var(--safe-top)',
             width: '100%',
             overflowX: 'hidden',
             position: 'relative'
@@ -122,12 +124,12 @@ const Shop: React.FC = () => {
                     <h1 style={{ fontSize: '28px' }}>Tienda</h1>
                     <p style={{ color: 'var(--text-dim)' }}>Equipamiento premium de la comunidad</p>
                 </div>
-                {cart.length > 0 && (
+                {totalItems > 0 && (
                     <motion.button
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
                         whileTap={{ scale: 0.9 }}
-                        onClick={() => setShowCart(true)}
+                        onClick={() => navigate('/cart')}
                         style={{
                             background: 'var(--secondary)',
                             color: 'var(--primary)',
@@ -142,7 +144,7 @@ const Shop: React.FC = () => {
                         }}
                     >
                         <ShoppingCart size={20} />
-                        <span style={{ fontWeight: '900', fontSize: '14px' }}>{cart.length}</span>
+                        <span style={{ fontWeight: '900', fontSize: '14px' }}>{totalItems}</span>
                     </motion.button>
                 )}
             </header>
@@ -433,6 +435,7 @@ const Shop: React.FC = () => {
                         )}
                     </div>
                 )}
+                {/* Content based on viewTab */}
             </div>
 
             {/* Product Detail Modal */}
@@ -548,7 +551,7 @@ const Shop: React.FC = () => {
                                 </div>
                             </div>
 
-                            {/* Description - Scrollable only if needed but compact */}
+                            {/* Description */}
                             <div style={{ flex: 1 }}>
                                 <h4 style={{ fontSize: '14px', fontWeight: '900', marginBottom: '8px', color: 'var(--text-dim)', textTransform: 'uppercase' }}>Resumen</h4>
                                 <p style={{
@@ -574,13 +577,9 @@ const Shop: React.FC = () => {
                             }}>
                                 <motion.button
                                     whileTap={{ scale: 0.95 }}
-                                    onClick={() => {
-                                        if (cart.find(p => p.id === selectedProduct.id)) {
-                                            alert('¡Ya está en el carrito!');
-                                            return;
-                                        }
-                                        setCart([...cart, selectedProduct]);
+                                    onClick={async () => {
                                         setAddingToCart(selectedProduct.id);
+                                        await addToCart(selectedProduct as any);
                                         setTimeout(() => setAddingToCart(null), 1500);
                                         if (navigator.vibrate) navigator.vibrate(50);
                                     }}
@@ -703,14 +702,14 @@ const Shop: React.FC = () => {
                         </div>
 
                         <div style={{ flex: 1, overflowY: 'auto', padding: '25px' }}>
-                            {cart.length === 0 ? (
+                            {cartItems.length === 0 ? (
                                 <div style={{ textAlign: 'center', paddingTop: '100px', opacity: 0.3 }}>
                                     <ShoppingCart size={64} style={{ marginBottom: '20px' }} />
                                     <p>Tu carrito está vacío</p>
                                 </div>
                             ) : (
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                                    {cart.map((item: Product) => (
+                                    {cartItems.map((item) => (
                                         <div key={item.id} className="glass" style={{ padding: '15px', display: 'flex', gap: '15px', alignItems: 'center' }}>
                                             <img src={item.image_url} style={{ width: '60px', height: '60px', borderRadius: '12px', objectFit: 'cover' }} alt="" />
                                             <div style={{ flex: 1 }}>
@@ -718,7 +717,7 @@ const Shop: React.FC = () => {
                                                 <p style={{ color: 'var(--secondary)', fontWeight: '800', fontSize: '14px' }}>$ {new Intl.NumberFormat('es-CO').format(item.price)}</p>
                                             </div>
                                             <button
-                                                onClick={() => setCart(cart.filter(p => p.id !== item.id))}
+                                                onClick={() => removeFromCart(item.id)}
                                                 style={{ padding: '8px', color: '#ef4444', background: 'none', border: 'none' }}
                                             >
                                                 <Trash2 size={20} />
@@ -729,7 +728,7 @@ const Shop: React.FC = () => {
                             )}
                         </div>
 
-                        {cart.length > 0 && (
+                        {cartItems.length > 0 && (
                             <div style={{
                                 padding: '25px',
                                 paddingBottom: 'calc(var(--safe-bottom) + 20px)',
@@ -738,14 +737,14 @@ const Shop: React.FC = () => {
                             }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px', fontSize: '18px', fontWeight: '900' }}>
                                     <span style={{ color: 'var(--text-dim)' }}>Subtotal</span>
-                                    <span style={{ color: 'var(--secondary)' }}>$ {new Intl.NumberFormat('es-CO').format(cart.reduce((sum: number, p: Product) => sum + p.price, 0))}</span>
+                                    <span style={{ color: 'var(--secondary)' }}>$ {new Intl.NumberFormat('es-CO').format(cartItems.reduce((sum, p) => sum + (p.price * p.quantity), 0))}</span>
                                 </div>
                                 <button
                                     onClick={async () => {
                                         if (!user) return alert('Inicia sesión para finalizar');
                                         setBuying(true);
                                         try {
-                                            const ordersToInsert = cart.map(item => {
+                                            const ordersToInsert = cartItems.map(item => {
                                                 const comm = item.price * 0.05;
                                                 return {
                                                     product_id: item.id,
@@ -765,7 +764,7 @@ const Shop: React.FC = () => {
                                             if (error) throw error;
 
                                             alert('¡Muchas gracias por tu compra! Estamos procesando tus pedidos.');
-                                            setCart([]);
+                                            await clearCart();
                                             setShowCart(false);
                                             setViewTab('myorders');
                                             fetchMyOrders(user.id);

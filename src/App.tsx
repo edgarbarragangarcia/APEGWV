@@ -26,6 +26,8 @@ const MyStore = lazy(() => import('./pages/MyStore'));
 const GreenFee = lazy(() => import('./pages/GreenFee'));
 const CourseReservation = lazy(() => import('./pages/CourseReservation'));
 const MyReservations = lazy(() => import('./pages/MyReservations'));
+const CartPage = lazy(() => import('./pages/CartPage'));
+const NotificationsPage = lazy(() => import('./pages/NotificationsPage'));
 
 const App: React.FC = () => {
   const [session, setSession] = useState<Session | null>(null);
@@ -95,6 +97,8 @@ const App: React.FC = () => {
                   <Route path="/rounds" element={<RoundHistory />} />
                   <Route path="/rounds/:id" element={<RoundDetail />} />
                   <Route path="/rounds/edit/:id" element={<EditRound />} />
+                  <Route path="/cart" element={<CartPage />} />
+                  <Route path="/notifications" element={<NotificationsPage />} />
                   <Route path="/auth" element={<Navigate to="/" replace />} />
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </>

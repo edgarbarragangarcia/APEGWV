@@ -1,10 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { Bell } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Bell, ShoppingBag } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../services/SupabaseManager';
+import { useCart } from '../context/CartContext';
+import { useNotifications } from '../context/NotificationContext';
 
 const Navbar: React.FC = () => {
+    const navigate = useNavigate();
     const [profile, setProfile] = useState<any>(null);
+    const { totalItems } = useCart();
+    const { unreadCount } = useNotifications();
     const videoRef = React.useRef<HTMLVideoElement>(null);
 
     useEffect(() => {
@@ -136,13 +141,87 @@ const Navbar: React.FC = () => {
                 </Link>
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                <button style={{ color: 'var(--text-dim)', background: 'none', border: 'none', padding: '5px' }}>
-                    <Bell size={20} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                {/* Cart Icon */}
+                <button
+                    onClick={() => navigate('/cart')}
+                    style={{
+                        color: 'var(--text-dim)',
+                        background: 'none',
+                        border: 'none',
+                        padding: '8px',
+                        position: 'relative',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                    }}
+                >
+                    <ShoppingBag size={20} />
+                    {totalItems > 0 && (
+                        <span style={{
+                            position: 'absolute',
+                            top: '4px',
+                            right: '2px',
+                            background: 'var(--secondary)',
+                            color: 'var(--primary)',
+                            fontSize: '10px',
+                            fontWeight: 'bold',
+                            padding: '2px 5px',
+                            borderRadius: '10px',
+                            minWidth: '16px',
+                            height: '16px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                        }}>
+                            {totalItems}
+                        </span>
+                    )}
                 </button>
+
+                {/* Notifications Icon */}
+                <button
+                    onClick={() => navigate('/notifications')}
+                    style={{
+                        color: 'var(--text-dim)',
+                        background: 'none',
+                        border: 'none',
+                        padding: '8px',
+                        position: 'relative',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                    }}
+                >
+                    <Bell size={20} />
+                    {unreadCount > 0 && (
+                        <span style={{
+                            position: 'absolute',
+                            top: '4px',
+                            right: '2px',
+                            background: '#ef4444', // Red for notifications
+                            color: 'white',
+                            fontSize: '10px',
+                            fontWeight: 'bold',
+                            padding: '2px 5px',
+                            borderRadius: '10px',
+                            minWidth: '16px',
+                            height: '16px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            boxShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                        }}>
+                            {unreadCount}
+                        </span>
+                    )}
+                </button>
+
                 <Link to="/profile" style={{
-                    width: '42px',
-                    height: '42px',
+                    marginLeft: '4px',
+                    width: '40px',
+                    height: '40px',
                     borderRadius: '50%',
                     overflow: 'hidden',
                     border: '2px solid var(--secondary)',

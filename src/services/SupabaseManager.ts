@@ -38,3 +38,13 @@ export interface Round {
         greens_in_regulation: number;
     };
 }
+export interface Notification {
+    id: string;
+    user_id: string;
+    title: string;
+    message: string;
+    type: 'order_new' | 'order_shipped' | 'promo' | 'system';
+    read: boolean;
+    link?: string;
+    created_at: string;
+}
