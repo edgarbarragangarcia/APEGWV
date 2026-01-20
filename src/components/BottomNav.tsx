@@ -1,17 +1,18 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Home, ShoppingBag, Calendar, Ticket } from 'lucide-react';
+import { Home, ShoppingBag, Calendar, Ticket, PlayCircle } from 'lucide-react';
 
 const BottomNav: React.FC = () => {
     const navItems = [
         { path: '/', icon: Home, label: 'Inicio' },
+        { path: '/select-course', icon: PlayCircle, label: 'Jugar' },
         { path: '/green-fee', icon: Ticket, label: 'Green Fee' },
         { path: '/shop', icon: ShoppingBag, label: 'Tienda' },
         { path: '/tournaments', icon: Calendar, label: 'Eventos' },
     ];
 
     return (
-        <nav className="glass" style={{
+        <nav style={{
             position: 'fixed',
             bottom: 'calc(20px + var(--safe-bottom))',
             left: '50%',
@@ -25,6 +26,9 @@ const BottomNav: React.FC = () => {
             zIndex: 1000,
             padding: '0 10px',
             borderRadius: '25px',
+            background: '#123524', // Bolder, solid green background to remove transparency
+            border: '1px solid rgba(255, 255, 255, 0.15)',
+            boxShadow: '0 10px 30px rgba(0,0,0,0.5)'
         }}>
             {navItems.map((item) => (
                 <NavLink

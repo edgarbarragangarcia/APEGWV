@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-    ShoppingBag, Trash2, ArrowLeft, Loader2,
-    CreditCard, Package, ShieldCheck
+    ShoppingBag, Trash2, ArrowLeft,
+    Package, ShieldCheck
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useCart } from '../context/CartContext';
@@ -11,8 +11,7 @@ import Card from '../components/Card';
 
 const CartPage: React.FC = () => {
     const navigate = useNavigate();
-    const { cartItems, removeFromCart, updateQuantity, clearCart, totalAmount, totalItems } = useCart();
-    const [isCheckingOut, setIsCheckingOut] = useState(false);
+    const { cartItems, removeFromCart, updateQuantity, totalAmount, totalItems } = useCart();
     const [user, setUser] = useState<any>(null);
 
     useEffect(() => {
@@ -23,7 +22,7 @@ const CartPage: React.FC = () => {
         checkUser();
     }, []);
 
-    const handleCheckout = async () => {
+    const handleCheckout = () => {
         if (!user) {
             alert('Por favor, inicia sesión para realizar el pedido.');
             navigate('/auth');
@@ -31,61 +30,7 @@ const CartPage: React.FC = () => {
         }
 
         if (cartItems.length === 0) return;
-
-        setIsCheckingOut(true);
-        try {
-            // Group items by seller_id to create separate orders
-            const ordersBySeller: Record<string, typeof cartItems> = {};
-            cartItems.forEach(item => {
-                const sellerId = item.seller_id || 'admin';
-                if (!ordersBySeller[sellerId]) {
-                    ordersBySeller[sellerId] = [];
-                }
-                ordersBySeller[sellerId].push(item);
-            });
-
-            // Create orders for each seller
-            for (const [sellerId, items] of Object.entries(ordersBySeller)) {
-                const sellerTotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-                const commission = sellerTotal * 0.05;
-                const net = sellerTotal - commission;
-
-                // For now, following existing logic in Shop.tsx
-                const { error: orderError } = await supabase.from('orders').insert([{
-                    buyer_id: user.id,
-                    seller_id: sellerId === 'admin' ? null : sellerId,
-                    total_price: sellerTotal,
-                    commission_fee: commission,
-                    seller_net_amount: net,
-                    status: 'Pendiente',
-                    shipping_address: 'Calle 100 #15-30, Bogotá',
-                    buyer_name: user.user_metadata?.full_name || user.email?.split('@')[0],
-                    buyer_phone: user.user_metadata?.phone || '310 123 4567'
-                }]);
-
-                if (orderError) throw orderError;
-
-                // Add notification for seller
-                if (sellerId !== 'admin') {
-                    await supabase.from('notifications').insert([{
-                        user_id: sellerId,
-                        title: 'Nuevo Pedido!',
-                        message: `Has recibido un nuevo pedido por $${new Intl.NumberFormat('es-CO').format(sellerTotal)}.`,
-                        type: 'order_new',
-                        link: `/shop?tab=mystore`
-                    }]);
-                }
-            }
-
-            alert('¡Gracias por tu compra! Tus pedidos han sido creados.');
-            clearCart();
-            navigate('/shop');
-        } catch (err) {
-            console.error('Checkout error:', err);
-            alert('Hubo un error al procesar tu pedido. Por favor intenta de nuevo.');
-        } finally {
-            setIsCheckingOut(false);
-        }
+        navigate('/checkout');
     };
 
     return (
@@ -286,7 +231,6 @@ const CartPage: React.FC = () => {
 
                             <button
                                 onClick={handleCheckout}
-                                disabled={isCheckingOut}
                                 style={{
                                     width: '100%',
                                     background: 'var(--secondary)',
@@ -304,14 +248,8 @@ const CartPage: React.FC = () => {
                                     marginTop: '10px'
                                 }}
                             >
-                                {isCheckingOut ? (
-                                    <Loader2 size={24} className="animate-spin" />
-                                ) : (
-                                    <>
-                                        <CreditCard size={20} />
-                                        FINALIZAR COMPRA
-                                    </>
-                                )}
+                                <ShoppingBag size={20} />
+                                PROCEDER AL PAGO
                             </button>
                         </div>
                     </Card>

@@ -32,22 +32,28 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     };
 
     useEffect(() => {
-        fetchNotifications();
+        let channel: any = null;
 
-        // Subscribe to real-time changes
-        const setupRealtime = async () => {
+        const initNotifications = async () => {
             const { data: { session } } = await supabase.auth.getSession();
-            if (!session) return;
+            if (session) {
+                fetchNotifications();
+                setupRealtime(session.user.id);
+            }
+        };
 
-            const channel = supabase
-                .channel('notifications_changes')
+        const setupRealtime = (userId: string) => {
+            if (channel) supabase.removeChannel(channel);
+
+            channel = supabase
+                .channel(`notifications:${userId}`)
                 .on(
                     'postgres_changes',
                     {
                         event: '*',
                         schema: 'public',
                         table: 'notifications',
-                        filter: `user_id=eq.${session.user.id}`
+                        filter: `user_id=eq.${userId}`
                     },
                     (payload) => {
                         if (payload.eventType === 'INSERT') {
@@ -60,15 +66,29 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
                     }
                 )
                 .subscribe();
-
-            return () => {
-                supabase.removeChannel(channel);
-            };
         };
 
-        const cleanup = setupRealtime();
+        initNotifications();
+
+        // Listen for auth changes to re-setup or cleanup
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+            if (event === 'SIGNED_IN' && session) {
+                fetchNotifications();
+                setupRealtime(session.user.id);
+            } else if (event === 'SIGNED_OUT') {
+                setNotifications([]);
+                if (channel) {
+                    supabase.removeChannel(channel);
+                    channel = null;
+                }
+            }
+        });
+
         return () => {
-            cleanup.then(unsub => unsub?.());
+            subscription.unsubscribe();
+            if (channel) {
+                supabase.removeChannel(channel);
+            }
         };
     }, []);
 

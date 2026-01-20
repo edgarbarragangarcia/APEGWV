@@ -26,6 +26,7 @@ import CourseReservation from './pages/CourseReservation';
 import MyReservations from './pages/MyReservations';
 import CartPage from './pages/CartPage';
 import NotificationsPage from './pages/NotificationsPage';
+import CheckoutPage from './pages/CheckoutPage';
 
 const App: React.FC = () => {
   const [session, setSession] = useState<Session | null>(null);
@@ -95,6 +96,7 @@ const App: React.FC = () => {
                 <Route path="/rounds/:id" element={<RoundDetail />} />
                 <Route path="/rounds/edit/:id" element={<EditRound />} />
                 <Route path="/cart" element={<CartPage />} />
+                <Route path="/checkout" element={<CheckoutPage />} />
                 <Route path="/notifications" element={<NotificationsPage />} />
                 <Route path="/auth" element={<Navigate to="/" replace />} />
                 <Route path="*" element={<Navigate to="/" replace />} />
