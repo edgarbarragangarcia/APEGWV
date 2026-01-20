@@ -9,7 +9,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '../context/CartContext';
 import { supabase } from '../services/SupabaseManager';
 import CardInput from '../components/CardInput';
-import Card from '../components/Card';
 
 interface PaymentMethod {
     id: string;
@@ -150,31 +149,127 @@ const CheckoutPage: React.FC = () => {
 
     if (isSuccess) {
         return (
-            <div className="flex-center" style={{ height: '100dvh', flexDirection: 'column', padding: '30px', textAlign: 'center' }}>
+            <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="flex-center"
+                style={{
+                    height: '100dvh',
+                    flexDirection: 'column',
+                    padding: '30px',
+                    textAlign: 'center',
+                    background: 'radial-gradient(circle at center, #0e2f1f 0%, #05150d 100%)',
+                    position: 'fixed',
+                    inset: 0,
+                    zIndex: 5000
+                }}
+            >
+                {/* Floating Confetti-like Sparkles */}
+                {[...Array(6)].map((_, i) => (
+                    <motion.div
+                        key={i}
+                        animate={{
+                            y: [0, -100, -200],
+                            x: [0, (i % 2 === 0 ? 50 : -50), (i % 2 === 0 ? 100 : -100)],
+                            opacity: [0, 1, 0],
+                            scale: [0, 1, 0.5]
+                        }}
+                        transition={{
+                            duration: 3,
+                            repeat: Infinity,
+                            delay: i * 0.4,
+                            ease: "easeOut"
+                        }}
+                        style={{
+                            position: 'absolute',
+                            color: 'var(--secondary)'
+                        }}
+                    >
+                        <Sparkles size={24} />
+                    </motion.div>
+                ))}
+
                 <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ type: 'spring', damping: 10 }}
+                    initial={{ scale: 0, rotate: -45 }}
+                    animate={{ scale: 1, rotate: 0 }}
+                    transition={{ type: 'spring', damping: 12, stiffness: 200 }}
                     style={{
-                        width: '100px',
-                        height: '100px',
+                        width: '120px',
+                        height: '120px',
                         background: 'var(--secondary)',
-                        borderRadius: '50%',
+                        borderRadius: '40px',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        marginBottom: '30px'
+                        marginBottom: '40px',
+                        boxShadow: '0 20px 50px rgba(163, 230, 53, 0.4)'
                     }}
                 >
-                    <CheckCircle2 size={60} color="var(--primary)" />
+                    <CheckCircle2 size={70} color="var(--primary)" />
                 </motion.div>
-                <h1 style={{ fontSize: '28px', fontWeight: '900', marginBottom: '10px' }}>¡Pago Exitoso!</h1>
-                <p style={{ color: 'var(--text-dim)', marginBottom: '40px' }}>Tu pedido ha sido procesado y el vendedor ha sido notificado.</p>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--secondary)' }}>
-                    <Sparkles size={18} />
-                    <span style={{ fontWeight: '700' }}>Prepárate para jugar</span>
-                </div>
-            </div>
+
+                <motion.h1
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.3 }}
+                    style={{ fontSize: '32px', fontWeight: '900', marginBottom: '15px', color: 'white' }}
+                >
+                    ¡GRACIAS POR TU COMPRA!
+                </motion.h1>
+
+                <motion.p
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.4 }}
+                    style={{ color: 'var(--text-dim)', marginBottom: '50px', maxWidth: '300px', lineHeight: '1.6' }}
+                >
+                    Tu pedido ha sido procesado con éxito. El vendedor ya recibió tu notificación y está preparando el envío.
+                </motion.p>
+
+                <motion.div
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.5 }}
+                    style={{ display: 'flex', flexDirection: 'column', gap: '15px', width: '100%', maxWidth: '280px' }}
+                >
+                    <button
+                        onClick={() => {
+                            clearCart();
+                            navigate('/shop?tab=orders');
+                        }}
+                        style={{
+                            background: 'white',
+                            color: 'black',
+                            padding: '18px',
+                            borderRadius: '16px',
+                            fontWeight: '900',
+                            border: 'none',
+                            fontSize: '14px',
+                            letterSpacing: '0.05em'
+                        }}
+                    >
+                        VER MIS PEDIDOS
+                    </button>
+
+                    <button
+                        onClick={() => {
+                            clearCart();
+                            navigate('/shop');
+                        }}
+                        style={{
+                            background: 'rgba(255,255,255,0.05)',
+                            color: 'white',
+                            padding: '18px',
+                            borderRadius: '16px',
+                            fontWeight: '700',
+                            border: '1px solid rgba(255,b255,b255,0.1)',
+                            fontSize: '14px'
+                        }}
+                    >
+                        VOLVER A LA TIENDA
+                    </button>
+                </motion.div>
+            </motion.div>
         );
     }
 

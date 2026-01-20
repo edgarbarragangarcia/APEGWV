@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     Search, Filter, Store, ShoppingBag,
-    ArrowLeft, ShoppingCart, ChevronRight, Trash2, X, Plus, CheckCircle2
+    ArrowLeft, ShoppingCart, ChevronRight, Plus, CheckCircle2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Card from '../components/Card';
@@ -33,9 +33,8 @@ const Shop: React.FC = () => {
     const [buying, setBuying] = useState(false);
     const [myOrders, setMyOrders] = useState<any[]>([]);
     const [user, setUser] = useState<any>(null);
-    const { cartItems, addToCart, removeFromCart, clearCart, totalItems } = useCart();
+    const { addToCart, totalItems } = useCart();
     const [addingToCart, setAddingToCart] = useState<string | null>(null);
-    const [showCart, setShowCart] = useState(false);
 
     useEffect(() => {
         const checkUser = async () => {
@@ -80,19 +79,24 @@ const Shop: React.FC = () => {
         fetchProducts();
     }, []);
 
-    const categories = ['Todo', 'Clubes', 'Bolas', 'Ropa', 'Accesorios', 'Zapatos', 'Otros'];
+    const categories = ['Todo', 'Palos', 'Bolas', 'Ropa', 'Accesorios', 'Zapatos', 'Otros'];
+
+    const categoryMapping: Record<string, string> = {
+        'Todo': 'Todo',
+        'Palos': 'clubes',
+        'Bolas': 'bolas',
+        'Ropa': 'ropa',
+        'Accesorios': 'accesorios',
+        'Zapatos': 'zapatos',
+        'Otros': 'otros'
+    };
 
     const filteredProducts = products.filter(product => {
         const normalize = (val: string) => val.toLowerCase().trim();
-        const activeTabNorm = normalize(activeTab);
         const prodCategoryNorm = normalize(product.category || '');
 
         const matchesCategory = activeTab === 'Todo' ||
-            prodCategoryNorm === activeTabNorm ||
-            (activeTab === 'Palos' && prodCategoryNorm === 'clubes') ||
-            (activeTab === 'Balls' && prodCategoryNorm === 'bolas') ||
-            (activeTab === 'Clothing' && prodCategoryNorm === 'ropa') ||
-            (activeTab === 'Accessories' && prodCategoryNorm === 'accesorios');
+            prodCategoryNorm === normalize(categoryMapping[activeTab] || '');
 
         const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
             prodCategoryNorm.includes(searchQuery.toLowerCase());
@@ -603,34 +607,19 @@ const Shop: React.FC = () => {
                                 <motion.button
                                     whileTap={{ scale: 0.95 }}
                                     onClick={async () => {
-                                        if (!user) return alert('Inicia sesión para comprar');
+                                        if (!user) {
+                                            navigate('/auth');
+                                            return;
+                                        }
+
                                         setBuying(true);
                                         try {
-                                            const commission = selectedProduct.price * 0.05;
-                                            const net = selectedProduct.price - commission;
-
-                                            const { error } = await supabase.from('orders').insert([{
-                                                product_id: selectedProduct.id,
-                                                buyer_id: user.id,
-                                                seller_id: selectedProduct.seller_id,
-                                                total_price: selectedProduct.price,
-                                                commission_fee: commission,
-                                                seller_net_amount: net,
-                                                status: 'Pendiente',
-                                                shipping_address: 'Calle 100 #15-30, Bogotá',
-                                                buyer_name: user.email?.split('@')[0],
-                                                buyer_phone: '310 123 4567'
-                                            }]);
-
-                                            if (error) throw error;
-
-                                            alert('¡Compra exitosa! Revisa la sección de Pedidos.');
+                                            // Add to cart and redirect to checkout
+                                            await addToCart(selectedProduct as any);
                                             setSelectedProduct(null);
-                                            setViewTab('myorders');
-                                            fetchMyOrders(user.id);
+                                            navigate('/checkout');
                                         } catch (err) {
                                             console.error(err);
-                                            alert('Error al procesar la compra');
                                         } finally {
                                             setBuying(false);
                                         }
@@ -662,138 +651,6 @@ const Shop: React.FC = () => {
                 )}
             </AnimatePresence>
 
-            {/* Shopping Cart Modal */}
-            <AnimatePresence>
-                {showCart && (
-                    <motion.div
-                        initial={{ y: '100%' }}
-                        animate={{ y: 0 }}
-                        exit={{ y: '100%' }}
-                        transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                        style={{
-                            position: 'fixed',
-                            top: 0,
-                            left: 0,
-                            right: 0,
-                            bottom: 0,
-                            background: 'var(--primary)',
-                            zIndex: 3000,
-                            display: 'flex',
-                            flexDirection: 'column'
-                        }}
-                    >
-                        <div style={{
-                            padding: '25px',
-                            paddingTop: 'calc(var(--safe-top) + 15px)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
-                            borderBottom: '1px solid rgba(255,255,255,0.05)'
-                        }}>
-                            <h2 style={{ fontSize: '24px', fontWeight: '900' }}>Tu Carrito</h2>
-                            <button onClick={() => setShowCart(false)} style={{ background: 'rgba(255,255,255,0.05)', border: 'none', padding: '10px', borderRadius: '50%', color: 'white' }}>
-                                <X size={24} />
-                            </button>
-                        </div>
-
-                        <div style={{ flex: 1, overflowY: 'auto', padding: '25px' }}>
-                            {cartItems.length === 0 ? (
-                                <div style={{ textAlign: 'center', paddingTop: '100px', opacity: 0.3 }}>
-                                    <ShoppingCart size={64} style={{ marginBottom: '20px' }} />
-                                    <p>Tu carrito está vacío</p>
-                                </div>
-                            ) : (
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                                    {cartItems.map((item) => (
-                                        <div key={item.id} className="glass" style={{ padding: '15px', display: 'flex', gap: '15px', alignItems: 'center' }}>
-                                            <img src={item.image_url} style={{ width: '60px', height: '60px', borderRadius: '12px', objectFit: 'cover' }} alt="" />
-                                            <div style={{ flex: 1 }}>
-                                                <h4 style={{ fontSize: '15px', fontWeight: '800', marginBottom: '4px' }}>{item.name}</h4>
-                                                <p style={{ color: 'var(--secondary)', fontWeight: '800', fontSize: '14px' }}>$ {new Intl.NumberFormat('es-CO').format(item.price)}</p>
-                                            </div>
-                                            <button
-                                                onClick={() => removeFromCart(item.id)}
-                                                style={{ padding: '8px', color: '#ef4444', background: 'none', border: 'none' }}
-                                            >
-                                                <Trash2 size={20} />
-                                            </button>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-
-                        {cartItems.length > 0 && (
-                            <div style={{
-                                padding: '25px',
-                                paddingBottom: 'calc(var(--safe-bottom) + 20px)',
-                                background: 'rgba(0,0,0,0.3)',
-                                borderTop: '1px solid rgba(255,255,255,0.05)'
-                            }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px', fontSize: '18px', fontWeight: '900' }}>
-                                    <span style={{ color: 'var(--text-dim)' }}>Subtotal</span>
-                                    <span style={{ color: 'var(--secondary)' }}>$ {new Intl.NumberFormat('es-CO').format(cartItems.reduce((sum, p) => sum + (p.price * p.quantity), 0))}</span>
-                                </div>
-                                <button
-                                    onClick={async () => {
-                                        if (!user) return alert('Inicia sesión para finalizar');
-                                        setBuying(true);
-                                        try {
-                                            const ordersToInsert = cartItems.map(item => {
-                                                const comm = item.price * 0.05;
-                                                return {
-                                                    product_id: item.id,
-                                                    buyer_id: user.id,
-                                                    seller_id: item.seller_id,
-                                                    total_price: item.price,
-                                                    commission_fee: comm,
-                                                    seller_net_amount: item.price - comm,
-                                                    status: 'Pendiente',
-                                                    shipping_address: 'Calle 100 #15-30, Bogotá',
-                                                    buyer_name: user.email?.split('@')[0],
-                                                    buyer_phone: '310 123 4567'
-                                                };
-                                            });
-
-                                            const { error } = await supabase.from('orders').insert(ordersToInsert);
-                                            if (error) throw error;
-
-                                            alert('¡Muchas gracias por tu compra! Estamos procesando tus pedidos.');
-                                            await clearCart();
-                                            setShowCart(false);
-                                            setViewTab('myorders');
-                                            fetchMyOrders(user.id);
-                                        } catch (err) {
-                                            console.error(err);
-                                            alert('Error al procesar la compra masiva');
-                                        } finally {
-                                            setBuying(false);
-                                        }
-                                    }}
-                                    disabled={buying}
-                                    style={{
-                                        width: '100%',
-                                        background: 'var(--secondary)',
-                                        color: 'var(--primary)',
-                                        padding: '18px',
-                                        borderRadius: '18px',
-                                        fontWeight: '900',
-                                        fontSize: '16px',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        gap: '12px',
-                                        boxShadow: '0 10px 25px rgba(163, 230, 53, 0.4)'
-                                    }}
-                                >
-                                    <ShoppingCart size={24} />
-                                    {buying ? 'PROCESANDO...' : 'FINALIZAR COMPRA'}
-                                </button>
-                            </div>
-                        )}
-                    </motion.div>
-                )}
-            </AnimatePresence>
         </div>
     );
 };
