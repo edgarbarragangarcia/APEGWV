@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import {
     ArrowLeft, MapPin, CreditCard,
     ShieldCheck, Loader2, Camera, Scan,
-    CheckCircle2, Sparkles, Plus
+    CheckCircle2, Sparkles, Plus, X, AlertCircle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '../context/CartContext';
@@ -26,6 +26,7 @@ const CheckoutPage: React.FC = () => {
     const [isProcessing, setIsProcessing] = useState(false);
     const [showScanner, setShowScanner] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     // Payment Methods State
     const [savedMethods, setSavedMethods] = useState<PaymentMethod[]>([]);
@@ -85,6 +86,7 @@ const CheckoutPage: React.FC = () => {
 
     const handlePlaceOrder = async () => {
         setIsProcessing(true);
+        setError(null);
         try {
             // Group items by seller
             const ordersBySeller: Record<string, typeof cartItems> = {};
@@ -141,9 +143,9 @@ const CheckoutPage: React.FC = () => {
                 navigate('/shop');
             }, 3000);
 
-        } catch (err) {
+        } catch (err: any) {
             console.error('Order error:', err);
-            alert('Error al procesar el pedido. Por favor intenta de nuevo.');
+            setError(err.message || 'Error al procesar el pedido. Por favor intenta de nuevo.');
         } finally {
             setIsProcessing(false);
         }
@@ -289,6 +291,27 @@ const CheckoutPage: React.FC = () => {
             maxWidth: 'var(--app-max-width)',
             margin: '0 auto'
         }}>
+            {/* Error Message Overlay */}
+            <AnimatePresence>
+                {/* Replaced native alert with UI error */}
+            </AnimatePresence>
+            {isProcessing && (
+                <div style={{
+                    position: 'fixed',
+                    inset: 0,
+                    background: 'rgba(0,0,0,0.8)',
+                    zIndex: 9999,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexDirection: 'column',
+                    gap: '15px'
+                }}>
+                    <Loader2 className="animate-spin" size={40} color="var(--secondary)" />
+                    <span style={{ color: 'white', fontWeight: '700' }}>Procesando pedido...</span>
+                </div>
+            )}
+
             {/* Header */}
             <header style={{
                 display: 'flex',
@@ -300,7 +323,7 @@ const CheckoutPage: React.FC = () => {
                     onClick={() => step === 1 ? navigate(-1) : setStep(1)}
                     style={{
                         background: 'rgba(255,255,255,0.05)',
-                        border: '1px solid rgba(255,b255,b255,0.1)',
+                        border: '1px solid rgba(255,255,255,0.1)',
                         width: '40px',
                         height: '40px',
                         borderRadius: '12px',
@@ -315,10 +338,17 @@ const CheckoutPage: React.FC = () => {
                 <h1 style={{ fontSize: '24px', fontWeight: '800' }}>Finalizar Compra</h1>
             </header>
 
-            {/* Steps Progress */}
+            {/* Error Banner */}
+            {/* Added explicit error display */}
+            {/* Note: I will inject the error state definition and usage in the next step properly at the top of the component and here */}
+            {/* For now, let's just make sure the state is defined. Wait, I should do this in a multi_replace to handle both state definition and render. */}
+
+            {/* ABORTING single replace to switch to multi_replace for cleaner state insertion */}
+
+            {/* Re-rendering original content to restart with multi_replace */}
             <div style={{ display: 'flex', gap: '8px', marginBottom: '30px' }}>
                 <div style={{ flex: 1, height: '4px', background: 'var(--secondary)', borderRadius: '2px' }} />
-                <div style={{ flex: 1, height: '4px', background: step === 2 ? 'var(--secondary)' : 'rgba(255,255,255,0.1)', borderRadius: '2px', transition: '0.3s' }} />
+                <div style={{ flex: 1, height: '4px', background: step === 2 ? 'var(--secondary)' : 'rgba(255,b255,b255,0.1)', borderRadius: '2px', transition: '0.3s' }} />
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -600,6 +630,41 @@ const CheckoutPage: React.FC = () => {
                     <span style={{ fontSize: '11px', fontWeight: '700' }}>PAGO SEGURO CIFRADO</span>
                 </div>
             </div>
+            {/* Error Banner */}
+            <AnimatePresence>
+                {error && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        style={{
+                            position: 'fixed',
+                            top: '20px',
+                            left: '20px',
+                            right: '20px',
+                            zIndex: 10000,
+                            background: '#ef4444',
+                            color: 'white',
+                            padding: '15px',
+                            borderRadius: '12px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '12px',
+                            boxShadow: '0 10px 30px rgba(239, 68, 68, 0.3)'
+                        }}
+                    >
+                        <AlertCircle size={24} />
+                        <div style={{ flex: 1 }}>
+                            <p style={{ fontWeight: '700', fontSize: '14px' }}>Error</p>
+                            <p style={{ fontSize: '12px' }}>{error}</p>
+                        </div>
+                        <button onClick={() => setError(null)} style={{ background: 'none', border: 'none', color: 'white' }}>
+                            <X size={20} />
+                        </button>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
         </div>
     );
 };
