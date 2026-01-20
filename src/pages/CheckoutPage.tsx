@@ -111,16 +111,17 @@ const CheckoutPage: React.FC = () => {
             });
 
             // Create orders
-            for (const [sellerId, items] of Object.entries(ordersBySeller)) {
-                const sellerTotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            for (const item of cartItems) {
+                const sellerId = item.seller_id || 'admin';
                 const fullAddress = `${shipping.address}, ${shipping.city}`;
 
                 const { error: orderError } = await supabase.from('orders').insert({
                     user_id: user.id,
                     buyer_id: user.id,
                     seller_id: sellerId === 'admin' ? null : sellerId,
-                    total_price: sellerTotal,
-                    total_amount: sellerTotal,
+                    product_id: item.id,
+                    total_price: item.price * item.quantity,
+                    total_amount: item.price * item.quantity,
                     // platform_fee and seller_payout calculated by trigger
                     status: 'Pagado',
                     shipping_address: fullAddress,
@@ -135,7 +136,7 @@ const CheckoutPage: React.FC = () => {
                     await supabase.from('notifications').insert([{
                         user_id: sellerId,
                         title: '¡Venta realizada!',
-                        message: `Has vendido artículos por $${new Intl.NumberFormat('es-CO').format(sellerTotal)}. Prepáralos para el envío.`,
+                        message: `Has vendido ${item.name} por $${new Intl.NumberFormat('es-CO').format(item.price * item.quantity)}. Prepáralo para el envío.`,
                         type: 'order_new',
                         link: `/shop?tab=mystore`
                     }]);

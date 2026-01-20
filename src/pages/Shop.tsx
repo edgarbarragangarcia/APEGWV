@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     Search, Filter, Store, ShoppingBag,
-    ArrowLeft, ShoppingCart, ChevronRight, Plus, CheckCircle2
+    ArrowLeft, ShoppingCart, ChevronRight, Plus, CheckCircle2,
+    Loader2, AlertCircle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Card from '../components/Card';
@@ -35,6 +36,8 @@ const Shop: React.FC = () => {
     const [user, setUser] = useState<any>(null);
     const { addToCart, totalItems } = useCart();
     const [addingToCart, setAddingToCart] = useState<string | null>(null);
+    const [ordersLoading, setOrdersLoading] = useState(false);
+    const [ordersError, setOrdersError] = useState<string | null>(null);
 
     useEffect(() => {
         const checkUser = async () => {
@@ -48,12 +51,26 @@ const Shop: React.FC = () => {
     }, []);
 
     const fetchMyOrders = async (userId: string) => {
-        const { data } = await supabase
-            .from('orders')
-            .select('*, product:products(*), seller:profiles(*)')
-            .eq('buyer_id', userId)
-            .order('created_at', { ascending: false });
-        if (data) setMyOrders(data);
+        setOrdersLoading(true);
+        setOrdersError(null);
+        console.log('Fetching orders for userId:', userId);
+        try {
+            const { data, error } = await supabase
+                .from('orders')
+                .select('*, product:products!product_id(*), seller:profiles!seller_id(*)')
+                .eq('buyer_id', userId)
+                .order('created_at', { ascending: false });
+
+            console.log('Orders fetch result:', { data, error });
+
+            if (error) throw error;
+            if (data) setMyOrders(data);
+        } catch (err: any) {
+            console.error('Error fetching orders:', err);
+            setOrdersError(err.message);
+        } finally {
+            setOrdersLoading(false);
+        }
     };
 
     useEffect(() => {
@@ -181,26 +198,6 @@ const Shop: React.FC = () => {
                         <ShoppingBag size={16} /> Market
                     </button>
                     <button
-                        onClick={() => setViewTab('mystore')}
-                        style={{
-                            flex: 1,
-                            padding: '10px',
-                            borderRadius: '12px',
-                            border: 'none',
-                            background: viewTab === 'mystore' ? 'var(--secondary)' : 'transparent',
-                            color: viewTab === 'mystore' ? 'var(--primary)' : 'var(--text-dim)',
-                            fontWeight: '700',
-                            fontSize: '13px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            gap: '6px',
-                            cursor: 'pointer'
-                        }}
-                    >
-                        <Store size={16} /> Mi Tienda
-                    </button>
-                    <button
                         onClick={() => setViewTab('myorders')}
                         style={{
                             flex: 1,
@@ -219,6 +216,26 @@ const Shop: React.FC = () => {
                         }}
                     >
                         <ShoppingCart size={16} /> Pedidos
+                    </button>
+                    <button
+                        onClick={() => setViewTab('mystore')}
+                        style={{
+                            flex: 1,
+                            padding: '10px',
+                            borderRadius: '12px',
+                            border: 'none',
+                            background: viewTab === 'mystore' ? 'var(--secondary)' : 'transparent',
+                            color: viewTab === 'mystore' ? 'var(--primary)' : 'var(--text-dim)',
+                            fontWeight: '700',
+                            fontSize: '13px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '6px',
+                            cursor: 'pointer'
+                        }}
+                    >
+                        <Store size={16} /> Mi Tienda
                     </button>
                 </div>
 
@@ -370,7 +387,19 @@ const Shop: React.FC = () => {
                 ) : (
                     <div className="animate-fade">
                         <h2 style={{ fontSize: '22px', fontWeight: '800', marginBottom: '20px' }}>Mis Compras</h2>
-                        {myOrders.length === 0 ? (
+                        {ordersLoading ? (
+                            <div style={{ padding: '60px 20px', textAlign: 'center' }}>
+                                <Loader2 className="animate-spin" size={32} color="var(--secondary)" style={{ margin: '0 auto 15px' }} />
+                                <p style={{ color: 'var(--text-dim)' }}>Cargando pedidos...</p>
+                            </div>
+                        ) : ordersError ? (
+                            <div className="glass" style={{ padding: '40px 20px', textAlign: 'center', border: '1px solid rgba(239, 68, 68, 0.2)' }}>
+                                <AlertCircle size={40} color="#ef4444" style={{ marginBottom: '15px', opacity: 0.5 }} />
+                                <p style={{ color: '#ef4444', fontWeight: '700' }}>Error al cargar pedidos</p>
+                                <p style={{ color: 'var(--text-dim)', fontSize: '13px', marginTop: '5px' }}>{ordersError}</p>
+                                <button onClick={() => user && fetchMyOrders(user.id)} style={{ color: 'var(--secondary)', marginTop: '15px', fontWeight: '700' }}>Reintentar</button>
+                            </div>
+                        ) : myOrders.length === 0 ? (
                             <div className="glass" style={{ padding: '60px 20px', textAlign: 'center' }}>
                                 <ShoppingBag size={48} color="var(--text-dim)" style={{ marginBottom: '15px', opacity: 0.2 }} />
                                 <p style={{ color: 'var(--text-dim)' }}>Aún no has realizado compras.</p>
@@ -382,7 +411,7 @@ const Shop: React.FC = () => {
                                     <Card key={order.id} style={{ padding: '20px' }}>
                                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px' }}>
                                             <span style={{
-                                                background: order.status === 'Pendiente' ? '#f59e0b' : '#10b981',
+                                                background: (order.status === 'Pendiente' || order.status === 'Pagado') ? '#f59e0b' : '#10b981',
                                                 padding: '4px 10px', borderRadius: '8px', fontSize: '11px', fontWeight: '800', color: 'white'
                                             }}>
                                                 {order.status.toUpperCase()}
@@ -390,10 +419,14 @@ const Shop: React.FC = () => {
                                             <span style={{ fontSize: '11px', color: 'var(--text-dim)' }}>{new Date(order.created_at).toLocaleDateString()}</span>
                                         </div>
                                         <div style={{ display: 'flex', gap: '15px', marginBottom: '15px' }}>
-                                            <img src={order.product?.image_url} style={{ width: '60px', height: '60px', borderRadius: '12px', objectFit: 'cover' }} alt="" />
+                                            <img
+                                                src={order.product?.image_url || 'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?auto=format&fit=crop&q=80&w=200'}
+                                                style={{ width: '60px', height: '60px', borderRadius: '12px', objectFit: 'cover' }}
+                                                alt=""
+                                            />
                                             <div>
-                                                <h4 style={{ fontSize: '15px', fontWeight: '800' }}>{order.product?.name}</h4>
-                                                <p style={{ color: 'var(--secondary)', fontWeight: '800' }}>$ {new Intl.NumberFormat('es-CO').format(order.total_price)}</p>
+                                                <h4 style={{ fontSize: '15px', fontWeight: '800' }}>{order.product?.name || 'Pedido sin información'}</h4>
+                                                <p style={{ color: 'var(--secondary)', fontWeight: '800' }}>$ {new Intl.NumberFormat('es-CO').format(order.total_price || order.total_amount || 0)}</p>
                                             </div>
                                         </div>
 
