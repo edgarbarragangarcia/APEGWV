@@ -26,6 +26,7 @@ import CourseReservation from './pages/CourseReservation';
 import MyReservations from './pages/MyReservations';
 import CartPage from './pages/CartPage';
 import NotificationsPage from './pages/NotificationsPage';
+import TournamentManager from './pages/TournamentManager';
 import CheckoutPage from './pages/CheckoutPage';
 import PaymentMethodsPage from './pages/PaymentMethodsPage';
 
@@ -91,6 +92,7 @@ const App: React.FC = () => {
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/settings" element={<Settings />} />
                 <Route path="/my-store" element={<MyStore />} />
+                <Route path="/my-events" element={<TournamentManager />} />
                 <Route path="/profile/edit" element={<EditProfile />} />
                 <Route path="/profile/stats" element={<EditStats />} />
                 <Route path="/rounds" element={<RoundHistory />} />

@@ -508,7 +508,7 @@ const MyStore: React.FC = () => {
     }
 
     return (
-        <div className="animate-fade">
+        <div className="animate-fade" style={{ paddingBottom: 'calc(var(--nav-height) + 20px)' }}>
             {/* Store Title Header */}
             <div style={{ marginBottom: '20px', textAlign: 'center' }}>
                 <span style={{

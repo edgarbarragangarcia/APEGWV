@@ -255,8 +255,28 @@ const TournamentManager: React.FC = () => {
     }
 
     return (
-        <div className="animate-fade">
-            <h2 style={{ fontSize: '20px', fontWeight: '700', marginBottom: '15px' }}>Mis Eventos Organizados</h2>
+        <div className="animate-fade" style={{ paddingBottom: 'calc(var(--nav-height) + 20px)' }}>
+            {/* Standard Header */}
+            <div style={{ marginBottom: '20px', textAlign: 'center' }}>
+                <span style={{
+                    fontSize: '11px',
+                    fontWeight: '900',
+                    color: 'var(--secondary)',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.1em',
+                    opacity: 0.8
+                }}>
+                    Panel de Organización
+                </span>
+                <h1 style={{
+                    fontSize: '26px',
+                    fontWeight: '900',
+                    color: 'white',
+                    marginTop: '4px'
+                }}>
+                    Gestión de Eventos
+                </h1>
+            </div>
 
             {!showForm && (
                 <button

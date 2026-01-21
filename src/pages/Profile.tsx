@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../services/SupabaseManager';
-import { Settings, LogOut, Shield, CreditCard, ChevronRight, Edit2, Mail, Phone, MapPin, Store } from 'lucide-react';
+import { Settings, LogOut, Shield, CreditCard, ChevronRight, Edit2, Mail, Phone, MapPin, Store, Trophy } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import type { Database } from '../types/database.types';
 
@@ -231,7 +231,7 @@ const Profile: React.FC = () => {
                         justifyContent: 'space-between',
                         width: '100%',
                         background: 'rgba(255,255,255,0.05)',
-                        border: '1px solid rgba(255,b255,b255,0.1)'
+                        border: '1px solid rgba(255,255,255,0.1)'
                     }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                         <Settings size={20} color="var(--secondary)" />
@@ -256,6 +256,26 @@ const Profile: React.FC = () => {
                     <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                         <Store size={20} color="var(--secondary)" />
                         <span style={{ fontWeight: '600', fontSize: '14px' }}>Mi Marketplace APEG</span>
+                    </div>
+                    <ChevronRight size={18} color="var(--text-dim)" />
+                </button>
+
+                <button
+                    onClick={() => navigate('/my-events')}
+                    className="glass"
+                    style={{
+                        padding: '16px 20px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        width: '100%',
+                        background: 'rgba(255,255,255,0.05)',
+                        border: '1px solid rgba(255,255,255,0.1)',
+                        marginBottom: '4px'
+                    }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                        <Trophy size={20} color="var(--secondary)" />
+                        <span style={{ fontWeight: '600', fontSize: '14px' }}>Mis Eventos Organizados</span>
                     </div>
                     <ChevronRight size={18} color="var(--text-dim)" />
                 </button>
