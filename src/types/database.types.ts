@@ -244,6 +244,8 @@ export type Database = {
                     commission_amount: number
                     tracking_number: string | null
                     shipping_provider: string | null
+                    product_id: string | null
+                    buyer_id: string | null
                 }
                 Insert: {
                     id?: string
@@ -261,6 +263,8 @@ export type Database = {
                     commission_amount: number
                     tracking_number?: string | null
                     shipping_provider?: string | null
+                    product_id?: string | null
+                    buyer_id?: string | null
                 }
                 Update: {
                     id?: string
@@ -278,6 +282,8 @@ export type Database = {
                     commission_amount?: number
                     tracking_number?: string | null
                     shipping_provider?: string | null
+                    product_id?: string | null
+                    buyer_id?: string | null
                 }
                 Relationships: [
                     {
@@ -291,7 +297,21 @@ export type Database = {
                         foreignKeyName: "orders_seller_id_fkey"
                         columns: ["seller_id"]
                         isOneToOne: false
-                        referencedRelation: "users"
+                        referencedRelation: "profiles"
+                        referencedColumns: ["id"]
+                    },
+                    {
+                        foreignKeyName: "orders_product_id_fkey"
+                        columns: ["product_id"]
+                        isOneToOne: false
+                        referencedRelation: "products"
+                        referencedColumns: ["id"]
+                    },
+                    {
+                        foreignKeyName: "orders_buyer_id_fkey"
+                        columns: ["buyer_id"]
+                        isOneToOne: false
+                        referencedRelation: "profiles"
                         referencedColumns: ["id"]
                     }
                 ]

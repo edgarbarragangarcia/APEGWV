@@ -14,19 +14,16 @@ import { useAuth } from '../context/AuthContext';
 import PageHeader from '../components/PageHeader';
 import Skeleton from '../components/Skeleton';
 
-interface Product {
-    id: string;
-    name: string;
-    price: number;
-    category: string;
-    description?: string;
-    image_url: string;
-    condition?: string;
-    seller_id?: string;
-    size_clothing?: string;
-    size_shoes_col?: string;
-    is_negotiable?: boolean;
-}
+import type { Database } from '../types/database.types';
+
+type Product = Database['public']['Tables']['products']['Row'];
+type Order = Database['public']['Tables']['orders']['Row'] & {
+    product: Product | null;
+    seller: Database['public']['Tables']['profiles']['Row'] | null;
+};
+type Offer = Database['public']['Tables']['offers']['Row'] & {
+    product: Product | null;
+};
 
 const Shop: React.FC = () => {
     const navigate = useNavigate();
@@ -36,8 +33,8 @@ const Shop: React.FC = () => {
     const [viewTab, setViewTab] = useState<'marketplace' | 'myorders' | 'mystore'>('marketplace');
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
     const [buying, setBuying] = useState(false);
-    const [myOrders, setMyOrders] = useState<any[]>([]);
-    const [myOffers, setMyOffers] = useState<any[]>([]);
+    const [myOrders, setMyOrders] = useState<Order[]>([]);
+    const [myOffers, setMyOffers] = useState<Offer[]>([]);
     const { user } = useAuth();
     const [showOfferModal, setShowOfferModal] = useState(false);
     const [offerAmount, setOfferAmount] = useState('');
@@ -541,7 +538,7 @@ const Shop: React.FC = () => {
                     >
                         {/* High Impact Image Section */}
                         <div style={{ position: 'relative', height: '40vh', width: '100%', overflow: 'hidden' }}>
-                            <img src={selectedProduct.image_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" />
+                            <img src={selectedProduct.image_url || ''} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" />
                             <div style={{
                                 position: 'absolute',
                                 top: 0,

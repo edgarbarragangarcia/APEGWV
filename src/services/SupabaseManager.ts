@@ -53,7 +53,7 @@ export interface Notification {
  * Optimizes a Supabase storage URL by applying transformations (resize, quality, format).
  * Falls back to the original URL if it's not a Supabase storage URL or if transformation isn't supported.
  */
-export const optimizeImage = (url: string | null | undefined, options: { width?: number; height?: number; quality?: number; resize?: 'cover' | 'contain' | 'fill' } = {}) => {
+export const optimizeImage = (url: string | null | undefined, _options: { width?: number; height?: number; quality?: number; resize?: 'cover' | 'contain' | 'fill' } = {}) => {
     if (!url) return '';
 
     // NOTE: Supabase Image Transformation is a paid feature (Pro plan).

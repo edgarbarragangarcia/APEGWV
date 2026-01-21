@@ -16,11 +16,14 @@ import { useAuth } from '../context/AuthContext';
 import type { Database } from '../types/database.types';
 
 type SellerProfile = Database['public']['Tables']['seller_profiles']['Row'];
-
 type Product = Database['public']['Tables']['products']['Row'];
-type Offer = Database['public']['Tables']['offers']['Row'] & {
-    product: { name: string; image_url: string | null; price: number };
-    buyer: { full_name: string | null };
+type Order = Pick<Database['public']['Tables']['orders']['Row'], 'id' | 'created_at' | 'status' | 'total_amount' | 'seller_net_amount' | 'shipping_address' | 'tracking_number' | 'shipping_provider' | 'buyer_name' | 'buyer_phone'> & {
+    product: { name: string; image_url: string | null } | null;
+    buyer: { full_name: string | null; avatar_url: string | null; phone: string | null } | null;
+};
+type Offer = Pick<Database['public']['Tables']['offers']['Row'], 'id' | 'created_at' | 'status' | 'offer_amount' | 'message' | 'buyer_id'> & {
+    product: { name: string; image_url: string | null; price: number } | null;
+    buyer: { full_name: string | null } | null;
 };
 
 const MyStore: React.FC = () => {
@@ -37,7 +40,7 @@ const MyStore: React.FC = () => {
         productId: null,
         productName: ''
     });
-    const [orders, setOrders] = useState<any[]>([]);
+    const [orders, setOrders] = useState<Order[]>([]);
     const [offers, setOffers] = useState<Offer[]>([]);
     const [activeTab, setActiveTab] = useState<'products' | 'orders' | 'offers' | 'profile'>('products');
     const [updatingOrder, setUpdatingOrder] = useState<string | null>(null);
@@ -97,7 +100,7 @@ const MyStore: React.FC = () => {
         try {
             const { data: userOrders, error } = await supabase
                 .from('orders')
-                .select('id, created_at, status, total_amount, product:products!orders_product_id_fkey(name, image_url), buyer:profiles!orders_buyer_id_fkey(full_name, avatar_url)')
+                .select('id, created_at, status, total_amount, seller_net_amount, shipping_address, tracking_number, shipping_provider, buyer_name, buyer_phone, product:products!orders_product_id_fkey(name, image_url), buyer:profiles!orders_buyer_id_fkey(full_name, avatar_url, phone)')
                 .eq('seller_id', userId)
                 .order('created_at', { ascending: false });
 
@@ -106,7 +109,17 @@ const MyStore: React.FC = () => {
                 return;
             }
 
-            setOrders(userOrders || []);
+            if (userOrders && userOrders.length > 0) {
+                // Normalize relations if they return as arrays
+                const mappedOrders: Order[] = userOrders.map((o: any) => ({
+                    ...o,
+                    product: Array.isArray(o.product) ? o.product[0] : o.product,
+                    buyer: Array.isArray(o.buyer) ? o.buyer[0] : o.buyer
+                }));
+                setOrders(mappedOrders);
+            } else {
+                setOrders([]);
+            }
         } catch (err) {
             console.error('Unexpected error in fetchOrders:', err);
         }
@@ -134,9 +147,10 @@ const MyStore: React.FC = () => {
 
                 const buyersMap = new Map(buyers?.map(b => [b.id, b]) || []);
 
-                const enrichedOffers = userOffers.map((offer: any) => ({
+                const enrichedOffers: Offer[] = userOffers.map((offer: any) => ({
                     ...offer,
-                    buyer: buyersMap.get(offer.buyer_id) || { full_name: null }
+                    product: Array.isArray(offer.product) ? offer.product[0] : offer.product,
+                    buyer: buyersMap.get(offer.buyer_id) || null
                 }));
 
                 setOffers(enrichedOffers);
