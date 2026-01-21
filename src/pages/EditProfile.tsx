@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { supabase } from '../services/SupabaseManager';
+import { supabase, optimizeImage } from '../services/SupabaseManager';
 import { Save, Loader2, Camera, Trash2, Upload, MapPin, X, Check, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -186,7 +186,7 @@ const EditProfile: React.FC = () => {
                         }}>
                             {formData.id_photo_url ? (
                                 <img
-                                    src={formData.id_photo_url}
+                                    src={optimizeImage(formData.id_photo_url, { width: 240, height: 240 })}
                                     alt="Profile"
                                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                 />

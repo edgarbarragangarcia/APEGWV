@@ -1,7 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import type { Session } from '@supabase/supabase-js';
-import { supabase } from './services/SupabaseManager';
 import Navbar from './components/Navbar';
 import BottomNav from './components/BottomNav';
 
@@ -30,24 +28,10 @@ import TournamentManager from './pages/TournamentManager';
 import CheckoutPage from './pages/CheckoutPage';
 import PaymentMethodsPage from './pages/PaymentMethodsPage';
 
-const App: React.FC = () => {
-  const [session, setSession] = useState<Session | null>(null);
-  const [loading, setLoading] = useState(true);
+import { AuthProvider, useAuth } from './context/AuthContext';
 
-  useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setLoading(false);
-    });
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
+const AppContent: React.FC = () => {
+  const { session, loading } = useAuth();
 
   React.useEffect(() => {
     // Intentar bloquear la orientación
@@ -112,6 +96,14 @@ const App: React.FC = () => {
         {session && <BottomNav />}
       </div>
     </Router>
+  );
+};
+
+const App: React.FC = () => {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   );
 };
 

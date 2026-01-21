@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { supabase } from '../services/SupabaseManager';
+import { supabase, optimizeImage } from '../services/SupabaseManager';
 import {
     Plus, Package, Trash2,
     Camera, Loader2, CheckCircle2,
@@ -12,6 +11,8 @@ import {
 } from 'lucide-react';
 import Card from '../components/Card';
 import StoreOnboarding from '../components/StoreOnboarding';
+import Skeleton from '../components/Skeleton';
+import { useAuth } from '../context/AuthContext';
 import type { Database } from '../types/database.types';
 
 type SellerProfile = Database['public']['Tables']['seller_profiles']['Row'];
@@ -23,7 +24,7 @@ type Offer = Database['public']['Tables']['offers']['Row'] & {
 };
 
 const MyStore: React.FC = () => {
-    const navigate = useNavigate();
+    const { user } = useAuth();
     const [loading, setLoading] = useState(true);
     const [products, setProducts] = useState<Product[]>([]);
     const [sellerProfile, setSellerProfile] = useState<SellerProfile | null>(null);
@@ -91,16 +92,12 @@ const MyStore: React.FC = () => {
 
     const categories = ['Ropa', 'Accesorios', 'Bolas', 'Zapatos', 'Grips', 'Otros'];
 
-    useEffect(() => {
-        fetchStoreData();
-    }, []);
-
     const fetchOrders = async (userId: string) => {
         console.log('Fetching orders for seller:', userId);
         try {
             const { data: userOrders, error } = await supabase
                 .from('orders')
-                .select('*, product:products!orders_product_id_fkey(*), buyer:profiles!orders_buyer_id_fkey(*)')
+                .select('id, created_at, status, total_amount, product:products!orders_product_id_fkey(name, image_url), buyer:profiles!orders_buyer_id_fkey(full_name, avatar_url)')
                 .eq('seller_id', userId)
                 .order('created_at', { ascending: false });
 
@@ -109,7 +106,6 @@ const MyStore: React.FC = () => {
                 return;
             }
 
-            console.log('Orders found:', userOrders?.length);
             setOrders(userOrders || []);
         } catch (err) {
             console.error('Unexpected error in fetchOrders:', err);
@@ -120,7 +116,7 @@ const MyStore: React.FC = () => {
         try {
             const { data: userOffers, error: offersError } = await supabase
                 .from('offers')
-                .select('*, product:products(name, image_url, price)')
+                .select('id, created_at, status, offer_amount, message, buyer_id, product:products(name, image_url, price)')
                 .eq('seller_id', userId)
                 .order('created_at', { ascending: false });
 
@@ -153,18 +149,14 @@ const MyStore: React.FC = () => {
     };
 
     const fetchStoreData = async () => {
-        try {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (!session) {
-                navigate('/auth');
-                return;
-            }
+        if (!user) return;
 
+        try {
             // Fetch Seller Profile
             const { data: profile } = await supabase
                 .from('seller_profiles')
                 .select('*')
-                .eq('user_id', session.user.id)
+                .eq('user_id', user.id)
                 .single();
 
             setSellerProfile(profile);
@@ -174,16 +166,16 @@ const MyStore: React.FC = () => {
                 // Fetch User Products
                 const { data: userProducts, error } = await supabase
                     .from('products')
-                    .select('*')
-                    .eq('seller_id', session.user.id)
+                    .select('id, name, price, category, image_url, status, created_at, size_clothing, size_shoes_col')
+                    .eq('seller_id', user.id)
                     .order('created_at', { ascending: false });
 
                 if (error) throw error;
-                setProducts(userProducts || []);
+                setProducts((userProducts as Product[]) || []);
 
                 // Fetch Orders and Offers initial data
-                fetchOrders(session.user.id);
-                fetchOffers(session.user.id);
+                fetchOrders(user.id);
+                fetchOffers(user.id);
             }
         } catch (err) {
             console.error('Error fetching store data:', err);
@@ -193,26 +185,21 @@ const MyStore: React.FC = () => {
     };
 
     useEffect(() => {
-        fetchStoreData();
+        if (user) {
+            fetchStoreData();
 
-        // Setup Realtime for Orders & Offers
-        let channel: any;
-
-        const setupRealtime = async () => {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (!session) return;
-
-            channel = supabase
-                .channel('seller-updates')
+            // Setup Realtime for Orders & Offers
+            const channel = supabase
+                .channel(`seller-updates-${user.id}`)
                 .on(
                     'postgres_changes',
                     {
                         event: '*',
                         schema: 'public',
                         table: 'orders',
-                        filter: `seller_id=eq.${session.user.id}`
+                        filter: `seller_id=eq.${user.id}`
                     },
-                    () => fetchOrders(session.user.id)
+                    () => fetchOrders(user.id)
                 )
                 .on(
                     'postgres_changes',
@@ -220,19 +207,19 @@ const MyStore: React.FC = () => {
                         event: '*',
                         schema: 'public',
                         table: 'offers',
-                        filter: `seller_id=eq.${session.user.id}`
+                        filter: `seller_id=eq.${user.id}`
                     },
-                    () => fetchOffers(session.user.id)
+                    () => fetchOffers(user.id)
                 )
                 .subscribe();
-        };
 
-        setupRealtime();
-
-        return () => {
-            if (channel) supabase.removeChannel(channel);
-        };
-    }, []);
+            return () => {
+                supabase.removeChannel(channel);
+            };
+        } else {
+            setLoading(false); // Done loading (to show auth redirect if needed)
+        }
+    }, [user]);
 
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -898,7 +885,23 @@ const MyStore: React.FC = () => {
                         </form>
                     ) : (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                            {products.length === 0 ? (
+                            {loading ? (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                                    {[1, 2, 3].map(i => (
+                                        <div key={i} className="glass" style={{ padding: '15px', display: 'flex', gap: '18px', alignItems: 'center' }}>
+                                            <Skeleton width="90px" height="90px" borderRadius="20px" />
+                                            <div style={{ flex: 1 }}>
+                                                <Skeleton width="60%" height="18px" style={{ marginBottom: '8px' }} />
+                                                <Skeleton width="40%" height="22px" style={{ marginBottom: '10px' }} />
+                                                <div style={{ display: 'flex', gap: '6px' }}>
+                                                    <Skeleton width="50px" height="18px" borderRadius="8px" />
+                                                    <Skeleton width="40px" height="18px" borderRadius="8px" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : products.length === 0 ? (
                                 <div className="glass" style={{ padding: '60px 20px', textAlign: 'center', borderRadius: '30px' }}>
                                     <div style={{
                                         width: '80px',
@@ -954,7 +957,7 @@ const MyStore: React.FC = () => {
                                                         border: '1px solid rgba(255,255,255,0.1)'
                                                     }}>
                                                         <img
-                                                            src={product.image_url || ''}
+                                                            src={optimizeImage(product.image_url, { width: 200, height: 200 }) || ''}
                                                             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                                             alt={product.name}
                                                         />
@@ -1115,7 +1118,7 @@ const MyStore: React.FC = () => {
 
                                     <div style={{ display: 'flex', gap: '15px', marginBottom: '20px', alignItems: 'center' }}>
                                         <div style={{ position: 'relative' }}>
-                                            <img src={order.product?.image_url} style={{ width: '65px', height: '65px', borderRadius: '16px', objectFit: 'cover', border: '1px solid rgba(255,255,255,0.1)' }} alt="" />
+                                            <img src={optimizeImage(order.product?.image_url, { width: 150, height: 150 })} style={{ width: '65px', height: '65px', borderRadius: '16px', objectFit: 'cover', border: '1px solid rgba(255,255,255,0.1)' }} alt="" />
                                             <div style={{ position: 'absolute', bottom: '-5px', right: '-5px', background: 'var(--secondary)', width: '22px', height: '22px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #0e2f1f' }}>
                                                 <Package size={10} color="var(--primary)" />
                                             </div>
@@ -1284,7 +1287,7 @@ const MyStore: React.FC = () => {
 
                                     <div style={{ display: 'flex', gap: '15px', marginBottom: '20px', alignItems: 'center' }}>
                                         <div style={{ position: 'relative' }}>
-                                            <img src={offer.product?.image_url || ''} style={{ width: '65px', height: '65px', borderRadius: '16px', objectFit: 'cover', border: '1px solid rgba(255,255,255,0.1)' }} alt="" />
+                                            <img src={optimizeImage(offer.product?.image_url, { width: 150, height: 150 }) || ''} style={{ width: '65px', height: '65px', borderRadius: '16px', objectFit: 'cover', border: '1px solid rgba(255,255,255,0.1)' }} alt="" />
                                             <div style={{ position: 'absolute', bottom: '-5px', right: '-5px', background: '#3b82f6', width: '22px', height: '22px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #0e2f1f' }}>
                                                 <Handshake size={10} color="white" />
                                             </div>

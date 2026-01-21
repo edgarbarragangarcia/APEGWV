@@ -48,3 +48,32 @@ export interface Notification {
     link?: string;
     created_at: string;
 }
+
+/**
+ * Optimizes a Supabase storage URL by applying transformations (resize, quality, format).
+ * Falls back to the original URL if it's not a Supabase storage URL or if transformation isn't supported.
+ */
+export const optimizeImage = (url: string | null | undefined, options: { width?: number; height?: number; quality?: number; resize?: 'cover' | 'contain' | 'fill' } = {}) => {
+    if (!url) return '';
+
+    // NOTE: Supabase Image Transformation is a paid feature (Pro plan).
+    // If you are on a Free plan, the /render/image endpoint will return an error or a broken image.
+    // For now, we return the original URL to ensure reliability. 
+    // You can uncomment the logic below if you have a Pro plan enabled.
+
+    /*
+    if (url.includes('supabase.co/storage/v1/object/public/')) {
+        const { width = 500, height, quality = 80, resize = 'cover' } = options;
+        const renderUrl = url.replace('/storage/v1/object/public/', '/storage/v1/render/image/public/');
+        const params = new URLSearchParams();
+        if (width) params.append('width', width.toString());
+        if (height) params.append('height', height.toString());
+        params.append('quality', quality.toString());
+        params.append('resize', resize);
+        params.append('format', 'webp');
+        return `${renderUrl}?${params.toString()}`;
+    }
+    */
+
+    return url;
+};

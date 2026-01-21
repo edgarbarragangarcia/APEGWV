@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Calendar, Users, MapPin, Search, UserPlus, Trophy, Loader2 } from 'lucide-react';
+import { Calendar, Users, MapPin, Search, UserPlus, Trophy } from 'lucide-react';
 import Card from '../components/Card';
 import { supabase } from '../services/SupabaseManager';
+import Skeleton from '../components/Skeleton';
+import { useAuth } from '../context/AuthContext';
+import { optimizeImage } from '../services/SupabaseManager';
 
 interface Tournament {
     id: string;
@@ -17,39 +20,38 @@ interface Tournament {
 }
 
 const Tournaments: React.FC = () => {
+    const { user } = useAuth();
     const [activeTab, setActiveTab] = useState<'all' | 'my'>('all');
     const [searchQuery, setSearchQuery] = useState('');
     const [tournaments, setTournaments] = useState<Tournament[]>([]);
     const [registrations, setRegistrations] = useState<string[]>([]);
     const [loading, setLoading] = useState(true);
-    const [registering, setRegistering] = useState<string | null>(null);
 
     useEffect(() => {
         fetchData();
-    }, []);
+    }, [user]);
 
     const fetchData = async () => {
-        setLoading(true);
+        // Only show loading if we don't have data yet
+        if (tournaments.length === 0) setLoading(true);
         try {
-            const { data: { session } } = await supabase.auth.getSession();
-
             // Fetch all tournaments
             const { data: allTourneys, error: tError } = await supabase
                 .from('tournaments')
-                .select('*')
+                .select('id, name, description, date, club, price, participants_limit, current_participants, status, image_url')
                 .order('date', { ascending: true });
 
             if (tError) throw tError;
-            setTournaments(allTourneys || []);
+            setTournaments((allTourneys as Tournament[]) || []);
 
             // Fetch user registrations
-            if (session) {
+            if (user) {
                 const { data: userRegs } = await supabase
                     .from('tournament_registrations')
                     .select('tournament_id')
-                    .eq('user_id', session.user.id);
+                    .eq('user_id', user.id);
 
-                setRegistrations(userRegs?.map(r => r.tournament_id) || []);
+                setRegistrations(userRegs?.map((r: any) => r.tournament_id) || []);
             }
         } catch (err) {
             console.error('Error fetching tournaments:', err);
@@ -59,10 +61,19 @@ const Tournaments: React.FC = () => {
     };
 
     const handleRegister = async (tournamentId: string) => {
-        setRegistering(tournamentId);
+        // OPTIMISTIC UPDATE: Assume success
+        if (registrations.includes(tournamentId)) return;
+
+        const previousRegistrations = [...registrations];
+        setRegistrations(prev => [...prev, tournamentId]);
+        if (navigator.vibrate) navigator.vibrate(50);
+
         try {
             const { data: { session } } = await supabase.auth.getSession();
-            if (!session) return;
+            if (!session) {
+                setRegistrations(previousRegistrations);
+                return;
+            }
 
             const { error } = await supabase
                 .from('tournament_registrations')
@@ -72,14 +83,12 @@ const Tournaments: React.FC = () => {
                 }]);
 
             if (error) throw error;
-
-            setRegistrations([...registrations, tournamentId]);
-            if (navigator.vibrate) navigator.vibrate(50);
+            // Success - keep the state
         } catch (err) {
             console.error('Error registering:', err);
+            // ROLLBACK if error
+            setRegistrations(previousRegistrations);
             alert('Error al inscribirse');
-        } finally {
-            setRegistering(null);
         }
     };
 
@@ -93,10 +102,31 @@ const Tournaments: React.FC = () => {
         return matchesSearch;
     });
 
-    if (loading) {
+    const renderSkeletons = () => (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            {[1, 2, 3].map(i => (
+                <div key={i} className="glass" style={{ padding: '0', overflow: 'hidden', borderRadius: '28px' }}>
+                    <Skeleton height="140px" borderRadius="0" />
+                    <div style={{ padding: '20px' }}>
+                        <Skeleton width="40%" height="15px" style={{ marginBottom: '10px' }} />
+                        <Skeleton width="80%" height="25px" style={{ marginBottom: '15px' }} />
+                        <div style={{ display: 'flex', gap: '15px', marginBottom: '20px' }}>
+                            <Skeleton width="30%" height="15px" />
+                            <Skeleton width="30%" height="15px" />
+                        </div>
+                        <Skeleton height="50px" borderRadius="20px" />
+                    </div>
+                </div>
+            ))}
+        </div>
+    );
+
+    if (loading && tournaments.length === 0) {
         return (
-            <div className="flex-center" style={{ height: '70vh' }}>
-                <Loader2 className="animate-spin" color="var(--secondary)" size={32} />
+            <div className="container page-content">
+                <div style={{ height: '40px', marginBottom: '20px' }}><Skeleton width="60%" height="30px" /></div>
+                <div style={{ marginBottom: '25px' }}><Skeleton height="45px" borderRadius="20px" /></div>
+                {renderSkeletons()}
             </div>
         );
     }
@@ -196,13 +226,13 @@ const Tournaments: React.FC = () => {
                         <div style={{
                             width: '80px',
                             height: '80px',
-                            background: 'rgba(255,b255,b255,0.03)',
+                            background: 'rgba(255,255,255,0.03)',
                             borderRadius: '50%',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
                             margin: '0 auto 20px',
-                            border: '1px solid rgba(255,b255,b255,0.05)'
+                            border: '1px solid rgba(255,255,255,0.05)'
                         }}>
                             <Trophy size={40} color="var(--text-dim)" style={{ opacity: 0.3 }} />
                         </div>
@@ -229,7 +259,7 @@ const Tournaments: React.FC = () => {
                                 }}>
                                     <div style={{ position: 'relative', height: '140px' }}>
                                         <img
-                                            src={tourney.image_url || 'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?q=80&w=1000&auto=format&fit=crop'}
+                                            src={optimizeImage(tourney.image_url, { width: 600, height: 280 }) || 'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?q=80&w=1000&auto=format&fit=crop'}
                                             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                             alt={tourney.name}
                                         />
@@ -282,7 +312,7 @@ const Tournaments: React.FC = () => {
 
                                         <button
                                             onClick={() => !isRegistered && handleRegister(tourney.id)}
-                                            disabled={isRegistered || registering === tourney.id}
+                                            disabled={isRegistered}
                                             style={{
                                                 width: '100%',
                                                 background: isRegistered ? 'rgba(255,255,255,0.05)' : 'linear-gradient(135deg, var(--secondary) 0%, #10b981 100%)',
@@ -300,9 +330,7 @@ const Tournaments: React.FC = () => {
                                                 boxShadow: isRegistered ? 'none' : '0 8px 20px rgba(163, 230, 53, 0.2)',
                                                 transition: 'all 0.3s ease'
                                             }}>
-                                            {registering === tourney.id ? (
-                                                <Loader2 size={20} className="animate-spin" />
-                                            ) : isRegistered ? (
+                                            {isRegistered ? (
                                                 <><Trophy size={18} /> ESTÁS INSCRITO</>
                                             ) : (
                                                 <><UserPlus size={18} /> INSCRIBIRME AHORA</>

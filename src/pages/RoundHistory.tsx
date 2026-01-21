@@ -4,6 +4,8 @@ import { motion } from 'framer-motion';
 import { supabase } from '../services/SupabaseManager';
 import { ArrowLeft, Calendar, TrendingUp, ChevronRight, Trash2, Pencil } from 'lucide-react';
 import Card from '../components/Card';
+import Skeleton from '../components/Skeleton';
+import { useAuth } from '../context/AuthContext';
 
 interface Round {
     id: string;
@@ -18,7 +20,9 @@ interface Round {
 
 const RoundHistory: React.FC = () => {
     const navigate = useNavigate();
+    const { user } = useAuth();
     const [rounds, setRounds] = useState<Round[]>([]);
+    const [loading, setLoading] = useState(true);
     const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; roundId: string | null; courseName: string }>({
         isOpen: false,
         roundId: null,
@@ -27,28 +31,25 @@ const RoundHistory: React.FC = () => {
 
     useEffect(() => {
         const fetchRounds = async () => {
+            if (!user) return;
             try {
-                const { data: { session } } = await supabase.auth.getSession();
-                if (!session) {
-                    navigate('/auth');
-                    return;
-                }
-
                 const { data, error } = await supabase
                     .from('rounds')
-                    .select('*')
-                    .eq('user_id', session.user.id)
+                    .select('id, course_name, course_location, date_played, total_score, first_nine_score, second_nine_score, status')
+                    .eq('user_id', user.id)
                     .order('date_played', { ascending: false });
 
                 if (error) throw error;
                 setRounds(data || []);
             } catch (err) {
                 console.error('Error fetching rounds:', err);
+            } finally {
+                setLoading(false);
             }
         };
 
         fetchRounds();
-    }, [navigate]);
+    }, [user]);
 
     const handleDelete = async () => {
         if (!deleteModal.roundId) return;
@@ -70,8 +71,6 @@ const RoundHistory: React.FC = () => {
         }
     };
 
-
-
     return (
         <div className="animate-fade" style={{ paddingBottom: '100px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '30px' }}>
@@ -81,7 +80,20 @@ const RoundHistory: React.FC = () => {
                 <h1 style={{ fontSize: '24px', margin: 0 }}>Historial de Rondas</h1>
             </div>
 
-            {rounds.length === 0 ? (
+            {loading ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                    {[1, 2, 3, 4].map(i => (
+                        <div key={i} className="glass" style={{ padding: '20px', borderRadius: '20px' }}>
+                            <Skeleton width="60%" height="18px" style={{ marginBottom: '8px' }} />
+                            <Skeleton width="40%" height="14px" style={{ marginBottom: '15px' }} />
+                            <div style={{ display: 'flex', gap: '15px' }}>
+                                <Skeleton width="25%" height="14px" />
+                                <Skeleton width="25%" height="14px" />
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            ) : rounds.length === 0 ? (
                 <Card>
                     <div style={{ textAlign: 'center', padding: '40px 20px' }}>
                         <Calendar size={48} color="var(--text-dim)" style={{ margin: '0 auto 20px' }} />
@@ -170,14 +182,13 @@ const RoundHistory: React.FC = () => {
                                 dragConstraints={{ left: -140, right: 0 }}
                                 dragElastic={0.05}
                                 dragSnapToOrigin={false}
-                                onDragEnd={() => { }}
                                 style={{
                                     position: 'relative',
                                     zIndex: 1,
                                     x: 0,
-                                    background: '#0d2b1d', // Opaque background to hide actions
+                                    background: '#0d2b1d',
                                     borderRadius: '20px',
-                                    border: '1px solid rgba(255,255,255,0.08)' // Subtle border for the card container
+                                    border: '1px solid rgba(255,255,255,0.08)'
                                 }}
                                 whileTap={{ cursor: 'grabbing' }}
                             >
@@ -185,7 +196,7 @@ const RoundHistory: React.FC = () => {
                                     style={{
                                         cursor: 'pointer',
                                         marginBottom: 0,
-                                        background: 'rgba(255,255,255,0.02)', // Keep subtle glass feel inside
+                                        background: 'rgba(255,b255,b255,0.02)',
                                         backdropFilter: 'none',
                                         border: 'none',
                                         borderRadius: '20px'

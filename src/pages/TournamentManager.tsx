@@ -1,13 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-
 import { supabase } from '../services/SupabaseManager';
-import {
-    Plus, Trophy, Trash2,
-    Calendar, Loader2, CheckCircle2,
-    Pencil
-} from 'lucide-react';
+import { Plus, Trophy, Trash2, Calendar, Loader2, CheckCircle2, Pencil } from 'lucide-react';
 import Card from '../components/Card';
+import Skeleton from '../components/Skeleton';
+import { useAuth } from '../context/AuthContext';
 
 interface Tournament {
     id: string;
@@ -24,6 +21,7 @@ interface Tournament {
 
 const TournamentManager: React.FC = () => {
     const navigate = useNavigate();
+    const { user } = useAuth();
     const [loading, setLoading] = useState(true);
     const [tournaments, setTournaments] = useState<Tournament[]>([]);
     const [isPremium, setIsPremium] = useState(false);
@@ -64,23 +62,15 @@ const TournamentManager: React.FC = () => {
         }));
     };
 
-    useEffect(() => {
-        fetchTournamentData();
-    }, []);
-
     const fetchTournamentData = async () => {
-        try {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (!session) {
-                navigate('/auth');
-                return;
-            }
+        if (!user) return;
 
+        try {
             // Check Premium Status
             const { data: profile } = await supabase
                 .from('profiles')
                 .select('is_premium')
-                .eq('id', session.user.id)
+                .eq('id', user.id)
                 .single();
 
             if (!profile?.is_premium) {
@@ -94,19 +84,26 @@ const TournamentManager: React.FC = () => {
             // Fetch User Tournaments
             const { data: userTourneys, error } = await supabase
                 .from('tournaments')
-                .select('*')
-                .eq('creator_id', session.user.id)
+                .select('id, name, description, date, club, price, participants_limit, current_participants, status, image_url')
+                .eq('creator_id', user.id)
                 .order('created_at', { ascending: false });
 
             if (error) throw error;
-            setTournaments(userTourneys || []);
-
+            setTournaments((userTourneys as Tournament[]) || []);
         } catch (err) {
             console.error('Error fetching tournament data:', err);
         } finally {
             setLoading(false);
         }
     };
+
+    useEffect(() => {
+        if (user) {
+            fetchTournamentData();
+        } else {
+            setLoading(false);
+        }
+    }, [user]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -395,7 +392,20 @@ const TournamentManager: React.FC = () => {
                 </form>
             ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                    {tournaments.length === 0 ? (
+                    {loading ? (
+                        [1, 2].map(i => (
+                            <div key={i} className="glass" style={{ padding: '20px', borderRadius: '28px' }}>
+                                <div style={{ display: 'flex', gap: '15px', alignItems: 'center', marginBottom: '15px' }}>
+                                    <Skeleton width="60px" height="60px" borderRadius="15px" />
+                                    <div style={{ flex: 1 }}>
+                                        <Skeleton width="70%" height="20px" style={{ marginBottom: '8px' }} />
+                                        <Skeleton width="40%" height="15px" />
+                                    </div>
+                                </div>
+                                <Skeleton height="40px" borderRadius="12px" />
+                            </div>
+                        ))
+                    ) : tournaments.length === 0 ? (
                         <div className="glass" style={{ padding: '60px 20px', textAlign: 'center', borderRadius: '30px' }}>
                             <div style={{
                                 width: '80px',

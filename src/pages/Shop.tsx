@@ -8,10 +8,11 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import Card from '../components/Card';
 
-import { supabase } from '../services/SupabaseManager';
+import { supabase, optimizeImage } from '../services/SupabaseManager';
 import { useCart } from '../context/CartContext';
-
+import { useAuth } from '../context/AuthContext';
 import PageHeader from '../components/PageHeader';
+import Skeleton from '../components/Skeleton';
 
 interface Product {
     id: string;
@@ -37,7 +38,7 @@ const Shop: React.FC = () => {
     const [buying, setBuying] = useState(false);
     const [myOrders, setMyOrders] = useState<any[]>([]);
     const [myOffers, setMyOffers] = useState<any[]>([]);
-    const [user, setUser] = useState<any>(null);
+    const { user } = useAuth();
     const [showOfferModal, setShowOfferModal] = useState(false);
     const [offerAmount, setOfferAmount] = useState('');
     const [sendingOffer, setSendingOffer] = useState(false);
@@ -46,18 +47,14 @@ const Shop: React.FC = () => {
     const [addingToCart, setAddingToCart] = useState<string | null>(null);
     const [ordersLoading, setOrdersLoading] = useState(false);
     const [ordersError, setOrdersError] = useState<string | null>(null);
+    const [productsLoading, setProductsLoading] = useState(true);
 
     useEffect(() => {
-        const checkUser = async () => {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session?.user) {
-                setUser(session.user);
-                fetchMyOrders(session.user.id);
-                fetchMyOffers(session.user.id);
-            }
-        };
-        checkUser();
-    }, []);
+        if (user) {
+            fetchMyOrders(user.id);
+            fetchMyOffers(user.id);
+        }
+    }, [user]);
 
     const fetchMyOffers = async (userId: string) => {
         try {
@@ -99,27 +96,28 @@ const Shop: React.FC = () => {
 
     useEffect(() => {
         const fetchProducts = async () => {
+            setProductsLoading(true);
             try {
                 const { data, error } = await supabase
                     .from('products')
-                    .select('*')
+                    .select('id, name, price, category, image_url, status, seller_id, description')
                     .eq('status', 'active')
-                    .order('created_at', { ascending: false })
-                    .limit(100);
+                    .order('created_at', { ascending: false });
 
                 if (error) throw error;
 
                 const mappedProducts = (data || []).map(p => ({
                     ...p,
-                    price: parseFloat(p.price)
+                    price: typeof p.price === 'string' ? parseFloat(p.price) : p.price
                 }));
 
-                setProducts(mappedProducts);
+                setProducts(mappedProducts as Product[]);
             } catch (err) {
                 console.error('Error fetching products:', err);
+            } finally {
+                setProductsLoading(false);
             }
         };
-
         fetchProducts();
     }, []);
 
@@ -314,105 +312,117 @@ const Shop: React.FC = () => {
                         </div>
 
                         {/* Product Grid */}
-                        <div style={{
-                            display: 'grid',
-                            gridTemplateColumns: '1fr 1fr',
-                            gap: '15px'
-                        }}>
-                            {filteredProducts.map(product => (
-                                <Card
-                                    key={product.id}
-                                    onClick={() => setSelectedProduct(product)}
-                                    style={{
-                                        overflow: 'hidden',
-                                        padding: '12px 0 16px 0',
-                                        height: '100%',
-                                        marginBottom: 0,
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        cursor: 'pointer'
-                                    }}
-                                >
-                                    <div style={{
-                                        position: 'relative',
-                                        display: 'flex',
-                                        justifyContent: 'center',
-                                        width: '100%',
-                                        marginBottom: '10px'
-                                    }}>
-                                        <div style={{ position: 'relative', width: '90%' }}>
-                                            <img
-                                                src={product.image_url}
-                                                alt={product.name}
-                                                loading="lazy"
-                                                style={{
-                                                    width: '100%',
-                                                    aspectRatio: '1/1',
-                                                    objectFit: 'cover',
-                                                    borderRadius: '20px',
-                                                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
-                                                }}
-                                            />
-                                            <div style={{
-                                                position: 'absolute',
-                                                top: '10px',
-                                                right: '10px',
-                                                background: 'rgba(0,0,0,0.4)',
-                                                backdropFilter: 'blur(10px)',
-                                                padding: '8px',
-                                                borderRadius: '50%',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                border: '1px solid rgba(255,255,255,0.1)'
-                                            }}>
-                                                <ChevronRight size={16} color="white" />
+                        {productsLoading ? (
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                                {[1, 2, 3, 4].map(i => (
+                                    <div key={i} className="glass" style={{ padding: '10px', borderRadius: '24px' }}>
+                                        <Skeleton height="160px" borderRadius="18px" style={{ marginBottom: '12px' }} />
+                                        <Skeleton width="70%" height="15px" style={{ marginBottom: '8px', marginLeft: '8px' }} />
+                                        <Skeleton width="40%" height="18px" style={{ marginBottom: '10px', marginLeft: '8px' }} />
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div style={{
+                                display: 'grid',
+                                gridTemplateColumns: '1fr 1fr',
+                                gap: '15px'
+                            }}>
+                                {filteredProducts.map(product => (
+                                    <Card
+                                        key={product.id}
+                                        onClick={() => setSelectedProduct(product)}
+                                        style={{
+                                            overflow: 'hidden',
+                                            padding: '12px 0 16px 0',
+                                            height: '100%',
+                                            marginBottom: 0,
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            cursor: 'pointer'
+                                        }}
+                                    >
+                                        <div style={{
+                                            position: 'relative',
+                                            display: 'flex',
+                                            justifyContent: 'center',
+                                            width: '100%',
+                                            marginBottom: '10px'
+                                        }}>
+                                            <div style={{ position: 'relative', width: '90%' }}>
+                                                <img
+                                                    src={optimizeImage(product.image_url, { width: 400, height: 400 })}
+                                                    alt={product.name}
+                                                    loading="lazy"
+                                                    style={{
+                                                        width: '100%',
+                                                        aspectRatio: '1/1',
+                                                        objectFit: 'cover',
+                                                        borderRadius: '20px',
+                                                        boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+                                                    }}
+                                                />
+                                                <div style={{
+                                                    position: 'absolute',
+                                                    top: '10px',
+                                                    right: '10px',
+                                                    background: 'rgba(0,0,0,0.4)',
+                                                    backdropFilter: 'blur(10px)',
+                                                    padding: '8px',
+                                                    borderRadius: '50%',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    border: '1px solid rgba(255,255,255,0.1)'
+                                                }}>
+                                                    <ChevronRight size={16} color="white" />
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
 
-                                    <div style={{
-                                        padding: '0 14px',
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        flex: 1,
-                                        minHeight: '100px'
-                                    }}>
-                                        <h4 style={{
-                                            fontSize: '18px',
-                                            fontWeight: '800',
-                                            marginBottom: '4px',
-                                            whiteSpace: 'nowrap',
-                                            overflow: 'hidden',
-                                            textOverflow: 'ellipsis',
-                                            width: '100%',
-                                            lineHeight: '1.2',
-                                            color: 'white'
+                                        <div style={{
+                                            padding: '0 14px',
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            flex: 1,
+                                            minHeight: '100px'
                                         }}>
-                                            {product.name}
-                                        </h4>
-
-                                        <div style={{ marginBottom: '10px' }}>
-                                            <span style={{ color: 'var(--secondary)', fontWeight: '900', fontSize: '15px' }}>
-                                                $ {new Intl.NumberFormat('es-CO').format(product.price)}
-                                            </span>
-                                        </div>
-
-                                        <div style={{ marginTop: 'auto' }}>
-                                            <p style={{
-                                                fontSize: '11px',
-                                                color: 'var(--text-dim)',
-                                                fontWeight: '600',
-                                                textTransform: 'uppercase',
-                                                letterSpacing: '0.02em'
+                                            <h4 style={{
+                                                fontSize: '18px',
+                                                fontWeight: '800',
+                                                marginBottom: '4px',
+                                                whiteSpace: 'nowrap',
+                                                overflow: 'hidden',
+                                                textOverflow: 'ellipsis',
+                                                width: '100%',
+                                                lineHeight: '1.2',
+                                                color: 'white'
                                             }}>
-                                                {product.category}
-                                            </p>
+                                                {product.name}
+                                            </h4>
+
+                                            <div style={{ marginBottom: '10px' }}>
+                                                <span style={{ color: 'var(--secondary)', fontWeight: '900', fontSize: '15px' }}>
+                                                    $ {new Intl.NumberFormat('es-CO').format(product.price)}
+                                                </span>
+                                            </div>
+
+                                            <div style={{ marginTop: 'auto' }}>
+                                                <p style={{
+                                                    fontSize: '11px',
+                                                    color: 'var(--text-dim)',
+                                                    fontWeight: '600',
+                                                    textTransform: 'uppercase',
+                                                    letterSpacing: '0.02em'
+                                                }}>
+                                                    {product.category}
+                                                </p>
+                                            </div>
                                         </div>
-                                    </div>
-                                </Card>
-                            ))}
-                        </div>
+                                    </Card>
+                                ))}
+                            </div>
+                        )}
                     </>
                 )}
 
@@ -820,6 +830,10 @@ const Shop: React.FC = () => {
                                         <button
                                             disabled={sendingOffer || !offerAmount}
                                             onClick={async () => {
+                                                if (!user || !selectedProduct) {
+                                                    alert('Debes iniciar sesión para enviar una oferta');
+                                                    return;
+                                                }
                                                 setSendingOffer(true);
                                                 try {
                                                     const { error } = await supabase
