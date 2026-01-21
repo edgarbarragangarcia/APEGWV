@@ -3,11 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import {
     Search, Filter, ShoppingBag,
     ArrowLeft, ShoppingCart, ChevronRight, Plus, CheckCircle2,
-    Loader2, AlertCircle, Handshake
+    Loader2, AlertCircle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Card from '../components/Card';
-import MyStore from './MyStore';
+
 import { supabase } from '../services/SupabaseManager';
 import { useCart } from '../context/CartContext';
 
@@ -252,26 +252,6 @@ const Shop: React.FC = () => {
                                 {myOffers.length}
                             </span>
                         )}
-                    </button>
-                    <button
-                        onClick={() => setViewTab('mystore')}
-                        style={{
-                            flex: 1,
-                            padding: '10px',
-                            borderRadius: '12px',
-                            border: 'none',
-                            background: viewTab === 'mystore' ? 'var(--secondary)' : 'transparent',
-                            color: viewTab === 'mystore' ? 'var(--primary)' : 'var(--text-dim)',
-                            fontWeight: '700',
-                            fontSize: '11px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            gap: '4px',
-                            cursor: 'pointer'
-                        }}
-                    >
-                        <Handshake size={14} /> Mi Marketplace
                     </button>
                 </div>
 
@@ -524,11 +504,7 @@ const Shop: React.FC = () => {
                     </div>
                 )}
 
-                {viewTab === 'mystore' && (
-                    <div className="animate-fade">
-                        <MyStore />
-                    </div>
-                )}
+
                 {/* Content based on viewTab */}
             </div>
 

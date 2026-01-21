@@ -8,7 +8,7 @@ import {
     Pencil, TrendingDown,
     Truck, User, Phone, MapPin,
     Settings, Landmark, Calendar,
-    Store, Info, Handshake, ChevronRight
+    Store, Info, Handshake
 } from 'lucide-react';
 import Card from '../components/Card';
 import StoreOnboarding from '../components/StoreOnboarding';
@@ -861,73 +861,15 @@ const MyStore: React.FC = () => {
                                 </div>
                             ) : (
                                 products.map(product => (
-                                    <div key={product.id} style={{ position: 'relative', overflow: 'hidden', borderRadius: '20px', userSelect: 'none', touchAction: 'pan-y' }}>
-                                        {/* Actions Background Layer */}
-                                        <div style={{
-                                            position: 'absolute',
-                                            right: 0,
-                                            top: 0,
-                                            bottom: 0,
-                                            width: '140px',
-                                            display: 'flex',
-                                            alignItems: 'stretch',
-                                            zIndex: 0
-                                        }}>
-                                            <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    handleEditClick(product);
-                                                }}
-                                                style={{
-                                                    flex: 1,
-                                                    background: '#3b82f6',
-                                                    border: 'none',
-                                                    borderRight: '1px solid rgba(255,255,255,0.1)',
-                                                    color: 'white',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center',
-                                                    cursor: 'pointer'
-                                                }}
-                                            >
-                                                <Pencil size={24} />
-                                            </button>
-                                            <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    handleDeleteClick(product);
-                                                }}
-                                                style={{
-                                                    flex: 1,
-                                                    background: '#ef4444',
-                                                    border: 'none',
-                                                    color: 'white',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center',
-                                                    cursor: 'pointer'
-                                                }}
-                                            >
-                                                <Trash2 size={24} />
-                                            </button>
-                                        </div>
-
-                                        {/* Main Card Layer */}
-                                        <motion.div
-                                            drag="x"
-                                            dragConstraints={{ left: -140, right: 0 }}
-                                            dragElastic={0.1}
-                                            dragSnapToOrigin={false}
+                                    <div key={product.id} style={{ position: 'relative', overflow: 'hidden', borderRadius: '20px', marginBottom: '15px' }}>
+                                        <div
                                             style={{
                                                 position: 'relative',
-                                                zIndex: 1,
-                                                x: 0,
                                                 background: 'rgba(255,255,255,0.03)',
                                                 borderRadius: '20px',
                                                 border: '1px solid rgba(255,255,255,0.05)',
                                                 overflow: 'hidden'
                                             }}
-                                            whileTap={{ cursor: 'grabbing' }}
                                         >
                                             <div style={{ padding: '15px', display: 'flex', gap: '15px', alignItems: 'center' }}>
                                                 <div style={{ position: 'relative' }}>
@@ -1006,8 +948,9 @@ const MyStore: React.FC = () => {
                                                         )}
                                                     </div>
                                                 </div>
-                                                <div style={{ color: 'var(--text-dim)', paddingRight: '10px' }}>
-                                                    <ChevronRight size={20} style={{ opacity: 0.3 }} />
+                                                <div style={{ display: 'flex', gap: '12px', paddingRight: '10px' }}>
+                                                    <button onClick={() => handleEditClick(product)} style={{ color: 'var(--text-dim)', background: 'none', border: 'none', cursor: 'pointer' }}><Pencil size={18} /></button>
+                                                    <button onClick={() => handleDeleteClick(product)} style={{ color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer' }}><Trash2 size={18} /></button>
                                                 </div>
                                             </div>
 
@@ -1048,7 +991,7 @@ const MyStore: React.FC = () => {
                                                     </button>
                                                 </div>
                                             )}
-                                        </motion.div>
+                                        </div>
                                     </div>
                                 ))
                             )}
