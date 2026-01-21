@@ -6,7 +6,9 @@ import {
     Plus, Package, Trash2,
     Camera, Loader2, CheckCircle2,
     Pencil, TrendingDown,
-    Truck, User, Phone, MapPin
+    Truck, User, Phone, MapPin,
+    Settings,
+    Store, Info
 } from 'lucide-react';
 import Card from '../components/Card';
 import StoreOnboarding from '../components/StoreOnboarding';
@@ -31,7 +33,7 @@ const MyStore: React.FC = () => {
         productName: ''
     });
     const [orders, setOrders] = useState<any[]>([]);
-    const [activeTab, setActiveTab] = useState<'products' | 'orders'>('products');
+    const [activeTab, setActiveTab] = useState<'products' | 'orders' | 'profile'>('products');
     const [updatingOrder, setUpdatingOrder] = useState<string | null>(null);
 
     // Form State
@@ -405,7 +407,7 @@ const MyStore: React.FC = () => {
 
     return (
         <div className="animate-fade">
-            <div style={{ display: 'flex', gap: '20px', marginBottom: '25px', borderBottom: '1px solid var(--glass-border)' }}>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '25px', marginBottom: '25px', borderBottom: '1px solid var(--glass-border)' }}>
                 <button
                     onClick={() => setActiveTab('products')}
                     style={{
@@ -413,10 +415,14 @@ const MyStore: React.FC = () => {
                         color: activeTab === 'products' ? 'var(--secondary)' : 'var(--text-dim)',
                         borderBottom: activeTab === 'products' ? '2px solid var(--secondary)' : 'none',
                         fontWeight: '700',
-                        fontSize: '15px'
+                        fontSize: '14px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px'
                     }}
                 >
-                    MIS PRODUCTOS
+                    <Package size={16} />
+                    <span>PRODUCTOS</span>
                 </button>
                 <button
                     onClick={() => setActiveTab('orders')}
@@ -425,13 +431,35 @@ const MyStore: React.FC = () => {
                         color: activeTab === 'orders' ? 'var(--secondary)' : 'var(--text-dim)',
                         borderBottom: activeTab === 'orders' ? '2px solid var(--secondary)' : 'none',
                         fontWeight: '700',
-                        fontSize: '15px',
+                        fontSize: '14px',
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '6px'
+                        gap: '8px'
                     }}
                 >
-                    PEDIDOS {orders.filter(o => o.status === 'Pendiente').length > 0 && <span style={{ background: '#ef4444', color: 'white', fontSize: '10px', padding: '2px 6px', borderRadius: '10px' }}>{orders.filter(o => o.status === 'Pendiente').length}</span>}
+                    <Truck size={16} />
+                    <span>PEDIDOS</span>
+                    {orders.filter(o => o.status === 'Pendiente').length > 0 &&
+                        <span style={{ background: '#ef4444', color: 'white', fontSize: '10px', padding: '2px 6px', borderRadius: '10px' }}>
+                            {orders.filter(o => o.status === 'Pendiente').length}
+                        </span>
+                    }
+                </button>
+                <button
+                    onClick={() => setActiveTab('profile')}
+                    style={{
+                        padding: '10px 5px',
+                        color: activeTab === 'profile' ? 'var(--secondary)' : 'var(--text-dim)',
+                        borderBottom: activeTab === 'profile' ? '2px solid var(--secondary)' : 'none',
+                        fontWeight: '700',
+                        fontSize: '14px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px'
+                    }}
+                >
+                    <Settings size={16} />
+                    <span>AJUSTES</span>
                 </button>
             </div>
 
@@ -802,22 +830,21 @@ const MyStore: React.FC = () => {
                                                 />
                                                 <div style={{ flex: 1 }}>
                                                     <h3 style={{
-                                                        fontSize: '15px',
-                                                        fontWeight: '600',
-                                                        marginBottom: '2px',
+                                                        fontSize: '18px',
+                                                        fontWeight: '700',
+                                                        marginBottom: '4px',
                                                         whiteSpace: 'nowrap',
                                                         overflow: 'hidden',
                                                         textOverflow: 'ellipsis'
                                                     }}>{product.name}</h3>
+                                                    <div style={{ color: 'var(--secondary)', fontWeight: '800', fontSize: '15px' }}>
+                                                        {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(product.price || 0)}
+                                                    </div>
                                                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', fontSize: '11px', color: 'var(--text-dim)', marginTop: '4px' }}>
                                                         <span style={{ color: 'white' }}>{(product as any).clothing_type ? (product as any).clothing_type : product.category}</span>
                                                         {(product as any).size_clothing && <span>• Talla: {(product as any).size_clothing}</span>}
                                                         {(product as any).size_shoes_col && <span>• Talla: {(product as any).size_shoes_col} COL</span>}
                                                         {(product as any).size_shoes_cm && <span>({(product as any).size_shoes_cm} cm)</span>}
-                                                        <span>•</span>
-                                                        <span style={{ color: 'var(--secondary)', fontWeight: '700' }}>
-                                                            {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(product.price || 0)}
-                                                        </span>
                                                     </div>
                                                     {(product as any).status === 'pending_payment' && (
                                                         <div style={{ marginTop: '8px' }}>
@@ -879,7 +906,7 @@ const MyStore: React.FC = () => {
                         </div>
                     )}
                 </>
-            ) : (
+            ) : activeTab === 'orders' ? (
                 <div className="animate-fade">
                     <h2 style={{ fontSize: '20px', fontWeight: '700', marginBottom: '15px' }}>Ventas y Seguimiento</h2>
                     {orders.length === 0 ? (
@@ -1000,6 +1027,94 @@ const MyStore: React.FC = () => {
                             ))}
                         </div>
                     )}
+                </div>
+            ) : (
+                <div className="animate-fade">
+                    <h2 style={{ fontSize: '20px', fontWeight: '700', marginBottom: '15px' }}>Perfil de la Tienda</h2>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                        <Card style={{ padding: '25px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '25px' }}>
+                                <div style={{ background: 'var(--secondary)', borderRadius: '15px', padding: '15px', color: 'var(--primary)' }}>
+                                    <Store size={32} />
+                                </div>
+                                <div>
+                                    <h3 style={{ fontSize: '22px', fontWeight: '800' }}>{sellerProfile.store_name}</h3>
+                                    <p style={{ color: 'var(--text-dim)', fontSize: '13px', textTransform: 'uppercase', fontWeight: '700' }}>
+                                        {sellerProfile.entity_type === 'natural' ? 'Persona Natural' : 'Persona Jurídica'}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '20px' }}>
+                                <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '20px' }}>
+                                    <h4 style={{ fontSize: '12px', color: 'var(--secondary)', fontWeight: '800', marginBottom: '15px', textTransform: 'uppercase' }}>Datos de Identidad</h4>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                            <span style={{ color: 'var(--text-dim)', fontSize: '14px' }}>
+                                                {sellerProfile.entity_type === 'natural' ? 'Nombre Completo' : 'Razón Social'}
+                                            </span>
+                                            <span style={{ fontWeight: '700' }}>{sellerProfile.entity_type === 'natural' ? sellerProfile.full_name : sellerProfile.company_name}</span>
+                                        </div>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                            <span style={{ color: 'var(--text-dim)', fontSize: '14px' }}>
+                                                {sellerProfile.entity_type === 'natural' ? `Documento (${sellerProfile.document_type})` : 'NIT'}
+                                            </span>
+                                            <span style={{ fontWeight: '700' }}>{sellerProfile.entity_type === 'natural' ? sellerProfile.document_number : sellerProfile.nit}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '20px' }}>
+                                    <h4 style={{ fontSize: '12px', color: 'var(--secondary)', fontWeight: '800', marginBottom: '15px', textTransform: 'uppercase' }}>Información Bancaria</h4>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                            <span style={{ color: 'var(--text-dim)', fontSize: '14px' }}>Banco</span>
+                                            <span style={{ fontWeight: '700' }}>{sellerProfile.bank_name}</span>
+                                        </div>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                            <span style={{ color: 'var(--text-dim)', fontSize: '14px' }}>Tipo de Cuenta</span>
+                                            <span style={{ fontWeight: '700', textTransform: 'capitalize' }}>{sellerProfile.account_type}</span>
+                                        </div>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                            <span style={{ color: 'var(--text-dim)', fontSize: '14px' }}>Número de Cuenta</span>
+                                            <span style={{ fontWeight: '700' }}>****{sellerProfile.account_number.slice(-4)}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button
+                                onClick={() => {
+                                    alert('Para modificar los datos sensibles de tu tienda, por seguridad contacta con soporte@apeg.golf');
+                                }}
+                                style={{
+                                    marginTop: '30px',
+                                    width: '100%',
+                                    background: 'rgba(255,255,255,0.05)',
+                                    border: '1px solid var(--glass-border)',
+                                    color: 'white',
+                                    padding: '12px',
+                                    borderRadius: '12px',
+                                    fontSize: '14px',
+                                    fontWeight: '700',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '8px'
+                                }}
+                            >
+                                <Settings size={18} />
+                                EDITAR INFORMACIÓN
+                            </button>
+                        </Card>
+
+                        <div className="glass" style={{ padding: '15px', display: 'flex', gap: '12px', alignItems: 'center', background: 'rgba(163, 230, 53, 0.05)' }}>
+                            <Info size={20} color="var(--secondary)" />
+                            <p style={{ fontSize: '12px', color: 'var(--text-dim)', lineHeight: '1.4' }}>
+                                Si necesitas cambiar tu cuenta bancaria o representante legal, por favor envía la solicitud a nuestro equipo de soporte.
+                            </p>
+                        </div>
+                    </div>
                 </div>
             )}
             {/* Custom Confirmation Modal */}

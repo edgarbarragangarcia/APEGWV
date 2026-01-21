@@ -171,6 +171,7 @@ export type Database = {
                     description: string | null
                     size_shoes_eu: string | null
                     category: string | null
+                    is_negotiable: boolean
                 }
                 Insert: {
                     id?: string
@@ -357,6 +358,64 @@ export type Database = {
                     }
                 ]
             }
+            offers: {
+                Row: {
+                    id: string
+                    product_id: string
+                    buyer_id: string
+                    seller_id: string
+                    offer_amount: number
+                    message: string | null
+                    status: 'pending' | 'accepted' | 'rejected' | 'countered'
+                    created_at: string
+                    updated_at: string
+                }
+                Insert: {
+                    id?: string
+                    product_id: string
+                    buyer_id: string
+                    seller_id: string
+                    offer_amount: number
+                    message?: string | null
+                    status?: 'pending' | 'accepted' | 'rejected' | 'countered'
+                    created_at?: string
+                    updated_at?: string
+                }
+                Update: {
+                    id?: string
+                    product_id?: string
+                    buyer_id?: string
+                    seller_id?: string
+                    offer_amount?: number
+                    message?: string | null
+                    status?: 'pending' | 'accepted' | 'rejected' | 'countered'
+                    created_at?: string
+                    updated_at?: string
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "offers_product_id_fkey"
+                        columns: ["product_id"]
+                        isOneToOne: false
+                        referencedRelation: "products"
+                        referencedColumns: ["id"]
+                    },
+                    {
+                        foreignKeyName: "offers_buyer_id_fkey"
+                        columns: ["buyer_id"]
+                        isOneToOne: false
+                        referencedRelation: "users"
+                        referencedColumns: ["id"]
+                    },
+                    {
+                        foreignKeyName: "offers_seller_id_fkey"
+                        columns: ["seller_id"]
+                        isOneToOne: false
+                        referencedRelation: "users"
+                        referencedColumns: ["id"]
+                    }
+                ]
+            }
         }
         Views: {
             [_ in never]: never
@@ -380,21 +439,20 @@ export type Tables<
     | keyof (PublicSchema["Tables"] & PublicSchema["Views"])
     | { schema: keyof Database },
     TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
-    ? keyof (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
-        Database[PublicTableNameOrOptions["schema"]]["Views"])
+    ? keyof (Database[PublicTableNameOrOptions["schema"]] & { Tables: any; Views: any })["Tables" | "Views"]
     : never = never,
 > = PublicTableNameOrOptions extends { schema: keyof Database }
-    ? (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
-        Database[PublicTableNameOrOptions["schema"]]["Views"])[TableName] extends {
-            Row: infer R
-        }
+    ? (Database[PublicTableNameOrOptions["schema"]] & { Tables: any; Views: any })["Tables" | "Views"][TableName] extends {
+        Row: infer R
+    }
     ? R
     : never
     : PublicTableNameOrOptions extends keyof (PublicSchema["Tables"] &
         PublicSchema["Views"])
-    ? (PublicSchema["Tables"] & PublicSchema["Views"])[PublicTableNameOrOptions] extends {
-        Row: infer R
-    }
+    ? (PublicSchema["Tables"] &
+        PublicSchema["Views"])[PublicTableNameOrOptions] extends {
+            Row: infer R
+        }
     ? R
     : never
     : never
@@ -404,10 +462,10 @@ export type TablesInsert<
     | keyof PublicSchema["Tables"]
     | { schema: keyof Database },
     TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
-    ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
+    ? keyof (Database[PublicTableNameOrOptions["schema"]] & { Tables: any })["Tables"]
     : never = never,
 > = PublicTableNameOrOptions extends { schema: keyof Database }
-    ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+    ? (Database[PublicTableNameOrOptions["schema"]] & { Tables: any })["Tables"][TableName] extends {
         Insert: infer I
     }
     ? I
@@ -425,10 +483,10 @@ export type TablesUpdate<
     | keyof PublicSchema["Tables"]
     | { schema: keyof Database },
     TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
-    ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
+    ? keyof (Database[PublicTableNameOrOptions["schema"]] & { Tables: any })["Tables"]
     : never = never,
 > = PublicTableNameOrOptions extends { schema: keyof Database }
-    ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+    ? (Database[PublicTableNameOrOptions["schema"]] & { Tables: any })["Tables"][TableName] extends {
         Update: infer U
     }
     ? U
@@ -446,10 +504,10 @@ export type Enums<
     | keyof PublicSchema["Enums"]
     | { schema: keyof Database },
     EnumName extends PublicEnumNameOrOptions extends { schema: keyof Database }
-    ? keyof Database[PublicEnumNameOrOptions["schema"]]["Enums"]
+    ? keyof (Database[PublicEnumNameOrOptions["schema"]] & { Enums: any })["Enums"]
     : never = never,
 > = PublicEnumNameOrOptions extends { schema: keyof Database }
-    ? Database[PublicEnumNameOrOptions["schema"]]["Enums"][EnumName]
+    ? (Database[PublicEnumNameOrOptions["schema"]] & { Enums: any })["Enums"][EnumName]
     : PublicEnumNameOrOptions extends keyof PublicSchema["Enums"]
     ? PublicSchema["Enums"][PublicEnumNameOrOptions]
     : never

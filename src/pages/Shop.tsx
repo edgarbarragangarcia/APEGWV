@@ -364,25 +364,26 @@ const Shop: React.FC = () => {
                                         minHeight: '100px'
                                     }}>
                                         <h4 style={{
-                                            fontSize: '14px',
+                                            fontSize: '18px',
                                             fontWeight: '800',
-                                            marginBottom: '10px',
+                                            marginBottom: '4px',
                                             whiteSpace: 'nowrap',
                                             overflow: 'hidden',
                                             textOverflow: 'ellipsis',
                                             width: '100%',
-                                            lineHeight: '1.4',
+                                            lineHeight: '1.2',
                                             color: 'white'
                                         }}>
                                             {product.name}
                                         </h4>
 
+                                        <div style={{ marginBottom: '10px' }}>
+                                            <span style={{ color: 'var(--secondary)', fontWeight: '900', fontSize: '15px' }}>
+                                                $ {new Intl.NumberFormat('es-CO').format(product.price)}
+                                            </span>
+                                        </div>
+
                                         <div style={{ marginTop: 'auto' }}>
-                                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
-                                                <span style={{ color: 'var(--secondary)', fontWeight: '900', fontSize: '16px' }}>
-                                                    $ {new Intl.NumberFormat('es-CO').format(product.price)}
-                                                </span>
-                                            </div>
                                             <p style={{
                                                 fontSize: '11px',
                                                 color: 'var(--text-dim)',
@@ -575,12 +576,11 @@ const Shop: React.FC = () => {
                                 }}>
                                     {selectedProduct.category}
                                 </span>
-                                <h2 style={{ fontSize: '28px', fontWeight: '800', marginTop: '12px', lineHeight: '1.2', color: 'white' }}>
+                                <h2 style={{ fontSize: '32px', fontWeight: '900', marginTop: '12px', lineHeight: '1.1', color: 'white' }}>
                                     {selectedProduct.name}
                                 </h2>
-                                <div style={{ marginTop: '15px' }}>
-                                    <span style={{ fontSize: '12px', color: 'var(--text-dim)', fontWeight: '600', display: 'block', marginBottom: '4px' }}>Precio Final</span>
-                                    <p style={{ fontSize: '32px', fontWeight: '900', color: 'var(--secondary)', margin: 0 }}>
+                                <div style={{ marginTop: '12px' }}>
+                                    <p style={{ fontSize: '24px', fontWeight: '800', color: 'var(--secondary)', margin: 0 }}>
                                         $ {new Intl.NumberFormat('es-CO').format(selectedProduct.price)}
                                     </p>
                                 </div>

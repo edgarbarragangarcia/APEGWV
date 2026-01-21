@@ -105,13 +105,13 @@ const CartPage: React.FC = () => {
                                         </div>
                                         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                                             <div>
-                                                <h4 style={{ fontSize: '15px', fontWeight: '800', lineHeight: '1.2' }}>{item.name}</h4>
-                                                <p style={{ fontSize: '12px', color: 'var(--text-dim)', marginTop: '4px' }}>{item.category}</p>
-                                            </div>
-                                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '10px' }}>
-                                                <p style={{ fontWeight: '900', color: 'var(--secondary)', fontSize: '16px' }}>
+                                                <h4 style={{ fontSize: '18px', fontWeight: '800', lineHeight: '1.2' }}>{item.name}</h4>
+                                                <p style={{ fontWeight: '800', color: 'var(--secondary)', fontSize: '15px', marginTop: '4px' }}>
                                                     $ {new Intl.NumberFormat('es-CO').format(item.price)}
                                                 </p>
+                                                <p style={{ fontSize: '11px', color: 'var(--text-dim)', marginTop: '4px' }}>{item.category}</p>
+                                            </div>
+                                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', marginTop: '5px' }}>
 
                                                 {/* Quantity Control */}
                                                 <div style={{

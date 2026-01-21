@@ -197,9 +197,9 @@ const Home: React.FC = () => {
                                 </div>
                                 <div style={{ padding: '0 12px', display: 'flex', flexDirection: 'column' }}>
                                     <h4 style={{
-                                        fontSize: '15px',
+                                        fontSize: '17px',
                                         fontWeight: '800',
-                                        marginBottom: '6px',
+                                        marginBottom: '4px',
                                         whiteSpace: 'nowrap',
                                         overflow: 'hidden',
                                         textOverflow: 'ellipsis',
@@ -209,23 +209,19 @@ const Home: React.FC = () => {
                                         {product.name}
                                     </h4>
 
-                                    <div style={{ marginBottom: '6px' }}>
+                                    <div style={{ marginBottom: '8px' }}>
                                         <div style={{
-                                            background: 'rgba(163, 230, 53, 0.1)',
                                             color: 'var(--secondary)',
-                                            padding: '4px 10px',
-                                            borderRadius: '8px',
                                             fontSize: '14px',
                                             fontWeight: '900',
-                                            whiteSpace: 'nowrap',
-                                            display: 'inline-block'
+                                            whiteSpace: 'nowrap'
                                         }}>
                                             {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(product.price)}
                                         </div>
                                     </div>
 
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                        <span style={{ fontSize: '11px', color: 'var(--text-dim)', fontWeight: '600', textTransform: 'uppercase' }}>{product.category}</span>
+                                        <span style={{ fontSize: '10px', color: 'var(--text-dim)', fontWeight: '600', textTransform: 'uppercase' }}>{product.category}</span>
                                     </div>
                                 </div>
                             </Card>

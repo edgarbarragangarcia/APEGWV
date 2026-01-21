@@ -5,7 +5,8 @@ import { useNavigate } from 'react-router-dom';
 import type { Database } from '../types/database.types';
 
 type Profile = Database['public']['Tables']['profiles']['Row'];
-type PlayerStats = Database['public']['Tables']['player_stats']['Row'];
+// Stats are now part of the profiles table
+type PlayerStats = Profile;
 
 const Profile: React.FC = () => {
     const navigate = useNavigate();
