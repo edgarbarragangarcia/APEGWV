@@ -96,12 +96,24 @@ const MyStore: React.FC = () => {
     }, []);
 
     const fetchOrders = async (userId: string) => {
-        const { data: userOrders } = await supabase
-            .from('orders')
-            .select('*, product:products(*), buyer:profiles(*)')
-            .eq('seller_id', userId)
-            .order('created_at', { ascending: false });
-        setOrders(userOrders || []);
+        console.log('Fetching orders for seller:', userId);
+        try {
+            const { data: userOrders, error } = await supabase
+                .from('orders')
+                .select('*, product:products!orders_product_id_fkey(*), buyer:profiles!orders_buyer_id_fkey(*)')
+                .eq('seller_id', userId)
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                console.error('Error fetching orders:', error);
+                return;
+            }
+
+            console.log('Orders found:', userOrders?.length);
+            setOrders(userOrders || []);
+        } catch (err) {
+            console.error('Unexpected error in fetchOrders:', err);
+        }
     };
 
     const fetchOffers = async (userId: string) => {
@@ -497,6 +509,28 @@ const MyStore: React.FC = () => {
 
     return (
         <div className="animate-fade">
+            {/* Store Title Header */}
+            <div style={{ marginBottom: '20px', textAlign: 'center' }}>
+                <span style={{
+                    fontSize: '11px',
+                    fontWeight: '900',
+                    color: 'var(--secondary)',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.1em',
+                    opacity: 0.8
+                }}>
+                    Panel de Control
+                </span>
+                <h1 style={{
+                    fontSize: '26px',
+                    fontWeight: '900',
+                    color: 'white',
+                    marginTop: '4px'
+                }}>
+                    {sellerProfile.store_name}
+                </h1>
+            </div>
+
             {/* Dashboard Navigation */}
             <div style={{
                 display: 'flex',
