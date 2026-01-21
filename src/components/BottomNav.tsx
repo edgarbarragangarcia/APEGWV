@@ -7,7 +7,7 @@ const BottomNav: React.FC = () => {
         { path: '/', icon: Home, label: 'Inicio' },
         { path: '/select-course', icon: PlayCircle, label: 'Jugar' },
         { path: '/green-fee', icon: Ticket, label: 'Green Fee' },
-        { path: '/shop', icon: ShoppingBag, label: 'Tienda' },
+        { path: '/shop', icon: ShoppingBag, label: 'Marketplace' },
         { path: '/tournaments', icon: Calendar, label: 'Eventos' },
     ];
 

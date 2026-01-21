@@ -229,7 +229,7 @@ const Settings: React.FC = () => {
                                     <div>
                                         <h3 style={{ fontSize: '16px', marginBottom: '2px' }}>Cámara</h3>
                                         <p style={{ fontSize: '12px', color: 'var(--text-dim)', maxWidth: '200px' }}>
-                                            Usado para cambiar tu foto de perfil y subir productos a tu tienda.
+                                            Usado para cambiar tu foto de perfil y subir productos a tu Marketplace.
                                         </p>
                                     </div>
                                 </div>

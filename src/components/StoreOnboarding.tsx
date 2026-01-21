@@ -72,7 +72,7 @@ const StoreOnboarding: React.FC<StoreOnboardingProps> = ({ onComplete }) => {
             onComplete();
         } catch (err) {
             console.error('Error creating seller profile:', err);
-            alert('Error al crear la tienda. Inténtalo de nuevo.');
+            alert('Error al crear el Marketplace. Inténtalo de nuevo.');
         } finally {
             setLoading(false);
         }
@@ -103,9 +103,9 @@ const StoreOnboarding: React.FC<StoreOnboardingProps> = ({ onComplete }) => {
                 }}>
                     <Store color="var(--primary)" size={30} />
                 </div>
-                <h1 style={{ fontSize: '24px', fontWeight: '800', marginBottom: '8px' }}>Configura tu Tienda</h1>
+                <h1 style={{ fontSize: '24px', fontWeight: '800', marginBottom: '8px' }}>Configura tu Marketplace</h1>
                 <p style={{ color: 'var(--text-dim)', fontSize: '14px', lineHeight: '1.5' }}>
-                    Registra tus datos para empezar a vender tus productos en la comunidad APEG.
+                    Registra tus datos para empezar a vender tus productos en el Marketplace APEG.
                 </p>
             </div>
 
@@ -134,7 +134,7 @@ const StoreOnboarding: React.FC<StoreOnboardingProps> = ({ onComplete }) => {
                         <div className="glass" style={{ padding: '25px', borderRadius: '24px' }}>
                             <h3 style={{ fontSize: '17px', fontWeight: '700', marginBottom: '15px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                                 <Store size={18} color="var(--secondary)" />
-                                Nombre de la Tienda
+                                Nombre del Marketplace
                             </h3>
                             <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Tu marca o nombre comercial</label>
                             <input

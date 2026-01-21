@@ -241,6 +241,26 @@ const Profile: React.FC = () => {
                 </button>
 
                 <button
+                    onClick={() => navigate('/my-store')}
+                    className="glass"
+                    style={{
+                        padding: '16px 20px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        width: '100%',
+                        background: 'rgba(255,255,255,0.05)',
+                        border: '1px solid rgba(255,255,255,0.1)',
+                        marginBottom: '4px'
+                    }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                        <Store size={20} color="var(--secondary)" />
+                        <span style={{ fontWeight: '600', fontSize: '14px' }}>Mi Marketplace APEG</span>
+                    </div>
+                    <ChevronRight size={18} color="var(--text-dim)" />
+                </button>
+
+                <button
                     onClick={() => navigate('/payment-methods')}
                     className="glass"
                     style={{
@@ -250,7 +270,7 @@ const Profile: React.FC = () => {
                         justifyContent: 'space-between',
                         width: '100%',
                         background: 'rgba(255,255,255,0.05)',
-                        border: '1px solid rgba(255,b255,b255,0.1)'
+                        border: '1px solid rgba(255,255,255,0.1)'
                     }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                         <CreditCard size={20} color="var(--secondary)" />

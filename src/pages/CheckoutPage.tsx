@@ -297,7 +297,7 @@ const CheckoutPage: React.FC = () => {
                             fontSize: '14px'
                         }}
                     >
-                        VOLVER A LA TIENDA
+                        VOLVER AL MARKETPLACE
                     </button>
                 </motion.div>
             </motion.div>
