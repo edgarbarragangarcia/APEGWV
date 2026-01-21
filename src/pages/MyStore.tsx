@@ -7,8 +7,8 @@ import {
     Camera, Loader2, CheckCircle2,
     Pencil, TrendingDown,
     Truck, User, Phone, MapPin,
-    Settings,
-    Store, Info
+    Settings, Landmark,
+    Store, Info, Handshake
 } from 'lucide-react';
 import Card from '../components/Card';
 import StoreOnboarding from '../components/StoreOnboarding';
@@ -17,6 +17,10 @@ import type { Database } from '../types/database.types';
 type SellerProfile = Database['public']['Tables']['seller_profiles']['Row'];
 
 type Product = Database['public']['Tables']['products']['Row'];
+type Offer = Database['public']['Tables']['offers']['Row'] & {
+    product: { name: string; image_url: string | null; price: number };
+    buyer: { full_name: string | null };
+};
 
 const MyStore: React.FC = () => {
     const navigate = useNavigate();
@@ -33,8 +37,12 @@ const MyStore: React.FC = () => {
         productName: ''
     });
     const [orders, setOrders] = useState<any[]>([]);
-    const [activeTab, setActiveTab] = useState<'products' | 'orders' | 'profile'>('products');
+    const [offers, setOffers] = useState<Offer[]>([]);
+    const [activeTab, setActiveTab] = useState<'products' | 'orders' | 'offers' | 'profile'>('products');
     const [updatingOrder, setUpdatingOrder] = useState<string | null>(null);
+    const [isEditingProfile, setIsEditingProfile] = useState(false);
+    const [profileFormData, setProfileFormData] = useState<any>(null);
+    const [updatingOffer, setUpdatingOffer] = useState<string | null>(null);
 
     // Form State
     const [formData, setFormData] = useState({
@@ -103,6 +111,9 @@ const MyStore: React.FC = () => {
                 .single();
 
             setSellerProfile(profile);
+            if (profile) {
+                setProfileFormData({ ...profile });
+            }
 
             if (profile) {
                 // Fetch User Products
@@ -127,9 +138,50 @@ const MyStore: React.FC = () => {
 
                 fetchOrders();
 
-                // Setup Realtime for Orders
+                // Fetch Offers
+                const fetchOffers = async () => {
+                    try {
+                        // Primero obtenemos las offers con el producto
+                        const { data: userOffers, error: offersError } = await supabase
+                            .from('offers')
+                            .select('*, product:products!product_id(name, image_url, price)')
+                            .eq('seller_id', session.user.id)
+                            .order('created_at', { ascending: false });
+
+                        if (offersError) {
+                            console.error('Error fetching offers:', offersError);
+                            return;
+                        }
+
+                        // Luego enriquecemos con datos del buyer desde profiles
+                        if (userOffers && userOffers.length > 0) {
+                            const buyerIds = [...new Set(userOffers.map((o: any) => o.buyer_id))];
+                            const { data: buyers } = await supabase
+                                .from('profiles')
+                                .select('id, full_name')
+                                .in('id', buyerIds);
+
+                            const buyersMap = new Map(buyers?.map(b => [b.id, b]) || []);
+
+                            const enrichedOffers = userOffers.map((offer: any) => ({
+                                ...offer,
+                                buyer: buyersMap.get(offer.buyer_id) || { full_name: null }
+                            }));
+
+                            setOffers(enrichedOffers);
+                        } else {
+                            setOffers([]);
+                        }
+                    } catch (err) {
+                        console.error('Error in fetchOffers:', err);
+                    }
+                };
+
+                fetchOffers();
+
+                // Setup Realtime for Orders & Offers
                 const channel = supabase
-                    .channel('seller-orders')
+                    .channel('seller-updates')
                     .on(
                         'postgres_changes',
                         {
@@ -138,9 +190,17 @@ const MyStore: React.FC = () => {
                             table: 'orders',
                             filter: `seller_id=eq.${session.user.id}`
                         },
-                        () => {
-                            fetchOrders();
-                        }
+                        () => fetchOrders()
+                    )
+                    .on(
+                        'postgres_changes',
+                        {
+                            event: '*',
+                            schema: 'public',
+                            table: 'offers',
+                            filter: `seller_id=eq.${session.user.id}`
+                        },
+                        () => fetchOffers()
                     )
                     .subscribe();
 
@@ -391,6 +451,30 @@ const MyStore: React.FC = () => {
         }
     };
 
+    const handleOfferAction = async (offerId: string, status: 'accepted' | 'rejected') => {
+        setUpdatingOffer(offerId);
+        try {
+            const { error } = await supabase
+                .from('offers')
+                .update({
+                    status,
+                    updated_at: new Date().toISOString()
+                })
+                .eq('id', offerId);
+
+            if (error) throw error;
+
+            setOffers(prev => prev.map(o => o.id === offerId ? { ...o, status } : o));
+
+            if (navigator.vibrate) navigator.vibrate(50);
+        } catch (err) {
+            console.error('Error updating offer:', err);
+            alert('Error al actualizar la oferta');
+        } finally {
+            setUpdatingOffer(null);
+        }
+    };
+
     if (loading) {
         return (
             <div className="flex-center" style={{ height: '80vh' }}>
@@ -442,6 +526,27 @@ const MyStore: React.FC = () => {
                     {orders.filter(o => o.status === 'Pendiente').length > 0 &&
                         <span style={{ background: '#ef4444', color: 'white', fontSize: '10px', padding: '2px 6px', borderRadius: '10px' }}>
                             {orders.filter(o => o.status === 'Pendiente').length}
+                        </span>
+                    }
+                </button>
+                <button
+                    onClick={() => setActiveTab('offers')}
+                    style={{
+                        padding: '10px 5px',
+                        color: activeTab === 'offers' ? 'var(--secondary)' : 'var(--text-dim)',
+                        borderBottom: activeTab === 'offers' ? '2px solid var(--secondary)' : 'none',
+                        fontWeight: '700',
+                        fontSize: '14px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px'
+                    }}
+                >
+                    <Handshake size={16} />
+                    <span>OFERTAS</span>
+                    {offers.filter(o => o.status === 'pending').length > 0 &&
+                        <span style={{ background: 'var(--secondary)', color: 'var(--primary)', fontSize: '10px', padding: '2px 6px', borderRadius: '10px' }}>
+                            {offers.filter(o => o.status === 'pending').length}
                         </span>
                     }
                 </button>
@@ -1028,90 +1133,337 @@ const MyStore: React.FC = () => {
                         </div>
                     )}
                 </div>
+            ) : activeTab === 'offers' ? (
+                <div className="animate-fade">
+                    <h2 style={{ fontSize: '20px', fontWeight: '700', marginBottom: '15px' }}>Ofertas Recibidas</h2>
+                    {offers.length === 0 ? (
+                        <div className="glass" style={{ padding: '60px 20px', textAlign: 'center' }}>
+                            <Handshake size={48} color="var(--text-dim)" style={{ marginBottom: '15px', opacity: 0.3 }} />
+                            <p style={{ color: 'var(--text-dim)' }}>No hay ofertas pendientes.</p>
+                        </div>
+                    ) : (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                            {offers.map(offer => (
+                                <Card key={offer.id} style={{ padding: '20px' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px' }}>
+                                        <span style={{
+                                            padding: '4px 10px',
+                                            borderRadius: '8px',
+                                            fontSize: '11px',
+                                            fontWeight: '800',
+                                            background: offer.status === 'pending' ? '#f59e0b' :
+                                                offer.status === 'accepted' ? '#10b981' : '#ef4444',
+                                            color: 'white',
+                                            textTransform: 'uppercase'
+                                        }}>
+                                            {offer.status === 'pending' ? 'Pendiente' :
+                                                offer.status === 'accepted' ? 'Aceptada' : 'Rechazada'}
+                                        </span>
+                                        <span style={{ fontSize: '11px', color: 'var(--text-dim)' }}>
+                                            {new Date(offer.created_at).toLocaleDateString()}
+                                        </span>
+                                    </div>
+
+                                    <div style={{ display: 'flex', gap: '12px', marginBottom: '20px' }}>
+                                        <img src={offer.product?.image_url || ''} style={{ width: '50px', height: '50px', borderRadius: '10px', objectFit: 'cover' }} alt="" />
+                                        <div style={{ flex: 1 }}>
+                                            <h4 style={{ fontSize: '14px', fontWeight: '700' }}>{offer.product?.name}</h4>
+                                            <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+                                                <p style={{ fontSize: '16px', color: 'var(--secondary)', fontWeight: '800' }}>
+                                                    $ {new Intl.NumberFormat('es-CO').format(offer.offer_amount)}
+                                                </p>
+                                                <p style={{ fontSize: '11px', color: 'var(--text-dim)', textDecoration: 'line-through' }}>
+                                                    Original: $ {new Intl.NumberFormat('es-CO').format(offer.product?.price || 0)}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: '15px', padding: '15px', marginBottom: '15px' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', marginBottom: '8px' }}>
+                                            <User size={14} color="var(--text-dim)" />
+                                            <span style={{ fontWeight: '600' }}>{offer.buyer?.full_name || 'Comprador APEG'}</span>
+                                        </div>
+                                        {offer.message && (
+                                            <p style={{ fontSize: '13px', color: 'var(--text-dim)', fontStyle: 'italic', borderLeft: '2px solid var(--secondary)', paddingLeft: '10px' }}>
+                                                "{offer.message}"
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    {offer.status === 'pending' && (
+                                        <div style={{ display: 'flex', gap: '10px' }}>
+                                            <button
+                                                onClick={() => handleOfferAction(offer.id, 'rejected')}
+                                                disabled={updatingOffer === offer.id}
+                                                style={{
+                                                    flex: 1,
+                                                    background: 'rgba(239, 68, 68, 0.1)',
+                                                    border: '1px solid #ef4444',
+                                                    color: '#f87171',
+                                                    padding: '12px',
+                                                    borderRadius: '12px',
+                                                    fontWeight: '700',
+                                                    fontSize: '14px'
+                                                }}
+                                            >
+                                                RECHAZAR
+                                            </button>
+                                            <button
+                                                onClick={() => handleOfferAction(offer.id, 'accepted')}
+                                                disabled={updatingOffer === offer.id}
+                                                style={{
+                                                    flex: 2,
+                                                    background: 'var(--secondary)',
+                                                    color: 'var(--primary)',
+                                                    padding: '12px',
+                                                    borderRadius: '12px',
+                                                    fontWeight: '800',
+                                                    fontSize: '14px',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    gap: '8px'
+                                                }}
+                                            >
+                                                {updatingOffer === offer.id ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle2 size={16} />}
+                                                ACEPTAR OFERTA
+                                            </button>
+                                        </div>
+                                    )}
+
+                                    {offer.status === 'accepted' && (
+                                        <div style={{ background: 'rgba(16, 185, 129, 0.1)', border: '1px solid #10b981', padding: '12px', borderRadius: '12px', color: '#10b981', textAlign: 'center', fontWeight: '700', fontSize: '13px' }}>
+                                            OFERTA ACEPTADA • Esperando pago del comprador
+                                        </div>
+                                    )}
+                                </Card>
+                            ))}
+                        </div>
+                    )}
+                </div>
             ) : (
                 <div className="animate-fade">
-                    <h2 style={{ fontSize: '20px', fontWeight: '700', marginBottom: '15px' }}>Perfil de la Tienda</h2>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                        <Card style={{ padding: '25px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '25px' }}>
-                                <div style={{ background: 'var(--secondary)', borderRadius: '15px', padding: '15px', color: 'var(--primary)' }}>
-                                    <Store size={32} />
-                                </div>
-                                <div>
-                                    <h3 style={{ fontSize: '22px', fontWeight: '800' }}>{sellerProfile.store_name}</h3>
-                                    <p style={{ color: 'var(--text-dim)', fontSize: '13px', textTransform: 'uppercase', fontWeight: '700' }}>
-                                        {sellerProfile.entity_type === 'natural' ? 'Persona Natural' : 'Persona Jurídica'}
-                                    </p>
-                                </div>
-                            </div>
-
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '20px' }}>
-                                <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '20px' }}>
-                                    <h4 style={{ fontSize: '12px', color: 'var(--secondary)', fontWeight: '800', marginBottom: '15px', textTransform: 'uppercase' }}>Datos de Identidad</h4>
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                            <span style={{ color: 'var(--text-dim)', fontSize: '14px' }}>
-                                                {sellerProfile.entity_type === 'natural' ? 'Nombre Completo' : 'Razón Social'}
-                                            </span>
-                                            <span style={{ fontWeight: '700' }}>{sellerProfile.entity_type === 'natural' ? sellerProfile.full_name : sellerProfile.company_name}</span>
-                                        </div>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                            <span style={{ color: 'var(--text-dim)', fontSize: '14px' }}>
-                                                {sellerProfile.entity_type === 'natural' ? `Documento (${sellerProfile.document_type})` : 'NIT'}
-                                            </span>
-                                            <span style={{ fontWeight: '700' }}>{sellerProfile.entity_type === 'natural' ? sellerProfile.document_number : sellerProfile.nit}</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '20px' }}>
-                                    <h4 style={{ fontSize: '12px', color: 'var(--secondary)', fontWeight: '800', marginBottom: '15px', textTransform: 'uppercase' }}>Información Bancaria</h4>
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                            <span style={{ color: 'var(--text-dim)', fontSize: '14px' }}>Banco</span>
-                                            <span style={{ fontWeight: '700' }}>{sellerProfile.bank_name}</span>
-                                        </div>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                            <span style={{ color: 'var(--text-dim)', fontSize: '14px' }}>Tipo de Cuenta</span>
-                                            <span style={{ fontWeight: '700', textTransform: 'capitalize' }}>{sellerProfile.account_type}</span>
-                                        </div>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                            <span style={{ color: 'var(--text-dim)', fontSize: '14px' }}>Número de Cuenta</span>
-                                            <span style={{ fontWeight: '700' }}>****{sellerProfile.account_number.slice(-4)}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '15px' }}>
+                        <h2 style={{ fontSize: '20px', fontWeight: '700' }}>Perfil de la Tienda</h2>
+                        {isEditingProfile && (
                             <button
                                 onClick={() => {
-                                    alert('Para modificar los datos sensibles de tu tienda, por seguridad contacta con soporte@apeg.golf');
+                                    setIsEditingProfile(false);
+                                    setProfileFormData({ ...sellerProfile });
                                 }}
-                                style={{
-                                    marginTop: '30px',
-                                    width: '100%',
-                                    background: 'rgba(255,255,255,0.05)',
-                                    border: '1px solid var(--glass-border)',
-                                    color: 'white',
-                                    padding: '12px',
-                                    borderRadius: '12px',
-                                    fontSize: '14px',
-                                    fontWeight: '700',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    gap: '8px'
-                                }}
+                                style={{ color: 'var(--text-dim)', fontSize: '14px', fontWeight: '600' }}
                             >
-                                <Settings size={18} />
-                                EDITAR INFORMACIÓN
+                                Cancelar
                             </button>
-                        </Card>
+                        )}
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                        {!isEditingProfile ? (
+                            <Card style={{ padding: '25px' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '25px' }}>
+                                    <div style={{ background: 'var(--secondary)', borderRadius: '15px', padding: '15px', color: 'var(--primary)' }}>
+                                        <Store size={32} />
+                                    </div>
+                                    <div>
+                                        <h3 style={{ fontSize: '22px', fontWeight: '800' }}>{sellerProfile.store_name}</h3>
+                                        <p style={{ color: 'var(--text-dim)', fontSize: '13px', textTransform: 'uppercase', fontWeight: '700' }}>
+                                            {sellerProfile.entity_type === 'natural' ? 'Persona Natural' : 'Persona Jurídica'}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '20px' }}>
+                                    <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '20px' }}>
+                                        <h4 style={{ fontSize: '12px', color: 'var(--secondary)', fontWeight: '800', marginBottom: '15px', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            <User size={14} /> Datos de Identidad
+                                        </h4>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                                <span style={{ color: 'var(--text-dim)', fontSize: '14px' }}>
+                                                    {sellerProfile.entity_type === 'natural' ? 'Nombre Completo' : 'Razón Social'}
+                                                </span>
+                                                <span style={{ fontWeight: '700' }}>{sellerProfile.entity_type === 'natural' ? sellerProfile.full_name : sellerProfile.company_name}</span>
+                                            </div>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                                <span style={{ color: 'var(--text-dim)', fontSize: '14px' }}>
+                                                    {sellerProfile.entity_type === 'natural' ? `Documento (${sellerProfile.document_type})` : 'NIT'}
+                                                </span>
+                                                <span style={{ fontWeight: '700' }}>{sellerProfile.entity_type === 'natural' ? sellerProfile.document_number : sellerProfile.nit}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '20px' }}>
+                                        <h4 style={{ fontSize: '12px', color: 'var(--secondary)', fontWeight: '800', marginBottom: '15px', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            <Landmark size={14} /> Información Bancaria
+                                        </h4>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                                <span style={{ color: 'var(--text-dim)', fontSize: '14px' }}>Banco</span>
+                                                <span style={{ fontWeight: '700' }}>{sellerProfile.bank_name}</span>
+                                            </div>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                                <span style={{ color: 'var(--text-dim)', fontSize: '14px' }}>Tipo de Cuenta</span>
+                                                <span style={{ fontWeight: '700', textTransform: 'capitalize' }}>{sellerProfile.account_type}</span>
+                                            </div>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                                <span style={{ color: 'var(--text-dim)', fontSize: '14px' }}>Número de Cuenta</span>
+                                                <span style={{ fontWeight: '700' }}>****{sellerProfile.account_number.slice(-4)}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <button
+                                    onClick={() => setIsEditingProfile(true)}
+                                    style={{
+                                        marginTop: '30px',
+                                        width: '100%',
+                                        background: 'var(--secondary)',
+                                        color: 'var(--primary)',
+                                        padding: '16px',
+                                        borderRadius: '16px',
+                                        fontSize: '15px',
+                                        fontWeight: '800',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        gap: '10px',
+                                        border: 'none',
+                                        boxShadow: '0 8px 20px rgba(163, 230, 53, 0.2)'
+                                    }}
+                                >
+                                    <Pencil size={20} />
+                                    EDITAR MI TIENDA
+                                </button>
+                            </Card>
+                        ) : (
+                            <Card style={{ padding: '25px' }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                                    <div>
+                                        <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: '800', color: 'var(--secondary)', textTransform: 'uppercase' }}>Nombre de la Tienda</label>
+                                        <input
+                                            value={profileFormData.store_name}
+                                            onChange={e => setProfileFormData({ ...profileFormData, store_name: e.target.value })}
+                                            className="glass"
+                                            style={{ width: '100%', padding: '14px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', color: 'white', border: '1px solid var(--glass-border)' }}
+                                        />
+                                    </div>
+
+                                    {sellerProfile.entity_type === 'natural' ? (
+                                        <>
+                                            <div>
+                                                <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: '800', color: 'var(--secondary)', textTransform: 'uppercase' }}>Nombre Completo</label>
+                                                <input
+                                                    value={profileFormData.full_name || ''}
+                                                    onChange={e => setProfileFormData({ ...profileFormData, full_name: e.target.value })}
+                                                    className="glass"
+                                                    style={{ width: '100%', padding: '14px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', color: 'white', border: '1px solid var(--glass-border)' }}
+                                                />
+                                            </div>
+                                            <div>
+                                                <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: '800', color: 'var(--secondary)', textTransform: 'uppercase' }}>Número de Documento</label>
+                                                <input
+                                                    value={profileFormData.document_number || ''}
+                                                    onChange={e => setProfileFormData({ ...profileFormData, document_number: e.target.value })}
+                                                    className="glass"
+                                                    style={{ width: '100%', padding: '14px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', color: 'white', border: '1px solid var(--glass-border)' }}
+                                                />
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <div>
+                                                <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: '800', color: 'var(--secondary)', textTransform: 'uppercase' }}>Razón Social</label>
+                                                <input
+                                                    value={profileFormData.company_name || ''}
+                                                    onChange={e => setProfileFormData({ ...profileFormData, company_name: e.target.value })}
+                                                    className="glass"
+                                                    style={{ width: '100%', padding: '14px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', color: 'white', border: '1px solid var(--glass-border)' }}
+                                                />
+                                            </div>
+                                            <div>
+                                                <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: '800', color: 'var(--secondary)', textTransform: 'uppercase' }}>NIT</label>
+                                                <input
+                                                    value={profileFormData.nit || ''}
+                                                    onChange={e => setProfileFormData({ ...profileFormData, nit: e.target.value })}
+                                                    className="glass"
+                                                    style={{ width: '100%', padding: '14px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', color: 'white', border: '1px solid var(--glass-border)' }}
+                                                />
+                                            </div>
+                                        </>
+                                    )}
+
+                                    <div style={{ height: '1px', background: 'var(--glass-border)', margin: '10px 0' }} />
+
+                                    <div>
+                                        <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: '800', color: 'var(--secondary)', textTransform: 'uppercase' }}>Número de Cuenta Bancaria</label>
+                                        <input
+                                            value={profileFormData.account_number}
+                                            onChange={e => setProfileFormData({ ...profileFormData, account_number: e.target.value })}
+                                            className="glass"
+                                            style={{ width: '100%', padding: '14px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', color: 'white', border: '1px solid var(--glass-border)' }}
+                                        />
+                                    </div>
+
+                                    <button
+                                        onClick={async () => {
+                                            setSaving(true);
+                                            try {
+                                                const { error } = await supabase
+                                                    .from('seller_profiles')
+                                                    .update({
+                                                        store_name: profileFormData.store_name,
+                                                        full_name: profileFormData.full_name,
+                                                        document_number: profileFormData.document_number,
+                                                        company_name: profileFormData.company_name,
+                                                        nit: profileFormData.nit,
+                                                        account_number: profileFormData.account_number,
+                                                        updated_at: new Date().toISOString()
+                                                    })
+                                                    .eq('id', sellerProfile.id);
+
+                                                if (error) throw error;
+
+                                                setSellerProfile(profileFormData);
+                                                setIsEditingProfile(false);
+                                                alert('Perfil de tienda actualizado correctamente');
+                                            } catch (err: any) {
+                                                alert('Error al actualizar: ' + err.message);
+                                            } finally {
+                                                setSaving(false);
+                                            }
+                                        }}
+                                        disabled={saving}
+                                        style={{
+                                            marginTop: '10px',
+                                            width: '100%',
+                                            background: 'var(--secondary)',
+                                            color: 'var(--primary)',
+                                            padding: '16px',
+                                            borderRadius: '16px',
+                                            fontSize: '15px',
+                                            fontWeight: '900',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            gap: '10px',
+                                            border: 'none'
+                                        }}
+                                    >
+                                        {saving ? <Loader2 className="animate-spin" size={20} /> : <CheckCircle2 size={20} />}
+                                        {saving ? 'GUARDANDO...' : 'GUARDAR CAMBIOS'}
+                                    </button>
+                                </div>
+                            </Card>
+                        )}
 
                         <div className="glass" style={{ padding: '15px', display: 'flex', gap: '12px', alignItems: 'center', background: 'rgba(163, 230, 53, 0.05)' }}>
                             <Info size={20} color="var(--secondary)" />
                             <p style={{ fontSize: '12px', color: 'var(--text-dim)', lineHeight: '1.4' }}>
-                                Si necesitas cambiar tu cuenta bancaria o representante legal, por favor envía la solicitud a nuestro equipo de soporte.
+                                Mantén tus datos actualizados para asegurar que tus transferencias de ventas lleguen correctamente.
                             </p>
                         </div>
                     </div>

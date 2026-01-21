@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-    Search, Filter, Store, ShoppingBag,
+    Search, Filter, ShoppingBag,
     ArrowLeft, ShoppingCart, ChevronRight, Plus, CheckCircle2,
-    Loader2, AlertCircle, Handshake
+    Loader2, AlertCircle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Card from '../components/Card';
 import { supabase } from '../services/SupabaseManager';
 import { useCart } from '../context/CartContext';
-import MyStore from './MyStore';
+
 import PageHeader from '../components/PageHeader';
 
 interface Product {
@@ -31,7 +31,7 @@ const Shop: React.FC = () => {
     const [activeTab, setActiveTab] = useState('Todo');
     const [searchQuery, setSearchQuery] = useState('');
     const [products, setProducts] = useState<Product[]>([]);
-    const [viewTab, setViewTab] = useState<'marketplace' | 'mystore' | 'myorders'>('marketplace');
+    const [viewTab, setViewTab] = useState<'marketplace' | 'myorders'>('marketplace');
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
     const [buying, setBuying] = useState(false);
     const [myOrders, setMyOrders] = useState<any[]>([]);
@@ -208,35 +208,15 @@ const Shop: React.FC = () => {
                             background: viewTab === 'myorders' ? 'var(--secondary)' : 'transparent',
                             color: viewTab === 'myorders' ? 'var(--primary)' : 'var(--text-dim)',
                             fontWeight: '700',
-                            fontSize: '13px',
+                            fontSize: '12px',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            gap: '6px',
+                            gap: '4px',
                             cursor: 'pointer'
                         }}
                     >
-                        <ShoppingCart size={16} /> Pedidos
-                    </button>
-                    <button
-                        onClick={() => setViewTab('mystore')}
-                        style={{
-                            flex: 1,
-                            padding: '10px',
-                            borderRadius: '12px',
-                            border: 'none',
-                            background: viewTab === 'mystore' ? 'var(--secondary)' : 'transparent',
-                            color: viewTab === 'mystore' ? 'var(--primary)' : 'var(--text-dim)',
-                            fontWeight: '700',
-                            fontSize: '13px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            gap: '6px',
-                            cursor: 'pointer'
-                        }}
-                    >
-                        <Store size={16} /> Mi Tienda
+                        <ShoppingCart size={14} /> Pedidos
                     </button>
                 </div>
 
@@ -399,8 +379,91 @@ const Shop: React.FC = () => {
                             ))}
                         </div>
                     </>
-                ) : viewTab === 'mystore' ? (
-                    <MyStore />
+                ) : viewTab === 'myorders' ? (
+                    <div className="animate-fade">
+                        <h2 style={{ fontSize: '22px', fontWeight: '800', marginBottom: '20px' }}>Mis Compras</h2>
+                        {ordersLoading ? (
+                            <div style={{ padding: '60px 20px', textAlign: 'center' }}>
+                                <Loader2 className="animate-spin" size={32} color="var(--secondary)" style={{ margin: '0 auto 15px' }} />
+                                <p style={{ color: 'var(--text-dim)' }}>Cargando pedidos...</p>
+                            </div>
+                        ) : ordersError ? (
+                            <div className="glass" style={{ padding: '40px 20px', textAlign: 'center', border: '1px solid rgba(239, 68, 68, 0.2)' }}>
+                                <AlertCircle size={40} color="#ef4444" style={{ marginBottom: '15px', opacity: 0.5 }} />
+                                <p style={{ color: '#ef4444', fontWeight: '700' }}>Error al cargar pedidos</p>
+                                <p style={{ color: 'var(--text-dim)', fontSize: '13px', marginTop: '5px' }}>{ordersError}</p>
+                                <button onClick={() => user && fetchMyOrders(user.id)} style={{ color: 'var(--secondary)', marginTop: '15px', fontWeight: '700' }}>Reintentar</button>
+                            </div>
+                        ) : myOrders.length === 0 ? (
+                            <div className="glass" style={{ padding: '60px 20px', textAlign: 'center' }}>
+                                <ShoppingBag size={48} color="var(--text-dim)" style={{ marginBottom: '15px', opacity: 0.2 }} />
+                                <p style={{ color: 'var(--text-dim)' }}>Aún no has realizado compras.</p>
+                                <button onClick={() => setViewTab('marketplace')} style={{ color: 'var(--secondary)', marginTop: '10px', fontWeight: '700' }}>Explorar Marketplace</button>
+                            </div>
+                        ) : (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                                {myOrders.map((order: any) => (
+                                    <Card key={order.id} style={{ padding: '20px' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px' }}>
+                                            <span style={{
+                                                background: (order.status === 'Pendiente' || order.status === 'Pagado') ? '#f59e0b' : '#10b981',
+                                                padding: '4px 10px', borderRadius: '8px', fontSize: '11px', fontWeight: '800', color: 'white'
+                                            }}>
+                                                {order.status.toUpperCase()}
+                                            </span>
+                                            <span style={{ fontSize: '11px', color: 'var(--text-dim)' }}>{new Date(order.created_at).toLocaleDateString()}</span>
+                                        </div>
+                                        <div style={{ display: 'flex', gap: '15px', marginBottom: '15px' }}>
+                                            <img
+                                                src={order.product?.image_url || 'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?auto=format&fit=crop&q=80&w=200'}
+                                                style={{ width: '60px', height: '60px', borderRadius: '12px', objectFit: 'cover' }}
+                                                alt=""
+                                            />
+                                            <div>
+                                                <h4 style={{ fontSize: '15px', fontWeight: '800' }}>{order.product?.name || 'Pedido sin información'}</h4>
+                                                <p style={{ color: 'var(--secondary)', fontWeight: '800' }}>$ {new Intl.NumberFormat('es-CO').format(order.total_price || order.total_amount || 0)}</p>
+                                            </div>
+                                        </div>
+
+                                        {/* Tracking Timeline */}
+                                        <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '15px', marginTop: '15px' }}>
+                                            <p style={{ fontSize: '12px', fontWeight: '800', color: 'var(--secondary)', marginBottom: '15px', textTransform: 'uppercase' }}>Seguimiento del pedido</p>
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                                <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                                                    <div style={{ width: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                                        <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: 'var(--secondary)' }}></div>
+                                                        <div style={{ width: '1px', flex: 1, background: 'var(--secondary)', minHeight: '15px' }}></div>
+                                                    </div>
+                                                    <div style={{ fontSize: '12px' }}>
+                                                        <p style={{ fontWeight: '700' }}>Orden confirmada</p>
+                                                        <p style={{ fontSize: '10px', color: 'var(--text-dim)' }}>{new Date(order.created_at).toLocaleString()}</p>
+                                                    </div>
+                                                </div>
+                                                <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                                                    <div style={{ width: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                                        <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: (order.status === 'Preparando' || order.status === 'Enviado') ? 'var(--secondary)' : 'rgba(255,255,255,0.1)' }}></div>
+                                                        <div style={{ width: '1px', flex: 1, background: order.status === 'Enviado' ? 'var(--secondary)' : 'rgba(255,255,255,0.1)', minHeight: '15px' }}></div>
+                                                    </div>
+                                                    <div style={{ fontSize: '12px' }}>
+                                                        <p style={{ fontWeight: '700', color: (order.status === 'Preparando' || order.status === 'Enviado') ? 'white' : 'var(--text-dim)' }}>En preparación</p>
+                                                        <p style={{ fontSize: '10px', color: 'var(--text-dim)' }}>El vendedor está alistando tu pedido</p>
+                                                    </div>
+                                                </div>
+                                                <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                                                    <div style={{ width: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                                        <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: order.status === 'Enviado' ? 'var(--secondary)' : 'rgba(255,255,255,0.1)' }}></div>
+                                                    </div>
+                                                    <div style={{ fontSize: '12px' }}>
+                                                        <p style={{ fontWeight: '700', color: order.status === 'Enviado' ? 'white' : 'var(--text-dim)' }}>Pedido enviado</p>
+                                                        {order.tracking_number && <p style={{ fontSize: '11px', color: 'var(--secondary)', fontWeight: '600', marginTop: '4px' }}>Guía: {order.shipping_provider} - {order.tracking_number}</p>}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </Card>
+                                ))}\n                            </div>
+                        )}
+                    </div>
                 ) : (
                     <div className="animate-fade">
                         <h2 style={{ fontSize: '22px', fontWeight: '800', marginBottom: '20px' }}>Mis Compras</h2>
@@ -592,7 +655,7 @@ const Shop: React.FC = () => {
                                     <h4 style={{ fontSize: '14px', fontWeight: '900', color: 'var(--text-dim)', textTransform: 'uppercase' }}>Resumen</h4>
                                     {selectedProduct.is_negotiable && (
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: 'var(--secondary)' }}>
-                                            <Handshake size={14} />
+                                            <span style={{ fontSize: '16px', fontWeight: '900' }}>🤝</span>
                                             <span style={{ fontSize: '11px', fontWeight: '800' }}>NEGOCIABLE</span>
                                         </div>
                                     )}
@@ -639,7 +702,7 @@ const Shop: React.FC = () => {
                                             letterSpacing: '0.05em'
                                         }}
                                     >
-                                        <Handshake size={20} />
+                                        <span style={{ fontSize: '20px' }}>🤝</span>
                                         OFERTAR
                                     </motion.button>
                                 )}
@@ -765,7 +828,7 @@ const Shop: React.FC = () => {
                                         margin: '0 auto 20px',
                                         color: 'var(--secondary)'
                                     }}>
-                                        <Handshake size={32} />
+                                        <span style={{ fontSize: '32px' }}>🤝</span>
                                     </div>
                                     <h3 style={{ fontSize: '20px', fontWeight: '800', marginBottom: '10px' }}>Hacer una Oferta</h3>
                                     <p style={{ fontSize: '14px', color: 'var(--text-dim)', marginBottom: '25px' }}>
