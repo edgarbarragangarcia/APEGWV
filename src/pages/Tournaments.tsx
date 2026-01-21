@@ -192,12 +192,25 @@ const Tournaments: React.FC = () => {
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                 {filteredTournaments.length === 0 ? (activeTab === 'my' ? (
-                    <div style={{ textAlign: 'center', padding: '60px 20px' }}>
-                        <Trophy size={48} color="var(--text-dim)" style={{ marginBottom: '15px', opacity: 0.2, marginInline: 'auto' }} />
-                        <p style={{ color: 'var(--text-dim)', fontSize: '15px' }}>No te has inscrito en ningún torneo aún.</p>
+                    <div className="glass" style={{ textAlign: 'center', padding: '80px 20px', borderRadius: '30px' }}>
+                        <div style={{
+                            width: '80px',
+                            height: '80px',
+                            background: 'rgba(255,b255,b255,0.03)',
+                            borderRadius: '50%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            margin: '0 auto 20px',
+                            border: '1px solid rgba(255,b255,b255,0.05)'
+                        }}>
+                            <Trophy size={40} color="var(--text-dim)" style={{ opacity: 0.3 }} />
+                        </div>
+                        <h3 style={{ fontSize: '18px', fontWeight: '800', color: 'white', marginBottom: '8px' }}>Sin inscripciones</h3>
+                        <p style={{ color: 'var(--text-dim)', fontSize: '15px' }}>Explora los mejores torneos y asegura tu lugar hoy mismo.</p>
                     </div>
                 ) : (
-                    <div style={{ textAlign: 'center', padding: '40px' }}>
+                    <div className="glass" style={{ textAlign: 'center', padding: '60px 20px', borderRadius: '30px' }}>
                         <Calendar size={48} color="var(--text-dim)" style={{ marginBottom: '15px', opacity: 0.3, marginInline: 'auto' }} />
                         <p style={{ color: 'var(--text-dim)' }}>No hay torneos disponibles en este momento.</p>
                     </div>
@@ -205,73 +218,99 @@ const Tournaments: React.FC = () => {
                     filteredTournaments.map((tourney) => {
                         const isRegistered = registrations.includes(tourney.id);
                         return (
-                            <Card key={tourney.id} style={{ padding: '0', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)' }}>
-                                <div style={{ height: '6px', background: isRegistered ? '#10b981' : 'var(--secondary)' }} />
-                                <div style={{ padding: '20px' }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '15px' }}>
-                                        <div style={{ flex: 1, minWidth: 0 }}>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--secondary)', fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', marginBottom: '6px' }}>
-                                                <Calendar size={13} /> {new Date(tourney.date).toLocaleDateString('es-CO', { day: '2-digit', month: '2-digit', year: 'numeric' })}
-                                            </div>
-                                            <h3 style={{ fontSize: '19px', fontWeight: '800', lineHeight: '1.2', wordBreak: 'break-word' }}>{tourney.name}</h3>
+                            <div key={tourney.id} className="animate-fade-up">
+                                <Card style={{
+                                    padding: '0',
+                                    overflow: 'hidden',
+                                    border: '1px solid rgba(255,255,255,0.06)',
+                                    borderRadius: '28px',
+                                    background: 'rgba(255,255,255,0.03)',
+                                    boxShadow: '0 15px 35px rgba(0,0,0,0.2)'
+                                }}>
+                                    <div style={{ position: 'relative', height: '140px' }}>
+                                        <img
+                                            src={tourney.image_url || 'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?q=80&w=1000&auto=format&fit=crop'}
+                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                            alt={tourney.name}
+                                        />
+                                        <div style={{
+                                            position: 'absolute',
+                                            top: 0, left: 0, right: 0, bottom: 0,
+                                            background: 'linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.8) 100%)'
+                                        }} />
+                                        <div style={{ position: 'absolute', top: '15px', right: '15px' }}>
+                                            <span style={{
+                                                fontSize: '10px',
+                                                padding: '6px 14px',
+                                                borderRadius: '30px',
+                                                background: isRegistered ? 'var(--secondary)' : 'rgba(255,255,255,0.1)',
+                                                backdropFilter: 'blur(10px)',
+                                                color: isRegistered ? 'var(--primary)' : 'white',
+                                                fontWeight: '900',
+                                                textTransform: 'uppercase',
+                                                letterSpacing: '0.05em',
+                                                border: '1px solid rgba(255,255,255,0.2)'
+                                            }}>
+                                                {isRegistered ? 'INSCRITO' : tourney.status}
+                                            </span>
                                         </div>
-                                        <div style={{ textAlign: 'right', marginLeft: '15px', flexShrink: 0 }}>
-                                            <div style={{ fontSize: '17px', fontWeight: '900', color: 'white' }}>
-                                                {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(tourney.price)}
+                                        <div style={{ position: 'absolute', bottom: '15px', left: '20px', right: '20px' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--secondary)', fontSize: '11px', fontWeight: '900', textTransform: 'uppercase', marginBottom: '4px' }}>
+                                                <Calendar size={13} strokeWidth={3} /> {new Date(tourney.date).toLocaleDateString('es-CO', { day: '2-digit', month: '2-digit', year: 'numeric' })}
                                             </div>
-                                            <div style={{ fontSize: '10px', color: 'var(--text-dim)', fontWeight: '700' }}>GREEN FEE INCL.</div>
+                                            <h3 style={{ fontSize: '22px', fontWeight: '900', color: 'white', lineHeight: '1.1' }}>{tourney.name}</h3>
                                         </div>
                                     </div>
 
-                                    <div style={{ display: 'flex', gap: '20px', marginBottom: '20px' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: 'var(--text-dim)', fontWeight: '500' }}>
-                                            <MapPin size={16} color="var(--secondary)" /> {tourney.club}
+                                    <div style={{ padding: '20px' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '14px', color: 'rgba(255,255,255,0.7)', fontWeight: '600' }}>
+                                                    <MapPin size={16} color="var(--secondary)" /> {tourney.club}
+                                                </div>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: 'var(--text-dim)', fontWeight: '500' }}>
+                                                    <Users size={15} color="var(--text-dim)" /> {tourney.current_participants}/{tourney.participants_limit} participantes
+                                                </div>
+                                            </div>
+                                            <div style={{ textAlign: 'right' }}>
+                                                <div style={{ fontSize: '20px', fontWeight: '900', color: 'white', letterSpacing: '-0.5px' }}>
+                                                    {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(tourney.price)}
+                                                </div>
+                                                <div style={{ fontSize: '9px', color: 'var(--secondary)', fontWeight: '800', textTransform: 'uppercase' }}>Inscripción Abierta</div>
+                                            </div>
                                         </div>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: 'var(--text-dim)', fontWeight: '500' }}>
-                                            <Users size={16} color="var(--secondary)" /> {tourney.current_participants}/{tourney.participants_limit}
-                                        </div>
-                                    </div>
 
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.02)', padding: '12px', borderRadius: '15px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                                        <span style={{
-                                            fontSize: '11px',
-                                            padding: '5px 12px',
-                                            borderRadius: '30px',
-                                            background: isRegistered ? 'rgba(16, 185, 129, 0.1)' : 'rgba(163, 230, 53, 0.1)',
-                                            color: isRegistered ? '#10b981' : 'var(--secondary)',
-                                            fontWeight: '800',
-                                            textTransform: 'uppercase'
-                                        }}>
-                                            {isRegistered ? 'INSCRITO' : tourney.status}
-                                        </span>
                                         <button
                                             onClick={() => !isRegistered && handleRegister(tourney.id)}
                                             disabled={isRegistered || registering === tourney.id}
                                             style={{
-                                                background: isRegistered ? 'rgba(255,255,255,0.05)' : 'var(--secondary)',
+                                                width: '100%',
+                                                background: isRegistered ? 'rgba(255,255,255,0.05)' : 'linear-gradient(135deg, var(--secondary) 0%, #10b981 100%)',
                                                 color: isRegistered ? 'var(--text-dim)' : 'var(--primary)',
-                                                padding: '10px 22px',
-                                                borderRadius: '12px',
-                                                fontWeight: '800',
-                                                fontSize: '13px',
+                                                padding: '16px',
+                                                borderRadius: '20px',
+                                                fontWeight: '900',
+                                                fontSize: '14px',
                                                 display: 'flex',
                                                 alignItems: 'center',
-                                                gap: '8px',
+                                                justifyContent: 'center',
+                                                gap: '10px',
                                                 border: 'none',
                                                 cursor: isRegistered ? 'default' : 'pointer',
-                                                boxShadow: isRegistered ? 'none' : '0 4px 15px rgba(163, 230, 53, 0.2)'
+                                                boxShadow: isRegistered ? 'none' : '0 8px 20px rgba(163, 230, 53, 0.2)',
+                                                transition: 'all 0.3s ease'
                                             }}>
                                             {registering === tourney.id ? (
-                                                <Loader2 size={16} className="animate-spin" />
+                                                <Loader2 size={20} className="animate-spin" />
                                             ) : isRegistered ? (
-                                                <>LISTO</>
+                                                <><Trophy size={18} /> ESTÁS INSCRITO</>
                                             ) : (
-                                                <><UserPlus size={16} /> INSCRIBIRME</>
+                                                <><UserPlus size={18} /> INSCRIBIRME AHORA</>
                                             )}
                                         </button>
                                     </div>
-                                </div>
-                            </Card>
+                                </Card>
+                            </div>
                         );
                     })
                 )}

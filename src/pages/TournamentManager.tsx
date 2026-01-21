@@ -396,38 +396,74 @@ const TournamentManager: React.FC = () => {
             ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                     {tournaments.length === 0 ? (
-                        <div className="glass" style={{ padding: '40px 20px', textAlign: 'center' }}>
-                            <Trophy size={48} color="var(--text-dim)" style={{ marginBottom: '15px', opacity: 0.3, marginInline: 'auto' }} />
-                            <p style={{ color: 'var(--text-dim)' }}>Aún no has organizado eventos.</p>
+                        <div className="glass" style={{ padding: '60px 20px', textAlign: 'center', borderRadius: '30px' }}>
+                            <div style={{
+                                width: '80px',
+                                height: '80px',
+                                background: 'rgba(255,255,255,0.03)',
+                                borderRadius: '50%',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                margin: '0 auto 20px',
+                                border: '1px solid rgba(255,255,255,0.05)'
+                            }}>
+                                <Trophy size={32} color="var(--text-dim)" style={{ opacity: 0.5 }} />
+                            </div>
+                            <h3 style={{ fontSize: '18px', fontWeight: '800', color: 'white', marginBottom: '8px' }}>Sin eventos organizados</h3>
+                            <p style={{ color: 'var(--text-dim)', fontSize: '14px' }}>Crea tu primer torneo y empieza a gestionar participantes.</p>
                         </div>
                     ) : (
                         tournaments.map(tourney => (
-                            <div key={tourney.id} style={{ position: 'relative', overflow: 'hidden', borderRadius: '20px' }}>
-                                <Card style={{ marginBottom: 0, padding: '15px', display: 'flex', gap: '15px', alignItems: 'center', background: 'rgba(255,255,255,0.02)' }}>
+                            <div key={tourney.id} className="animate-fade-up">
+                                <Card style={{
+                                    marginBottom: 0,
+                                    padding: '15px',
+                                    display: 'flex',
+                                    gap: '18px',
+                                    alignItems: 'center',
+                                    background: 'rgba(255,255,255,0.03)',
+                                    borderRadius: '26px',
+                                    border: '1px solid rgba(255,b255,b255,0.06)',
+                                    boxShadow: '0 10px 30px rgba(0,0,0,0.2)'
+                                }}>
                                     <div style={{
-                                        width: '60px',
-                                        height: '60px',
-                                        borderRadius: '12px',
+                                        width: '75px',
+                                        height: '75px',
+                                        borderRadius: '20px',
                                         background: 'var(--primary-light)',
                                         display: 'flex',
                                         alignItems: 'center',
-                                        justifyContent: 'center'
+                                        justifyContent: 'center',
+                                        border: '1px solid rgba(255,255,255,0.1)',
+                                        flexShrink: 0
                                     }}>
-                                        <Trophy size={24} color="var(--secondary)" />
+                                        <Trophy size={32} color="var(--secondary)" />
                                     </div>
-                                    <div style={{ flex: 1 }}>
-                                        <h3 style={{ fontSize: '16px', fontWeight: '700', marginBottom: '2px' }}>{tourney.name}</h3>
-                                        <div style={{ display: 'flex', gap: '10px', fontSize: '12px', color: 'var(--text-dim)' }}>
-                                            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Calendar size={12} /> {new Date(tourney.date).toLocaleDateString()}</span>
-                                            <span>•</span>
-                                            <span style={{ color: 'var(--secondary)', fontWeight: '700' }}>
+                                    <div style={{ flex: 1, minWidth: 0 }}>
+                                        <h3 style={{
+                                            fontSize: '17px',
+                                            fontWeight: '900',
+                                            marginBottom: '6px',
+                                            color: 'white',
+                                            letterSpacing: '-0.3px',
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis',
+                                            whiteSpace: 'nowrap'
+                                        }}>{tourney.name}</h3>
+                                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', fontSize: '13px' }}>
+                                            <span style={{ display: 'flex', alignItems: 'center', gap: '5px', color: 'var(--text-dim)', fontWeight: '600' }}>
+                                                <Calendar size={14} color="var(--secondary)" />
+                                                {new Date(tourney.date).toLocaleDateString()}
+                                            </span>
+                                            <span style={{ color: 'var(--secondary)', fontWeight: '900' }}>
                                                 {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(tourney.price)}
                                             </span>
                                         </div>
                                     </div>
-                                    <div style={{ display: 'flex', gap: '8px' }}>
-                                        <button onClick={() => handleEditClick(tourney)} style={{ color: 'var(--text-dim)' }}><Pencil size={18} /></button>
-                                        <button onClick={() => handleDeleteClick(tourney)} style={{ color: '#ff6b6b' }}><Trash2 size={18} /></button>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', paddingRight: '5px' }}>
+                                        <button onClick={() => handleEditClick(tourney)} style={{ color: 'var(--text-dim)', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '10px', cursor: 'pointer' }}><Pencil size={18} /></button>
+                                        <button onClick={() => handleDeleteClick(tourney)} style={{ color: '#ef4444', background: 'rgba(239, 68, 68, 0.04)', border: '1px solid rgba(239, 68, 68, 0.1)', borderRadius: '12px', padding: '10px', cursor: 'pointer' }}><Trash2 size={18} /></button>
                                     </div>
                                 </Card>
                             </div>

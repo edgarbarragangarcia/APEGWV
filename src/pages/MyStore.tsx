@@ -510,22 +510,38 @@ const MyStore: React.FC = () => {
     return (
         <div className="animate-fade" style={{ paddingBottom: 'calc(var(--nav-height) + 20px)' }}>
             {/* Store Title Header */}
-            <div style={{ marginBottom: '20px', textAlign: 'center' }}>
+            <div style={{ padding: '20px 0', marginBottom: '10px', textAlign: 'center', position: 'relative' }}>
+                <div style={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    width: '150px',
+                    height: '150px',
+                    background: 'radial-gradient(circle, var(--secondary-light) 0%, transparent 70%)',
+                    opacity: 0.1,
+                    filter: 'blur(30px)',
+                    zIndex: -1
+                }} />
                 <span style={{
                     fontSize: '11px',
                     fontWeight: '900',
                     color: 'var(--secondary)',
                     textTransform: 'uppercase',
-                    letterSpacing: '0.1em',
-                    opacity: 0.8
+                    letterSpacing: '0.2em',
+                    opacity: 0.9,
+                    display: 'block',
+                    marginBottom: '8px'
                 }}>
                     Panel de Control
                 </span>
                 <h1 style={{
-                    fontSize: '26px',
+                    fontSize: '32px',
                     fontWeight: '900',
                     color: 'white',
-                    marginTop: '4px'
+                    margin: 0,
+                    letterSpacing: '-1px',
+                    textShadow: '0 10px 20px rgba(0,0,0,0.3)'
                 }}>
                     {sellerProfile.store_name}
                 </h1>
@@ -883,112 +899,136 @@ const MyStore: React.FC = () => {
                     ) : (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                             {products.length === 0 ? (
-                                <div className="glass" style={{ padding: '40px 20px', textAlign: 'center' }}>
-                                    <Package size={48} color="var(--text-dim)" style={{ marginBottom: '15px', opacity: 0.3 }} />
-                                    <p style={{ color: 'var(--text-dim)' }}>No tienes productos publicados.</p>
+                                <div className="glass" style={{ padding: '60px 20px', textAlign: 'center', borderRadius: '30px' }}>
+                                    <div style={{
+                                        width: '80px',
+                                        height: '80px',
+                                        background: 'rgba(255,255,255,0.03)',
+                                        borderRadius: '50%',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        margin: '0 auto 20px',
+                                        border: '1px solid rgba(255,255,255,0.05)'
+                                    }}>
+                                        <Package size={32} color="var(--text-dim)" style={{ opacity: 0.5 }} />
+                                    </div>
+                                    <h3 style={{ fontSize: '18px', fontWeight: '800', color: 'white', marginBottom: '8px' }}>Tu tienda está vacía</h3>
+                                    <p style={{ color: 'var(--text-dim)', fontSize: '14px', marginBottom: '20px' }}>¡Sube tu primer producto y comienza a vender!</p>
                                     <button
                                         onClick={() => setShowForm(true)}
-                                        style={{ color: 'var(--secondary)', marginTop: '10px', fontWeight: '600' }}
+                                        style={{
+                                            background: 'var(--secondary)',
+                                            color: 'var(--primary)',
+                                            padding: '12px 25px',
+                                            borderRadius: '15px',
+                                            fontWeight: '900',
+                                            border: 'none',
+                                            fontSize: '14px'
+                                        }}
                                     >
-                                        Publicar mi primer producto
+                                        VENDER UN ARTÍCULO
                                     </button>
                                 </div>
                             ) : (
                                 products.map(product => (
-                                    <div key={product.id} style={{ position: 'relative', overflow: 'hidden', borderRadius: '20px', marginBottom: '15px' }}>
+                                    <div key={product.id} className="animate-fade-up">
                                         <div
                                             style={{
                                                 position: 'relative',
                                                 background: 'rgba(255,255,255,0.03)',
-                                                borderRadius: '20px',
-                                                border: '1px solid rgba(255,255,255,0.05)',
-                                                overflow: 'hidden'
+                                                borderRadius: '26px',
+                                                border: '1px solid rgba(255,255,255,0.06)',
+                                                overflow: 'hidden',
+                                                boxShadow: '0 10px 30px rgba(0,0,0,0.2)'
                                             }}
                                         >
-                                            <div style={{ padding: '15px', display: 'flex', gap: '15px', alignItems: 'center' }}>
-                                                <div style={{ position: 'relative' }}>
-                                                    <img
-                                                        src={product.image_url || ''}
-                                                        style={{ width: '85px', height: '85px', borderRadius: '16px', objectFit: 'cover', border: '1px solid rgba(255,255,255,0.1)' }}
-                                                        alt={product.name}
-                                                    />
+                                            <div style={{ padding: '15px', display: 'flex', gap: '18px', alignItems: 'center' }}>
+                                                <div style={{ position: 'relative', flexShrink: 0 }}>
+                                                    <div style={{
+                                                        width: '90px',
+                                                        height: '90px',
+                                                        borderRadius: '20px',
+                                                        overflow: 'hidden',
+                                                        background: 'var(--primary-light)',
+                                                        border: '1px solid rgba(255,255,255,0.1)'
+                                                    }}>
+                                                        <img
+                                                            src={product.image_url || ''}
+                                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                                            alt={product.name}
+                                                        />
+                                                    </div>
                                                     <div style={{
                                                         position: 'absolute',
-                                                        bottom: '-5px',
-                                                        right: '-5px',
-                                                        background: 'var(--secondary)',
-                                                        width: '24px',
-                                                        height: '24px',
+                                                        bottom: '-6px',
+                                                        right: '-6px',
+                                                        background: product.status === 'active' ? 'var(--secondary)' : '#f59e0b',
+                                                        width: '28px',
+                                                        height: '28px',
                                                         borderRadius: '50%',
                                                         display: 'flex',
                                                         alignItems: 'center',
                                                         justifyContent: 'center',
-                                                        border: '3px solid #062216'
+                                                        border: '3px solid #062216',
+                                                        boxShadow: '0 4px 10px rgba(0,0,0,0.4)'
                                                     }}>
-                                                        <Package size={12} color="var(--primary)" />
+                                                        {product.status === 'active' ? <CheckCircle2 size={14} color="var(--primary)" /> : <Package size={14} color="white" />}
                                                     </div>
                                                 </div>
                                                 <div style={{ flex: 1, minWidth: 0 }}>
                                                     <h3 style={{
                                                         fontSize: '17px',
-                                                        fontWeight: '800',
-                                                        marginBottom: '4px',
-                                                        whiteSpace: 'nowrap',
+                                                        fontWeight: '900',
+                                                        marginBottom: '5px',
+                                                        color: 'white',
+                                                        letterSpacing: '-0.3px',
                                                         overflow: 'hidden',
                                                         textOverflow: 'ellipsis',
-                                                        color: 'white'
+                                                        whiteSpace: 'nowrap'
                                                     }}>{product.name}</h3>
-                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                                                        <span style={{ color: 'var(--secondary)', fontWeight: '900', fontSize: '18px' }}>
+
+                                                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '5px', marginBottom: '10px' }}>
+                                                        <span style={{ color: 'var(--secondary)', fontWeight: '900', fontSize: '20px' }}>
                                                             {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(product.price || 0)}
                                                         </span>
                                                     </div>
+
                                                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                                                         <span style={{
                                                             background: 'rgba(255,255,255,0.05)',
-                                                            padding: '4px 8px',
-                                                            borderRadius: '6px',
+                                                            padding: '4px 10px',
+                                                            borderRadius: '8px',
                                                             fontSize: '10px',
                                                             color: 'var(--text-dim)',
-                                                            fontWeight: '700',
-                                                            textTransform: 'uppercase'
+                                                            fontWeight: '800',
+                                                            textTransform: 'uppercase',
+                                                            border: '1px solid rgba(255,255,255,0.05)'
                                                         }}>
                                                             {(product as any).clothing_type || product.category}
                                                         </span>
                                                         {(product as any).size_clothing && (
                                                             <span style={{
                                                                 background: 'rgba(163, 230, 53, 0.1)',
-                                                                padding: '4px 8px',
-                                                                borderRadius: '6px',
+                                                                padding: '4px 10px',
+                                                                borderRadius: '8px',
                                                                 fontSize: '10px',
                                                                 color: 'var(--secondary)',
-                                                                fontWeight: '800'
+                                                                fontWeight: '900',
+                                                                border: '1px solid rgba(163, 230, 53, 0.2)'
                                                             }}>
                                                                 TALLA: {(product as any).size_clothing}
                                                             </span>
                                                         )}
-                                                        {(product as any).status === 'pending_payment' && (
-                                                            <span style={{
-                                                                background: '#f59e0b',
-                                                                color: 'white',
-                                                                padding: '4px 8px',
-                                                                borderRadius: '6px',
-                                                                fontSize: '10px',
-                                                                fontWeight: '800',
-                                                                textTransform: 'uppercase'
-                                                            }}>
-                                                                Pendiente de Pago
-                                                            </span>
-                                                        )}
                                                     </div>
                                                 </div>
-                                                <div style={{ display: 'flex', gap: '12px', paddingRight: '10px' }}>
-                                                    <button onClick={() => handleEditClick(product)} style={{ color: 'var(--text-dim)', background: 'none', border: 'none', cursor: 'pointer' }}><Pencil size={18} /></button>
-                                                    <button onClick={() => handleDeleteClick(product)} style={{ color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer' }}><Trash2 size={18} /></button>
+                                                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', paddingRight: '5px' }}>
+                                                    <button onClick={(e) => { e.stopPropagation(); handleEditClick(product); }} style={{ color: 'var(--text-dim)', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '10px', cursor: 'pointer', transition: 'all 0.2s' }}><Pencil size={18} /></button>
+                                                    <button onClick={(e) => { e.stopPropagation(); handleDeleteClick(product); }} style={{ color: '#ef4444', background: 'rgba(239, 68, 68, 0.04)', border: '1px solid rgba(239, 68, 68, 0.1)', borderRadius: '12px', padding: '10px', cursor: 'pointer', transition: 'all 0.2s' }}><Trash2 size={18} /></button>
                                                 </div>
                                             </div>
 
-                                            {(product as any).status === 'pending_payment' && (
+                                            {product.status === 'pending_payment' && (
                                                 <div style={{ padding: '0 15px 15px' }}>
                                                     <button
                                                         onClick={async (e) => {
@@ -1011,17 +1051,24 @@ const MyStore: React.FC = () => {
                                                         }}
                                                         style={{
                                                             width: '100%',
-                                                            background: 'var(--secondary)',
+                                                            background: 'linear-gradient(135deg, var(--secondary) 0%, #10b981 100%)',
                                                             color: 'var(--primary)',
-                                                            padding: '10px',
-                                                            borderRadius: '12px',
-                                                            fontWeight: '800',
-                                                            fontSize: '12px',
+                                                            padding: '14px',
+                                                            borderRadius: '15px',
+                                                            fontWeight: '900',
+                                                            fontSize: '13px',
                                                             border: 'none',
-                                                            cursor: 'pointer'
+                                                            cursor: 'pointer',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
+                                                            gap: '10px',
+                                                            boxShadow: '0 8px 15px rgba(163, 230, 53, 0.2)',
+                                                            textAlign: 'center'
                                                         }}
                                                     >
-                                                        Pagar Publicación ($ 120,000)
+                                                        <CheckCircle2 size={18} />
+                                                        PUBLICAR AHORA ($120.000)
                                                     </button>
                                                 </div>
                                             )}
@@ -1034,7 +1081,10 @@ const MyStore: React.FC = () => {
                 </>
             ) : activeTab === 'orders' ? (
                 <div className="animate-fade">
-                    <h2 style={{ fontSize: '20px', fontWeight: '700', marginBottom: '15px' }}>Ventas y Seguimiento</h2>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+                        <h2 style={{ fontSize: '18px', fontWeight: '800' }}>Ventas Recientes</h2>
+                        <div style={{ fontSize: '12px', color: 'var(--text-dim)', fontWeight: '600' }}>{orders.length} pedidos</div>
+                    </div>
                     {orders.length === 0 ? (
                         <div className="glass" style={{ padding: '60px 20px', textAlign: 'center' }}>
                             <TrendingDown size={48} color="var(--text-dim)" style={{ marginBottom: '15px', opacity: 0.3 }} />

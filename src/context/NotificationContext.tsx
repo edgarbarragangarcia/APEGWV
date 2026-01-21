@@ -34,19 +34,21 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     useEffect(() => {
         let channel: any = null;
 
-        const initNotifications = async () => {
+        const fetchInitial = async () => {
             const { data: { session } } = await supabase.auth.getSession();
             if (session) {
-                fetchNotifications();
-                setupRealtime(session.user.id);
+                await fetchNotifications();
+                subscribe(session.user.id);
             }
         };
 
-        const setupRealtime = (userId: string) => {
-            if (channel) supabase.removeChannel(channel);
+        const subscribe = (userId: string) => {
+            if (channel) {
+                supabase.removeChannel(channel);
+            }
 
             channel = supabase
-                .channel(`notifications:${userId}`)
+                .channel(`notifications-realtime-${userId}`)
                 .on(
                     'postgres_changes',
                     {
@@ -67,22 +69,21 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
                 )
                 .subscribe((status) => {
                     if (status === 'SUBSCRIBED') {
-                        console.log('Notificaciones conectadas');
+                        console.log('🔔 Notificaciones: Suscrito con éxito');
+                    } else if (status === 'TIMED_OUT') {
+                        console.error('🔔 Notificaciones: Tiempo de espera agotado');
                     } else if (status === 'CHANNEL_ERROR') {
-                        console.error('Error en conexión de notificaciones');
-                    } else if (status === 'CLOSED') {
-                        console.log('Conexión de notificaciones cerrada');
+                        console.error('🔔 Notificaciones: Error en el canal');
                     }
                 });
         };
 
-        initNotifications();
+        fetchInitial();
 
-        // Listen for auth changes to re-setup or cleanup
         const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-            if (event === 'SIGNED_IN' && session) {
+            if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session) {
                 fetchNotifications();
-                setupRealtime(session.user.id);
+                subscribe(session.user.id);
             } else if (event === 'SIGNED_OUT') {
                 setNotifications([]);
                 if (channel) {
