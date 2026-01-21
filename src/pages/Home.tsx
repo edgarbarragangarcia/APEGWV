@@ -135,59 +135,76 @@ const Home: React.FC = () => {
                             <Card
                                 key={product.id}
                                 style={{
-                                    minWidth: '160px',
-                                    width: '160px',
-                                    padding: '20px',
+                                    minWidth: '185px',
+                                    width: '185px',
+                                    padding: '12px 0 15px 0',
                                     scrollSnapAlign: 'start',
                                     position: 'relative',
                                     overflow: 'hidden',
-                                    marginBottom: 0 // Override default margin
+                                    marginBottom: 0
                                 }}
-                                onClick={() => navigate('/shop')} // Optional: navigate to shop or product details
+                                onClick={() => navigate('/shop')}
                             >
-                                <div style={{ position: 'relative', marginBottom: '10px' }}>
-                                    <img
-                                        src={product.image_url}
-                                        alt={product.name}
-                                        style={{ width: '100%', height: '120px', objectFit: 'cover', borderRadius: '14px' }}
-                                    />
-                                    <div style={{
-                                        position: 'absolute',
-                                        top: '5px',
-                                        right: '5px',
-                                        background: 'rgba(0,0,0,0.5)',
-                                        borderRadius: '50%',
-                                        padding: '5px',
-                                        backdropFilter: 'blur(4px)'
-                                    }}>
-                                        <Heart size={12} color="white" />
-                                    </div>
-                                    {product.condition && (
+                                <div style={{
+                                    position: 'relative',
+                                    marginBottom: '10px',
+                                    display: 'flex',
+                                    justifyContent: 'center',
+                                    width: '100%'
+                                }}>
+                                    <div style={{ position: 'relative', width: '90%' }}>
+                                        <img
+                                            src={product.image_url}
+                                            alt={product.name}
+                                            style={{
+                                                width: '100%',
+                                                aspectRatio: '1/1',
+                                                objectFit: 'cover',
+                                                borderRadius: '20px',
+                                                boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+                                            }}
+                                        />
                                         <div style={{
                                             position: 'absolute',
-                                            bottom: '5px',
-                                            left: '5px',
-                                            background: 'var(--primary)',
-                                            color: 'var(--bg-dark)',
-                                            fontSize: '9px',
-                                            fontWeight: '700',
-                                            padding: '2px 6px',
-                                            borderRadius: '4px',
-                                            textTransform: 'uppercase'
+                                            top: '8px',
+                                            right: '8px',
+                                            background: 'rgba(0,0,0,0.4)',
+                                            backdropFilter: 'blur(8px)',
+                                            borderRadius: '50%',
+                                            padding: '6px',
+                                            display: 'flex',
+                                            border: '1px solid rgba(255,255,255,0.1)'
                                         }}>
-                                            {product.condition}
+                                            <Heart size={14} color="white" />
                                         </div>
-                                    )}
+                                        {product.condition && (
+                                            <div style={{
+                                                position: 'absolute',
+                                                bottom: '8px',
+                                                left: '8px',
+                                                background: 'var(--secondary)',
+                                                color: 'var(--primary)',
+                                                fontSize: '9px',
+                                                fontWeight: '900',
+                                                padding: '3px 8px',
+                                                borderRadius: '6px',
+                                                boxShadow: '0 2px 8px rgba(163, 230, 53, 0.2)'
+                                            }}>
+                                                {product.condition}
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
-                                <div style={{ padding: '10px 0 0 0', display: 'flex', flexDirection: 'column' }}>
+                                <div style={{ padding: '0 12px', display: 'flex', flexDirection: 'column' }}>
                                     <h4 style={{
-                                        fontSize: '14px',
+                                        fontSize: '15px',
                                         fontWeight: '800',
                                         marginBottom: '6px',
                                         whiteSpace: 'nowrap',
                                         overflow: 'hidden',
                                         textOverflow: 'ellipsis',
-                                        width: '100%'
+                                        width: '100%',
+                                        color: 'white'
                                     }}>
                                         {product.name}
                                     </h4>
@@ -196,10 +213,10 @@ const Home: React.FC = () => {
                                         <div style={{
                                             background: 'rgba(163, 230, 53, 0.1)',
                                             color: 'var(--secondary)',
-                                            padding: '2px 8px',
-                                            borderRadius: '6px',
-                                            fontSize: '12px',
-                                            fontWeight: '700',
+                                            padding: '4px 10px',
+                                            borderRadius: '8px',
+                                            fontSize: '14px',
+                                            fontWeight: '900',
                                             whiteSpace: 'nowrap',
                                             display: 'inline-block'
                                         }}>
@@ -208,7 +225,7 @@ const Home: React.FC = () => {
                                     </div>
 
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                        <span style={{ fontSize: '10px', color: 'var(--text-dim)' }}>{product.category}</span>
+                                        <span style={{ fontSize: '11px', color: 'var(--text-dim)', fontWeight: '600', textTransform: 'uppercase' }}>{product.category}</span>
                                     </div>
                                 </div>
                             </Card>

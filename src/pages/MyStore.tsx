@@ -9,7 +9,10 @@ import {
     Truck, User, Phone, MapPin
 } from 'lucide-react';
 import Card from '../components/Card';
+import StoreOnboarding from '../components/StoreOnboarding';
 import type { Database } from '../types/database.types';
+
+type SellerProfile = Database['public']['Tables']['seller_profiles']['Row'];
 
 type Product = Database['public']['Tables']['products']['Row'];
 
@@ -17,6 +20,7 @@ const MyStore: React.FC = () => {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
     const [products, setProducts] = useState<Product[]>([]);
+    const [sellerProfile, setSellerProfile] = useState<SellerProfile | null>(null);
     const [showForm, setShowForm] = useState(false);
     const [saving, setSaving] = useState(false);
     const [uploading, setUploading] = useState(false);
@@ -43,7 +47,8 @@ const MyStore: React.FC = () => {
         size_shoes_us: '',
         size_shoes_eu: '',
         size_shoes_col: '',
-        size_shoes_cm: ''
+        size_shoes_cm: '',
+        is_negotiable: false
     });
 
     const convertShoeSizes = (colVal: string) => {
@@ -74,7 +79,7 @@ const MyStore: React.FC = () => {
         }));
     };
 
-    const categories = ['Clubes', 'Ropa', 'Accesorios', 'Bolas', 'Zapatos', 'Grips', 'Torneo', 'Otros'];
+    const categories = ['Ropa', 'Accesorios', 'Bolas', 'Zapatos', 'Grips', 'Otros'];
 
     useEffect(() => {
         fetchStoreData();
@@ -88,48 +93,59 @@ const MyStore: React.FC = () => {
                 return;
             }
 
-            // Fetch User Products
-            const { data: userProducts, error } = await supabase
-                .from('products')
+            // Fetch Seller Profile
+            const { data: profile } = await supabase
+                .from('seller_profiles')
                 .select('*')
-                .eq('seller_id', session.user.id)
-                .order('created_at', { ascending: false });
+                .eq('user_id', session.user.id)
+                .single();
 
-            if (error) throw error;
-            setProducts(userProducts || []);
+            setSellerProfile(profile);
 
-            // Fetch Orders
-            const fetchOrders = async () => {
-                const { data: userOrders } = await supabase
-                    .from('orders')
-                    .select('*, product:products(*), buyer:profiles(*)')
+            if (profile) {
+                // Fetch User Products
+                const { data: userProducts, error } = await supabase
+                    .from('products')
+                    .select('*')
                     .eq('seller_id', session.user.id)
                     .order('created_at', { ascending: false });
-                setOrders(userOrders || []);
-            };
 
-            fetchOrders();
+                if (error) throw error;
+                setProducts(userProducts || []);
 
-            // Setup Realtime for Orders
-            const channel = supabase
-                .channel('seller-orders')
-                .on(
-                    'postgres_changes',
-                    {
-                        event: '*',
-                        schema: 'public',
-                        table: 'orders',
-                        filter: `seller_id=eq.${session.user.id}`
-                    },
-                    () => {
-                        fetchOrders();
-                    }
-                )
-                .subscribe();
+                // Fetch Orders
+                const fetchOrders = async () => {
+                    const { data: userOrders } = await supabase
+                        .from('orders')
+                        .select('*, product:products(*), buyer:profiles(*)')
+                        .eq('seller_id', session.user.id)
+                        .order('created_at', { ascending: false });
+                    setOrders(userOrders || []);
+                };
 
-            return () => {
-                supabase.removeChannel(channel);
-            };
+                fetchOrders();
+
+                // Setup Realtime for Orders
+                const channel = supabase
+                    .channel('seller-orders')
+                    .on(
+                        'postgres_changes',
+                        {
+                            event: '*',
+                            schema: 'public',
+                            table: 'orders',
+                            filter: `seller_id=eq.${session.user.id}`
+                        },
+                        () => {
+                            fetchOrders();
+                        }
+                    )
+                    .subscribe();
+
+                return () => {
+                    supabase.removeChannel(channel);
+                };
+            }
 
         } catch (err) {
             console.error('Error fetching store data:', err);
@@ -211,6 +227,7 @@ const MyStore: React.FC = () => {
                         size_shoes_col: formData.category === 'Zapatos' ? formData.size_shoes_col : null,
                         size_shoes_cm: formData.category === 'Zapatos' ? formData.size_shoes_cm : null,
                         clothing_type: formData.category === 'Ropa' ? formData.clothing_type : null,
+                        is_negotiable: formData.is_negotiable,
                         updated_at: new Date().toISOString()
                     })
                     .eq('id', editingId)
@@ -232,6 +249,7 @@ const MyStore: React.FC = () => {
                         size_shoes_col: formData.category === 'Zapatos' ? formData.size_shoes_col : null,
                         size_shoes_cm: formData.category === 'Zapatos' ? formData.size_shoes_cm : null,
                         clothing_type: formData.category === 'Ropa' ? formData.clothing_type : null,
+                        is_negotiable: formData.is_negotiable,
                         seller_id: user.id,
                         stock_quantity: 1
                     }])
@@ -272,7 +290,8 @@ const MyStore: React.FC = () => {
             size_shoes_us: '',
             size_shoes_eu: '',
             size_shoes_col: '',
-            size_shoes_cm: ''
+            size_shoes_cm: '',
+            is_negotiable: false
         });
         setEditingId(null);
     };
@@ -291,7 +310,8 @@ const MyStore: React.FC = () => {
             size_shoes_us: (product as any).size_shoes_us || '',
             size_shoes_eu: (product as any).size_shoes_eu || '',
             size_shoes_col: (product as any).size_shoes_col || '',
-            size_shoes_cm: (product as any).size_shoes_cm || ''
+            size_shoes_cm: (product as any).size_shoes_cm || '',
+            is_negotiable: (product as any).is_negotiable || false
         });
         setEditingId(product.id);
         setShowForm(true);
@@ -378,6 +398,10 @@ const MyStore: React.FC = () => {
     }
 
 
+
+    if (!sellerProfile) {
+        return <StoreOnboarding onComplete={() => fetchStoreData()} />;
+    }
 
     return (
         <div className="animate-fade">
@@ -612,6 +636,45 @@ const MyStore: React.FC = () => {
                                         style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '12px', color: 'white', fontSize: '15px', minHeight: '80px', resize: 'none' }}
                                         placeholder="Describe el estado de tu producto..."
                                     />
+                                </div>
+
+                                {/* Negotiable Toggle */}
+                                <div
+                                    onClick={() => setFormData({ ...formData, is_negotiable: !formData.is_negotiable })}
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'space-between',
+                                        padding: '15px',
+                                        background: 'rgba(255,255,255,0.03)',
+                                        borderRadius: '15px',
+                                        border: '1px solid var(--glass-border)',
+                                        cursor: 'pointer'
+                                    }}
+                                >
+                                    <div>
+                                        <p style={{ fontSize: '14px', fontWeight: '700', color: 'white' }}>Precio Negociable</p>
+                                        <p style={{ fontSize: '11px', color: 'var(--text-dim)', marginTop: '2px' }}>Permitir que los compradores envíen ofertas</p>
+                                    </div>
+                                    <div style={{
+                                        width: '44px',
+                                        height: '24px',
+                                        background: formData.is_negotiable ? 'var(--secondary)' : 'rgba(255,255,255,0.1)',
+                                        borderRadius: '20px',
+                                        position: 'relative',
+                                        transition: 'all 0.3s ease'
+                                    }}>
+                                        <div style={{
+                                            width: '18px',
+                                            height: '18px',
+                                            background: formData.is_negotiable ? 'var(--primary)' : 'var(--text-dim)',
+                                            borderRadius: '50%',
+                                            position: 'absolute',
+                                            top: '3px',
+                                            left: formData.is_negotiable ? '23px' : '3px',
+                                            transition: 'all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
+                                        }} />
+                                    </div>
                                 </div>
 
                                 {/* Commission Calculation */}

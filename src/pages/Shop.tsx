@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import {
     Search, Filter, Store, ShoppingBag,
     ArrowLeft, ShoppingCart, ChevronRight, Plus, CheckCircle2,
-    Loader2, AlertCircle, Ruler, Sparkles, Truck
+    Loader2, AlertCircle, Handshake
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Card from '../components/Card';
@@ -23,6 +23,7 @@ interface Product {
     seller_id?: string;
     size_clothing?: string;
     size_shoes_col?: string;
+    is_negotiable?: boolean;
 }
 
 const Shop: React.FC = () => {
@@ -35,6 +36,10 @@ const Shop: React.FC = () => {
     const [buying, setBuying] = useState(false);
     const [myOrders, setMyOrders] = useState<any[]>([]);
     const [user, setUser] = useState<any>(null);
+    const [showOfferModal, setShowOfferModal] = useState(false);
+    const [offerAmount, setOfferAmount] = useState('');
+    const [sendingOffer, setSendingOffer] = useState(false);
+    const [offerSuccess, setOfferSuccess] = useState(false);
     const { addToCart, totalItems } = useCart();
     const [addingToCart, setAddingToCart] = useState<string | null>(null);
     const [ordersLoading, setOrdersLoading] = useState(false);
@@ -100,11 +105,10 @@ const Shop: React.FC = () => {
         fetchProducts();
     }, []);
 
-    const categories = ['Todo', 'Palos', 'Bolas', 'Ropa', 'Accesorios', 'Zapatos', 'Otros'];
+    const categories = ['Todo', 'Bolas', 'Ropa', 'Accesorios', 'Zapatos', 'Otros'];
 
     const categoryMapping: Record<string, string> = {
         'Todo': 'Todo',
-        'Palos': 'clubes',
         'Bolas': 'bolas',
         'Ropa': 'ropa',
         'Accesorios': 'accesorios',
@@ -306,7 +310,7 @@ const Shop: React.FC = () => {
                                     onClick={() => setSelectedProduct(product)}
                                     style={{
                                         overflow: 'hidden',
-                                        padding: 0,
+                                        padding: '12px 0 16px 0',
                                         height: '100%',
                                         marginBottom: 0,
                                         display: 'flex',
@@ -314,31 +318,46 @@ const Shop: React.FC = () => {
                                         cursor: 'pointer'
                                     }}
                                 >
-                                    <div style={{ position: 'relative', height: '160px', overflow: 'hidden' }}>
-                                        <img
-                                            src={product.image_url}
-                                            alt={product.name}
-                                            loading="lazy"
-                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                        />
-                                        <div style={{
-                                            position: 'absolute',
-                                            top: '10px',
-                                            right: '10px',
-                                            background: 'rgba(0,0,0,0.4)',
-                                            backdropFilter: 'blur(4px)',
-                                            padding: '6px',
-                                            borderRadius: '50%',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center'
-                                        }}>
-                                            <ChevronRight size={14} color="white" />
+                                    <div style={{
+                                        position: 'relative',
+                                        display: 'flex',
+                                        justifyContent: 'center',
+                                        width: '100%',
+                                        marginBottom: '10px'
+                                    }}>
+                                        <div style={{ position: 'relative', width: '90%' }}>
+                                            <img
+                                                src={product.image_url}
+                                                alt={product.name}
+                                                loading="lazy"
+                                                style={{
+                                                    width: '100%',
+                                                    aspectRatio: '1/1',
+                                                    objectFit: 'cover',
+                                                    borderRadius: '20px',
+                                                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+                                                }}
+                                            />
+                                            <div style={{
+                                                position: 'absolute',
+                                                top: '10px',
+                                                right: '10px',
+                                                background: 'rgba(0,0,0,0.4)',
+                                                backdropFilter: 'blur(10px)',
+                                                padding: '8px',
+                                                borderRadius: '50%',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                border: '1px solid rgba(255,255,255,0.1)'
+                                            }}>
+                                                <ChevronRight size={16} color="white" />
+                                            </div>
                                         </div>
                                     </div>
 
                                     <div style={{
-                                        padding: '14px',
+                                        padding: '0 14px',
                                         display: 'flex',
                                         flexDirection: 'column',
                                         flex: 1,
@@ -510,21 +529,21 @@ const Shop: React.FC = () => {
                                     position: 'absolute',
                                     top: 'calc(var(--safe-top) + 15px)',
                                     left: '20px',
-                                    background: 'rgba(255,255,255,0.05)',
-                                    backdropFilter: 'blur(10px)',
-                                    border: '1px solid rgba(255,b255,b255,0.1)',
-                                    width: '40px',
-                                    height: '40px',
-                                    borderRadius: '12px',
+                                    background: 'var(--secondary)',
+                                    color: 'var(--primary)',
+                                    border: 'none',
+                                    width: '44px',
+                                    height: '44px',
+                                    borderRadius: '50%',
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
-                                    color: 'white',
-                                    zIndex: 2,
-                                    cursor: 'pointer'
+                                    zIndex: 10,
+                                    cursor: 'pointer',
+                                    boxShadow: '0 8px 25px rgba(163, 230, 53, 0.4)'
                                 }}
                             >
-                                <ArrowLeft size={20} />
+                                <ArrowLeft size={24} strokeWidth={3} />
                             </button>
                         </div>
 
@@ -543,60 +562,41 @@ const Shop: React.FC = () => {
                             overflowY: 'auto',
                             paddingBottom: '100px'
                         }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                                <div style={{ flex: 1 }}>
-                                    <span style={{
-                                        background: 'rgba(163, 230, 53, 0.1)',
-                                        color: 'var(--secondary)',
-                                        padding: '6px 14px',
-                                        borderRadius: '30px',
-                                        fontSize: '11px',
-                                        fontWeight: '900',
-                                        textTransform: 'uppercase',
-                                        letterSpacing: '0.05em'
-                                    }}>
-                                        {selectedProduct.category}
-                                    </span>
-                                    <h2 style={{ fontSize: '26px', fontWeight: '800', marginTop: '12px', lineHeight: '1.2' }}>{selectedProduct.name}</h2>
-                                </div>
-                                <div style={{ textAlign: 'right' }}>
-                                    <span style={{ fontSize: '12px', color: 'var(--text-dim)', fontWeight: '600' }}>Precio Final</span>
-                                    <p style={{ fontSize: '24px', fontWeight: '900', color: 'var(--secondary)', marginTop: '2px' }}>
+                            <div style={{ marginBottom: '25px' }}>
+                                <span style={{
+                                    background: 'rgba(163, 230, 53, 0.1)',
+                                    color: 'var(--secondary)',
+                                    padding: '6px 14px',
+                                    borderRadius: '30px',
+                                    fontSize: '11px',
+                                    fontWeight: '900',
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.05em'
+                                }}>
+                                    {selectedProduct.category}
+                                </span>
+                                <h2 style={{ fontSize: '28px', fontWeight: '800', marginTop: '12px', lineHeight: '1.2', color: 'white' }}>
+                                    {selectedProduct.name}
+                                </h2>
+                                <div style={{ marginTop: '15px' }}>
+                                    <span style={{ fontSize: '12px', color: 'var(--text-dim)', fontWeight: '600', display: 'block', marginBottom: '4px' }}>Precio Final</span>
+                                    <p style={{ fontSize: '32px', fontWeight: '900', color: 'var(--secondary)', margin: 0 }}>
                                         $ {new Intl.NumberFormat('es-CO').format(selectedProduct.price)}
                                     </p>
                                 </div>
                             </div>
 
-                            {/* Attributes Grid */}
-                            <div style={{ display: 'flex', gap: '10px' }}>
-                                {(selectedProduct.size_clothing || selectedProduct.size_shoes_col) && (
-                                    <div style={{ flex: 1, background: 'rgba(255,255,255,0.03)', padding: '15px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
-                                        <Ruler size={18} color="var(--text-dim)" />
-                                        <div>
-                                            <p style={{ fontSize: '10px', color: 'var(--text-dim)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Talla</p>
-                                            <p style={{ fontWeight: '800', fontSize: '16px' }}>{selectedProduct.size_clothing || selectedProduct.size_shoes_col}</p>
-                                        </div>
-                                    </div>
-                                )}
-                                <div style={{ flex: 1, background: 'rgba(255,255,255,0.03)', padding: '15px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
-                                    <Sparkles size={18} color="var(--secondary)" />
-                                    <div>
-                                        <p style={{ fontSize: '10px', color: 'var(--text-dim)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Estado</p>
-                                        <p style={{ fontWeight: '800', fontSize: '16px', color: 'var(--secondary)' }}>Mint</p>
-                                    </div>
-                                </div>
-                                <div style={{ flex: 1, background: 'rgba(255,255,255,0.03)', padding: '15px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
-                                    <Truck size={18} color="var(--text-dim)" />
-                                    <div>
-                                        <p style={{ fontSize: '10px', color: 'var(--text-dim)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Entrega</p>
-                                        <p style={{ fontWeight: '800', fontSize: '16px' }}>24h</p>
-                                    </div>
-                                </div>
-                            </div>
-
                             {/* Description */}
                             <div style={{ flex: 1 }}>
-                                <h4 style={{ fontSize: '14px', fontWeight: '900', marginBottom: '8px', color: 'var(--text-dim)', textTransform: 'uppercase' }}>Resumen</h4>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                                    <h4 style={{ fontSize: '14px', fontWeight: '900', color: 'var(--text-dim)', textTransform: 'uppercase' }}>Resumen</h4>
+                                    {selectedProduct.is_negotiable && (
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: 'var(--secondary)' }}>
+                                            <Handshake size={14} />
+                                            <span style={{ fontSize: '11px', fontWeight: '800' }}>NEGOCIABLE</span>
+                                        </div>
+                                    )}
+                                </div>
                                 <p style={{
                                     color: 'rgba(255,255,255,0.7)',
                                     lineHeight: '1.5',
@@ -614,6 +614,36 @@ const Shop: React.FC = () => {
                                 display: 'flex',
                                 gap: '15px'
                             }}>
+                                {selectedProduct.is_negotiable && selectedProduct.seller_id !== user?.id && (
+                                    <motion.button
+                                        whileTap={{ scale: 0.95 }}
+                                        onClick={() => {
+                                            if (!user) return navigate('/auth');
+                                            setShowOfferModal(true);
+                                            setOfferAmount(selectedProduct.price.toString());
+                                        }}
+                                        style={{
+                                            flex: 1,
+                                            background: 'rgba(163, 230, 53, 0.1)',
+                                            color: 'var(--secondary)',
+                                            height: '56px',
+                                            borderRadius: '18px',
+                                            fontWeight: '800',
+                                            fontSize: '12px',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            gap: '8px',
+                                            border: '1px solid var(--secondary)',
+                                            textTransform: 'uppercase',
+                                            letterSpacing: '0.05em'
+                                        }}
+                                    >
+                                        <Handshake size={20} />
+                                        OFERTAR
+                                    </motion.button>
+                                )}
+
                                 <motion.button
                                     whileTap={{ scale: 0.95 }}
                                     onClick={async () => {
@@ -687,6 +717,159 @@ const Shop: React.FC = () => {
                                 </motion.button>
                             </div>
                         </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Offer Modal */}
+            <AnimatePresence>
+                {showOfferModal && selectedProduct && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        style={{
+                            position: 'fixed',
+                            inset: 0,
+                            zIndex: 1000,
+                            background: 'rgba(0,0,0,0.85)',
+                            backdropFilter: 'blur(10px)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            padding: '20px'
+                        }}
+                    >
+                        <motion.div
+                            initial={{ scale: 0.9, y: 20 }}
+                            animate={{ scale: 1, y: 0 }}
+                            exit={{ scale: 0.9, y: 20 }}
+                            className="glass"
+                            style={{
+                                width: '100%',
+                                maxWidth: '400px',
+                                padding: '30px',
+                                textAlign: 'center'
+                            }}
+                        >
+                            {!offerSuccess ? (
+                                <>
+                                    <div style={{
+                                        width: '60px',
+                                        height: '60px',
+                                        background: 'rgba(163, 230, 53, 0.1)',
+                                        borderRadius: '50%',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        margin: '0 auto 20px',
+                                        color: 'var(--secondary)'
+                                    }}>
+                                        <Handshake size={32} />
+                                    </div>
+                                    <h3 style={{ fontSize: '20px', fontWeight: '800', marginBottom: '10px' }}>Hacer una Oferta</h3>
+                                    <p style={{ fontSize: '14px', color: 'var(--text-dim)', marginBottom: '25px' }}>
+                                        Ingresa el monto que deseas ofrecer por <strong>{selectedProduct.name}</strong>
+                                    </p>
+
+                                    <div style={{ position: 'relative', marginBottom: '25px' }}>
+                                        <span style={{ position: 'absolute', left: '20px', top: '50%', transform: 'translateY(-50%)', fontWeight: '800', color: 'var(--secondary)' }}>$</span>
+                                        <input
+                                            type="number"
+                                            value={offerAmount}
+                                            onChange={(e) => setOfferAmount(e.target.value)}
+                                            style={{
+                                                width: '100%',
+                                                background: 'rgba(255,255,255,0.05)',
+                                                border: '2px solid var(--secondary)',
+                                                borderRadius: '15px',
+                                                padding: '15px 15px 15px 35px',
+                                                color: 'white',
+                                                fontSize: '24px',
+                                                fontWeight: '900',
+                                                textAlign: 'center',
+                                                outline: 'none'
+                                            }}
+                                        />
+                                    </div>
+
+                                    <div style={{ display: 'flex', gap: '15px' }}>
+                                        <button
+                                            onClick={() => setShowOfferModal(false)}
+                                            style={{ flex: 1, padding: '15px', borderRadius: '15px', background: 'rgba(255,255,255,0.05)', fontWeight: '700', fontSize: '14px' }}
+                                        >
+                                            Cancelar
+                                        </button>
+                                        <button
+                                            disabled={sendingOffer || !offerAmount}
+                                            onClick={async () => {
+                                                setSendingOffer(true);
+                                                try {
+                                                    const { error } = await supabase
+                                                        .from('offers')
+                                                        .insert([{
+                                                            product_id: selectedProduct.id,
+                                                            buyer_id: user.id,
+                                                            seller_id: selectedProduct.seller_id,
+                                                            offer_amount: parseFloat(offerAmount),
+                                                            status: 'pending'
+                                                        }]);
+
+                                                    if (error) throw error;
+                                                    setOfferSuccess(true);
+                                                    setTimeout(() => {
+                                                        setOfferSuccess(false);
+                                                        setShowOfferModal(false);
+                                                        setSelectedProduct(null);
+                                                    }, 2000);
+                                                } catch (err) {
+                                                    console.error(err);
+                                                    alert('Error al enviar la oferta');
+                                                } finally {
+                                                    setSendingOffer(false);
+                                                }
+                                            }}
+                                            style={{
+                                                flex: 2,
+                                                padding: '15px',
+                                                borderRadius: '15px',
+                                                background: 'var(--secondary)',
+                                                color: 'var(--primary)',
+                                                fontWeight: '800',
+                                                fontSize: '14px',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                gap: '8px'
+                                            }}
+                                        >
+                                            {sendingOffer ? <Loader2 size={20} className="animate-spin" /> : <CheckCircle2 size={20} />}
+                                            {sendingOffer ? 'ENVIANDO...' : 'ENVIAR OFERTA'}
+                                        </button>
+                                    </div>
+                                </>
+                            ) : (
+                                <div className="animate-fade">
+                                    <div style={{
+                                        width: '60px',
+                                        height: '60px',
+                                        background: 'rgba(163, 230, 53, 0.2)',
+                                        borderRadius: '50%',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        margin: '0 auto 20px',
+                                        color: 'var(--secondary)'
+                                    }}>
+                                        <CheckCircle2 size={40} />
+                                    </div>
+                                    <h3 style={{ fontSize: '20px', fontWeight: '800', marginBottom: '10px' }}>¡Oferta Enviada!</h3>
+                                    <p style={{ fontSize: '14px', color: 'var(--text-dim)' }}>
+                                        El vendedor ha sido notificado y te responderá pronto.
+                                    </p>
+                                </div>
+                            )}
+                        </motion.div>
                     </motion.div>
                 )}
             </AnimatePresence>
