@@ -692,7 +692,7 @@ const Shop: React.FC = () => {
                                 onClick={() => setSelectedProduct(null)}
                                 style={{
                                     position: 'absolute',
-                                    top: 'calc(var(--safe-top) + 95px)',
+                                    top: 'calc(var(--safe-top) + 110px)',
                                     left: '20px',
                                     background: 'var(--secondary)',
                                     color: 'var(--primary)',
@@ -851,7 +851,7 @@ const Shop: React.FC = () => {
                                             flex: 1,
                                             background: 'linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02))',
                                             color: 'white',
-                                            height: '60px',
+                                            height: '48px',
                                             borderRadius: '20px',
                                             fontWeight: '900',
                                             fontSize: '11px',
@@ -884,7 +884,7 @@ const Shop: React.FC = () => {
                                         flex: 1,
                                         background: 'linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02))',
                                         color: selectedProduct.status === 'negotiating' ? 'rgba(255,255,255,0.2)' : 'white',
-                                        height: '60px',
+                                        height: '48px',
                                         borderRadius: '20px',
                                         fontWeight: '900',
                                         fontSize: '11px',
@@ -935,7 +935,7 @@ const Shop: React.FC = () => {
                                             ? 'rgba(255,255,255,0.05)'
                                             : 'linear-gradient(135deg, #bef264 0%, #a3e635 100%)',
                                         color: (selectedProduct?.seller_id === user?.id || (selectedProduct.status === 'negotiating' && selectedProduct.negotiating_buyer_id !== user?.id)) ? 'rgba(255,255,255,0.2)' : 'var(--primary)',
-                                        height: '60px',
+                                        height: '48px',
                                         borderRadius: '20px',
                                         fontWeight: '900',
                                         fontSize: '12px',
