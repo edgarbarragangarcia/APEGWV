@@ -69,21 +69,26 @@ const Navbar: React.FC = () => {
     return (
         <nav className="glass-dark" style={{
             position: 'fixed',
-            top: 'calc(env(safe-area-inset-top) + 10px)',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            width: 'calc(100% - 40px)',
-            maxWidth: 'calc(var(--app-max-width) - 40px)',
-            height: '60px',
+            top: '0',
+            left: '0',
+            right: '0',
+            width: '100%',
+            maxWidth: 'var(--app-max-width)',
+            margin: '0 auto',
+            paddingTop: 'calc(env(safe-area-inset-top) + 10px)',
+            paddingBottom: '10px',
+            paddingLeft: '20px',
+            paddingRight: '20px',
             display: 'flex',
             alignItems: 'center',
-            padding: '0 15px',
             zIndex: 1000,
             justifyContent: 'space-between',
-            borderRadius: '20px',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
+            borderRadius: '0 0 20px 20px',
+            border: 'none',
+            borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
             backdropFilter: 'blur(15px)',
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)'
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
+            background: 'linear-gradient(135deg, rgba(14, 47, 31, 0.95) 0%, rgba(20, 64, 42, 0.95) 100%)'
         }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                 <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
