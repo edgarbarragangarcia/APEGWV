@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-    Search, Filter, ShoppingBag,
+    Search, ShoppingBag,
     ArrowLeft, ShoppingCart, ChevronRight, Plus, CheckCircle2,
     Loader2, AlertCircle
 } from 'lucide-react';
@@ -11,7 +11,6 @@ import Card from '../components/Card';
 import { supabase, optimizeImage } from '../services/SupabaseManager';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
-import PageHeader from '../components/PageHeader';
 import Skeleton from '../components/Skeleton';
 
 import type { Database } from '../types/database.types';
@@ -145,18 +144,44 @@ const Shop: React.FC = () => {
 
 
     return (
-        <div className="animate-fade" style={{
-            paddingBottom: 'calc(var(--nav-height) + 20px)',
+        <div style={{
+            position: 'absolute',
+            top: '0',
+            left: '0',
+            right: '0',
+            bottom: '0',
             width: '100%',
-            overflowX: 'hidden',
-            position: 'relative'
-        }}>
-            <PageHeader
-                title="Marketplace"
-                subtitle="Equipamiento premium de la comunidad"
-                showBack={false}
-                rightElement={
-                    totalItems > 0 && (
+            maxWidth: 'var(--app-max-width)',
+            margin: '0 auto',
+            overflow: 'hidden'
+        }} className="animate-fade">
+
+            {/* Header Fijo - Marketplace */}
+            <div style={{
+                position: 'absolute',
+                top: 'calc(env(safe-area-inset-top) + 75px)',
+                left: '0',
+                right: '0',
+                width: '100%',
+                zIndex: 900,
+                background: 'linear-gradient(180deg, var(--primary) 0%, var(--primary) 95%, transparent 100%)',
+                paddingTop: '10px',
+                paddingBottom: '10px',
+                paddingLeft: '20px',
+                paddingRight: '20px',
+                pointerEvents: 'auto'
+            }}>
+                <div style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'flex-start',
+                    marginBottom: '15px'
+                }}>
+                    <div>
+                        <h1 style={{ fontSize: '28px', fontWeight: '800', marginBottom: '5px' }}>Marketplace</h1>
+                        <p style={{ color: 'var(--text-dim)', fontSize: '14px' }}>Equipamiento premium de la comunidad</p>
+                    </div>
+                    {totalItems > 0 && (
                         <motion.button
                             initial={{ scale: 0 }}
                             animate={{ scale: 1 }}
@@ -171,25 +196,22 @@ const Shop: React.FC = () => {
                                 display: 'flex',
                                 alignItems: 'center',
                                 gap: '8px',
-                                position: 'relative',
                                 boxShadow: '0 8px 20px rgba(163, 230, 53, 0.3)'
                             }}
                         >
                             <ShoppingCart size={20} />
                             <span style={{ fontWeight: '900', fontSize: '14px' }}>{totalItems}</span>
                         </motion.button>
-                    )
-                }
-            />
+                    )}
+                </div>
 
-            {/* Tab Bar Container */}
-            <div>
+                {/* Tab Bar Principal */}
                 <div style={{
                     display: 'flex',
                     background: 'rgba(255,255,255,0.05)',
                     padding: '4px',
                     borderRadius: '16px',
-                    marginBottom: '20px',
+                    marginBottom: '15px',
                     gap: '4px'
                 }}>
                     <button
@@ -207,7 +229,8 @@ const Shop: React.FC = () => {
                             alignItems: 'center',
                             justifyContent: 'center',
                             gap: '4px',
-                            cursor: 'pointer'
+                            cursor: 'pointer',
+                            transition: 'all 0.3s ease'
                         }}
                     >
                         <ShoppingBag size={14} /> Marketplace
@@ -228,7 +251,8 @@ const Shop: React.FC = () => {
                             justifyContent: 'center',
                             gap: '4px',
                             cursor: 'pointer',
-                            position: 'relative'
+                            position: 'relative',
+                            transition: 'all 0.3s ease'
                         }}
                     >
                         <ShoppingCart size={14} /> Compras
@@ -254,16 +278,16 @@ const Shop: React.FC = () => {
                     <>
                         {/* Search Bar */}
                         <div className="glass" style={{
-                            margin: '0 0 20px 0',
-                            padding: '12px 20px',
+                            marginBottom: '10px',
+                            padding: '10px 15px',
                             display: 'flex',
                             alignItems: 'center',
-                            gap: '15px'
+                            gap: '12px'
                         }}>
-                            <Search size={20} color="var(--text-dim)" />
+                            <Search size={18} color="var(--text-dim)" />
                             <input
                                 type="text"
-                                placeholder="Buscar palos, bolas, caddies..."
+                                placeholder="¿Qué estás buscando?"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 style={{
@@ -272,19 +296,17 @@ const Shop: React.FC = () => {
                                     color: 'white',
                                     width: '100%',
                                     outline: 'none',
-                                    fontSize: '15px'
+                                    fontSize: '14px'
                                 }}
                             />
-                            <Filter size={20} color="var(--secondary)" />
                         </div>
 
-                        {/* Filter Tabs */}
+                        {/* Category Filters */}
                         <div style={{
                             display: 'flex',
-                            gap: '10px',
-                            marginBottom: '25px',
+                            gap: '8px',
                             overflowX: 'auto',
-                            paddingBottom: '10px',
+                            paddingBottom: '5px',
                             scrollbarWidth: 'none',
                             width: '100%'
                         }}>
@@ -293,21 +315,39 @@ const Shop: React.FC = () => {
                                     key={tab}
                                     onClick={() => setActiveTab(tab)}
                                     style={{
-                                        padding: '10px 22px',
-                                        borderRadius: '30px',
+                                        padding: '6px 16px',
+                                        borderRadius: '20px',
                                         background: activeTab === tab ? 'var(--secondary)' : 'rgba(255,255,255,0.05)',
                                         color: activeTab === tab ? 'var(--primary)' : 'white',
-                                        fontSize: '14px',
-                                        fontWeight: activeTab === tab ? '700' : '500',
+                                        fontSize: '12px',
+                                        fontWeight: '600',
                                         border: '1px solid ' + (activeTab === tab ? 'var(--secondary)' : 'rgba(255,255,255,0.1)'),
-                                        whiteSpace: 'nowrap'
+                                        whiteSpace: 'nowrap',
+                                        transition: 'all 0.3s ease'
                                     }}
                                 >
                                     {tab}
                                 </button>
                             ))}
                         </div>
+                    </>
+                )}
+            </div>
 
+            {/* Área de Scroll */}
+            <div style={{
+                position: 'absolute',
+                top: viewTab === 'marketplace' ? 'calc(env(safe-area-inset-top) + 335px)' : 'calc(env(safe-area-inset-top) + 215px)',
+                left: '0',
+                right: '0',
+                bottom: 'calc(var(--nav-height))',
+                overflowY: 'auto',
+                overflowX: 'hidden',
+                padding: '0 20px 20px 20px',
+                transition: 'top 0.3s ease'
+            }}>
+                {viewTab === 'marketplace' ? (
+                    <div style={{ paddingBottom: '20px' }}>
                         {/* Product Grid */}
                         {productsLoading ? (
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
@@ -420,12 +460,10 @@ const Shop: React.FC = () => {
                                 ))}
                             </div>
                         )}
-                    </>
-                )}
-
-                {viewTab === 'myorders' && (
-                    <div className="animate-fade">
-                        <h2 style={{ fontSize: '22px', fontWeight: '800', marginBottom: '20px' }}>Mis Compras</h2>
+                    </div>
+                ) : (
+                    <div className="animate-fade" style={{ paddingBottom: '20px' }}>
+                        <h2 style={{ fontSize: '20px', fontWeight: '800', marginBottom: '15px' }}>Mis Compras</h2>
                         {ordersLoading ? (
                             <div style={{ padding: '60px 20px', textAlign: 'center' }}>
                                 <Loader2 className="animate-spin" size={32} color="var(--secondary)" style={{ margin: '0 auto 15px' }} />
@@ -510,10 +548,9 @@ const Shop: React.FC = () => {
                         )}
                     </div>
                 )}
-
-
-                {/* Content based on viewTab */}
             </div>
+            {/* Content based on viewTab */}
+
 
             {/* Product Detail Modal */}
             <AnimatePresence>
@@ -901,8 +938,7 @@ const Shop: React.FC = () => {
                     </motion.div>
                 )}
             </AnimatePresence>
-
-        </div >
+        </div>
     );
 };
 
