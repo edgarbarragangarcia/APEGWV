@@ -66,76 +66,99 @@ const GreenFee: React.FC = () => {
         : courses.filter(course => course.city === selectedCity);
 
     return (
-        <div className="page-transition" style={{ paddingBottom: '100px' }}>
-            <header style={{ marginBottom: '30px' }}>
-                <h1 style={{ fontSize: '28px', fontWeight: '800', marginBottom: '5px' }}>Green Fees</h1>
-                <p style={{ color: 'var(--text-dim)', fontSize: '14px' }}>
-                    Reserva tu salida en los mejores campos
-                </p>
-            </header>
+        <div style={{
+            position: 'absolute',
+            top: '0',
+            left: '0',
+            right: '0',
+            bottom: '0',
+            width: '100%',
+            maxWidth: 'var(--app-max-width)',
+            margin: '0 auto',
+            overflow: 'hidden'
+        }} className="animate-fade">
 
-            {/* Tab Bar */}
+            {/* Header Fijo - Green Fees */}
             <div style={{
-                display: 'flex',
-                background: 'rgba(255,255,255,0.05)',
-                padding: '4px',
-                borderRadius: '16px',
-                marginBottom: '20px',
-                margin: '0 0 20px 0'
+                position: 'absolute',
+                top: 'calc(env(safe-area-inset-top) + 75px)',
+                left: '0',
+                right: '0',
+                width: '100%',
+                zIndex: 900,
+                background: 'linear-gradient(180deg, var(--primary) 0%, var(--primary) 90%, transparent 100%)',
+                paddingTop: '10px',
+                paddingBottom: '10px',
+                paddingLeft: '20px',
+                paddingRight: '20px',
+                pointerEvents: 'auto'
             }}>
-                <button
-                    onClick={() => setActiveTab('courses')}
-                    style={{
-                        flex: 1,
-                        padding: '10px',
-                        borderRadius: '12px',
-                        border: 'none',
-                        background: activeTab === 'courses' ? 'var(--secondary)' : 'transparent',
-                        color: activeTab === 'courses' ? 'var(--primary)' : 'var(--text-dim)',
-                        fontWeight: '700',
-                        fontSize: '14px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '8px',
-                        cursor: 'pointer',
-                        transition: 'all 0.3s ease'
-                    }}
-                >
-                    <LayoutGrid size={16} /> Campos
-                </button>
-                <button
-                    onClick={() => setActiveTab('reservations')}
-                    style={{
-                        flex: 1,
-                        padding: '10px',
-                        borderRadius: '12px',
-                        border: 'none',
-                        background: activeTab === 'reservations' ? 'var(--secondary)' : 'transparent',
-                        color: activeTab === 'reservations' ? 'var(--primary)' : 'var(--text-dim)',
-                        fontWeight: '700',
-                        fontSize: '14px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '8px',
-                        cursor: 'pointer',
-                        transition: 'all 0.3s ease'
-                    }}
-                >
-                    <Ticket size={16} /> Mis Reservas
-                </button>
-            </div>
+                <header style={{ marginBottom: '15px' }}>
+                    <h1 style={{ fontSize: '28px', fontWeight: '800', marginBottom: '5px' }}>Green Fees</h1>
+                    <p style={{ color: 'var(--text-dim)', fontSize: '14px' }}>
+                        Reserva tu salida en los mejores campos
+                    </p>
+                </header>
 
-            {activeTab === 'courses' ? (
-                <>
-                    {/* City Filters */}
+                {/* Tab Bar */}
+                <div style={{
+                    display: 'flex',
+                    background: 'rgba(255,255,255,0.05)',
+                    padding: '4px',
+                    borderRadius: '16px',
+                    marginBottom: '15px'
+                }}>
+                    <button
+                        onClick={() => setActiveTab('courses')}
+                        style={{
+                            flex: 1,
+                            padding: '10px',
+                            borderRadius: '12px',
+                            border: 'none',
+                            background: activeTab === 'courses' ? 'var(--secondary)' : 'transparent',
+                            color: activeTab === 'courses' ? 'var(--primary)' : 'var(--text-dim)',
+                            fontWeight: '700',
+                            fontSize: '14px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '8px',
+                            cursor: 'pointer',
+                            transition: 'all 0.3s ease'
+                        }}
+                    >
+                        <LayoutGrid size={16} /> Campos
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('reservations')}
+                        style={{
+                            flex: 1,
+                            padding: '10px',
+                            borderRadius: '12px',
+                            border: 'none',
+                            background: activeTab === 'reservations' ? 'var(--secondary)' : 'transparent',
+                            color: activeTab === 'reservations' ? 'var(--primary)' : 'var(--text-dim)',
+                            fontWeight: '700',
+                            fontSize: '14px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '8px',
+                            cursor: 'pointer',
+                            transition: 'all 0.3s ease'
+                        }}
+                    >
+                        <Ticket size={16} /> Mis Reservas
+                    </button>
+                </div>
+
+                {/* City Filters - Solo se muestran si estamos en la pestaña de campos */}
+                {activeTab === 'courses' && (
                     <div style={{
                         display: 'flex',
                         gap: '10px',
                         overflowX: 'auto',
-                        padding: '0 0 15px 0',
-                        marginBottom: '10px',
+                        paddingBottom: '5px',
                         scrollbarWidth: 'none'
                     }}>
                         {cities.map(city => (
@@ -158,7 +181,21 @@ const GreenFee: React.FC = () => {
                             </button>
                         ))}
                     </div>
+                )}
+            </div>
 
+            {/* Área de Scroll */}
+            <div style={{
+                position: 'absolute',
+                top: activeTab === 'courses' ? 'calc(env(safe-area-inset-top) + 285px)' : 'calc(env(safe-area-inset-top) + 235px)',
+                left: '0',
+                right: '0',
+                bottom: 'calc(var(--nav-height))',
+                overflowY: 'auto',
+                overflowX: 'hidden',
+                padding: '0 20px 20px 20px'
+            }}>
+                {activeTab === 'courses' ? (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                         {filteredCourses.length > 0 ? (
                             filteredCourses.map((course) => (
@@ -260,11 +297,12 @@ const GreenFee: React.FC = () => {
                             </div>
                         )}
                     </div>
-                </>
-            ) : (
-                <MyReservations onRequestSwitchTab={() => setActiveTab('courses')} />
-            )}
+                ) : (
+                    <MyReservations onRequestSwitchTab={() => setActiveTab('courses')} />
+                )}
+            </div>
         </div>
+
     );
 };
 
