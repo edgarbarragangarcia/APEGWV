@@ -11,6 +11,7 @@ import Card from '../components/Card';
 import { supabase, optimizeImage } from '../services/SupabaseManager';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import { useNegotiationExpiry } from '../hooks/useNegotiationExpiry';
 import Skeleton from '../components/Skeleton';
 
 import type { Database } from '../types/database.types';
@@ -46,6 +47,9 @@ const Shop: React.FC = () => {
     const [ordersError, setOrdersError] = useState<string | null>(null);
     const [productsLoading, setProductsLoading] = useState(true);
     const location = useLocation();
+
+    // Auto-reset expired negotiations
+    useNegotiationExpiry();
 
     useEffect(() => {
         const params = new URLSearchParams(location.search);
@@ -139,8 +143,24 @@ const Shop: React.FC = () => {
                 setProductsLoading(false);
             }
         };
+
         fetchProducts();
-    }, []);
+
+        // Listen for negotiations-reset event
+        const handleNegotiationsReset = () => {
+            console.log('Negotiations reset, refreshing products...');
+            fetchProducts();
+            if (user) {
+                fetchMyOffers(user.id);
+            }
+        };
+
+        window.addEventListener('negotiations-reset', handleNegotiationsReset);
+
+        return () => {
+            window.removeEventListener('negotiations-reset', handleNegotiationsReset);
+        };
+    }, [user]);
 
     const categories = ['Todo', 'Bolas', 'Ropa', 'Accesorios', 'Zapatos', 'Otros'];
 
@@ -284,21 +304,6 @@ const Shop: React.FC = () => {
                         }}
                     >
                         <ShoppingCart size={14} /> Compras
-                        {myOffers.length > 0 && (
-                            <span style={{
-                                position: 'absolute',
-                                top: '2px',
-                                right: '2px',
-                                background: '#ef4444',
-                                color: 'white',
-                                fontSize: '8px',
-                                padding: '1px 4px',
-                                borderRadius: '10px',
-                                fontWeight: '900'
-                            }}>
-                                {myOffers.length}
-                            </span>
-                        )}
                     </button>
                 </div>
 
