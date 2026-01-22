@@ -381,6 +381,8 @@ export type Database = {
                     images: string[] | null
                     is_negotiable: boolean | null
                     name: string
+                    negotiation_expires_at: string | null
+                    negotiating_buyer_id: string | null
                     price: number
                     seller_id: string
                     size: string | null
@@ -403,6 +405,8 @@ export type Database = {
                     image_url?: string | null
                     images?: string[] | null
                     is_negotiable?: boolean | null
+                    negotiation_expires_at?: string | null
+                    negotiating_buyer_id?: string | null
                     name: string
                     price: number
                     seller_id: string
@@ -417,6 +421,8 @@ export type Database = {
                     updated_at?: string | null
                 }
                 Update: {
+                    negotiation_expires_at?: string | null
+                    negotiating_buyer_id?: string | null
                     brand?: string | null
                     category?: string | null
                     clothing_type?: string | null

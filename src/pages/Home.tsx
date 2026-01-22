@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Card from '../components/Card';
-import { ArrowRight, Heart } from 'lucide-react';
+import { ArrowRight, Heart, Users } from 'lucide-react';
 import { supabase } from '../services/SupabaseManager';
+import ActivityCard from '../components/ActivityCard';
+import { motion } from 'framer-motion';
 
 const Home: React.FC = () => {
     const navigate = useNavigate();
@@ -11,64 +13,129 @@ const Home: React.FC = () => {
     const [roundCount, setRoundCount] = useState<number>(0);
     const [featuredProducts, setFeaturedProducts] = useState<any[]>([]);
     const [tournaments, setTournaments] = useState<any[]>([]);
+    const [activities, setActivities] = useState<any[]>([]);
+
+    const fetchHomeData = async () => {
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) return;
+
+            // Fetch Profile
+            const { data: profileData } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', session.user.id)
+                .maybeSingle();
+            setProfile(profileData || null);
+
+            // Fetch Live Round Count
+            const { count, error: countError } = await supabase
+                .from('rounds')
+                .select('*', { count: 'exact', head: true })
+                .eq('user_id', session.user.id);
+
+            if (!countError) {
+                setRoundCount(count || 0);
+            }
+
+            // Fetch Featured Products
+            const { data: productsData } = await supabase
+                .from('products')
+                .select('*')
+                .order('created_at', { ascending: false })
+                .limit(4);
+
+            if (productsData) {
+                setFeaturedProducts(productsData.map(p => ({
+                    ...p,
+                    price: typeof p.price === 'string' ? parseFloat(p.price) : p.price
+                })));
+            }
+
+            // Fetch Real Tournaments
+            const { data: tournamentsData } = await supabase
+                .from('tournaments')
+                .select('*')
+                .order('date', { ascending: true })
+                .limit(3);
+
+            if (tournamentsData) {
+                setTournaments(tournamentsData);
+            }
+
+            // Fetch Activities
+            const { data: registrations } = await supabase
+                .from('tournament_registrations')
+                .select('*, profiles(full_name, id_photo_url), tournaments(name)')
+                .order('created_at', { ascending: false })
+                .limit(5);
+
+            const { data: newProducts } = await supabase
+                .from('products')
+                .select('*')
+                .order('created_at', { ascending: false })
+                .limit(5);
+
+            const combinedActivities = [
+                ...(registrations?.map(r => ({
+                    id: r.id,
+                    type: 'registration',
+                    userName: r.profiles?.full_name || 'Alguien',
+                    userImage: r.profiles?.id_photo_url,
+                    description: `Se inscribió al torneo`,
+                    itemName: r.tournaments?.name,
+                    created_at: r.created_at
+                })) || []),
+                ...(newProducts?.map(p => ({
+                    id: p.id,
+                    type: 'product',
+                    userName: 'Comunidad APEG',
+                    description: `Nuevo artículo disponible`,
+                    itemName: p.name,
+                    itemImage: p.image_url,
+                    created_at: p.created_at
+                })) || [])
+            ].sort((a, b) => {
+                const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
+                const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
+                return dateB - dateA;
+            }).slice(0, 10);
+
+            setActivities(combinedActivities);
+
+        } catch (err) {
+            console.error('Error fetching home data:', err);
+        }
+    };
 
     useEffect(() => {
-        const fetchHomeData = async () => {
-            try {
-                const { data: { session } } = await supabase.auth.getSession();
-                if (!session) return;
-
-                // Fetch Profile
-                const { data: profileData } = await supabase
-                    .from('profiles')
-                    .select('*')
-                    .eq('id', session.user.id)
-                    .maybeSingle();
-                setProfile(profileData || null);
-
-                // Fetch Stats
-                // This was statsData, but we now use live round count
-
-                // Fetch Live Round Count
-                const { count, error: countError } = await supabase
-                    .from('rounds')
-                    .select('*', { count: 'exact', head: true })
-                    .eq('user_id', session.user.id);
-
-                if (!countError) {
-                    setRoundCount(count || 0);
-                }
-
-                // Fetch Featured Products
-                const { data: productsData } = await supabase
-                    .from('products')
-                    .select('*')
-                    .order('created_at', { ascending: false })
-                    .limit(4);
-
-                if (productsData) {
-                    setFeaturedProducts(productsData.map(p => ({
-                        ...p,
-                        price: typeof p.price === 'string' ? parseFloat(p.price) : p.price
-                    })));
-                }
-
-                // Fetch Real Tournaments
-                const { data: tournamentsData } = await supabase
-                    .from('tournaments')
-                    .select('*')
-                    .order('date', { ascending: true })
-                    .limit(3);
-
-                if (tournamentsData) {
-                    setTournaments(tournamentsData);
-                }
-            } catch (err) {
-                console.error('Error fetching home data:', err);
-            }
-        };
-
         fetchHomeData();
+
+        // Real-time subscription for tournament registrations
+        const channel = supabase
+            .channel('public:tournament_registrations')
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'tournament_registrations' }, async (payload) => {
+                // Fetch full info for the new record
+                const { data } = await supabase
+                    .from('tournament_registrations')
+                    .select('*, profiles(full_name, id_photo_url), tournaments(name)')
+                    .eq('id', payload.new.id)
+                    .single();
+
+                if (data) {
+                    const newActivity = {
+                        id: data.id,
+                        type: 'registration',
+                        userName: data.profiles?.full_name || 'Alguien',
+                        userImage: data.profiles?.id_photo_url,
+                        description: `Se inscribió al torneo`,
+                        itemName: data.tournaments?.name,
+                        created_at: data.created_at
+                    };
+                    setActivities(prev => [newActivity, ...prev].slice(0, 10));
+                }
+            })
+            .subscribe();
 
         const handleProfileUpdate = () => {
             fetchHomeData();
@@ -78,6 +145,7 @@ const Home: React.FC = () => {
 
         return () => {
             window.removeEventListener('profile-updated', handleProfileUpdate);
+            supabase.removeChannel(channel);
         };
     }, []);
 
@@ -158,7 +226,51 @@ const Home: React.FC = () => {
                 overflowX: 'hidden'
             }}>
 
-                {/* Market Categories */}
+                {/* Activity Feed Section */}
+                <div style={{ marginBottom: '25px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '18px', paddingRight: '5px' }}>
+                        <div>
+                            <h3 style={{ fontSize: '20px', fontWeight: '800', letterSpacing: '-0.5px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                Actividad <span className="gradient-text">Comunidad</span>
+                            </h3>
+                            <div style={{ width: '30px', height: '3px', background: 'var(--secondary)', borderRadius: '2px', marginTop: '4px' }}></div>
+                        </div>
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                        {activities.length > 0 ? (
+                            activities.map((activity, index) => (
+                                <ActivityCard
+                                    key={activity.id + index}
+                                    type={activity.type}
+                                    userName={activity.userName}
+                                    userImage={activity.userImage}
+                                    description={activity.description}
+                                    time={new Date(activity.created_at).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
+                                    itemName={activity.itemName}
+                                    itemImage={activity.itemImage}
+                                    onClick={() => {
+                                        if (activity.type === 'registration') navigate('/tournaments');
+                                        if (activity.type === 'product') navigate('/shop');
+                                    }}
+                                />
+                            ))
+                        ) : (
+                            <div style={{
+                                padding: '30px',
+                                textAlign: 'center',
+                                background: 'rgba(255,255,255,0.02)',
+                                borderRadius: '20px',
+                                border: '1px dashed rgba(255,255,255,0.1)'
+                            }}>
+                                <Users size={24} color="var(--text-dim)" style={{ marginBottom: '10px', opacity: 0.5 }} />
+                                <p style={{ fontSize: '13px', color: 'var(--text-dim)' }}>No hay actividad reciente aún.</p>
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {/* Marketplace Section */}
                 <div style={{ marginBottom: '10px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '18px', paddingRight: '5px' }}>
                         <div>

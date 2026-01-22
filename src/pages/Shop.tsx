@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import {
     Search, ShoppingBag,
     ArrowLeft, ShoppingCart, ChevronRight, Plus, CheckCircle2,
-    Loader2, AlertCircle
+    Loader2, AlertCircle, Clock, Lock
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Card from '../components/Card';
@@ -98,15 +98,28 @@ const Shop: React.FC = () => {
                 const { data, error } = await supabase
                     .from('products')
                     .select('*')
-                    .eq('status', 'active')
+                    .or('status.eq.active,status.eq.negotiating') // Allow negotiating products to show
                     .order('created_at', { ascending: false });
 
                 if (error) throw error;
 
-                const mappedProducts = (data || []).map(p => ({
-                    ...p,
-                    price: typeof p.price === 'string' ? parseFloat(p.price) : p.price
-                }));
+                const now = new Date();
+                const mappedProducts = (data || []).map(p => {
+                    let status = p.status;
+                    // Client-side expiration check
+                    if (status === 'negotiating' && p.negotiation_expires_at) {
+                        const expires = new Date(p.negotiation_expires_at);
+                        if (expires < now) {
+                            status = 'active';
+                        }
+                    }
+
+                    return {
+                        ...p,
+                        status,
+                        price: typeof p.price === 'string' ? parseFloat(p.price) : p.price
+                    };
+                });
 
                 setProducts(mappedProducts as Product[]);
             } catch (err) {
@@ -400,9 +413,27 @@ const Shop: React.FC = () => {
                                                         aspectRatio: '1/1',
                                                         objectFit: 'cover',
                                                         borderRadius: '20px',
-                                                        boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+                                                        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                                                        filter: product.status === 'negotiating' ? 'blur(8px) grayscale(0.5)' : 'none',
+                                                        transition: 'all 0.5s ease'
                                                     }}
                                                 />
+                                                {product.status === 'negotiating' && (
+                                                    <div style={{
+                                                        position: 'absolute',
+                                                        inset: 0,
+                                                        display: 'flex',
+                                                        flexDirection: 'column',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        background: 'rgba(0,0,0,0.4)',
+                                                        borderRadius: '20px',
+                                                        color: 'white'
+                                                    }}>
+                                                        <Lock size={24} style={{ marginBottom: '5px' }} />
+                                                        <span style={{ fontSize: '10px', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '0.1em' }}>En Negociación</span>
+                                                    </div>
+                                                )}
                                                 <div style={{
                                                     position: 'absolute',
                                                     top: '10px',
@@ -416,7 +447,7 @@ const Shop: React.FC = () => {
                                                     justifyContent: 'center',
                                                     border: '1px solid rgba(255,255,255,0.1)'
                                                 }}>
-                                                    <ChevronRight size={16} color="white" />
+                                                    {product.status === 'negotiating' ? <Clock size={16} color="var(--secondary)" /> : <ChevronRight size={16} color="white" />}
                                                 </div>
                                             </div>
                                         </div>
@@ -611,6 +642,33 @@ const Shop: React.FC = () => {
                             >
                                 <ArrowLeft size={24} strokeWidth={3} />
                             </button>
+
+                            {selectedProduct.status === 'negotiating' && (
+                                <div style={{
+                                    position: 'absolute',
+                                    bottom: '40px',
+                                    left: '20px',
+                                    right: '20px',
+                                    background: 'rgba(0,0,0,0.6)',
+                                    backdropFilter: 'blur(15px)',
+                                    padding: '12px 20px',
+                                    borderRadius: '16px',
+                                    color: 'white',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '12px',
+                                    border: '1px solid rgba(255,255,255,0.1)',
+                                    zIndex: 5
+                                }}>
+                                    <div style={{ background: 'var(--secondary)', padding: '8px', borderRadius: '50%', color: 'var(--primary)' }}>
+                                        <Lock size={18} />
+                                    </div>
+                                    <div>
+                                        <p style={{ fontSize: '13px', fontWeight: '800', margin: 0 }}>PRODUCTO RESERVADO</p>
+                                        <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)', margin: 0 }}>Este artículo está en proceso de venta</p>
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
                         {/* Product Info Section - One Page Layout */}
@@ -679,7 +737,7 @@ const Shop: React.FC = () => {
                                 display: 'flex',
                                 gap: '15px'
                             }}>
-                                {selectedProduct.is_negotiable && selectedProduct.seller_id !== user?.id && (
+                                {selectedProduct.is_negotiable && selectedProduct.seller_id !== user?.id && selectedProduct.status === 'active' && (
                                     <motion.button
                                         whileTap={{ scale: 0.95 }}
                                         onClick={() => {
@@ -690,19 +748,19 @@ const Shop: React.FC = () => {
                                         }}
                                         style={{
                                             flex: 1,
-                                            background: 'rgba(163, 230, 53, 0.05)',
-                                            color: 'var(--secondary)',
-                                            height: '50px',
-                                            borderRadius: '16px',
+                                            background: 'rgba(255,255,255,0.05)',
+                                            color: 'white',
+                                            height: '56px',
+                                            borderRadius: '18px',
                                             fontWeight: '700',
                                             fontSize: '11px',
                                             display: 'flex',
                                             alignItems: 'center',
                                             justifyContent: 'center',
                                             gap: '6px',
-                                            border: '1px solid rgba(163, 230, 53, 0.3)',
+                                            border: '1px solid rgba(255,255,255,0.1)',
                                             textTransform: 'uppercase',
-                                            letterSpacing: '0.02em'
+                                            letterSpacing: '0.05em'
                                         }}
                                     >
                                         <span style={{ fontSize: '16px' }}>🤝</span>
@@ -718,13 +776,13 @@ const Shop: React.FC = () => {
                                         setTimeout(() => setAddingToCart(null), 1500);
                                         if (navigator.vibrate) navigator.vibrate(50);
                                     }}
-                                    disabled={selectedProduct.seller_id === user?.id}
+                                    disabled={selectedProduct.seller_id === user?.id || selectedProduct.status === 'negotiating'}
                                     style={{
                                         flex: 1,
                                         background: 'rgba(255,255,255,0.05)',
-                                        color: 'white',
-                                        height: '50px',
-                                        borderRadius: '16px',
+                                        color: selectedProduct.status === 'negotiating' ? 'rgba(255,255,255,0.2)' : 'white',
+                                        height: '56px',
+                                        borderRadius: '18px',
                                         fontWeight: '700',
                                         fontSize: '11px',
                                         display: 'flex',
@@ -733,7 +791,8 @@ const Shop: React.FC = () => {
                                         gap: '6px',
                                         border: '1px solid rgba(255,255,255,0.1)',
                                         textTransform: 'uppercase',
-                                        letterSpacing: '0.02em'
+                                        letterSpacing: '0.05em',
+                                        opacity: selectedProduct.status === 'negotiating' ? 0.5 : 1
                                     }}
                                 >
                                     {addingToCart === selectedProduct.id ? <CheckCircle2 size={16} color="var(--secondary)" /> : <Plus size={16} />}
@@ -750,7 +809,6 @@ const Shop: React.FC = () => {
 
                                         setBuying(true);
                                         try {
-                                            // Add to cart and redirect to checkout
                                             await addToCart(selectedProduct as any);
                                             setSelectedProduct(null);
                                             navigate('/checkout');
@@ -760,26 +818,27 @@ const Shop: React.FC = () => {
                                             setBuying(false);
                                         }
                                     }}
-                                    disabled={buying || (selectedProduct?.seller_id === user?.id)}
+                                    disabled={buying || (selectedProduct?.seller_id === user?.id) || selectedProduct.status === 'negotiating'}
                                     style={{
                                         flex: 1.5,
-                                        background: (selectedProduct?.seller_id === user?.id) ? 'rgba(255,255,255,0.1)' : 'var(--secondary)',
-                                        color: (selectedProduct?.seller_id === user?.id) ? 'var(--text-dim)' : 'var(--primary)',
-                                        height: '50px',
-                                        borderRadius: '16px',
-                                        fontWeight: '800',
+                                        background: (selectedProduct?.seller_id === user?.id || selectedProduct.status === 'negotiating') ? 'rgba(255,255,255,0.05)' : 'var(--secondary)',
+                                        color: (selectedProduct?.seller_id === user?.id || selectedProduct.status === 'negotiating') ? 'rgba(255,255,255,0.2)' : 'var(--primary)',
+                                        height: '56px',
+                                        borderRadius: '18px',
+                                        fontWeight: '900',
                                         fontSize: '11px',
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
-                                        gap: '6px',
-                                        boxShadow: (selectedProduct?.seller_id === user?.id) ? 'none' : '0 4px 15px rgba(163, 230, 53, 0.2)',
+                                        gap: '8px',
+                                        boxShadow: (selectedProduct?.seller_id === user?.id || selectedProduct.status === 'negotiating') ? 'none' : '0 10px 25px rgba(163, 230, 53, 0.3)',
                                         textTransform: 'uppercase',
-                                        letterSpacing: '0.02em'
+                                        letterSpacing: '0.05em',
+                                        border: (selectedProduct?.seller_id === user?.id || selectedProduct.status === 'negotiating') ? '1px solid rgba(255,255,255,0.1)' : 'none'
                                     }}
                                 >
-                                    <ShoppingCart size={18} />
-                                    {(selectedProduct?.seller_id === user?.id) ? 'MI PRODUCTO' : (buying ? '...' : 'COMPRAR YA')}
+                                    <ShoppingCart size={18} strokeWidth={3} />
+                                    {(selectedProduct?.seller_id === user?.id) ? 'MI PRODUCTO' : (selectedProduct.status === 'negotiating' ? 'EN TRATO' : (buying ? '...' : 'COMPRAR YA'))}
                                 </motion.button>
                             </div>
                         </div>
@@ -787,93 +846,113 @@ const Shop: React.FC = () => {
                 )}
             </AnimatePresence>
 
-            {/* Offer Modal */}
             <AnimatePresence>
                 {showOfferModal && selectedProduct && (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        style={{
-                            position: 'fixed',
-                            inset: 0,
-                            zIndex: 1000,
-                            background: 'rgba(0,0,0,0.85)',
-                            backdropFilter: 'blur(10px)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            padding: '20px'
-                        }}
-                    >
+                    <div style={{
+                        position: 'fixed',
+                        inset: 0,
+                        zIndex: 4000,
+                        display: 'flex',
+                        alignItems: 'flex-end',
+                        justifyContent: 'center',
+                        pointerEvents: 'none'
+                    }}>
                         <motion.div
-                            initial={{ scale: 0.9, y: 20 }}
-                            animate={{ scale: 1, y: 0 }}
-                            exit={{ scale: 0.9, y: 20 }}
-                            className="glass"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setShowOfferModal(false)}
+                            style={{
+                                position: 'fixed',
+                                inset: 0,
+                                background: 'rgba(0,0,0,0.4)',
+                                backdropFilter: 'blur(10px)',
+                                pointerEvents: 'auto'
+                            }}
+                        />
+                        <motion.div
+                            initial={{ y: '100%' }}
+                            animate={{ y: 0 }}
+                            exit={{ y: '100%' }}
+                            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
                             style={{
                                 width: '100%',
-                                maxWidth: '400px',
-                                padding: '30px',
-                                textAlign: 'center'
+                                maxWidth: 'var(--app-max-width)',
+                                background: '#121212',
+                                borderTopLeftRadius: '32px',
+                                borderTopRightRadius: '32px',
+                                padding: '30px 25px 50px 25px',
+                                position: 'relative',
+                                pointerEvents: 'auto',
+                                boxShadow: '0 -10px 40px rgba(0,0,0,0.5)',
+                                border: '1px solid rgba(255,255,255,0.05)'
                             }}
                         >
+                            <div style={{
+                                width: '40px',
+                                height: '4px',
+                                background: 'rgba(255,255,255,0.1)',
+                                borderRadius: '2px',
+                                margin: '-10px auto 25px auto'
+                            }} />
+
                             {!offerSuccess ? (
                                 <>
-                                    <div style={{
-                                        width: '60px',
-                                        height: '60px',
-                                        background: 'rgba(163, 230, 53, 0.1)',
-                                        borderRadius: '50%',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        margin: '0 auto 20px',
-                                        color: 'var(--secondary)'
-                                    }}>
-                                        <span style={{ fontSize: '32px' }}>🤝</span>
-                                    </div>
-                                    <h3 style={{ fontSize: '20px', fontWeight: '800', marginBottom: '10px' }}>Hacer una Oferta</h3>
-                                    <p style={{ fontSize: '14px', color: 'var(--text-dim)', marginBottom: '25px' }}>
-                                        Ingresa el monto que deseas ofrecer por <strong>{selectedProduct.name}</strong>
-                                    </p>
-
-                                    <div style={{ position: 'relative', marginBottom: '15px' }}>
-                                        <span style={{ position: 'absolute', left: '20px', top: '50%', transform: 'translateY(-50%)', fontWeight: '800', color: 'var(--secondary)' }}>$</span>
-                                        <input
-                                            type="number"
-                                            value={offerAmount}
-                                            onChange={(e) => setOfferAmount(e.target.value)}
-                                            placeholder="Monto de la oferta"
-                                            style={{
-                                                width: '100%',
-                                                background: 'rgba(255,255,255,0.05)',
-                                                border: '2px solid var(--secondary)',
-                                                borderRadius: '15px',
-                                                padding: '15px 15px 15px 35px',
-                                                color: 'white',
-                                                fontSize: '24px',
-                                                fontWeight: '900',
-                                                textAlign: 'center',
-                                                outline: 'none'
-                                            }}
+                                    <div style={{ display: 'flex', gap: '20px', marginBottom: '25px' }}>
+                                        <img
+                                            src={selectedProduct.image_url || ''}
+                                            style={{ width: '80px', height: '80px', borderRadius: '16px', objectFit: 'cover' }}
+                                            alt=""
                                         />
+                                        <div>
+                                            <h3 style={{ fontSize: '20px', fontWeight: '900', color: 'white' }}>Nueva Oferta</h3>
+                                            <p style={{ fontSize: '14px', color: 'var(--text-dim)' }}>{selectedProduct.name}</p>
+                                            <p style={{ fontSize: '13px', color: 'var(--secondary)', fontWeight: '800', marginTop: '4px' }}>
+                                                Precio base: $ {new Intl.NumberFormat('es-CO').format(selectedProduct.price)}
+                                            </p>
+                                        </div>
                                     </div>
 
-                                    <div style={{ marginBottom: '25px' }}>
+                                    <div style={{ marginBottom: '20px' }}>
+                                        <label style={{ display: 'block', fontSize: '11px', fontWeight: '900', color: 'var(--text-dim)', textTransform: 'uppercase', marginBottom: '10px', marginLeft: '5px' }}>Tu propuesta</label>
+                                        <div style={{ position: 'relative' }}>
+                                            <span style={{ position: 'absolute', left: '20px', top: '50%', transform: 'translateY(-50%)', fontWeight: '900', color: 'var(--secondary)', fontSize: '20px' }}>$</span>
+                                            <input
+                                                type="number"
+                                                value={offerAmount}
+                                                onChange={(e) => setOfferAmount(e.target.value)}
+                                                autoFocus
+                                                style={{
+                                                    width: '100%',
+                                                    background: 'rgba(255,255,255,0.03)',
+                                                    border: '1px solid rgba(255,255,255,0.1)',
+                                                    borderRadius: '20px',
+                                                    padding: '20px 20px 20px 45px',
+                                                    color: 'white',
+                                                    fontSize: '28px',
+                                                    fontWeight: '900',
+                                                    outline: 'none',
+                                                    transition: 'all 0.3s ease'
+                                                }}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div style={{ marginBottom: '30px' }}>
+                                        <label style={{ display: 'block', fontSize: '11px', fontWeight: '900', color: 'var(--text-dim)', textTransform: 'uppercase', marginBottom: '10px', marginLeft: '5px' }}>Mensaje opcional</label>
                                         <textarea
                                             value={offerMessage}
                                             onChange={(e) => setOfferMessage(e.target.value)}
-                                            placeholder="Escribe un mensaje al vendedor (opcional)"
+                                            placeholder="Ej: ¿Aceptarías este precio con envío incluido?"
                                             style={{
                                                 width: '100%',
-                                                background: 'rgba(255,255,255,0.05)',
+                                                background: 'rgba(255,255,255,0.03)',
                                                 border: '1px solid rgba(255,255,255,0.1)',
-                                                borderRadius: '12px',
-                                                padding: '12px',
+                                                borderRadius: '20px',
+                                                padding: '15px 20px',
                                                 color: 'white',
                                                 fontSize: '14px',
-                                                minHeight: '80px',
+                                                minHeight: '100px',
                                                 resize: 'none',
                                                 outline: 'none'
                                             }}
@@ -881,19 +960,27 @@ const Shop: React.FC = () => {
                                     </div>
 
                                     <div style={{ display: 'flex', gap: '15px' }}>
-                                        <button
+                                        <motion.button
+                                            whileTap={{ scale: 0.95 }}
                                             onClick={() => setShowOfferModal(false)}
-                                            style={{ flex: 1, padding: '15px', borderRadius: '15px', background: 'rgba(255,255,255,0.05)', fontWeight: '700', fontSize: '14px' }}
+                                            style={{
+                                                flex: 1,
+                                                padding: '18px',
+                                                borderRadius: '20px',
+                                                background: 'rgba(255,255,255,0.05)',
+                                                border: '1px solid rgba(255,255,255,0.1)',
+                                                color: 'white',
+                                                fontWeight: '800',
+                                                fontSize: '14px'
+                                            }}
                                         >
-                                            Cancelar
-                                        </button>
-                                        <button
+                                            CANCELAR
+                                        </motion.button>
+                                        <motion.button
+                                            whileTap={{ scale: 0.95 }}
                                             disabled={sendingOffer || !offerAmount}
                                             onClick={async () => {
-                                                if (!user || !selectedProduct) {
-                                                    alert('Debes iniciar sesión para enviar una oferta');
-                                                    return;
-                                                }
+                                                if (!user || !selectedProduct) return;
                                                 setSendingOffer(true);
                                                 try {
                                                     const { error } = await supabase
@@ -908,66 +995,74 @@ const Shop: React.FC = () => {
                                                         }]);
 
                                                     if (error) throw error;
+
+                                                    // Trigger a notification for the seller (simplified handled by Supabase functions or context)
+                                                    await supabase.from('notifications').insert([{
+                                                        user_id: selectedProduct.seller_id,
+                                                        title: 'Nueva oferta recibida',
+                                                        message: `Has recibido una oferta de $${new Intl.NumberFormat('es-CO').format(parseFloat(offerAmount))} por ${selectedProduct.name}`,
+                                                        type: 'offer',
+                                                        link: '/mystore'
+                                                    }]);
+
                                                     setOfferSuccess(true);
                                                     setTimeout(() => {
                                                         setOfferSuccess(false);
                                                         setShowOfferModal(false);
                                                         setSelectedProduct(null);
-                                                        setOfferAmount('');
-                                                        setOfferMessage('');
                                                     }, 2000);
                                                 } catch (err) {
                                                     console.error(err);
-                                                    alert('Error al enviar la oferta');
                                                 } finally {
                                                     setSendingOffer(false);
                                                 }
                                             }}
                                             style={{
                                                 flex: 2,
-                                                padding: '15px',
-                                                borderRadius: '15px',
+                                                padding: '18px',
+                                                borderRadius: '20px',
                                                 background: 'var(--secondary)',
                                                 color: 'var(--primary)',
-                                                fontWeight: '800',
+                                                fontWeight: '900',
                                                 fontSize: '14px',
                                                 display: 'flex',
                                                 alignItems: 'center',
                                                 justifyContent: 'center',
-                                                gap: '8px'
+                                                gap: '8px',
+                                                boxShadow: '0 8px 25px rgba(163, 230, 53, 0.4)'
                                             }}
                                         >
                                             {sendingOffer ? <Loader2 size={20} className="animate-spin" /> : <CheckCircle2 size={20} />}
                                             {sendingOffer ? 'ENVIANDO...' : 'ENVIAR OFERTA'}
-                                        </button>
+                                        </motion.button>
                                     </div>
                                 </>
                             ) : (
-                                <div className="animate-fade">
+                                <div style={{ textAlign: 'center', padding: '40px 0' }}>
                                     <div style={{
-                                        width: '60px',
-                                        height: '60px',
-                                        background: 'rgba(163, 230, 53, 0.2)',
+                                        width: '80px',
+                                        height: '80px',
+                                        background: 'rgba(163, 230, 53, 0.1)',
                                         borderRadius: '50%',
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
-                                        margin: '0 auto 20px',
+                                        margin: '0 auto 25px',
                                         color: 'var(--secondary)'
                                     }}>
-                                        <CheckCircle2 size={40} />
+                                        <CheckCircle2 size={40} strokeWidth={3} />
                                     </div>
-                                    <h3 style={{ fontSize: '20px', fontWeight: '800', marginBottom: '10px' }}>¡Oferta Enviada!</h3>
-                                    <p style={{ fontSize: '14px', color: 'var(--text-dim)' }}>
-                                        El vendedor ha sido notificado y te responderá pronto.
+                                    <h3 style={{ fontSize: '24px', fontWeight: '900', color: 'white', marginBottom: '10px' }}>¡Propuesta Enviada!</h3>
+                                    <p style={{ fontSize: '15px', color: 'var(--text-dim)' }}>
+                                        Hemos notificado al vendedor. Te avisaremos cuando responsa.
                                     </p>
                                 </div>
                             )}
                         </motion.div>
-                    </motion.div>
+                    </div>
                 )}
             </AnimatePresence>
-        </div>
+        </div >
     );
 };
 
