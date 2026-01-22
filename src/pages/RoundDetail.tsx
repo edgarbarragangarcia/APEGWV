@@ -13,14 +13,7 @@ interface Round extends Omit<RoundData, 'course_location' | 'status'> {
     handicap?: number;
 }
 
-interface Hole {
-    hole_number: number;
-    par: number;
-    score: number;
-    putts?: number;
-    fairway_hit?: boolean;
-    gir?: boolean;
-}
+
 
 const RoundDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();

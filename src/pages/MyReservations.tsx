@@ -7,12 +7,11 @@ import { Calendar, Clock, MapPin, Loader2 } from 'lucide-react';
 
 interface Reservation {
     id: string;
-    course_name: string;
+    club_id: string | null;
     date: string;
     time: string;
-    status: string;
-    payment_status: string;
-    created_at: string;
+    status: string | null;
+    created_at: string | null;
 }
 
 
@@ -38,7 +37,7 @@ const MyReservations: React.FC<MyReservationsProps> = ({ onRequestSwitchTab }) =
                     .order('created_at', { ascending: false });
 
                 if (error) throw error;
-                setReservations(data || []);
+                setReservations((data as unknown as Reservation[]) || []);
             } catch (err) {
                 console.error('Error fetching reservations:', err);
             } finally {
@@ -82,7 +81,7 @@ const MyReservations: React.FC<MyReservationsProps> = ({ onRequestSwitchTab }) =
                         <Card key={res.id} style={{ padding: '20px' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '15px' }}>
                                 <div>
-                                    <h3 style={{ fontSize: '18px', fontWeight: '700', marginBottom: '5px' }}>{res.course_name}</h3>
+                                    <h3 style={{ fontSize: '18px', fontWeight: '700', marginBottom: '5px' }}>{res.status || 'Reserva de Green Fee'}</h3>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '13px', color: 'var(--text-dim)' }}>
                                         <MapPin size={12} />
                                         <span>Confirmado</span>
@@ -97,7 +96,7 @@ const MyReservations: React.FC<MyReservationsProps> = ({ onRequestSwitchTab }) =
                                     fontWeight: '700',
                                     textTransform: 'uppercase'
                                 }}>
-                                    {res.payment_status === 'paid' ? 'Pagado' : 'Pendiente'}
+                                    {res.status === 'confirmed' ? 'Confirmado' : 'Pendiente'}
                                 </div>
                             </div>
 
