@@ -688,22 +688,22 @@ const Shop: React.FC = () => {
                                         }}
                                         style={{
                                             flex: 1,
-                                            background: 'rgba(163, 230, 53, 0.1)',
+                                            background: 'rgba(163, 230, 53, 0.05)',
                                             color: 'var(--secondary)',
-                                            height: '56px',
-                                            borderRadius: '18px',
-                                            fontWeight: '800',
-                                            fontSize: '12px',
+                                            height: '50px',
+                                            borderRadius: '16px',
+                                            fontWeight: '700',
+                                            fontSize: '11px',
                                             display: 'flex',
                                             alignItems: 'center',
                                             justifyContent: 'center',
-                                            gap: '8px',
-                                            border: '1px solid var(--secondary)',
+                                            gap: '6px',
+                                            border: '1px solid rgba(163, 230, 53, 0.3)',
                                             textTransform: 'uppercase',
-                                            letterSpacing: '0.05em'
+                                            letterSpacing: '0.02em'
                                         }}
                                     >
-                                        <span style={{ fontSize: '20px' }}>🤝</span>
+                                        <span style={{ fontSize: '16px' }}>🤝</span>
                                         OFERTAR
                                     </motion.button>
                                 )}
@@ -721,20 +721,20 @@ const Shop: React.FC = () => {
                                         flex: 1,
                                         background: 'rgba(255,255,255,0.05)',
                                         color: 'white',
-                                        height: '56px',
-                                        borderRadius: '18px',
+                                        height: '50px',
+                                        borderRadius: '16px',
                                         fontWeight: '700',
-                                        fontSize: '12px',
+                                        fontSize: '11px',
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
-                                        gap: '8px',
+                                        gap: '6px',
                                         border: '1px solid rgba(255,255,255,0.1)',
                                         textTransform: 'uppercase',
-                                        letterSpacing: '0.05em'
+                                        letterSpacing: '0.02em'
                                     }}
                                 >
-                                    {addingToCart === selectedProduct.id ? <CheckCircle2 size={18} color="var(--secondary)" /> : <Plus size={18} />}
+                                    {addingToCart === selectedProduct.id ? <CheckCircle2 size={16} color="var(--secondary)" /> : <Plus size={16} />}
                                     {addingToCart === selectedProduct.id ? 'VISTO' : 'CARRITO'}
                                 </motion.button>
 
@@ -763,20 +763,20 @@ const Shop: React.FC = () => {
                                         flex: 1.5,
                                         background: (selectedProduct?.seller_id === user?.id) ? 'rgba(255,255,255,0.1)' : 'var(--secondary)',
                                         color: (selectedProduct?.seller_id === user?.id) ? 'var(--text-dim)' : 'var(--primary)',
-                                        height: '56px',
-                                        borderRadius: '18px',
+                                        height: '50px',
+                                        borderRadius: '16px',
                                         fontWeight: '800',
-                                        fontSize: '13px',
+                                        fontSize: '11px',
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
-                                        gap: '8px',
-                                        boxShadow: (selectedProduct?.seller_id === user?.id) ? 'none' : '0 8px 25px rgba(163, 230, 53, 0.25)',
+                                        gap: '6px',
+                                        boxShadow: (selectedProduct?.seller_id === user?.id) ? 'none' : '0 4px 15px rgba(163, 230, 53, 0.2)',
                                         textTransform: 'uppercase',
-                                        letterSpacing: '0.05em'
+                                        letterSpacing: '0.02em'
                                     }}
                                 >
-                                    <ShoppingCart size={20} />
+                                    <ShoppingCart size={18} />
                                     {(selectedProduct?.seller_id === user?.id) ? 'MI PRODUCTO' : (buying ? '...' : 'COMPRAR YA')}
                                 </motion.button>
                             </div>

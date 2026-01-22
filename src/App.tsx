@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import BottomNav from './components/BottomNav';
 
@@ -51,58 +51,64 @@ const AppContent: React.FC = () => {
     return <div style={{ background: '#0e2f1f', height: '100vh', width: '100%' }} />;
   }
 
+  const location = useLocation();
+  const isRoundPage = location.pathname === '/round';
+
   return (
-    <Router>
-      <div className="app-container">
-        {session && <Navbar />}
+    <div className="app-container">
+      {session && <Navbar />}
 
-        <main className={session ? "page-content container" : ""} style={!session ? { height: '100dvh', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', padding: 0, margin: 0 } : {}}>
-          <Routes>
-            {!session ? (
-              <>
-                <Route path="/auth" element={<Auth />} />
-                <Route path="*" element={<Navigate to="/auth" replace />} />
-              </>
-            ) : (
-              <>
-                <Route path="/" element={<Home />} />
-                <Route path="/round" element={<Round />} />
-                <Route path="/select-course" element={<CourseSelection />} />
-                <Route path="/green-fee" element={<GreenFee />} />
-                <Route path="/green-fee/:courseId" element={<CourseReservation />} />
-                <Route path="/my-reservations" element={<MyReservations />} />
-                <Route path="/shop" element={<Shop />} />
-                <Route path="/tournaments" element={<Tournaments />} />
-                <Route path="/profile" element={<Profile />} />
-                <Route path="/settings" element={<Settings />} />
-                <Route path="/my-store" element={<MyStore />} />
-                <Route path="/my-events" element={<TournamentManager />} />
-                <Route path="/profile/edit" element={<EditProfile />} />
-                <Route path="/profile/stats" element={<EditStats />} />
-                <Route path="/rounds" element={<RoundHistory />} />
-                <Route path="/rounds/:id" element={<RoundDetail />} />
-                <Route path="/rounds/edit/:id" element={<EditRound />} />
-                <Route path="/cart" element={<CartPage />} />
-                <Route path="/checkout" element={<CheckoutPage />} />
-                <Route path="/payment-methods" element={<PaymentMethodsPage />} />
-                <Route path="/notifications" element={<NotificationsPage />} />
-                <Route path="/auth" element={<Navigate to="/" replace />} />
-                <Route path="*" element={<Navigate to="/" replace />} />
-              </>
-            )}
-          </Routes>
-        </main>
+      <main
+        className={`${session ? "page-content container" : ""} ${isRoundPage ? 'round-page-content' : ''}`}
+        style={!session ? { height: '100dvh', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', padding: 0, margin: 0 } : {}}
+      >
+        <Routes>
+          {!session ? (
+            <>
+              <Route path="/auth" element={<Auth />} />
+              <Route path="*" element={<Navigate to="/auth" replace />} />
+            </>
+          ) : (
+            <>
+              <Route path="/" element={<Home />} />
+              <Route path="/round" element={<Round />} />
+              <Route path="/select-course" element={<CourseSelection />} />
+              <Route path="/green-fee" element={<GreenFee />} />
+              <Route path="/green-fee/:courseId" element={<CourseReservation />} />
+              <Route path="/my-reservations" element={<MyReservations />} />
+              <Route path="/shop" element={<Shop />} />
+              <Route path="/tournaments" element={<Tournaments />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/settings" element={<Settings />} />
+              <Route path="/my-store" element={<MyStore />} />
+              <Route path="/my-events" element={<TournamentManager />} />
+              <Route path="/profile/edit" element={<EditProfile />} />
+              <Route path="/profile/stats" element={<EditStats />} />
+              <Route path="/rounds" element={<RoundHistory />} />
+              <Route path="/rounds/:id" element={<RoundDetail />} />
+              <Route path="/rounds/edit/:id" element={<EditRound />} />
+              <Route path="/cart" element={<CartPage />} />
+              <Route path="/checkout" element={<CheckoutPage />} />
+              <Route path="/payment-methods" element={<PaymentMethodsPage />} />
+              <Route path="/notifications" element={<NotificationsPage />} />
+              <Route path="/auth" element={<Navigate to="/" replace />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </>
+          )}
+        </Routes>
+      </main>
 
-        {session && <BottomNav />}
-      </div>
-    </Router>
+      {session && <BottomNav />}
+    </div>
   );
 };
 
 const App: React.FC = () => {
   return (
     <AuthProvider>
-      <AppContent />
+      <Router>
+        <AppContent />
+      </Router>
     </AuthProvider>
   );
 };

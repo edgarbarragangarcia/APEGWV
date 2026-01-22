@@ -188,7 +188,7 @@ const GreenFee: React.FC = () => {
             {/* Área de Scroll */}
             <div style={{
                 position: 'absolute',
-                top: activeTab === 'courses' ? 'calc(env(safe-area-inset-top) + 292px)' : 'calc(env(safe-area-inset-top) + 242px)',
+                top: activeTab === 'courses' ? 'calc(env(safe-area-inset-top) + 305px)' : 'calc(env(safe-area-inset-top) + 242px)',
                 left: '0',
                 right: '0',
                 bottom: 'calc(var(--nav-height))',

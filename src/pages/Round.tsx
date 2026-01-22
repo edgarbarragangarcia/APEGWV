@@ -294,12 +294,13 @@ const Round: React.FC = () => {
         <div className="animate-fade" style={{
             maxWidth: 'var(--app-max-width)',
             margin: '0 auto',
-            height: 'calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 130px)',
+            flex: 1,
             display: 'flex',
             flexDirection: 'column',
             overflow: 'hidden',
             position: 'relative',
-            padding: '0 5px'
+            padding: '10px 10px 0 10px',
+            width: '100%'
         }}>
             <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', flexShrink: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
