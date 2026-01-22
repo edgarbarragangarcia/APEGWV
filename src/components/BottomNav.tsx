@@ -29,7 +29,8 @@ const BottomNav: React.FC = () => {
             background: 'linear-gradient(135deg, rgba(14, 47, 31, 0.95) 0%, rgba(20, 64, 42, 0.95) 100%)',
             backdropFilter: 'blur(15px)',
             borderTop: '1px solid rgba(255, 255, 255, 0.1)',
-            boxShadow: '0 -8px 32px rgba(0, 0, 0, 0.4)'
+            boxShadow: '0 -8px 32px rgba(0, 0, 0, 0.4)',
+            borderRadius: '30px 30px 0 0'
         }}>
             {navItems.map((item) => (
                 <NavLink
