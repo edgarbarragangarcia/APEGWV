@@ -20,7 +20,7 @@ const Round: React.FC = () => {
     const [holeData, setHoleData] = React.useState<any[]>([]);
 
     // Hooks
-    const { beta, gamma, calibrate, requestAccess, isLevel, hasData: sensorsActive } = useGreenReader();
+    const { beta, gamma, calibrate, requestAccess, isLevel, hasData: sensorsActive, isManual, toggleManual, setManualBeta, setManualGamma } = useGreenReader();
     const { calculateDistance } = useGeoLocation();
 
     // Manual sensor activation override
@@ -520,7 +520,7 @@ const Round: React.FC = () => {
                                     transform: `rotate(${-aimRotation}deg)`,
                                     whiteSpace: 'nowrap'
                                 }}>
-                                    {Math.abs(Math.round(gamma))}° {gamma > 0 ? 'R' : 'L'}
+                                    {Math.abs(Math.round(gamma))}° {Math.abs(gamma) < 0.1 ? '' : (gamma > 0 ? 'R' : 'L')}
                                 </span>
                             </div>
                         </div>
@@ -572,6 +572,21 @@ const Round: React.FC = () => {
                     </div>
 
                     <button
+                        onClick={toggleManual}
+                        className="glass"
+                        style={{
+                            padding: '8px 12px',
+                            fontSize: '10px',
+                            background: isManual ? 'var(--secondary)' : 'rgba(255,255,255,0.1)',
+                            color: isManual ? 'var(--primary)' : 'var(--text-dim)',
+                            border: '1px solid transparent',
+                            fontWeight: 'bold'
+                        }}
+                    >
+                        {isManual ? 'MODO MANUAL' : 'MODO SENSOR'}
+                    </button>
+
+                    <button
                         onClick={calibrate}
                         className="glass"
                         style={{
@@ -582,7 +597,7 @@ const Round: React.FC = () => {
                             border: isLevel ? '1px solid var(--secondary)' : '1px solid transparent'
                         }}
                     >
-                        CALIBRAR
+                        RESETEAR
                     </button>
 
                     <button
@@ -602,13 +617,44 @@ const Round: React.FC = () => {
                     </button>
                 </div>
 
-                <div style={{ position: 'absolute', bottom: '20px', left: '20px', background: 'rgba(0,0,0,0.6)', padding: '8px 15px', borderRadius: '20px', fontSize: '12px', display: 'flex', flexDirection: 'column', gap: '2px', borderLeft: `4px solid ${Math.abs(gamma) > 5 ? '#ef4444' : 'var(--secondary)'}` }}>
+                <div style={{ position: 'absolute', bottom: '20px', left: '20px', background: 'rgba(0,0,0,0.6)', padding: '8px 15px', borderRadius: '20px', fontSize: '12px', display: 'flex', flexDirection: 'column', gap: '2px', borderLeft: `4px solid ${Math.abs(gamma) > 5 ? '#ef4444' : 'var(--secondary)'}`, zIndex: 11 }}>
                     <span style={{ fontWeight: '800', color: 'white' }}>{getSlopeIntensity(gamma)}</span>
                     <div style={{ display: 'flex', gap: '10px', opacity: 0.8 }}>
                         <span>Slope: {Math.abs(Math.round(beta))}°</span>
-                        <span>Caída: {Math.abs(Math.round(gamma))}° {gamma > 0 ? 'Dca' : 'Izq'}</span>
+                        <span>Caída: {Math.abs(Math.round(gamma))}° {Math.abs(gamma) < 0.1 ? '' : (gamma > 0 ? 'Dca' : 'Izq')}</span>
                     </div>
                 </div>
+
+                {/* Manual Mode Input Pad */}
+                {isManual && (
+                    <div
+                        style={{
+                            position: 'absolute',
+                            inset: '60px 20px 80px 20px',
+                            background: 'rgba(255,255,255,0.02)',
+                            borderRadius: '30px',
+                            border: '1px dashed rgba(255,255,255,0.1)',
+                            zIndex: 5,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            touchAction: 'none'
+                        }}
+                        onPointerMove={(e) => {
+                            if (e.buttons > 0) {
+                                const rect = e.currentTarget.getBoundingClientRect();
+                                const x = ((e.clientX - rect.left) / rect.width) * 2 - 1; // -1 to 1
+                                const y = ((e.clientY - rect.top) / rect.height) * 2 - 1; // -1 to 1
+                                setManualGamma(x * 15); // Max 15 degrees
+                                setManualBeta(y * 15);
+                            }
+                        }}
+                    >
+                        <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.3)', pointerEvents: 'none' }}>
+                            DESLIZA PARA AJUSTAR CAÍDA
+                        </span>
+                    </div>
+                )}
 
                 {/* Sensor Activation Overlay */}
                 {isNearGreen && !sensorsActive && (

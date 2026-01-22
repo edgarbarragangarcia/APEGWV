@@ -13,7 +13,12 @@ export const useGreenReader = () => {
     // Smoothing factor (Low-Pass Filter)
     const ALPHA = 0.15; // 0 to 1. Lower = smoother but slower.
 
+    const [isManual, setIsManual] = useState(false);
+    const [manualBeta, setManualBeta] = useState(0);
+    const [manualGamma, setManualGamma] = useState(0);
+
     const handleOrientation = (event: DeviceOrientationEvent) => {
+        if (isManual) return;
         const rawB = event.beta || 0;
         const rawG = event.gamma || 0;
 
@@ -62,7 +67,9 @@ export const useGreenReader = () => {
                     window.addEventListener('deviceorientation', handleOrientation);
                     return true;
                 } else {
-                    alert('Permiso denegado para sensores. Por favor habilita los sensores en Configuración.');
+                    // Si falla el sensor, ofrecemos modo manual automáticamente
+                    setIsManual(true);
+                    setPermissionGranted(false);
                     return false;
                 }
             } else {
@@ -73,6 +80,7 @@ export const useGreenReader = () => {
             }
         } catch (error) {
             console.error('Unexpected error requesting sensor access:', error);
+            setIsManual(true);
             return false;
         }
     };
@@ -91,16 +99,30 @@ export const useGreenReader = () => {
         return () => {
             window.removeEventListener('deviceorientation', handleOrientation);
         };
-    }, []);
+    }, [isManual]);
 
     const calibrate = () => {
-        setCalibratedBeta(beta);
-        setCalibratedGamma(gamma);
+        if (isManual) {
+            setManualBeta(0);
+            setManualGamma(0);
+        } else {
+            setCalibratedBeta(beta);
+            setCalibratedGamma(gamma);
+        }
+    };
+
+    const toggleManual = () => {
+        setIsManual(!isManual);
+        if (!isManual) {
+            // Reset values when entering manual mode
+            setManualBeta(0);
+            setManualGamma(0);
+        }
     };
 
     // Derived values
-    const currentBeta = beta - calibratedBeta;
-    const currentGamma = gamma - calibratedGamma;
+    const currentBeta = isManual ? manualBeta : (beta - calibratedBeta);
+    const currentGamma = isManual ? manualGamma : (gamma - calibratedGamma);
     const isLevel = Math.abs(currentBeta) < 2 && Math.abs(currentGamma) < 2;
 
     return {
@@ -112,6 +134,10 @@ export const useGreenReader = () => {
         hasData,
         isLevel,
         calibrate,
-        requestAccess
+        requestAccess,
+        isManual,
+        toggleManual,
+        setManualBeta,
+        setManualGamma
     };
 };
