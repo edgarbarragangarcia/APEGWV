@@ -6,7 +6,7 @@ import type { GolfCourse } from '../data/courses';
 import { supabase } from '../services/SupabaseManager';
 import { useGeoLocation } from '../hooks/useGeoLocation';
 import { fetchWeather, type WeatherData } from '../services/WeatherService';
-import { Wind, Navigation, Info } from 'lucide-react';
+import { Wind, Navigation } from 'lucide-react';
 import { motion } from 'framer-motion';
 const getWindDirection = (degrees?: number) => {
     if (degrees === undefined) return 'Variable';
@@ -474,9 +474,14 @@ const Round: React.FC = () => {
                 </Card>
 
                 <Card style={{ marginBottom: 0, padding: '10px', background: 'linear-gradient(135deg, rgba(163, 230, 53, 0.1), rgba(163, 230, 53, 0.02))', border: '1px solid rgba(163, 230, 53, 0.2)', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <Info size={14} color="var(--secondary)" />
+                    <div style={{ color: 'var(--secondary)' }}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M18 3L8 13" />
+                            <path d="M7 14c-1.5 1-2.5 2.5-1 4.5s3.5 0.5 4.5-1" />
+                        </svg>
+                    </div>
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
-                        <span style={{ fontSize: '9px', color: 'var(--text-dim)', fontWeight: '600' }}>SUGERIDO</span>
+                        <span style={{ fontSize: '9px', color: 'var(--text-dim)', fontWeight: '600' }}>PALO SUGERIDO</span>
                         <div style={{ fontSize: '13px', fontWeight: '800', color: 'white' }}>{getClubRecommendation(distanceToHole, weather?.wind, getWindDirection(weather?.windDirection))}</div>
                     </div>
                 </Card>
