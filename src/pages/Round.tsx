@@ -20,7 +20,7 @@ const Round: React.FC = () => {
     const [holeData, setHoleData] = React.useState<any[]>([]);
 
     // Hooks
-    const { beta, gamma, calibrate, requestAccess, isLevel, hasData: sensorsActive, isManual, toggleManual, setManualBeta, setManualGamma } = useGreenReader();
+    const { beta, gamma, requestAccess, isLevel, hasData: sensorsActive, isManual, toggleManual, setManualBeta, setManualGamma } = useGreenReader();
     const { calculateDistance } = useGeoLocation();
 
     // Manual sensor activation override
@@ -485,45 +485,6 @@ const Round: React.FC = () => {
                             />
                         )}
 
-                        {/* Red Arrow (Aim Line) - Originates from Ball */}
-                        <div style={{
-                            position: 'absolute',
-                            bottom: '50%',
-                            left: '50%',
-                            width: '2px',
-                            height: '180px',
-                            background: 'transparent',
-                            transformOrigin: 'bottom center',
-                            transform: `translateX(-50%) rotate(${aimRotation}deg)`,
-                            transition: 'transform 0.1s ease-out',
-                            zIndex: 1,
-                            pointerEvents: 'none'
-                        }}>
-                            <div style={{
-                                width: '100%',
-                                height: '100%',
-                                background: 'linear-gradient(to top, #ef4444, transparent)',
-                                opacity: 0.8,
-                                position: 'relative'
-                            }}>
-                                {/* Degree indicator on arrow */}
-                                <span style={{
-                                    position: 'absolute',
-                                    top: '20px',
-                                    left: '5px',
-                                    fontSize: '10px',
-                                    color: '#ef4444',
-                                    fontWeight: 'bold',
-                                    background: 'rgba(0,0,0,0.4)',
-                                    padding: '1px 4px',
-                                    borderRadius: '3px',
-                                    transform: `rotate(${-aimRotation}deg)`,
-                                    whiteSpace: 'nowrap'
-                                }}>
-                                    {Math.abs(Math.round(gamma))}° {Math.abs(gamma) < 0.1 ? '' : (gamma > 0 ? 'R' : 'L')}
-                                </span>
-                            </div>
-                        </div>
 
                         {/* Blue Curve (Break Hint) */}
                         {Math.abs(gamma) > 0.5 && (
@@ -586,19 +547,6 @@ const Round: React.FC = () => {
                         {isManual ? 'MODO MANUAL' : 'MODO SENSOR'}
                     </button>
 
-                    <button
-                        onClick={calibrate}
-                        className="glass"
-                        style={{
-                            padding: '8px 12px',
-                            fontSize: '10px',
-                            background: isLevel ? 'rgba(163, 230, 53, 0.2)' : 'rgba(255,255,255,0.1)',
-                            color: isLevel ? 'var(--secondary)' : 'var(--text-dim)',
-                            border: isLevel ? '1px solid var(--secondary)' : '1px solid transparent'
-                        }}
-                    >
-                        RESETEAR
-                    </button>
 
                     <button
                         onClick={() => setIsSimulatingPutt(true)}

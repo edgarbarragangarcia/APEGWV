@@ -5,13 +5,10 @@ import { useNavigate } from 'react-router-dom';
 import type { Database } from '../types/database.types';
 
 type Profile = Database['public']['Tables']['profiles']['Row'];
-// Stats are now part of the profiles table
-type PlayerStats = Profile;
 
 const Profile: React.FC = () => {
     const navigate = useNavigate();
     const [profile, setProfile] = useState<Profile | null>(null);
-    const [stats, setStats] = useState<PlayerStats | null>(null);
     const [loggingOut, setLoggingOut] = useState(false);
 
     useEffect(() => {
@@ -30,10 +27,6 @@ const Profile: React.FC = () => {
                 if (profileError) throw profileError;
                 setProfile(profileData);
 
-                // Set stats from the same profile data to keep the UI logic working
-                if (profileData) {
-                    setStats(profileData as any);
-                }
             } catch (err) {
                 console.error('Error fetching profile:', err);
             }
@@ -154,21 +147,6 @@ const Profile: React.FC = () => {
                 </p>
             </div>
 
-            {/* Stats Summary Grid */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '30px' }}>
-                <div onClick={() => navigate('/profile/stats')} className="glass" style={{ padding: '15px 10px', textAlign: 'center', cursor: 'pointer', border: '1px solid rgba(163, 230, 53, 0.2)' }}>
-                    <div style={{ fontSize: '20px', fontWeight: '800', color: 'var(--secondary)' }}>{stats?.average_score || '--'}</div>
-                    <div style={{ fontSize: '9px', color: 'var(--text-dim)', fontWeight: '700', textTransform: 'uppercase', marginTop: '4px' }}>Avg Score</div>
-                </div>
-                <div onClick={() => navigate('/profile/stats')} className="glass" style={{ padding: '15px 10px', textAlign: 'center', cursor: 'pointer', border: '1px solid rgba(163, 230, 53, 0.2)' }}>
-                    <div style={{ fontSize: '20px', fontWeight: '800', color: 'var(--secondary)' }}>{stats?.putts_avg || '--'}</div>
-                    <div style={{ fontSize: '9px', color: 'var(--text-dim)', fontWeight: '700', textTransform: 'uppercase', marginTop: '4px' }}>Putts Avg</div>
-                </div>
-                <div onClick={() => navigate('/profile/stats')} className="glass" style={{ padding: '15px 10px', textAlign: 'center', cursor: 'pointer', border: '1px solid rgba(163, 230, 53, 0.2)' }}>
-                    <div style={{ fontSize: '20px', fontWeight: '800', color: 'var(--secondary)' }}>{stats?.fairways_hit_rate ? `${stats.fairways_hit_rate}%` : '--'}</div>
-                    <div style={{ fontSize: '9px', color: 'var(--text-dim)', fontWeight: '700', textTransform: 'uppercase', marginTop: '4px' }}>Fairways</div>
-                </div>
-            </div>
 
             {/* Fixed Personal Data Card */}
             <div className="glass" style={{ padding: '20px', marginBottom: '25px', background: 'rgba(255,255,255,0.02)' }}>
