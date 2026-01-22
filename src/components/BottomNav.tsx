@@ -14,21 +14,22 @@ const BottomNav: React.FC = () => {
     return (
         <nav style={{
             position: 'fixed',
-            bottom: 'calc(20px + var(--safe-bottom))',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            width: 'calc(100% - 40px)',
-            maxWidth: 'calc(var(--app-max-width) - 40px)',
-            height: '70px',
+            bottom: '0',
+            left: '0',
+            right: '0',
+            width: '100%',
+            maxWidth: 'var(--app-max-width)',
+            margin: '0 auto',
+            height: 'calc(70px + var(--safe-bottom))',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-around',
             zIndex: 1000,
-            padding: '0 10px',
-            borderRadius: '25px',
-            background: '#123524', // Bolder, solid green background to remove transparency
-            border: '1px solid rgba(255, 255, 255, 0.15)',
-            boxShadow: '0 10px 30px rgba(0,0,0,0.5)'
+            padding: '0 10px var(--safe-bottom) 10px',
+            background: 'linear-gradient(135deg, rgba(14, 47, 31, 0.95) 0%, rgba(20, 64, 42, 0.95) 100%)',
+            backdropFilter: 'blur(15px)',
+            borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+            boxShadow: '0 -8px 32px rgba(0, 0, 0, 0.4)'
         }}>
             {navItems.map((item) => (
                 <NavLink
