@@ -33,6 +33,23 @@ const Round: React.FC = () => {
     const [weather, setWeather] = React.useState<WeatherData | null>(null);
     const [roundId, setRoundId] = React.useState<string | null>(null);
 
+    const caddiePhrases = [
+        "¡Buen tiro! Mantén este ritmo y el par es tuyo.",
+        "Ojo con el viento, apunta un poco más a la izquierda hoy.",
+        "Confía en tu swing, relájate y el palo hará el trabajo.",
+        "Este es un gran día para un Birdie. ¡A por ello!",
+        "Mantén la calma, el próximo hoyo es una nueva oportunidad.",
+        "Visualiza la caída y confía en tu instinto."
+    ];
+    const [caddieMessage, setCaddieMessage] = React.useState(caddiePhrases[0]);
+
+    React.useEffect(() => {
+        const interval = setInterval(() => {
+            setCaddieMessage(caddiePhrases[Math.floor(Math.random() * caddiePhrases.length)]);
+        }, 15000);
+        return () => clearInterval(interval);
+    }, []);
+
     const currentStrokes = strokes[currentHole] || 0;
 
     // Datos del hoyo actual
@@ -277,10 +294,12 @@ const Round: React.FC = () => {
         <div className="animate-fade" style={{
             maxWidth: 'var(--app-max-width)',
             margin: '0 auto',
-            height: 'calc(100dvh - var(--nav-height) - env(safe-area-inset-top) - 20px)',
+            height: 'calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 130px)',
             display: 'flex',
             flexDirection: 'column',
-            overflow: 'hidden'
+            overflow: 'hidden',
+            position: 'relative',
+            padding: '0 5px'
         }}>
             <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', flexShrink: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -427,26 +446,59 @@ const Round: React.FC = () => {
                 </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '10px', flexShrink: 0 }}>
-                <Card style={{ marginBottom: 0, padding: '10px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '5px' }}>
-                        <Wind size={14} color="var(--secondary)" />
-                        <span style={{ fontSize: '10px', color: 'var(--text-dim)', fontWeight: '600' }}>VIENTO</span>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '5px' }}>
-                        <span style={{ fontSize: '22px', fontWeight: '800' }}>{weather?.wind || '--'}</span>
-                        <span style={{ fontSize: '10px', color: 'var(--text-dim)' }}>km/h</span>
+            <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '10px', marginBottom: '10px', flexShrink: 0 }}>
+                <Card style={{ marginBottom: 0, padding: '10px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <Wind size={14} color="var(--secondary)" />
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <span style={{ fontSize: '9px', color: 'var(--text-dim)', fontWeight: '600' }}>VIENTO</span>
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
+                            <span style={{ fontSize: '18px', fontWeight: '800' }}>{weather?.wind || '--'}</span>
+                            <span style={{ fontSize: '9px', color: 'var(--text-dim)' }}>km/h</span>
+                        </div>
                     </div>
                 </Card>
 
-                <Card style={{ marginBottom: 0, padding: '10px', background: 'linear-gradient(135deg, rgba(163, 230, 53, 0.1), rgba(163, 230, 53, 0.02))', border: '1px solid rgba(163, 230, 53, 0.2)' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '5px' }}>
-                        <Info size={14} color="var(--secondary)" />
-                        <span style={{ fontSize: '10px', color: 'var(--text-dim)', fontWeight: '600' }}>SUGERIDO</span>
+                <Card style={{ marginBottom: 0, padding: '10px', background: 'linear-gradient(135deg, rgba(163, 230, 53, 0.1), rgba(163, 230, 53, 0.02))', border: '1px solid rgba(163, 230, 53, 0.2)', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <Info size={14} color="var(--secondary)" />
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <span style={{ fontSize: '9px', color: 'var(--text-dim)', fontWeight: '600' }}>SUGERIDO</span>
+                        <div style={{ fontSize: '13px', fontWeight: '800', color: 'white' }}>{getClubRecommendation(distanceToHole, weather?.wind, getWindDirection(weather?.windDirection))}</div>
                     </div>
-                    <div style={{ fontSize: '14px', fontWeight: '800', color: 'white', lineHeight: '1.2' }}>{getClubRecommendation(distanceToHole, weather?.wind, getWindDirection(weather?.windDirection))}</div>
                 </Card>
             </div>
+
+            {/* AI Caddie Card */}
+            <Card style={{
+                flex: 1,
+                marginBottom: 0,
+                padding: '12px 15px',
+                background: 'rgba(163, 230, 53, 0.05)',
+                border: '1px dashed rgba(163, 230, 53, 0.3)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '15px',
+                minHeight: '60px'
+            }}>
+                <div style={{
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: '50%',
+                    background: 'var(--secondary)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                    boxShadow: '0 0 15px rgba(163, 230, 53, 0.3)'
+                }}>
+                    <Navigation size={20} color="var(--primary)" />
+                </div>
+                <div style={{ textAlign: 'left' }}>
+                    <div style={{ fontSize: '10px', fontWeight: '900', color: 'var(--secondary)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '2px' }}>Caddie Virtual</div>
+                    <p style={{ fontSize: '12px', color: 'white', fontWeight: '500', lineHeight: '1.3', fontStyle: 'italic' }}>
+                        "{caddieMessage}"
+                    </p>
+                </div>
+            </Card>
 
             {showFinishModal && (
                 <div style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'flex-start', background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(8px)' }} onClick={() => setShowFinishModal(false)}>
