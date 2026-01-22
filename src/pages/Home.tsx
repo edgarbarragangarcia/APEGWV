@@ -10,6 +10,7 @@ const Home: React.FC = () => {
     const [profile, setProfile] = useState<any>(null);
     const [roundCount, setRoundCount] = useState<number>(0);
     const [featuredProducts, setFeaturedProducts] = useState<any[]>([]);
+    const [tournaments, setTournaments] = useState<any[]>([]);
 
     useEffect(() => {
         const fetchHomeData = async () => {
@@ -51,6 +52,17 @@ const Home: React.FC = () => {
                         price: typeof p.price === 'string' ? parseFloat(p.price) : p.price
                     })));
                 }
+
+                // Fetch Real Tournaments
+                const { data: tournamentsData } = await supabase
+                    .from('tournaments')
+                    .select('*')
+                    .order('date', { ascending: true })
+                    .limit(3);
+
+                if (tournamentsData) {
+                    setTournaments(tournamentsData);
+                }
             } catch (err) {
                 console.error('Error fetching home data:', err);
             }
@@ -76,7 +88,7 @@ const Home: React.FC = () => {
             {/* Header y Stats Fijos */}
             <div style={{
                 position: 'absolute',
-                top: 'calc(env(safe-area-inset-top) + 75px)',
+                top: 'calc(env(safe-area-inset-top) + 82px)',
                 left: '20px',
                 right: '20px',
                 zIndex: 900,
@@ -127,7 +139,7 @@ const Home: React.FC = () => {
             {/* Area de Scroll para el resto del contenido */}
             <div style={{
                 position: 'absolute',
-                top: 'calc(env(safe-area-inset-top) + 270px)',
+                top: 'calc(env(safe-area-inset-top) + 245px)',
                 left: '0',
                 right: '0',
                 bottom: 'calc(var(--nav-height) + 10px)',
@@ -275,15 +287,35 @@ const Home: React.FC = () => {
                             <div style={{ fontSize: '13px', color: 'var(--text-dim)' }}>Inscríbete antes del cierre</div>
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                            {[1, 2].map(i => (
-                                <div key={i} style={{ display: 'flex', gap: '15px', alignItems: 'center', padding: '10px', borderRadius: '12px', background: 'rgba(255,255,255,0.03)' }}>
-                                    <div style={{ width: '50px', height: '50px', background: 'var(--primary-light)', borderRadius: '10px' }} />
-                                    <div>
-                                        <div style={{ fontWeight: '500', fontSize: '14px' }}>Open de Madrid 2024</div>
-                                        <div style={{ fontSize: '12px', color: 'var(--text-dim)' }}>25 May • Real Club Vereda</div>
+                            {tournaments.length > 0 ? (
+                                tournaments.map(tournament => (
+                                    <div
+                                        key={tournament.id}
+                                        onClick={() => navigate('/tournaments')}
+                                        style={{ display: 'flex', gap: '15px', alignItems: 'center', padding: '10px', borderRadius: '12px', background: 'rgba(255,255,255,0.03)', cursor: 'pointer' }}
+                                    >
+                                        <div style={{
+                                            width: '50px',
+                                            height: '50px',
+                                            background: 'var(--primary-light)',
+                                            borderRadius: '10px',
+                                            backgroundImage: tournament.image_url ? `url(${tournament.image_url})` : 'none',
+                                            backgroundSize: 'cover',
+                                            backgroundPosition: 'center'
+                                        }} />
+                                        <div>
+                                            <div style={{ fontWeight: '500', fontSize: '14px' }}>{tournament.name}</div>
+                                            <div style={{ fontSize: '12px', color: 'var(--text-dim)' }}>
+                                                {new Date(tournament.date).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })} • {tournament.club || tournament.location}
+                                            </div>
+                                        </div>
                                     </div>
+                                ))
+                            ) : (
+                                <div style={{ fontSize: '14px', color: 'var(--text-dim)', textAlign: 'center', padding: '20px' }}>
+                                    No hay torneos programados próximamente.
                                 </div>
-                            ))}
+                            )}
                         </div>
                     </Card>
                 </div>

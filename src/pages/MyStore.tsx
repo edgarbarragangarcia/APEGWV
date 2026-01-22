@@ -524,7 +524,7 @@ const MyStore: React.FC = () => {
 
             <div style={{
                 position: 'absolute',
-                top: 'calc(env(safe-area-inset-top) + 75px)',
+                top: 'calc(env(safe-area-inset-top) + 82px)',
                 left: '0',
                 right: '0',
                 width: '100%',
@@ -642,7 +642,7 @@ const MyStore: React.FC = () => {
 
             <div style={{
                 position: 'absolute',
-                top: 'calc(env(safe-area-inset-top) + 265px)',
+                top: 'calc(env(safe-area-inset-top) + 272px)',
                 left: '0',
                 right: '0',
                 bottom: 'calc(var(--nav-height))',

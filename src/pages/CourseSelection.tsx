@@ -72,7 +72,7 @@ const CourseSelection: React.FC = () => {
             {/* Header Fijo - Selecciona tu Campo */}
             <div style={{
                 position: 'absolute',
-                top: 'calc(env(safe-area-inset-top) + 75px)', // Reducido de 90px a 75px
+                top: 'calc(env(safe-area-inset-top) + 82px)', // Reducido de 90px a 75px
                 left: '0',
                 right: '0',
                 width: '100%',
@@ -149,7 +149,7 @@ const CourseSelection: React.FC = () => {
             {/* Área de Scroll - SOLO PARA LA LISTA DE CAMPOS */}
             <div style={{
                 position: 'absolute',
-                top: 'calc(env(safe-area-inset-top) + 285px)', // Reducido de 310px a 285px para acompañar la subida
+                top: 'calc(env(safe-area-inset-top) + 292px)', // Reducido de 310px a 285px para acompañar la subida
                 left: '0',
                 right: '0',
                 bottom: 'calc(var(--nav-height))',
