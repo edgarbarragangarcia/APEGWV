@@ -313,9 +313,10 @@ const Round: React.FC = () => {
             overflow: 'hidden',
             position: 'relative',
             padding: '10px 10px 0 10px',
-            width: '100%'
+            width: '100%',
+            justifyContent: 'space-between'
         }}>
-            <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', flexShrink: 0 }}>
+            <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', flexShrink: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <div style={{ padding: '8px', border: '1px solid var(--glass-border)', borderRadius: '10px' }}>
                         <History size={20} />
@@ -328,7 +329,7 @@ const Round: React.FC = () => {
                 <button onClick={() => setShowFinishModal(true)} style={{ color: 'var(--secondary)' }}>Finalizar</button>
             </header>
 
-            <div className="glass" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 25px', marginBottom: '10px', flexShrink: 0 }}>
+            <div className="glass" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 25px', marginBottom: '8px', flexShrink: 0 }}>
                 <button onClick={() => handleHoleChange('prev')} disabled={currentHole === 1} style={{ opacity: currentHole === 1 ? 0.3 : 1 }}><ChevronLeft /></button>
                 <div style={{ textAlign: 'center' }}>
                     <span style={{ fontSize: '14px', color: 'var(--secondary)', fontWeight: '600' }}>HOYO</span>
@@ -338,7 +339,7 @@ const Round: React.FC = () => {
                 <button onClick={() => handleHoleChange('next')} disabled={currentHole === 18} style={{ opacity: currentHole === 18 ? 0.3 : 1 }}><ChevronRight /></button>
             </div>
 
-            <div style={{ marginBottom: '15px', padding: '0 10px', flexShrink: 0 }}>
+            <div style={{ marginBottom: '10px', padding: '0 10px', flexShrink: 0 }}>
                 <div style={{ display: 'flex', justifyContent: 'flex-start', gap: '15px', overflowX: 'auto', paddingBottom: '15px', paddingLeft: '10px', paddingRight: '10px', scrollSnapType: 'x proximity', WebkitOverflowScrolling: 'touch' }}>
                     {[
                         { label: 'Eagle', diff: -2, color: '#f59e0b' },
@@ -412,14 +413,14 @@ const Round: React.FC = () => {
                     </div>
                 </div>
 
-                <div style={{ textAlign: 'center', marginTop: '10px' }}>
+                <div style={{ textAlign: 'center', marginTop: '6px' }}>
                     <div style={{ fontSize: '14px', color: 'var(--text-dim)', fontWeight: '500' }}>
                         Puntaje: <span style={{ color: 'white', fontWeight: '800' }}>{currentStrokes === 0 ? 'PENDIENTE' : getScoreTerm(currentHoleInfo.par, currentStrokes)}</span>
                     </div>
                 </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr 1fr', gap: '10px', marginBottom: '10px', alignItems: 'center', flexShrink: 0 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr 1fr', gap: '8px', marginBottom: '8px', alignItems: 'center', flexShrink: 0 }}>
                 <div className="glass flex-center" style={{ height: '80px', flexDirection: 'column' }}>
                     <span style={{ fontSize: '11px', color: 'var(--text-dim)' }}>FRONT</span>
                     <span style={{ fontSize: '20px', fontWeight: '700' }}>{distanceToHole ? Math.max(0, distanceToHole - 15) : (140 + currentHole * 2)}</span>
@@ -460,7 +461,7 @@ const Round: React.FC = () => {
                 </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '10px', marginBottom: '10px', flexShrink: 0 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '8px', marginBottom: '8px', flexShrink: 0 }}>
                 <Card style={{ marginBottom: 0, padding: '10px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', gap: '12px' }}>
                     <Wind size={14} color="var(--secondary)" />
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -484,13 +485,13 @@ const Round: React.FC = () => {
             {/* AI Caddie Card */}
             <Card style={{
                 marginBottom: 0,
-                padding: '8px 15px',
+                padding: '20px 22px',
                 background: 'rgba(163, 230, 53, 0.05)',
                 border: '1px dashed rgba(163, 230, 53, 0.3)',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '12px',
-                minHeight: '45px'
+                minHeight: '90px'
             }}>
                 <div style={{
                     width: '32px',
@@ -506,8 +507,8 @@ const Round: React.FC = () => {
                     <Navigation size={16} color="var(--primary)" />
                 </div>
                 <div style={{ textAlign: 'left' }}>
-                    <div style={{ fontSize: '10px', fontWeight: '900', color: 'var(--secondary)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '2px' }}>Caddie Virtual</div>
-                    <p style={{ fontSize: '12px', color: 'white', fontWeight: '500', lineHeight: '1.3', fontStyle: 'italic' }}>
+                    <div style={{ fontSize: '13px', fontWeight: '900', color: 'var(--secondary)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}>Caddie Virtual</div>
+                    <p style={{ fontSize: '15px', color: 'white', fontWeight: '500', lineHeight: '1.4', fontStyle: 'italic' }}>
                         "{caddieMessage}"
                     </p>
                 </div>

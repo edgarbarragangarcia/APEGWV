@@ -34,14 +34,6 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     useEffect(() => {
         let channel: any = null;
 
-        const fetchInitial = async () => {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) {
-                await fetchNotifications();
-                subscribe(session.user.id);
-            }
-        };
-
         const subscribe = (userId: string) => {
             if (channel) {
                 supabase.removeChannel(channel);
@@ -71,14 +63,12 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
                     if (status === 'SUBSCRIBED') {
                         console.log('🔔 Notificaciones: Suscrito con éxito');
                     } else if (status === 'TIMED_OUT') {
-                        console.error('🔔 Notificaciones: Tiempo de espera agotado');
+                        console.warn('🔔 Notificaciones: Tiempo de espera agotado');
                     } else if (status === 'CHANNEL_ERROR') {
-                        console.error('🔔 Notificaciones: Error en el canal');
+                        console.warn('🔔 Notificaciones: Error en el canal (reintentando...)');
                     }
                 });
         };
-
-        fetchInitial();
 
         const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
             if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session) {

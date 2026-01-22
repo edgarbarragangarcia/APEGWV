@@ -55,12 +55,22 @@ const AppContent: React.FC = () => {
   const isRoundPage = location.pathname === '/round';
 
   return (
-    <div className="app-container">
+    <div
+      className="app-container"
+      style={{
+        height: '100dvh',
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden',
+        position: 'fixed',
+        inset: 0
+      }}
+    >
       {session && <Navbar />}
 
       <main
         className={`${session ? "page-content container" : ""} ${isRoundPage ? 'round-page-content' : ''}`}
-        style={!session ? { height: '100dvh', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', padding: 0, margin: 0 } : {}}
+        style={!session ? { flex: 1, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', padding: 0, margin: 0 } : { flex: 1, overflow: isRoundPage ? 'hidden' : 'auto' }}
       >
         <Routes>
           {!session ? (
