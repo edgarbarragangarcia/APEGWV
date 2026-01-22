@@ -765,7 +765,7 @@ const Shop: React.FC = () => {
                             padding: '20px',
                             display: 'flex',
                             flexDirection: 'column',
-                            overflowY: 'auto',
+                            overflow: 'hidden',
                             paddingBottom: '100px'
                         }}>
                             <div style={{ marginBottom: '15px' }}>
