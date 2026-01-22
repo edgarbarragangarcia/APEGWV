@@ -53,7 +53,25 @@ const PageHeader: React.FC<PageHeaderProps> = ({
                     </button>
                 )}
                 <div>
-                    <h1 style={{ fontSize: '22px', fontWeight: '800', margin: 0, lineHeight: '1.2' }}>{title}</h1>
+                    <h1 style={{
+                        fontSize: '22px',
+                        fontWeight: '900',
+                        margin: 0,
+                        lineHeight: '1.2',
+                        textTransform: 'none' // Allow manual capitalization or use specific casing
+                    }}>
+                        {(() => {
+                            const words = title.split(' ');
+                            if (words.length <= 1) return <span style={{ color: 'white' }}>{title}</span>;
+                            return (
+                                <>
+                                    <span style={{ color: 'white' }}>{words[0]} </span>
+                                    <span style={{ color: 'var(--secondary)' }}>{words[1]}</span>
+                                    {words.length > 2 && <span style={{ color: 'white' }}> {words.slice(2).join(' ')}</span>}
+                                </>
+                            );
+                        })()}
+                    </h1>
                     {subtitle && <p style={{ fontSize: '13px', color: 'var(--text-dim)', margin: 0, marginTop: '2px' }}>{subtitle}</p>}
                 </div>
             </div>

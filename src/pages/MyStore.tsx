@@ -628,7 +628,17 @@ const MyStore: React.FC = () => {
                         letterSpacing: '-1px',
                         textShadow: '0 10px 20px rgba(0,0,0,0.3)'
                     }}>
-                        {sellerProfile.store_name}
+                        {(() => {
+                            const words = sellerProfile.store_name?.split(' ') || [];
+                            if (words.length <= 1) return <span style={{ color: 'white' }}>{sellerProfile.store_name}</span>;
+                            return (
+                                <>
+                                    <span style={{ color: 'white' }}>{words[0]} </span>
+                                    <span style={{ color: 'var(--secondary)' }}>{words[1]}</span>
+                                    {words.length > 2 && <span style={{ color: 'white' }}> {words.slice(2).join(' ')}</span>}
+                                </>
+                            );
+                        })()}
                     </h1>
                 </div>
 
@@ -1191,7 +1201,9 @@ const MyStore: React.FC = () => {
                 ) : activeTab === 'orders' ? (
                     <div className="animate-fade">
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-                            <h2 style={{ fontSize: '18px', fontWeight: '800' }}>Ventas Recientes</h2>
+                            <h2 style={{ fontSize: '18px', fontWeight: '900', color: 'white' }}>
+                                Ventas <span style={{ color: 'var(--secondary)' }}>Recientes</span>
+                            </h2>
                             <div style={{ fontSize: '12px', color: 'var(--text-dim)', fontWeight: '600' }}>{orders.length} pedidos</div>
                         </div>
                         {orders.length === 0 ? (
@@ -1358,7 +1370,9 @@ const MyStore: React.FC = () => {
                     </div>
                 ) : activeTab === 'offers' ? (
                     <div className="animate-fade">
-                        <h2 style={{ fontSize: '20px', fontWeight: '700', marginBottom: '15px' }}>Ofertas Recibidas</h2>
+                        <h2 style={{ fontSize: '18px', fontWeight: '900', marginBottom: '15px', color: 'white' }}>
+                            Ofertas <span style={{ color: 'var(--secondary)' }}>Recibidas</span>
+                        </h2>
                         {offers.length === 0 ? (
                             <div className="glass" style={{ padding: '60px 20px', textAlign: 'center' }}>
                                 <Handshake size={48} color="var(--text-dim)" style={{ marginBottom: '15px', opacity: 0.3 }} />
@@ -1531,7 +1545,9 @@ const MyStore: React.FC = () => {
                 ) : (
                     <div className="animate-fade">
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '15px' }}>
-                            <h2 style={{ fontSize: '20px', fontWeight: '700' }}>Perfil de Marketplace</h2>
+                            <h2 style={{ fontSize: '18px', fontWeight: '900', color: 'white' }}>
+                                Perfil <span style={{ color: 'var(--secondary)' }}>Marketplace</span>
+                            </h2>
                             {isEditingProfile && (
                                 <button
                                     onClick={() => {

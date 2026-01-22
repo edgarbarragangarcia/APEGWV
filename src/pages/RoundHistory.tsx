@@ -92,7 +92,9 @@ const RoundHistory: React.FC = () => {
                 <button onClick={() => navigate('/')} style={{ background: 'none', border: 'none', color: 'var(--text)' }}>
                     <ArrowLeft size={24} />
                 </button>
-                <h1 style={{ fontSize: '24px', margin: 0 }}>Historial de Rondas</h1>
+                <h1 style={{ fontSize: '24px', fontWeight: '900', margin: 0, color: 'white' }}>
+                    Historial <span style={{ color: 'var(--secondary)' }}>de</span> Rondas
+                </h1>
             </div>
 
             {loading ? (

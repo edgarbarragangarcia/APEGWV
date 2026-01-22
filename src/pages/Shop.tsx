@@ -195,7 +195,7 @@ const Shop: React.FC = () => {
                     marginBottom: '15px'
                 }}>
                     <div>
-                        <h1 style={{ fontSize: '28px', fontWeight: '800', marginBottom: '5px' }}>Marketplace</h1>
+                        <h1 style={{ fontSize: '28px', fontWeight: '900', marginBottom: '5px', color: 'white' }}>Marketplace</h1>
                         <p style={{ color: 'var(--text-dim)', fontSize: '14px' }}>Equipamiento premium de la comunidad</p>
                     </div>
                     {totalItems > 0 && (
@@ -498,7 +498,9 @@ const Shop: React.FC = () => {
                     </div>
                 ) : (
                     <div className="animate-fade" style={{ paddingBottom: '20px' }}>
-                        <h2 style={{ fontSize: '18px', fontWeight: '900', marginBottom: '12px', marginTop: '30px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Mis Ofertas</h2>
+                        <h2 style={{ fontSize: '18px', fontWeight: '900', marginBottom: '12px', marginTop: '30px', color: 'white' }}>
+                            Mis <span style={{ color: 'var(--secondary)' }}>Ofertas</span>
+                        </h2>
                         {myOffers.length === 0 ? (
                             <div className="glass" style={{ padding: '40px 20px', textAlign: 'center', marginBottom: '8px' }}>
                                 <Handshake size={40} color="var(--text-dim)" style={{ marginBottom: '15px', opacity: 0.2 }} />
@@ -551,7 +553,9 @@ const Shop: React.FC = () => {
                             </div>
                         )}
 
-                        <h2 style={{ fontSize: '18px', fontWeight: '900', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Mis Compras</h2>
+                        <h2 style={{ fontSize: '18px', fontWeight: '900', marginBottom: '12px', color: 'white' }}>
+                            Mis <span style={{ color: 'var(--secondary)' }}>Compras</span>
+                        </h2>
                         {ordersLoading ? (
                             <div style={{ padding: '60px 20px', textAlign: 'center' }}>
                                 <Loader2 className="animate-spin" size={32} color="var(--secondary)" style={{ margin: '0 auto 15px' }} />

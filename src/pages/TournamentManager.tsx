@@ -281,7 +281,9 @@ const TournamentManager: React.FC = () => {
             <div className="animate-fade" style={{ textAlign: 'center', padding: '40px 20px' }}>
                 <div style={{ background: 'rgba(212, 175, 55, 0.1)', padding: '30px', borderRadius: '30px', border: '1px solid rgba(212, 175, 55, 0.2)' }}>
                     <Trophy size={48} color="var(--accent)" style={{ marginBottom: '20px', marginInline: 'auto' }} />
-                    <h2 style={{ fontSize: '22px', marginBottom: '10px' }}>Crea tu propio Torneo</h2>
+                    <h2 style={{ fontSize: '22px', fontWeight: '900', color: 'white', marginBottom: '10px' }}>
+                        Crea <span style={{ color: 'var(--secondary)' }}>tu</span> propio Torneo
+                    </h2>
                     <p style={{ color: 'var(--text-dim)', marginBottom: '25px', fontSize: '15px' }}>
                         Solo los miembros Premium pueden organizar torneos y eventos para la comunidad APEG.
                     </p>
@@ -316,7 +318,7 @@ const TournamentManager: React.FC = () => {
                     color: 'white',
                     marginTop: '4px'
                 }}>
-                    Gestión de Eventos
+                    Gestión <span style={{ color: 'var(--secondary)' }}>de</span> Eventos
                 </h1>
             </div>
 
@@ -612,7 +614,7 @@ const TournamentManager: React.FC = () => {
                     }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px' }}>
                             <div>
-                                <h2 style={{ fontSize: '20px', fontWeight: '800' }}>Participantes</h2>
+                                <h2 style={{ fontSize: '20px', fontWeight: '900', color: 'white' }}>Participantes</h2>
                                 <p style={{ color: 'var(--text-dim)', fontSize: '14px' }}>{viewingParticipants.tournamentName}</p>
                             </div>
                             <button

@@ -322,7 +322,19 @@ const Round: React.FC = () => {
                         <History size={20} />
                     </div>
                     <div>
-                        <h1 style={{ fontSize: '18px' }}>{clubName}</h1>
+                        <h1 style={{ fontSize: '18px', fontWeight: '900', color: 'white' }}>
+                            {(() => {
+                                const words = clubName.split(' ');
+                                if (words.length <= 1) return <span style={{ color: 'white' }}>{clubName}</span>;
+                                return (
+                                    <>
+                                        <span style={{ color: 'white' }}>{words[0]} </span>
+                                        <span style={{ color: 'var(--secondary)' }}>{words[1]}</span>
+                                        {words.length > 2 && <span style={{ color: 'white' }}> {words.slice(2).join(' ')}</span>}
+                                    </>
+                                );
+                            })()}
+                        </h1>
                         <p style={{ fontSize: '12px', color: 'var(--text-dim)' }}>{fieldName} • Par {course?.club.includes('Lagartos') && recorrido === 'Corea' ? 71 : 72}</p>
                     </div>
                 </div>
@@ -512,7 +524,9 @@ const Round: React.FC = () => {
                     <Navigation size={16} color="var(--primary)" />
                 </div>
                 <div style={{ textAlign: 'left' }}>
-                    <div style={{ fontSize: '13px', fontWeight: '900', color: 'var(--secondary)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}>Caddie Virtual</div>
+                    <div style={{ fontSize: '13px', fontWeight: '900', color: 'white', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}>
+                        Caddie <span style={{ color: 'var(--secondary)' }}>Virtual</span>
+                    </div>
                     <p style={{ fontSize: '15px', color: 'white', fontWeight: '500', lineHeight: '1.4', fontStyle: 'italic' }}>
                         "{caddieMessage}"
                     </p>
@@ -522,7 +536,9 @@ const Round: React.FC = () => {
             {showFinishModal && (
                 <div style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'flex-start', background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(8px)' }} onClick={() => setShowFinishModal(false)}>
                     <motion.div initial={{ y: '-100%' }} animate={{ y: 0 }} transition={{ type: 'spring', damping: 25, stiffness: 200 }} onClick={(e: React.MouseEvent) => e.stopPropagation()} style={{ width: '100%', background: 'rgba(20, 45, 30, 0.98)', borderBottomLeftRadius: '30px', borderBottomRightRadius: '30px', padding: 'calc(20px + env(safe-area-inset-top)) 25px 30px', textAlign: 'center' }}>
-                        <h2 style={{ fontSize: '20px', fontWeight: '700', marginBottom: '8px' }}>¿Finalizar Partida?</h2>
+                        <h2 style={{ fontSize: '20px', fontWeight: '900', color: 'white', marginBottom: '8px' }}>
+                            ¿Finalizar <span style={{ color: 'var(--secondary)' }}>Partida</span>?
+                        </h2>
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginTop: '20px' }}>
                             <button onClick={() => setShowFinishModal(false)} style={{ padding: '14px', borderRadius: '14px', background: 'rgba(255,255,255,0.05)', color: 'white' }}>Continuar</button>
                             <button onClick={handleFinishRound} disabled={isSaving} style={{ padding: '14px', borderRadius: '14px', background: 'var(--secondary)', color: 'var(--primary)', fontWeight: '800' }}>{isSaving ? 'Guardando...' : 'Finalizar'}</button>

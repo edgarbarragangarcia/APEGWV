@@ -12,7 +12,9 @@ const Caddies: React.FC = () => {
     return (
         <div className="animate-fade">
             <header style={{ marginBottom: '25px' }}>
-                <h1 style={{ fontSize: '28px' }}>Caddies Profesionales</h1>
+                <h1 style={{ fontSize: '28px', fontWeight: '900', color: 'white' }}>
+                    Caddies <span style={{ color: 'var(--secondary)' }}>Profesionales</span>
+                </h1>
                 <p style={{ color: 'var(--text-dim)' }}>Eleva tu juego con la ayuda de expertos</p>
             </header>
 

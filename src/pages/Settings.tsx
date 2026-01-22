@@ -167,14 +167,16 @@ const Settings: React.FC = () => {
                 >
                     <ChevronLeft size={20} />
                 </button>
-                <h1 style={{ fontSize: '24px' }}>Configuración</h1>
+                <h1 style={{ fontSize: '24px', fontWeight: '900', color: 'white' }}>Configuración</h1>
             </header>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                 <section>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px', paddingLeft: '5px' }}>
                         <ShieldCheck size={20} color="var(--secondary)" />
-                        <h2 style={{ fontSize: '16px', fontWeight: '600', color: 'var(--text-dim)' }}>PERMISOS DEL SISTEMA</h2>
+                        <h2 style={{ fontSize: '16px', fontWeight: '900', color: 'white' }}>
+                            PERMISOS <span style={{ color: 'var(--secondary)' }}>DEL</span> SISTEMA
+                        </h2>
                     </div>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>

@@ -387,7 +387,9 @@ const EditProfile: React.FC = () => {
                             }}
                         >
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px' }}>
-                                <h2 style={{ fontSize: '20px', fontWeight: '900' }}>Detalles de Dirección</h2>
+                                <h2 style={{ fontSize: '20px', fontWeight: '900', color: 'white' }}>
+                                    Detalles <span style={{ color: 'var(--secondary)' }}>de</span> Dirección
+                                </h2>
                                 <button onClick={() => setIsAddressModalOpen(false)} style={{ background: 'none', border: 'none', color: 'white' }}>
                                     <X size={24} />
                                 </button>

@@ -139,7 +139,7 @@ const Tournaments: React.FC = () => {
             position: 'relative'
         }}>
             <header style={{ marginBottom: '25px' }}>
-                <h1 style={{ fontSize: '28px', fontWeight: '800', marginBottom: '5px' }}>Eventos</h1>
+                <h1 style={{ fontSize: '28px', fontWeight: '900', marginBottom: '5px', color: 'white' }}>Eventos</h1>
                 <p style={{ color: 'var(--text-dim)', fontSize: '14px' }}>Compite y crece en la comunidad APEG</p>
             </header>
 

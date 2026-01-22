@@ -127,7 +127,19 @@ const RoundDetail: React.FC = () => {
                     <ArrowLeft size={24} />
                 </button>
                 <div style={{ flex: 1 }}>
-                    <h1 style={{ fontSize: '20px', margin: 0 }}>{round.course_name}</h1>
+                    <h1 style={{ fontSize: '20px', margin: 0, fontWeight: '900', color: 'white' }}>
+                        {(() => {
+                            const words = round.course_name.split(' ');
+                            if (words.length <= 1) return <span style={{ color: 'white' }}>{round.course_name}</span>;
+                            return (
+                                <>
+                                    <span style={{ color: 'white' }}>{words[0]} </span>
+                                    <span style={{ color: 'var(--secondary)' }}>{words[1]}</span>
+                                    {words.length > 2 && <span style={{ color: 'white' }}> {words.slice(2).join(' ')}</span>}
+                                </>
+                            );
+                        })()}
+                    </h1>
                     <div style={{ display: 'flex', gap: '15px', fontSize: '13px', color: 'var(--text-dim)', marginTop: '5px' }}>
                         {round.course_location && (
                             <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
@@ -171,7 +183,7 @@ const RoundDetail: React.FC = () => {
             {/* Additional Stats */}
             {(round.total_putts || round.fairways_hit || round.greens_in_regulation) && (
                 <Card style={{ marginBottom: '20px' }}>
-                    <h3 style={{ fontSize: '16px', marginBottom: '15px' }}>Estadísticas</h3>
+                    <h3 style={{ fontSize: '18px', fontWeight: '900', color: 'white', marginBottom: '15px' }}>Estadísticas</h3>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '15px', textAlign: 'center' }}>
                         {round.total_putts && (
                             <div>
@@ -198,7 +210,7 @@ const RoundDetail: React.FC = () => {
             {/* Scorecard */}
             {holes.length > 0 && (
                 <Card style={{ marginBottom: '20px' }}>
-                    <h3 style={{ fontSize: '16px', marginBottom: '15px' }}>Scorecard</h3>
+                    <h3 style={{ fontSize: '18px', fontWeight: '900', color: 'white', marginBottom: '15px' }}>Scorecard</h3>
                     <div style={{ overflowX: 'auto' }}>
                         <table style={{ width: '100%', fontSize: '12px', borderCollapse: 'collapse' }}>
                             <thead>
@@ -241,7 +253,7 @@ const RoundDetail: React.FC = () => {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
                     <h3 style={{ fontSize: '16px', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <Sparkles size={18} color="var(--secondary)" />
-                        Análisis IA
+                        Análisis <span style={{ color: 'var(--secondary)' }}>IA</span>
                     </h3>
                     {!analysis && (
                         <button

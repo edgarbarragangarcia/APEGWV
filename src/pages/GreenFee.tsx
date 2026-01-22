@@ -95,7 +95,9 @@ const GreenFee: React.FC = () => {
                 pointerEvents: 'auto'
             }}>
                 <header style={{ marginBottom: '15px' }}>
-                    <h1 style={{ fontSize: '28px', fontWeight: '800', marginBottom: '5px' }}>Green Fees</h1>
+                    <h1 style={{ fontSize: '28px', fontWeight: '900', marginBottom: '5px', color: 'white' }}>
+                        Green <span style={{ color: 'var(--secondary)' }}>Fees</span>
+                    </h1>
                     <p style={{ color: 'var(--text-dim)', fontSize: '14px' }}>
                         Reserva tu salida en los mejores campos
                     </p>

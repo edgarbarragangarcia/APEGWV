@@ -139,8 +139,19 @@ const Profile: React.FC = () => {
                         </div>
                     )}
                 </div>
-                <h1 style={{ fontSize: '26px', fontWeight: '800', marginBottom: '4px', letterSpacing: '-0.5px' }}>
-                    {profile?.full_name || 'Golfista'}
+                <h1 style={{ fontSize: '26px', fontWeight: '900', marginBottom: '4px', letterSpacing: '-0.5px', color: 'white' }}>
+                    {(() => {
+                        const name = profile?.full_name || 'Golfista';
+                        const words = name.split(' ');
+                        if (words.length <= 1) return <span style={{ color: 'white' }}>{name}</span>;
+                        return (
+                            <>
+                                <span style={{ color: 'white' }}>{words[0]} </span>
+                                <span style={{ color: 'var(--secondary)' }}>{words[1]}</span>
+                                {words.length > 2 && <span style={{ color: 'white' }}> {words.slice(2).join(' ')}</span>}
+                            </>
+                        );
+                    })()}
                 </h1>
                 <p style={{ color: 'var(--text-dim)', fontSize: '14px', fontWeight: '500' }}>
                     Socio APEG • Hándicap {profile?.handicap ?? '--'}
@@ -150,8 +161,8 @@ const Profile: React.FC = () => {
 
             {/* Fixed Personal Data Card */}
             <div className="glass" style={{ padding: '20px', marginBottom: '25px', background: 'rgba(255,255,255,0.02)' }}>
-                <h3 style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-dim)', marginBottom: '18px', textTransform: 'uppercase', letterSpacing: '1px' }}>
-                    Información de la Cuenta
+                <h3 style={{ fontSize: '13px', fontWeight: '900', color: 'white', marginBottom: '18px', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                    Información <span style={{ color: 'var(--secondary)' }}>de</span> la Cuenta
                 </h3>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>

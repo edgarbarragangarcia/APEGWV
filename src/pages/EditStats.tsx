@@ -89,7 +89,9 @@ const EditStats: React.FC = () => {
                 <button onClick={() => navigate('/profile')} style={{ background: 'none', border: 'none', color: 'var(--text)' }}>
                     <ArrowLeft size={24} />
                 </button>
-                <h1 style={{ fontSize: '24px', margin: 0 }}>Editar Estadísticas</h1>
+                <h1 style={{ fontSize: '24px', fontWeight: '900', margin: 0, color: 'white' }}>
+                    Editar <span style={{ color: 'var(--secondary)' }}>Estadísticas</span>
+                </h1>
             </div>
 
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>

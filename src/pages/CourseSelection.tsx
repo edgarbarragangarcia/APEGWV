@@ -86,7 +86,9 @@ const CourseSelection: React.FC = () => {
             }}>
                 <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                     <div>
-                        <h1 style={{ fontSize: '28px', fontWeight: '800', marginBottom: '5px' }}>Selecciona tu Campo</h1>
+                        <h1 style={{ fontSize: '28px', fontWeight: '900', marginBottom: '5px', color: 'white' }}>
+                            Selecciona <span style={{ color: 'var(--secondary)' }}>tu</span> Campo
+                        </h1>
                         <p style={{ color: 'var(--text-dim)', fontSize: '14px' }}>Listado oficial de clubes en Colombia</p>
                     </div>
                 </div>

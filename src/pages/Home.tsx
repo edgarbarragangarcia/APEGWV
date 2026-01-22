@@ -173,8 +173,8 @@ const Home: React.FC = () => {
                 paddingBottom: '10px'
             }}>
                 <header style={{ marginBottom: '20px' }}>
-                    <h1 style={{ fontSize: '26px', marginBottom: '2px' }}>
-                        Hola, <span className="gradient-text">{profile?.full_name?.split(' ')[0] || 'golfista'}</span>
+                    <h1 style={{ fontSize: '26px', fontWeight: '900', marginBottom: '2px', color: 'white' }}>
+                        Hola, <span style={{ color: 'var(--secondary)' }}>{profile?.full_name?.split(' ')[0] || 'Golfista'}</span>
                     </h1>
                     <p style={{ color: 'var(--text-dim)', fontSize: '13px' }}>Listo para tu próxima victoria en el campo?</p>
                 </header>
@@ -229,8 +229,8 @@ const Home: React.FC = () => {
                 <div style={{ marginBottom: '25px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '18px', paddingRight: '5px' }}>
                         <div>
-                            <h3 style={{ fontSize: '20px', fontWeight: '800', letterSpacing: '-0.5px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                Actividad <span className="gradient-text">Comunidad</span>
+                            <h3 style={{ fontSize: '20px', fontWeight: '900', letterSpacing: '-0.5px', display: 'flex', alignItems: 'center', gap: '8px', color: 'white' }}>
+                                Actividad <span style={{ color: 'var(--secondary)' }}>Comunidad</span>
                             </h3>
                             <div style={{ width: '30px', height: '3px', background: 'var(--secondary)', borderRadius: '2px', marginTop: '4px' }}></div>
                         </div>
@@ -273,7 +273,7 @@ const Home: React.FC = () => {
                 <div style={{ marginBottom: '10px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '18px', paddingRight: '5px' }}>
                         <div>
-                            <h3 style={{ fontSize: '20px', fontWeight: '800', letterSpacing: '-0.5px' }}>Marketplace</h3>
+                            <h3 style={{ fontSize: '20px', fontWeight: '900', letterSpacing: '-0.5px', color: 'white' }}>Marketplace</h3>
                             <div style={{ width: '30px', height: '3px', background: 'var(--secondary)', borderRadius: '2px', marginTop: '4px' }}></div>
                         </div>
                         <button
@@ -399,7 +399,7 @@ const Home: React.FC = () => {
                 {/* Featured Caddies / Tournaments */}
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '15px' }}>
                     <div style={{ marginBottom: '5px' }}>
-                        <h3 style={{ fontSize: '20px', fontWeight: '800', letterSpacing: '-0.5px' }}>Torneos</h3>
+                        <h3 style={{ fontSize: '20px', fontWeight: '900', letterSpacing: '-0.5px', color: 'white' }}>Torneos</h3>
                         <div style={{ width: '30px', height: '3px', background: 'var(--secondary)', borderRadius: '2px', marginTop: '4px' }}></div>
                     </div>
                     <Card style={{ marginTop: '5px' }}>

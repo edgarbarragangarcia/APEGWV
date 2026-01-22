@@ -94,7 +94,9 @@ const CourseReservation: React.FC = () => {
                     flexDirection: 'column',
                     gap: '5px'
                 }}>
-                    <h1 style={{ fontSize: '28px', color: 'white', fontWeight: '800' }}>Briceño 18</h1>
+                    <h1 style={{ fontSize: '28px', color: 'white', fontWeight: '900' }}>
+                        Briceño <span style={{ color: 'var(--secondary)' }}>18</span>
+                    </h1>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: 'rgba(255,255,255,0.8)', fontSize: '14px' }}>
                         <MapPin size={14} />
                         <span>Km 18 Autopista Norte, Briceño</span>
@@ -105,7 +107,9 @@ const CourseReservation: React.FC = () => {
             {/* Date Selection */}
             <div style={{ marginBottom: '30px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-                    <h3 style={{ fontSize: '18px', fontWeight: '600' }}>Seleccionar Fecha</h3>
+                    <h3 style={{ fontSize: '18px', fontWeight: '900', color: 'white' }}>
+                        Seleccionar <span style={{ color: 'var(--secondary)' }}>Fecha</span>
+                    </h3>
                     <span style={{ fontSize: '14px', color: 'var(--secondary)' }}>Enero 2026</span>
                 </div>
                 <div style={{
@@ -146,7 +150,9 @@ const CourseReservation: React.FC = () => {
 
             {/* Time Selection */}
             <div style={{ marginBottom: '100px' }}>
-                <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '15px' }}>Horarios Disponibles</h3>
+                <h3 style={{ fontSize: '18px', fontWeight: '900', color: 'white', marginBottom: '15px' }}>
+                    Horarios <span style={{ color: 'var(--secondary)' }}>Disponibles</span>
+                </h3>
                 <div style={{
                     display: 'grid',
                     gridTemplateColumns: 'repeat(3, 1fr)',
@@ -219,7 +225,9 @@ const CourseReservation: React.FC = () => {
                                 <CheckCircle2 size={32} />
                             </div>
 
-                            <h2 style={{ fontSize: '22px', fontWeight: '800', marginBottom: '10px' }}>¡Reserva Lista!</h2>
+                            <h2 style={{ fontSize: '22px', fontWeight: '900', color: 'white', marginBottom: '10px' }}>
+                                ¡Reserva <span style={{ color: 'var(--secondary)' }}>Lista</span>!
+                            </h2>
 
                             <div style={{
                                 background: 'rgba(255,255,255,0.05)',
