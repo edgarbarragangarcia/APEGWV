@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Calendar, Users, MapPin, Search, UserPlus, Trophy } from 'lucide-react';
+import { Calendar, Users, MapPin, Search, UserPlus, Trophy, X } from 'lucide-react';
 import Card from '../components/Card';
 import { supabase } from '../services/SupabaseManager';
 import Skeleton from '../components/Skeleton';
@@ -311,12 +311,12 @@ const Tournaments: React.FC = () => {
                                         </div>
 
                                         <button
-                                            onClick={() => !isRegistered && handleRegister(tourney.id)}
-                                            disabled={isRegistered}
+                                            onClick={() => !isRegistered && tourney.status === 'Abierto' && handleRegister(tourney.id)}
+                                            disabled={isRegistered || tourney.status !== 'Abierto'}
                                             style={{
                                                 width: '100%',
-                                                background: isRegistered ? 'rgba(255,255,255,0.05)' : 'linear-gradient(135deg, var(--secondary) 0%, #10b981 100%)',
-                                                color: isRegistered ? 'var(--text-dim)' : 'var(--primary)',
+                                                background: (isRegistered || tourney.status !== 'Abierto') ? 'rgba(255,255,255,0.05)' : 'linear-gradient(135deg, var(--secondary) 0%, #10b981 100%)',
+                                                color: (isRegistered || tourney.status !== 'Abierto') ? 'var(--text-dim)' : 'var(--primary)',
                                                 padding: '16px',
                                                 borderRadius: '20px',
                                                 fontWeight: '900',
@@ -326,14 +326,16 @@ const Tournaments: React.FC = () => {
                                                 justifyContent: 'center',
                                                 gap: '10px',
                                                 border: 'none',
-                                                cursor: isRegistered ? 'default' : 'pointer',
-                                                boxShadow: isRegistered ? 'none' : '0 8px 20px rgba(163, 230, 53, 0.2)',
+                                                cursor: (isRegistered || tourney.status !== 'Abierto') ? 'default' : 'pointer',
+                                                boxShadow: (isRegistered || tourney.status !== 'Abierto') ? 'none' : '0 8px 20px rgba(163, 230, 53, 0.2)',
                                                 transition: 'all 0.3s ease'
                                             }}>
                                             {isRegistered ? (
                                                 <><Trophy size={18} /> ESTÁS INSCRITO</>
-                                            ) : (
+                                            ) : tourney.status === 'Abierto' ? (
                                                 <><UserPlus size={18} /> INSCRIBIRME AHORA</>
+                                            ) : (
+                                                <><X size={18} /> INSCRIPCIONES CERRADAS</>
                                             )}
                                         </button>
                                     </div>

@@ -8,6 +8,37 @@ import { useGeoLocation } from '../hooks/useGeoLocation';
 import { fetchWeather, type WeatherData } from '../services/WeatherService';
 import { Wind, Navigation, Info } from 'lucide-react';
 import { motion } from 'framer-motion';
+const getWindDirection = (degrees?: number) => {
+    if (degrees === undefined) return 'Variable';
+    const sectors = ['N', 'NE', 'E', 'SE', 'S', 'SO', 'O', 'NO'];
+    return sectors[Math.round(degrees / 45) % 8];
+};
+
+const getClubRecommendation = (distance: number | null, windSpeed: number = 0, windDir: string = 'N') => {
+    if (distance === null) return 'Localizando...';
+    let adjDistance = distance;
+    const isHeadwind = windDir.includes('N');
+    const isTailwind = windDir.includes('S');
+
+    if (windSpeed > 5) {
+        if (isHeadwind) adjDistance += (windSpeed * 0.7);
+        if (isTailwind) adjDistance -= (windSpeed * 0.4);
+    }
+
+    if (adjDistance > 230) return 'Driver';
+    if (adjDistance > 200) return 'Madera 3';
+    if (adjDistance > 185) return 'Híbrido';
+    if (adjDistance > 170) return 'Hierro 4';
+    if (adjDistance > 160) return 'Hierro 5';
+    if (adjDistance > 150) return 'Hierro 6';
+    if (adjDistance > 140) return 'Hierro 7';
+    if (adjDistance > 130) return 'Hierro 8';
+    if (adjDistance > 120) return 'Hierro 9';
+    if (adjDistance > 100) return 'Pitching Wedge';
+    if (adjDistance > 80) return 'Gap Wedge';
+    if (adjDistance > 60) return 'Sand Wedge';
+    return 'Lob Wedge / Putter';
+};
 
 const Round: React.FC = () => {
     const location = useLocation();
@@ -33,22 +64,36 @@ const Round: React.FC = () => {
     const [weather, setWeather] = React.useState<WeatherData | null>(null);
     const [roundId, setRoundId] = React.useState<string | null>(null);
 
-    const caddiePhrases = [
-        "¡Buen tiro! Mantén este ritmo y el par es tuyo.",
-        "Ojo con el viento, apunta un poco más a la izquierda hoy.",
-        "Confía en tu swing, relájate y el palo hará el trabajo.",
-        "Este es un gran día para un Birdie. ¡A por ello!",
-        "Mantén la calma, el próximo hoyo es una nueva oportunidad.",
-        "Visualiza la caída y confía en tu instinto."
-    ];
-    const [caddieMessage, setCaddieMessage] = React.useState(caddiePhrases[0]);
+    const getDynamicCaddieMessage = () => {
+        if (!distanceToHole) return "Localizando tu posición para darte el mejor consejo...";
+
+        const club = getClubRecommendation(distanceToHole, weather?.wind, getWindDirection(weather?.windDirection));
+        const wind = weather?.wind || 0;
+        const dir = getWindDirection(weather?.windDirection);
+
+        if (wind > 15) {
+            return `¡Mucho viento (${wind}km/h ${dir})! El ${club} te dará el control que necesitas para estos ${distanceToHole}m.`;
+        }
+
+        if (distanceToHole < 100) {
+            return `Estás a tiro de piedra (${distanceToHole}m). Un golpe suave con el ${club} y a cobrar ese putt.`;
+        }
+
+        if (distanceToHole > 220) {
+            return `Hoyo largo. Dale con todo al ${club}, mantén el ritmo y busca el fairway.`;
+        }
+
+        return `Para estos ${distanceToHole}m con viento ${dir}, mi apuesta es el ${club}. ¡Confía en tu swing!`;
+    };
+
+    const [caddieMessage, setCaddieMessage] = React.useState(getDynamicCaddieMessage());
 
     React.useEffect(() => {
         const interval = setInterval(() => {
-            setCaddieMessage(caddiePhrases[Math.floor(Math.random() * caddiePhrases.length)]);
-        }, 15000);
+            setCaddieMessage(getDynamicCaddieMessage());
+        }, 10000);
         return () => clearInterval(interval);
-    }, []);
+    }, [distanceToHole, weather]);
 
     const currentStrokes = strokes[currentHole] || 0;
 
@@ -99,38 +144,6 @@ const Round: React.FC = () => {
         };
         loadWeather();
     }, [course]);
-
-    const getWindDirection = (degrees?: number) => {
-        if (degrees === undefined) return 'Variable';
-        const sectors = ['N', 'NE', 'E', 'SE', 'S', 'SO', 'O', 'NO'];
-        return sectors[Math.round(degrees / 45) % 8];
-    };
-
-    const getClubRecommendation = (distance: number | null, windSpeed: number = 0, windDir: string = 'N') => {
-        if (distance === null) return 'Localizando...';
-        let adjDistance = distance;
-        const isHeadwind = windDir.includes('N');
-        const isTailwind = windDir.includes('S');
-
-        if (windSpeed > 5) {
-            if (isHeadwind) adjDistance += (windSpeed * 0.7);
-            if (isTailwind) adjDistance -= (windSpeed * 0.4);
-        }
-
-        if (adjDistance > 230) return 'Driver';
-        if (adjDistance > 200) return 'Madera 3';
-        if (adjDistance > 185) return 'Híbrido';
-        if (adjDistance > 170) return 'Hierro 4';
-        if (adjDistance > 160) return 'Hierro 5';
-        if (adjDistance > 150) return 'Hierro 6';
-        if (adjDistance > 140) return 'Hierro 7';
-        if (adjDistance > 130) return 'Hierro 8';
-        if (adjDistance > 120) return 'Hierro 9';
-        if (adjDistance > 100) return 'Pitching Wedge';
-        if (adjDistance > 80) return 'Gap Wedge';
-        if (adjDistance > 60) return 'Sand Wedge';
-        return 'Lob Wedge / Putter';
-    };
 
     const handleStrokeChange = (change: number) => {
         const newScore = Math.max(0, (strokes[currentHole] || 0) + change);

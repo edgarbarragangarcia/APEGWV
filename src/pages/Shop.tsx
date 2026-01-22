@@ -37,6 +37,7 @@ const Shop: React.FC = () => {
     const { user } = useAuth();
     const [showOfferModal, setShowOfferModal] = useState(false);
     const [offerAmount, setOfferAmount] = useState('');
+    const [offerMessage, setOfferMessage] = useState('');
     const [sendingOffer, setSendingOffer] = useState(false);
     const [offerSuccess, setOfferSuccess] = useState(false);
     const { addToCart, totalItems } = useCart();
@@ -685,6 +686,7 @@ const Shop: React.FC = () => {
                                             if (!user) return navigate('/auth');
                                             setShowOfferModal(true);
                                             setOfferAmount(selectedProduct.price.toString());
+                                            setOfferMessage('');
                                         }}
                                         style={{
                                             flex: 1,
@@ -836,12 +838,13 @@ const Shop: React.FC = () => {
                                         Ingresa el monto que deseas ofrecer por <strong>{selectedProduct.name}</strong>
                                     </p>
 
-                                    <div style={{ position: 'relative', marginBottom: '25px' }}>
+                                    <div style={{ position: 'relative', marginBottom: '15px' }}>
                                         <span style={{ position: 'absolute', left: '20px', top: '50%', transform: 'translateY(-50%)', fontWeight: '800', color: 'var(--secondary)' }}>$</span>
                                         <input
                                             type="number"
                                             value={offerAmount}
                                             onChange={(e) => setOfferAmount(e.target.value)}
+                                            placeholder="Monto de la oferta"
                                             style={{
                                                 width: '100%',
                                                 background: 'rgba(255,255,255,0.05)',
@@ -852,6 +855,26 @@ const Shop: React.FC = () => {
                                                 fontSize: '24px',
                                                 fontWeight: '900',
                                                 textAlign: 'center',
+                                                outline: 'none'
+                                            }}
+                                        />
+                                    </div>
+
+                                    <div style={{ marginBottom: '25px' }}>
+                                        <textarea
+                                            value={offerMessage}
+                                            onChange={(e) => setOfferMessage(e.target.value)}
+                                            placeholder="Escribe un mensaje al vendedor (opcional)"
+                                            style={{
+                                                width: '100%',
+                                                background: 'rgba(255,255,255,0.05)',
+                                                border: '1px solid rgba(255,255,255,0.1)',
+                                                borderRadius: '12px',
+                                                padding: '12px',
+                                                color: 'white',
+                                                fontSize: '14px',
+                                                minHeight: '80px',
+                                                resize: 'none',
                                                 outline: 'none'
                                             }}
                                         />
@@ -880,6 +903,7 @@ const Shop: React.FC = () => {
                                                             buyer_id: user.id,
                                                             seller_id: selectedProduct.seller_id,
                                                             offer_amount: parseFloat(offerAmount),
+                                                            message: offerMessage,
                                                             status: 'pending'
                                                         }]);
 
@@ -889,6 +913,8 @@ const Shop: React.FC = () => {
                                                         setOfferSuccess(false);
                                                         setShowOfferModal(false);
                                                         setSelectedProduct(null);
+                                                        setOfferAmount('');
+                                                        setOfferMessage('');
                                                     }, 2000);
                                                 } catch (err) {
                                                     console.error(err);

@@ -112,7 +112,9 @@ const MyReservations: React.FC<MyReservationsProps> = ({ onRequestSwitchTab }) =
                                     <Calendar size={16} color="var(--secondary)" />
                                     <div>
                                         <div style={{ fontSize: '10px', color: 'var(--text-dim)' }}>Fecha</div>
-                                        <div style={{ fontSize: '14px', fontWeight: '600' }}>{res.date} Enero</div> {/* Assuming January based on mock data in context */}
+                                        <div style={{ fontSize: '14px', fontWeight: '600' }}>
+                                            {new Date(res.date).toLocaleDateString('es-CO', { day: 'numeric', month: 'long' })}
+                                        </div>
                                     </div>
                                 </div>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>

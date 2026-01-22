@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../services/SupabaseManager';
-import { Plus, Trophy, Trash2, Calendar, Loader2, CheckCircle2, Pencil } from 'lucide-react';
+import { Plus, Trophy, Trash2, Calendar, Loader2, CheckCircle2, Pencil, Users, X } from 'lucide-react';
 import Card from '../components/Card';
 import Skeleton from '../components/Skeleton';
 import { useAuth } from '../context/AuthContext';
@@ -19,6 +19,13 @@ interface Tournament {
     image_url: string | null;
 }
 
+interface Participant {
+    id: string;
+    full_name: string | null;
+    id_photo_url: string | null;
+    handicap: number | null;
+}
+
 const TournamentManager: React.FC = () => {
     const navigate = useNavigate();
     const { user } = useAuth();
@@ -33,6 +40,13 @@ const TournamentManager: React.FC = () => {
         tournamentId: null,
         tournamentName: ''
     });
+    const [viewingParticipants, setViewingParticipants] = useState<{ isOpen: boolean; tournamentId: string | null; tournamentName: string }>({
+        isOpen: false,
+        tournamentId: null,
+        tournamentName: ''
+    });
+    const [participants, setParticipants] = useState<Participant[]>([]);
+    const [loadingParticipants, setLoadingParticipants] = useState(false);
 
     // Form State
     const [formData, setFormData] = useState({
@@ -43,7 +57,8 @@ const TournamentManager: React.FC = () => {
         price: '', // Numeric string without formatting
         displayPrice: '', // String with thousand separators for UI
         participants_limit: '100',
-        image_url: 'https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?q=80&w=1000&auto=format&fit=crop'
+        image_url: 'https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?q=80&w=1000&auto=format&fit=crop',
+        status: 'Abierto'
     });
 
     const formatPrice = (val: string) => {
@@ -126,6 +141,7 @@ const TournamentManager: React.FC = () => {
                         price: parseFloat(formData.price),
                         participants_limit: parseInt(formData.participants_limit),
                         image_url: formData.image_url,
+                        status: formData.status,
                         updated_at: new Date().toISOString()
                     })
                     .eq('id', editingId)
@@ -142,6 +158,7 @@ const TournamentManager: React.FC = () => {
                         price: parseFloat(formData.price),
                         participants_limit: parseInt(formData.participants_limit),
                         image_url: formData.image_url,
+                        status: formData.status,
                         creator_id: user.id
                     }])
                     .select()
@@ -176,7 +193,8 @@ const TournamentManager: React.FC = () => {
             price: '',
             displayPrice: '',
             participants_limit: '100',
-            image_url: 'https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?q=80&w=1000&auto=format&fit=crop'
+            image_url: 'https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?q=80&w=1000&auto=format&fit=crop',
+            status: 'Abierto'
         });
         setEditingId(null);
     };
@@ -191,7 +209,8 @@ const TournamentManager: React.FC = () => {
             price: p,
             displayPrice: formatPrice(p),
             participants_limit: (tournament.participants_limit || 100).toString(),
-            image_url: tournament.image_url || 'https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?q=80&w=1000&auto=format&fit=crop'
+            image_url: tournament.image_url || 'https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?q=80&w=1000&auto=format&fit=crop',
+            status: tournament.status || 'Abierto'
         });
         setEditingId(tournament.id);
         setShowForm(true);
@@ -220,6 +239,32 @@ const TournamentManager: React.FC = () => {
         } catch (err) {
             console.error('Error deleting tournament:', err);
             alert('Error al eliminar el torneo');
+        }
+    };
+    const handleViewParticipants = async (tournament: Tournament) => {
+        setViewingParticipants({
+            isOpen: true,
+            tournamentId: tournament.id,
+            tournamentName: tournament.name
+        });
+        setParticipants([]);
+        setLoadingParticipants(true);
+
+        try {
+            const { data, error } = await supabase
+                .from('tournament_registrations')
+                .select(`
+                    profiles:user_id (id, full_name, id_photo_url, handicap)
+                `)
+                .eq('tournament_id', tournament.id);
+
+            if (error) throw error;
+            const list = data?.map((r: any) => Array.isArray(r.profiles) ? r.profiles[0] : r.profiles).filter(Boolean) || [];
+            setParticipants(list as Participant[]);
+        } catch (err) {
+            console.error('Error fetching participants:', err);
+        } finally {
+            setLoadingParticipants(false);
         }
     };
 
@@ -359,6 +404,19 @@ const TournamentManager: React.FC = () => {
                         </div>
 
                         <div>
+                            <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Estado de Inscripciones</label>
+                            <select
+                                value={formData.status}
+                                onChange={e => setFormData({ ...formData, status: e.target.value })}
+                                style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '12px', color: 'white', fontSize: '15px', outline: 'none' }}
+                            >
+                                <option value="Abierto">Abierto</option>
+                                <option value="Cerrado">Cerrado</option>
+                                <option value="Finalizado">Finalizado</option>
+                            </select>
+                        </div>
+
+                        <div>
                             <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Descripción y Reglas</label>
                             <textarea
                                 value={formData.description}
@@ -469,6 +527,36 @@ const TournamentManager: React.FC = () => {
                                             <span style={{ color: 'var(--secondary)', fontWeight: '900' }}>
                                                 {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(tourney.price)}
                                             </span>
+                                            <span style={{
+                                                fontSize: '10px',
+                                                fontWeight: '800',
+                                                padding: '2px 8px',
+                                                borderRadius: '6px',
+                                                background: tourney.status === 'Abierto' ? 'rgba(163, 230, 53, 0.1)' : 'rgba(255,255,255,0.05)',
+                                                color: tourney.status === 'Abierto' ? 'var(--secondary)' : 'var(--text-dim)',
+                                                textTransform: 'uppercase'
+                                            }}>
+                                                {tourney.status || 'Abierto'}
+                                            </span>
+                                            <button
+                                                onClick={() => handleViewParticipants(tourney)}
+                                                style={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: '5px',
+                                                    color: 'var(--secondary)',
+                                                    fontSize: '12px',
+                                                    fontWeight: '700',
+                                                    background: 'rgba(163, 230, 53, 0.1)',
+                                                    padding: '4px 10px',
+                                                    borderRadius: '8px',
+                                                    border: 'none',
+                                                    cursor: 'pointer'
+                                                }}
+                                            >
+                                                <Users size={14} />
+                                                <span>{tourney.current_participants || 0} Participantes</span>
+                                            </button>
                                         </div>
                                     </div>
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', paddingRight: '5px' }}>
@@ -497,6 +585,80 @@ const TournamentManager: React.FC = () => {
                         <div style={{ display: 'flex', gap: '12px' }}>
                             <button onClick={() => setDeleteModal({ ...deleteModal, isOpen: false })} style={{ flex: 1, padding: '12px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)' }}>Cancelar</button>
                             <button onClick={confirmDelete} style={{ flex: 1, padding: '12px', borderRadius: '12px', background: '#ef4444', color: 'white', fontWeight: '700' }}>Eliminar</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Participants Modal */}
+            {viewingParticipants.isOpen && (
+                <div style={{
+                    position: 'fixed',
+                    top: 0, left: 0, right: 0, bottom: 0,
+                    background: 'rgba(0,0,0,0.9)',
+                    display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+                    zIndex: 1001, backdropFilter: 'blur(10px)'
+                }}>
+                    <div className="animate-slide-up" style={{
+                        width: '100%',
+                        maxWidth: '500px',
+                        background: 'var(--primary)',
+                        borderTopLeftRadius: '30px',
+                        borderTopRightRadius: '30px',
+                        padding: '30px 20px calc(env(safe-area-inset-bottom) + 30px)',
+                        maxHeight: '85vh',
+                        display: 'flex',
+                        flexDirection: 'column'
+                    }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px' }}>
+                            <div>
+                                <h2 style={{ fontSize: '20px', fontWeight: '800' }}>Participantes</h2>
+                                <p style={{ color: 'var(--text-dim)', fontSize: '14px' }}>{viewingParticipants.tournamentName}</p>
+                            </div>
+                            <button
+                                onClick={() => setViewingParticipants({ ...viewingParticipants, isOpen: false })}
+                                style={{ background: 'rgba(255,255,255,0.05)', border: 'none', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}
+                            >
+                                <X size={20} />
+                            </button>
+                        </div>
+
+                        <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                            {loadingParticipants ? (
+                                [1, 2, 3].map(i => <Skeleton key={i} height="70px" borderRadius="18px" />)
+                            ) : participants.length === 0 ? (
+                                <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-dim)' }}>
+                                    <Users size={48} style={{ marginBottom: '15px', opacity: 0.2, marginInline: 'auto' }} />
+                                    <p>Aún no hay inscritos en este torneo.</p>
+                                </div>
+                            ) : (
+                                participants.map(p => (
+                                    <div key={p.id} style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '15px',
+                                        padding: '12px',
+                                        background: 'rgba(255,255,255,0.03)',
+                                        borderRadius: '18px',
+                                        border: '1px solid rgba(255,255,255,0.05)'
+                                    }}>
+                                        <div style={{ width: '45px', height: '45px', borderRadius: '12px', overflow: 'hidden', background: 'var(--primary-light)' }}>
+                                            <img
+                                                src={p.id_photo_url || `https://ui-avatars.com/api/?name=${p.full_name || 'User'}&background=0E2F1F&color=A3E635`}
+                                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                                alt={p.full_name || 'User'}
+                                            />
+                                        </div>
+                                        <div style={{ flex: 1 }}>
+                                            <h4 style={{ fontSize: '15px', fontWeight: '700' }}>{p.full_name || 'Golfista APEG'}</h4>
+                                            <p style={{ fontSize: '12px', color: 'var(--text-dim)' }}>Hándicap: {p.handicap ?? '--'}</p>
+                                        </div>
+                                        <div style={{ background: 'rgba(163, 230, 53, 0.1)', color: 'var(--secondary)', padding: '4px 8px', borderRadius: '8px', fontSize: '11px', fontWeight: '800' }}>
+                                            CONFIRMADO
+                                        </div>
+                                    </div>
+                                ))
+                            )}
                         </div>
                     </div>
                 </div>

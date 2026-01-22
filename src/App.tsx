@@ -32,6 +32,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 
 const AppContent: React.FC = () => {
   const { session, loading } = useAuth();
+  const location = useLocation();
 
   React.useEffect(() => {
     // Intentar bloquear la orientación
@@ -51,7 +52,6 @@ const AppContent: React.FC = () => {
     return <div style={{ background: '#0e2f1f', height: '100vh', width: '100%' }} />;
   }
 
-  const location = useLocation();
   const isRoundPage = location.pathname === '/round';
 
   return (

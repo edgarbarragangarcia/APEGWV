@@ -69,6 +69,16 @@ const Home: React.FC = () => {
         };
 
         fetchHomeData();
+
+        const handleProfileUpdate = () => {
+            fetchHomeData();
+        };
+
+        window.addEventListener('profile-updated', handleProfileUpdate);
+
+        return () => {
+            window.removeEventListener('profile-updated', handleProfileUpdate);
+        };
     }, []);
 
 
