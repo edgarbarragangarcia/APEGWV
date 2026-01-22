@@ -157,7 +157,7 @@ const CheckoutPage: React.FC = () => {
                         title: '¡Venta realizada!',
                         message: `Has vendido ${item.name} por $${new Intl.NumberFormat('es-CO').format(item.price * item.quantity)}. Prepáralo para el envío.`,
                         type: 'order_new',
-                        link: `/shop?tab=mystore`
+                        link: '/my-store?tab=orders'
                     }]);
                 }
             }
@@ -168,7 +168,7 @@ const CheckoutPage: React.FC = () => {
                 title: '¡Compra exitosa!',
                 message: `Tu pedido por $${new Intl.NumberFormat('es-CO').format(totalAmount)} ha sido confirmado.`,
                 type: 'order_new',
-                link: `/shop?tab=orders`
+                link: '/shop?tab=myorders'
             }]);
 
             setIsSuccess(true);
@@ -284,7 +284,7 @@ const CheckoutPage: React.FC = () => {
                     <button
                         onClick={() => {
                             clearCart();
-                            navigate('/shop?tab=orders');
+                            navigate('/shop?tab=myorders');
                         }}
                         style={{
                             background: 'white',

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
     Search, ShoppingBag,
     ArrowLeft, ShoppingCart, ChevronRight, Plus, CheckCircle2,
@@ -45,6 +45,17 @@ const Shop: React.FC = () => {
     const [ordersLoading, setOrdersLoading] = useState(false);
     const [ordersError, setOrdersError] = useState<string | null>(null);
     const [productsLoading, setProductsLoading] = useState(true);
+    const location = useLocation();
+
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        const tab = params.get('tab');
+        if (tab === 'myorders') {
+            setViewTab('myorders');
+        } else if (tab === 'marketplace') {
+            setViewTab('marketplace');
+        }
+    }, [location]);
 
     useEffect(() => {
         if (user) {
@@ -1104,7 +1115,7 @@ const Shop: React.FC = () => {
                                                         title: 'Nueva oferta recibida',
                                                         message: `Has recibido una oferta de $${new Intl.NumberFormat('es-CO').format(parseFloat(offerAmount))} por ${selectedProduct.name}`,
                                                         type: 'offer',
-                                                        link: '/mystore'
+                                                        link: '/my-store?tab=offers'
                                                     }]);
 
                                                     setOfferSuccess(true);

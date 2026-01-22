@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { useLocation } from 'react-router-dom';
 import { supabase, optimizeImage } from '../services/SupabaseManager';
 import {
     Plus, Package, Trash2,
@@ -29,6 +30,7 @@ type Offer = Pick<Database['public']['Tables']['offers']['Row'], 'id' | 'created
 
 const MyStore: React.FC = () => {
     const { user } = useAuth();
+    const location = useLocation();
     const [loading, setLoading] = useState(true);
     const [products, setProducts] = useState<Product[]>([]);
     const [sellerProfile, setSellerProfile] = useState<SellerProfile | null>(null);
@@ -208,6 +210,19 @@ const MyStore: React.FC = () => {
     useEffect(() => {
         if (user) {
             fetchStoreData();
+
+            // Handle tab from navigation state or query params
+            const params = new URLSearchParams(location.search);
+            const tabParam = params.get('tab');
+            if (tabParam === 'offers') {
+                setActiveTab('offers');
+            } else if (tabParam === 'orders') {
+                setActiveTab('orders');
+            } else if (tabParam === 'products') {
+                setActiveTab('products');
+            } else if (tabParam === 'profile') {
+                setActiveTab('profile');
+            }
 
             // Setup Realtime for Orders & Offers
             const channel = supabase
@@ -539,7 +554,7 @@ const MyStore: React.FC = () => {
                         title,
                         message,
                         type: 'offer_update',
-                        link: '/shop', // Link to shop or specific order/offer view
+                        link: '/shop?tab=myorders', // Link to shop Compras tab
                     });
                 }
             }
