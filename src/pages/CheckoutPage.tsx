@@ -122,10 +122,7 @@ const CheckoutPage: React.FC = () => {
                     seller_id: sellerId === 'admin' ? null : sellerId,
                     product_id: item.id,
                     total_amount: item.price * item.quantity,
-                    // commission_amount and seller_net_amount are required by current types
-                    // but usually calculated by triggers. Setting to 0 as fallback.
-                    commission_amount: 0,
-                    seller_net_amount: 0,
+                    // commission_amount and seller_net_amount are calculated automatically by database trigger
                     status: 'Pagado',
                     shipping_address: fullAddress,
                     buyer_name: shipping.name,
