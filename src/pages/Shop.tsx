@@ -692,7 +692,7 @@ const Shop: React.FC = () => {
                                 onClick={() => setSelectedProduct(null)}
                                 style={{
                                     position: 'absolute',
-                                    top: 'calc(var(--safe-top) + 25px)',
+                                    top: 'calc(var(--safe-top) + 95px)',
                                     left: '20px',
                                     background: 'var(--secondary)',
                                     color: 'var(--primary)',
