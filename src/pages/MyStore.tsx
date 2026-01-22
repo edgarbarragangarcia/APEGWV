@@ -7,7 +7,7 @@ import {
     Pencil, TrendingDown,
     Truck, User, Phone, MapPin,
     Settings, Landmark, Calendar,
-    Store, Info, Handshake
+    Store, Info, Handshake, X
 } from 'lucide-react';
 import Card from '../components/Card';
 import StoreOnboarding from '../components/StoreOnboarding';
@@ -21,10 +21,11 @@ type Order = Pick<Database['public']['Tables']['orders']['Row'], 'id' | 'created
     product: { name: string; image_url: string | null } | null;
     buyer: { full_name: string | null; id_photo_url: string | null; phone: string | null } | null;
 };
-type Offer = Pick<Database['public']['Tables']['offers']['Row'], 'id' | 'created_at' | 'status' | 'offer_amount' | 'message' | 'buyer_id'> & {
-    product: { name: string; image_url: string | null; price: number } | null;
+type Offer = Pick<Database['public']['Tables']['offers']['Row'], 'id' | 'created_at' | 'status' | 'offer_amount' | 'message' | 'buyer_id' | 'counter_amount' | 'counter_message'> & {
+    product: { id: string; name: string; image_url: string | null; price: number } | null;
     buyer: { full_name: string | null } | null;
 };
+
 
 const MyStore: React.FC = () => {
     const { user } = useAuth();
@@ -47,6 +48,11 @@ const MyStore: React.FC = () => {
     const [isEditingProfile, setIsEditingProfile] = useState(false);
     const [profileFormData, setProfileFormData] = useState<any>(null);
     const [updatingOffer, setUpdatingOffer] = useState<string | null>(null);
+    const [showCounterModal, setShowCounterModal] = useState(false);
+    const [selectedOfferForCounter, setSelectedOfferForCounter] = useState<Offer | null>(null);
+    const [counterAmount, setCounterAmount] = useState('');
+    const [counterMessage, setCounterMessage] = useState('');
+
 
     // Form State
     const [formData, setFormData] = useState({
@@ -129,7 +135,8 @@ const MyStore: React.FC = () => {
         try {
             const { data: userOffers, error: offersError } = await supabase
                 .from('offers')
-                .select('id, created_at, status, offer_amount, message, buyer_id, product:products(name, image_url, price)')
+                .select('id, created_at, status, offer_amount, message, buyer_id, counter_amount, counter_message, product:products(id, name, image_url, price)')
+
                 .eq('seller_id', userId)
                 .order('created_at', { ascending: false });
 
@@ -470,20 +477,74 @@ const MyStore: React.FC = () => {
         }
     };
 
-    const handleOfferAction = async (offerId: string, status: 'accepted' | 'rejected') => {
+    const handleOfferAction = async (offerId: string, status: 'accepted' | 'rejected' | 'countered', extraData?: { counter_amount?: number; counter_message?: string }) => {
         setUpdatingOffer(offerId);
         try {
-            const { error } = await supabase
+            const offer = offers.find(o => o.id === offerId);
+            if (!offer) throw new Error('Oferta no encontrada');
+
+            const updateData: any = {
+                status,
+                updated_at: new Date().toISOString()
+            };
+
+            if (status === 'countered' && extraData) {
+                updateData.counter_amount = extraData.counter_amount;
+                updateData.counter_message = extraData.counter_message;
+            }
+
+            const { error: offerError } = await supabase
                 .from('offers')
-                .update({
-                    status,
-                    updated_at: new Date().toISOString()
-                })
+                .update(updateData)
                 .eq('id', offerId);
 
-            if (error) throw error;
+            if (offerError) throw offerError;
 
-            setOffers(prev => prev.map(o => o.id === offerId ? { ...o, status } : o));
+            // If accepted or countered, LOCK the product for 1 hour
+            if ((status === 'accepted' || status === 'countered') && offer.product) {
+                const expiresAt = new Date(Date.now() + 60 * 60 * 1000).toISOString();
+                const { error: productError } = await supabase
+                    .from('products')
+                    .update({
+                        status: 'negotiating',
+                        negotiating_buyer_id: offer.buyer_id,
+                        negotiation_expires_at: expiresAt
+                    })
+                    .eq('id', offer.product.id);
+
+                if (productError) {
+                    console.error('Error locking product:', productError);
+                }
+            }
+
+            // Create notification for buyer
+            if (offer.buyer_id) {
+                let title = '';
+                let message = '';
+
+                if (status === 'accepted') {
+                    title = '¡Oferta Aceptada!';
+                    message = `El vendedor aceptó tu oferta por ${offer.product?.name}. Tienes 1 hora para completar el pago.`;
+                } else if (status === 'countered') {
+                    title = 'Nueva Contraoferta';
+                    message = `El vendedor hizo una contraoferta de $${extraData?.counter_amount?.toLocaleString()} por ${offer.product?.name}.`;
+                } else if (status === 'rejected') {
+                    title = 'Oferta Rechazada';
+                    message = `El vendedor rechazó tu oferta por ${offer.product?.name}.`;
+                }
+
+                if (title) {
+                    await supabase.from('notifications').insert({
+                        user_id: offer.buyer_id,
+                        title,
+                        message,
+                        type: 'offer_update',
+                        link: '/shop', // Link to shop or specific order/offer view
+                    });
+                }
+            }
+
+            setOffers(prev => prev.map(o => o.id === offerId ? { ...o, ...updateData } : o));
 
             if (navigator.vibrate) navigator.vibrate(50);
         } catch (err) {
@@ -1370,53 +1431,98 @@ const MyStore: React.FC = () => {
                                         </div>
 
                                         {offer.status === 'pending' && (
-                                            <div style={{ display: 'flex', gap: '12px' }}>
+                                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '4px' }}>
                                                 <button
                                                     onClick={() => handleOfferAction(offer.id, 'rejected')}
                                                     disabled={updatingOffer === offer.id}
                                                     style={{
                                                         flex: 1,
+                                                        minWidth: '100px',
                                                         background: 'rgba(239, 68, 68, 0.1)',
                                                         border: '1px solid rgba(239, 68, 68, 0.3)',
                                                         color: '#f87171',
-                                                        padding: '14px',
-                                                        borderRadius: '16px',
+                                                        padding: '12px',
+                                                        borderRadius: '14px',
                                                         fontWeight: '800',
-                                                        fontSize: '13px'
+                                                        fontSize: '11px'
                                                     }}
                                                 >
                                                     RECHAZAR
                                                 </button>
                                                 <button
+                                                    onClick={() => {
+                                                        setSelectedOfferForCounter(offer);
+                                                        setCounterAmount(offer.offer_amount.toString());
+                                                        setCounterMessage('');
+                                                        setShowCounterModal(true);
+                                                    }}
+                                                    disabled={updatingOffer === offer.id}
+                                                    style={{
+                                                        flex: 1,
+                                                        minWidth: '100px',
+                                                        background: 'rgba(255, 255, 255, 0.05)',
+                                                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                                                        color: 'white',
+                                                        padding: '12px',
+                                                        borderRadius: '14px',
+                                                        fontWeight: '800',
+                                                        fontSize: '11px'
+                                                    }}
+                                                >
+                                                    CONTRAOFERTA
+                                                </button>
+                                                <button
                                                     onClick={() => handleOfferAction(offer.id, 'accepted')}
                                                     disabled={updatingOffer === offer.id}
                                                     style={{
-                                                        flex: 1.5,
+                                                        flex: 2,
+                                                        minWidth: '180px',
                                                         background: 'var(--secondary)',
                                                         color: 'var(--primary)',
-                                                        padding: '14px',
-                                                        borderRadius: '16px',
+                                                        padding: '12px',
+                                                        borderRadius: '14px',
                                                         fontWeight: '900',
-                                                        fontSize: '13px',
+                                                        fontSize: '11px',
                                                         display: 'flex',
                                                         alignItems: 'center',
                                                         justifyContent: 'center',
-                                                        gap: '10px',
+                                                        gap: '8px',
                                                         boxShadow: '0 8px 20px rgba(163, 230, 53, 0.2)'
                                                     }}
                                                 >
-                                                    {updatingOffer === offer.id ? <Loader2 size={18} className="animate-spin" /> : <CheckCircle2 size={18} />}
+                                                    {updatingOffer === offer.id ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle2 size={16} />}
                                                     ACEPTAR OFERTA
                                                 </button>
+                                            </div>
+                                        )}
+
+                                        {offer.status === 'countered' && (
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                                <div style={{ background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.05)', padding: '16px', borderRadius: '16px' }}>
+                                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                                                        <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Tu Contraoferta</span>
+                                                        <span style={{ fontSize: '18px', fontWeight: '900', color: 'var(--secondary)' }}>${offer.counter_amount?.toLocaleString()}</span>
+                                                    </div>
+                                                    {offer.counter_message && (
+                                                        <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.6)', fontStyle: 'italic', margin: 0 }}>
+                                                            "{offer.counter_message}"
+                                                        </p>
+                                                    )}
+                                                </div>
+                                                <div style={{ background: 'rgba(59, 130, 246, 0.08)', border: '1px solid rgba(59, 130, 246, 0.2)', padding: '12px', borderRadius: '14px', color: '#60a5fa', textAlign: 'center', fontWeight: '800', fontSize: '11px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                                                    <Info size={16} />
+                                                    RESERVADO • El comprador tiene 1 hora para comprar
+                                                </div>
                                             </div>
                                         )}
 
                                         {offer.status === 'accepted' && (
                                             <div style={{ background: 'rgba(16, 185, 129, 0.08)', border: '1px solid rgba(16, 185, 129, 0.2)', padding: '16px', borderRadius: '16px', color: '#10b981', textAlign: 'center', fontWeight: '800', fontSize: '13px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
                                                 <CheckCircle2 size={18} />
-                                                OFERTA ACEPTADA • Esperando pago
+                                                OFERTA ACEPTADA • Esperando pago (1h)
                                             </div>
                                         )}
+
                                     </Card>
                                 ))}
                             </div>
@@ -1773,7 +1879,143 @@ const MyStore: React.FC = () => {
                     </div>
                 )
             }
+
+            {/* Modal de Contraoferta */}
+            {showCounterModal && selectedOfferForCounter && (
+                <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: 'rgba(0,0,0,0.85)',
+                    backdropFilter: 'blur(10px)',
+                    zIndex: 1000,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '20px'
+                }}>
+                    <motion.div
+                        initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                        animate={{ scale: 1, opacity: 1, y: 0 }}
+                        style={{
+                            backgroundColor: '#1a1a1a',
+                            borderRadius: '32px',
+                            width: '100%',
+                            maxWidth: '450px',
+                            padding: '32px',
+                            border: '1px solid rgba(255,255,255,0.1)',
+                        }}
+                    >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+                            <div>
+                                <h3 style={{ fontSize: '24px', fontWeight: '900', color: 'white', marginBottom: '4px' }}>Enviar Contraoferta</h3>
+                                <p style={{ fontSize: '14px', color: 'rgba(255,255,255,0.5)' }}>Para {selectedOfferForCounter.product?.name}</p>
+                            </div>
+                            <button
+                                onClick={() => setShowCounterModal(false)}
+                                style={{
+                                    background: 'rgba(255,255,255,0.05)',
+                                    border: 'none',
+                                    padding: '12px',
+                                    borderRadius: '16px',
+                                    color: 'white'
+                                }}
+                            >
+                                <X size={24} />
+                            </button>
+                        </div>
+
+                        <div style={{ display: 'flex', background: 'rgba(255,255,255,0.03)', padding: '16px', borderRadius: '20px', marginBottom: '24px', gap: '16px', alignItems: 'center' }}>
+                            <div style={{ flex: 1 }}>
+                                <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)', fontWeight: '700', textTransform: 'uppercase' }}>Oferta Actual</span>
+                                <div style={{ fontSize: '20px', fontWeight: '800', color: 'white' }}>${selectedOfferForCounter.offer_amount.toLocaleString()}</div>
+                            </div>
+                            <div style={{ width: '1px', height: '30px', background: 'rgba(255,255,255,0.1)' }} />
+                            <div style={{ flex: 1 }}>
+                                <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)', fontWeight: '700', textTransform: 'uppercase' }}>Precio Orig.</span>
+                                <div style={{ fontSize: '20px', fontWeight: '800', color: 'rgba(255,255,255,0.6)' }}>${selectedOfferForCounter.product?.price.toLocaleString()}</div>
+                            </div>
+                        </div>
+
+                        <div style={{ marginBottom: '24px' }}>
+                            <label style={{ display: 'block', fontSize: '13px', fontWeight: '700', color: 'rgba(255,255,255,0.6)', marginBottom: '10px', marginLeft: '4px' }}>Nuevo Monto</label>
+                            <div style={{ position: 'relative' }}>
+                                <span style={{ position: 'absolute', left: '20px', top: '50%', transform: 'translateY(-50%)', fontSize: '24px', fontWeight: '900', color: 'var(--secondary)' }}>$</span>
+                                <input
+                                    type="number"
+                                    value={counterAmount}
+                                    onChange={(e) => setCounterAmount(e.target.value)}
+                                    placeholder="0"
+                                    style={{
+                                        width: '100%',
+                                        background: 'rgba(255,255,255,0.05)',
+                                        border: '2px solid rgba(163, 230, 53, 0.2)',
+                                        borderRadius: '20px',
+                                        padding: '20px 20px 20px 45px',
+                                        fontSize: '28px',
+                                        fontWeight: '900',
+                                        color: 'white',
+                                        outline: 'none'
+                                    }}
+                                />
+                            </div>
+                        </div>
+
+                        <div style={{ marginBottom: '32px' }}>
+                            <label style={{ display: 'block', fontSize: '13px', fontWeight: '700', color: 'rgba(255,255,255,0.6)', marginBottom: '10px', marginLeft: '4px' }}>Mensaje (Opcional)</label>
+                            <textarea
+                                value={counterMessage}
+                                onChange={(e) => setCounterMessage(e.target.value)}
+                                placeholder="Ej: Podemos cerrar en este precio si lo compras hoy mismo."
+                                style={{
+                                    width: '100%',
+                                    background: 'rgba(255,255,255,0.05)',
+                                    border: '1px solid rgba(255,255,255,0.1)',
+                                    borderRadius: '20px',
+                                    padding: '16px',
+                                    fontSize: '15px',
+                                    color: 'white',
+                                    minHeight: '100px',
+                                    outline: 'none',
+                                    resize: 'none'
+                                }}
+                            />
+                        </div>
+
+                        <button
+                            onClick={() => {
+                                handleOfferAction(selectedOfferForCounter.id, 'countered', {
+                                    counter_amount: parseFloat(counterAmount),
+                                    counter_message: counterMessage
+                                });
+                                setShowCounterModal(false);
+                            }}
+                            disabled={!counterAmount || isNaN(parseFloat(counterAmount))}
+                            style={{
+                                width: '100%',
+                                background: 'var(--secondary)',
+                                color: 'var(--primary)',
+                                padding: '20px',
+                                borderRadius: '20px',
+                                fontWeight: '900',
+                                fontSize: '16px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '12px',
+                                boxShadow: '0 12px 24px rgba(163, 230, 53, 0.2)',
+                                opacity: (!counterAmount || isNaN(parseFloat(counterAmount))) ? 0.5 : 1
+                            }}
+                        >
+                            ENVIAR CONTRAOFERTA
+                        </button>
+                    </motion.div>
+                </div>
+            )}
         </div >
+
     );
 };
 

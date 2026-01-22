@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import {
     Search, ShoppingBag,
     ArrowLeft, ShoppingCart, ChevronRight, Plus, CheckCircle2,
-    Loader2, AlertCircle, Clock, Lock
+    Loader2, AlertCircle, Clock, Lock, Handshake
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Card from '../components/Card';
@@ -498,7 +498,60 @@ const Shop: React.FC = () => {
                     </div>
                 ) : (
                     <div className="animate-fade" style={{ paddingBottom: '20px' }}>
-                        <h2 style={{ fontSize: '20px', fontWeight: '800', marginBottom: '15px' }}>Mis Compras</h2>
+                        <h2 style={{ fontSize: '18px', fontWeight: '900', marginBottom: '12px', marginTop: '30px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Mis Ofertas</h2>
+                        {myOffers.length === 0 ? (
+                            <div className="glass" style={{ padding: '40px 20px', textAlign: 'center', marginBottom: '8px' }}>
+                                <Handshake size={40} color="var(--text-dim)" style={{ marginBottom: '15px', opacity: 0.2 }} />
+                                <p style={{ color: 'var(--text-dim)', fontSize: '14px' }}>No tienes ofertas activas.</p>
+                            </div>
+                        ) : (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginBottom: '8px' }}>
+                                {myOffers.map(offer => (
+                                    <Card key={offer.id} onClick={() => {
+                                        if (offer.product) {
+                                            setSelectedProduct(offer.product as any);
+                                        }
+                                    }} style={{ padding: '16px', position: 'relative' }}>
+                                        <div style={{ display: 'flex', gap: '15px' }}>
+                                            <img
+                                                src={offer.product?.image_url || ''}
+                                                style={{ width: '60px', height: '60px', borderRadius: '12px', objectFit: 'cover' }}
+                                                alt=""
+                                            />
+                                            <div style={{ flex: 1 }}>
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                                    <h4 style={{ fontSize: '15px', fontWeight: '800' }}>{offer.product?.name}</h4>
+                                                    <span style={{
+                                                        background: offer.status === 'accepted' ? '#10b981' : (offer.status === 'countered' ? '#3b82f6' : 'rgba(255,255,255,0.1)'),
+                                                        padding: '4px 8px', borderRadius: '6px', fontSize: '10px', fontWeight: '900', color: 'white', textTransform: 'uppercase'
+                                                    }}>
+                                                        {offer.status === 'pending' ? 'PENDIENTE' : (offer.status === 'accepted' ? 'ACEPTADA' : (offer.status === 'countered' ? 'CONTRAOFERTA' : offer.status))}
+                                                    </span>
+                                                </div>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
+                                                    <span style={{ fontSize: '13px', color: 'var(--text-dim)', textDecoration: (offer.status === 'accepted' || offer.status === 'countered') ? 'line-through' : 'none' }}>${offer.product?.price.toLocaleString()}</span>
+                                                    <span style={{ fontSize: '15px', fontWeight: '900', color: offer.status === 'accepted' ? '#10b981' : (offer.status === 'countered' ? '#60a5fa' : 'var(--secondary)') }}>
+                                                        ${(offer.status === 'countered' ? offer.counter_amount : offer.offer_amount)?.toLocaleString()}
+                                                    </span>
+                                                </div>
+                                                {offer.status === 'countered' && (
+                                                    <p style={{ fontSize: '11px', color: '#60a5fa', fontWeight: '700', marginTop: '4px' }}>
+                                                        ¡El vendedor te hizo una contraoferta!
+                                                    </p>
+                                                )}
+                                                {offer.status === 'accepted' && (
+                                                    <p style={{ fontSize: '11px', color: '#10b981', fontWeight: '700', marginTop: '4px' }}>
+                                                        ¡Oferta aceptada! Tienes 1 hora para comprar.
+                                                    </p>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </Card>
+                                ))}
+                            </div>
+                        )}
+
+                        <h2 style={{ fontSize: '18px', fontWeight: '900', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Mis Compras</h2>
                         {ordersLoading ? (
                             <div style={{ padding: '60px 20px', textAlign: 'center' }}>
                                 <Loader2 className="animate-spin" size={32} color="var(--secondary)" style={{ margin: '0 auto 15px' }} />
@@ -661,12 +714,26 @@ const Shop: React.FC = () => {
                                     zIndex: 5
                                 }}>
                                     <div style={{ background: 'var(--secondary)', padding: '8px', borderRadius: '50%', color: 'var(--primary)' }}>
-                                        <Lock size={18} />
+                                        {selectedProduct.negotiating_buyer_id === user?.id ? <Clock size={18} /> : <Lock size={18} />}
                                     </div>
-                                    <div>
-                                        <p style={{ fontSize: '13px', fontWeight: '800', margin: 0 }}>PRODUCTO RESERVADO</p>
-                                        <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)', margin: 0 }}>Este artículo está en proceso de venta</p>
+                                    <div style={{ flex: 1 }}>
+                                        <p style={{ fontSize: '13px', fontWeight: '800', margin: 0 }}>
+                                            {selectedProduct.negotiating_buyer_id === user?.id ? 'TIENES UNA RESERVA ACTIVA' : 'PRODUCTO RESERVADO'}
+                                        </p>
+                                        <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)', margin: 0 }}>
+                                            {selectedProduct.negotiating_buyer_id === user?.id
+                                                ? 'Completa el pago antes de que expire el tiempo'
+                                                : 'Este artículo está en proceso de venta'}
+                                        </p>
                                     </div>
+                                    {selectedProduct.negotiating_buyer_id === user?.id && selectedProduct.negotiation_expires_at && (
+                                        <div style={{ textAlign: 'right' }}>
+                                            <span style={{ fontSize: '10px', fontWeight: '700', color: 'var(--secondary)', display: 'block' }}>EXPIRE EN</span>
+                                            <span style={{ fontSize: '14px', fontWeight: '900', color: 'white' }}>
+                                                {Math.max(0, Math.floor((new Date(selectedProduct.negotiation_expires_at).getTime() - Date.now()) / 1000 / 60))}m
+                                            </span>
+                                        </div>
+                                    )}
                                 </div>
                             )}
                         </div>
@@ -702,10 +769,29 @@ const Shop: React.FC = () => {
                                 <h2 style={{ fontSize: '32px', fontWeight: '900', marginTop: '12px', lineHeight: '1.1', color: 'white' }}>
                                     {selectedProduct.name}
                                 </h2>
-                                <div style={{ marginTop: '12px' }}>
-                                    <p style={{ fontSize: '24px', fontWeight: '800', color: 'var(--secondary)', margin: 0 }}>
+                                <div style={{ marginTop: '12px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                    <p style={{
+                                        fontSize: (selectedProduct.status === 'negotiating' && selectedProduct.negotiating_buyer_id === user?.id) ? '18px' : '24px',
+                                        fontWeight: '800',
+                                        color: 'var(--secondary)',
+                                        margin: 0,
+                                        textDecoration: (selectedProduct.status === 'negotiating' && selectedProduct.negotiating_buyer_id === user?.id) ? 'line-through' : 'none',
+                                        opacity: (selectedProduct.status === 'negotiating' && selectedProduct.negotiating_buyer_id === user?.id) ? 0.5 : 1
+                                    }}>
                                         $ {new Intl.NumberFormat('es-CO').format(selectedProduct.price)}
                                     </p>
+                                    {selectedProduct.status === 'negotiating' && selectedProduct.negotiating_buyer_id === user?.id && (
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            <span style={{ color: 'white', fontSize: '20px', fontWeight: '900' }}>→</span>
+                                            <p style={{ fontSize: '24px', fontWeight: '900', color: '#10b981', margin: 0 }}>
+                                                $ {new Intl.NumberFormat('es-CO').format(
+                                                    myOffers.find(o => o.product_id === selectedProduct.id && (o.status === 'accepted' || o.status === 'countered'))?.status === 'countered'
+                                                        ? (myOffers.find(o => o.product_id === selectedProduct.id && o.status === 'countered')?.counter_amount || selectedProduct.price)
+                                                        : (myOffers.find(o => o.product_id === selectedProduct.id && o.status === 'accepted')?.offer_amount || selectedProduct.price)
+                                                )}
+                                            </p>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 
@@ -814,7 +900,12 @@ const Shop: React.FC = () => {
 
                                         setBuying(true);
                                         try {
-                                            await addToCart(selectedProduct as any);
+                                            const activeOffer = myOffers.find(o => o.product_id === selectedProduct.id && (o.status === 'accepted' || o.status === 'countered'));
+                                            const finalPrice = activeOffer
+                                                ? (activeOffer.status === 'countered' ? (activeOffer.counter_amount || selectedProduct.price) : activeOffer.offer_amount)
+                                                : selectedProduct.price;
+
+                                            await addToCart({ ...selectedProduct, price: finalPrice } as any);
                                             setSelectedProduct(null);
                                             navigate('/checkout');
                                         } catch (err) {
@@ -823,13 +914,13 @@ const Shop: React.FC = () => {
                                             setBuying(false);
                                         }
                                     }}
-                                    disabled={buying || (selectedProduct?.seller_id === user?.id) || selectedProduct.status === 'negotiating'}
+                                    disabled={buying || (selectedProduct?.seller_id === user?.id) || (selectedProduct.status === 'negotiating' && selectedProduct.negotiating_buyer_id !== user?.id)}
                                     style={{
                                         flex: 1.8,
-                                        background: (selectedProduct?.seller_id === user?.id || selectedProduct.status === 'negotiating')
+                                        background: (selectedProduct?.seller_id === user?.id || (selectedProduct.status === 'negotiating' && selectedProduct.negotiating_buyer_id !== user?.id))
                                             ? 'rgba(255,255,255,0.05)'
                                             : 'linear-gradient(135deg, #bef264 0%, #a3e635 100%)',
-                                        color: (selectedProduct?.seller_id === user?.id || selectedProduct.status === 'negotiating') ? 'rgba(255,255,255,0.2)' : 'var(--primary)',
+                                        color: (selectedProduct?.seller_id === user?.id || (selectedProduct.status === 'negotiating' && selectedProduct.negotiating_buyer_id !== user?.id)) ? 'rgba(255,255,255,0.2)' : 'var(--primary)',
                                         height: '60px',
                                         borderRadius: '20px',
                                         fontWeight: '900',
@@ -838,14 +929,14 @@ const Shop: React.FC = () => {
                                         alignItems: 'center',
                                         justifyContent: 'center',
                                         gap: '10px',
-                                        boxShadow: (selectedProduct?.seller_id === user?.id || selectedProduct.status === 'negotiating') ? 'none' : '0 10px 25px rgba(163, 230, 53, 0.3)',
+                                        boxShadow: (selectedProduct?.seller_id === user?.id || (selectedProduct.status === 'negotiating' && selectedProduct.negotiating_buyer_id !== user?.id)) ? 'none' : '0 10px 25px rgba(163, 230, 53, 0.3)',
                                         textTransform: 'uppercase',
                                         letterSpacing: '0.08em',
-                                        border: (selectedProduct?.seller_id === user?.id || selectedProduct.status === 'negotiating') ? '1px solid rgba(255,255,255,0.1)' : 'none'
+                                        border: (selectedProduct?.seller_id === user?.id || (selectedProduct.status === 'negotiating' && selectedProduct.negotiating_buyer_id !== user?.id)) ? '1px solid rgba(255,255,255,0.1)' : 'none'
                                     }}
                                 >
                                     <ShoppingCart size={20} strokeWidth={3} />
-                                    {(selectedProduct?.seller_id === user?.id) ? 'MI PRODUCTO' : (selectedProduct.status === 'negotiating' ? 'EN TRATO' : (buying ? '...' : 'COMPRAR YA'))}
+                                    {(selectedProduct?.seller_id === user?.id) ? 'MI PRODUCTO' : (selectedProduct.status === 'negotiating' ? (selectedProduct.negotiating_buyer_id === user?.id ? 'COMPLETAR PAGO' : 'EN TRATO') : (buying ? '...' : 'COMPRAR YA'))}
                                 </motion.button>
                             </div>
                         </div>

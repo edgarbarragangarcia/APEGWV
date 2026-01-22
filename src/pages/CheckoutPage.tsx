@@ -132,6 +132,24 @@ const CheckoutPage: React.FC = () => {
 
                 if (orderError) throw orderError;
 
+                // Update product status to sold/inactive
+                await supabase
+                    .from('products')
+                    .update({
+                        status: 'sold',
+                        negotiating_buyer_id: null,
+                        negotiation_expires_at: null
+                    })
+                    .eq('id', item.id);
+
+                // Mark active offer as completed if exists
+                await supabase
+                    .from('offers')
+                    .update({ status: 'completed' })
+                    .eq('product_id', item.id)
+                    .eq('buyer_id', user.id)
+                    .in('status', ['accepted', 'countered']);
+
                 // Notify seller
                 if (sellerId !== 'admin') {
                     await supabase.from('notifications').insert([{

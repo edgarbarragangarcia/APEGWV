@@ -179,7 +179,10 @@ export type Database = {
                     seller_id: string
                     status: string | null
                     updated_at: string | null
+                    counter_amount: number | null
+                    counter_message: string | null
                 }
+
                 Insert: {
                     buyer_id: string
                     created_at?: string | null
@@ -190,7 +193,10 @@ export type Database = {
                     seller_id: string
                     status?: string | null
                     updated_at?: string | null
+                    counter_amount?: number | null
+                    counter_message?: string | null
                 }
+
                 Update: {
                     buyer_id?: string
                     created_at?: string | null
@@ -201,7 +207,10 @@ export type Database = {
                     seller_id?: string
                     status?: string | null
                     updated_at?: string | null
+                    counter_amount?: number | null
+                    counter_message?: string | null
                 }
+
                 Relationships: [
                     {
                         foreignKeyName: "offers_product_id_fkey"
