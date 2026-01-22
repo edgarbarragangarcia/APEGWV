@@ -83,7 +83,7 @@ const Navbar: React.FC = () => {
             alignItems: 'center',
             zIndex: 1000,
             justifyContent: 'space-between',
-            borderRadius: '0 0 20px 20px',
+            borderRadius: '0 0 30px 30px',
             border: 'none',
             borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
             backdropFilter: 'blur(15px)',

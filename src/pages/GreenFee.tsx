@@ -67,7 +67,7 @@ const GreenFee: React.FC = () => {
 
     return (
         <div style={{
-            position: 'absolute',
+            position: 'fixed',
             top: '0',
             left: '0',
             right: '0',
@@ -75,7 +75,8 @@ const GreenFee: React.FC = () => {
             width: '100%',
             maxWidth: 'var(--app-max-width)',
             margin: '0 auto',
-            overflow: 'hidden'
+            overflow: 'hidden',
+            zIndex: 500
         }} className="animate-fade">
 
             {/* Header Fijo - Green Fees */}

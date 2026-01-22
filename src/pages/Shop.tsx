@@ -145,7 +145,7 @@ const Shop: React.FC = () => {
 
     return (
         <div style={{
-            position: 'absolute',
+            position: 'fixed',
             top: '0',
             left: '0',
             right: '0',
@@ -153,20 +153,23 @@ const Shop: React.FC = () => {
             width: '100%',
             maxWidth: 'var(--app-max-width)',
             margin: '0 auto',
-            overflow: 'hidden'
+            overflow: 'hidden',
+            zIndex: 500
         }} className="animate-fade">
 
             {/* Header Fijo - Marketplace */}
             <div style={{
-                position: 'absolute',
+                position: 'fixed',
                 top: 'calc(env(safe-area-inset-top) + 75px)',
                 left: '0',
                 right: '0',
                 width: '100%',
+                maxWidth: 'var(--app-max-width)',
+                margin: '0 auto',
                 zIndex: 900,
-                background: 'linear-gradient(180deg, var(--primary) 0%, var(--primary) 95%, transparent 100%)',
+                background: 'var(--primary)',
                 paddingTop: '10px',
-                paddingBottom: '10px',
+                paddingBottom: '20px',
                 paddingLeft: '20px',
                 paddingRight: '20px',
                 pointerEvents: 'auto'
@@ -337,7 +340,7 @@ const Shop: React.FC = () => {
             {/* Área de Scroll */}
             <div style={{
                 position: 'absolute',
-                top: viewTab === 'marketplace' ? 'calc(env(safe-area-inset-top) + 335px)' : 'calc(env(safe-area-inset-top) + 215px)',
+                top: viewTab === 'marketplace' ? 'calc(env(safe-area-inset-top) + 345px)' : 'calc(env(safe-area-inset-top) + 225px)',
                 left: '0',
                 right: '0',
                 bottom: 'calc(var(--nav-height))',
