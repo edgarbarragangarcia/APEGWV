@@ -72,13 +72,13 @@ const CourseSelection: React.FC = () => {
             {/* Header Fijo - Selecciona tu Campo */}
             <div style={{
                 position: 'absolute',
-                top: 'calc(env(safe-area-inset-top) + 90px)',
+                top: 'calc(env(safe-area-inset-top) + 75px)', // Reducido de 90px a 75px
                 left: '0',
                 right: '0',
                 width: '100%',
                 zIndex: 900,
                 background: 'linear-gradient(180deg, var(--primary) 0%, var(--primary) 90%, transparent 100%)',
-                paddingTop: '20px',
+                paddingTop: '10px', // Reducido de 20px a 10px
                 paddingBottom: '20px',
                 paddingLeft: '20px',
                 paddingRight: '20px',
@@ -89,20 +89,6 @@ const CourseSelection: React.FC = () => {
                         <h1 style={{ fontSize: '28px', fontWeight: '800', marginBottom: '5px' }}>Selecciona tu Campo</h1>
                         <p style={{ color: 'var(--text-dim)', fontSize: '14px' }}>Listado oficial de clubes en Colombia</p>
                     </div>
-                    <button
-                        onClick={() => refreshLocation()}
-                        className="glass"
-                        style={{
-                            padding: '10px',
-                            borderRadius: '12px',
-                            background: 'rgba(163, 230, 53, 0.1)',
-                            border: '1px solid rgba(163, 230, 53, 0.2)',
-                            color: 'var(--secondary)'
-                        }}
-                        title="Actualizar ubicación"
-                    >
-                        <Navigation size={20} />
-                    </button>
                 </div>
 
                 {/* Status Indicator */}
@@ -163,7 +149,7 @@ const CourseSelection: React.FC = () => {
             {/* Área de Scroll - SOLO PARA LA LISTA DE CAMPOS */}
             <div style={{
                 position: 'absolute',
-                top: 'calc(env(safe-area-inset-top) + 310px)', // Reducido de 400px a 310px para subir las cards
+                top: 'calc(env(safe-area-inset-top) + 285px)', // Reducido de 310px a 285px para acompañar la subida
                 left: '0',
                 right: '0',
                 bottom: 'calc(var(--nav-height))',
