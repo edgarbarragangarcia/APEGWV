@@ -739,6 +739,7 @@ const Shop: React.FC = () => {
                             }}>
                                 {selectedProduct.is_negotiable && selectedProduct.seller_id !== user?.id && selectedProduct.status === 'active' && (
                                     <motion.button
+                                        whileHover={{ scale: 1.02, backgroundColor: 'rgba(255,255,255,0.08)' }}
                                         whileTap={{ scale: 0.95 }}
                                         onClick={() => {
                                             if (!user) return navigate('/auth');
@@ -748,27 +749,29 @@ const Shop: React.FC = () => {
                                         }}
                                         style={{
                                             flex: 1,
-                                            background: 'rgba(255,255,255,0.05)',
+                                            background: 'linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02))',
                                             color: 'white',
-                                            height: '56px',
-                                            borderRadius: '18px',
-                                            fontWeight: '700',
+                                            height: '60px',
+                                            borderRadius: '20px',
+                                            fontWeight: '900',
                                             fontSize: '11px',
                                             display: 'flex',
                                             alignItems: 'center',
                                             justifyContent: 'center',
-                                            gap: '6px',
-                                            border: '1px solid rgba(255,255,255,0.1)',
+                                            gap: '8px',
+                                            border: '1px solid rgba(255,255,255,0.15)',
                                             textTransform: 'uppercase',
-                                            letterSpacing: '0.05em'
+                                            letterSpacing: '0.08em',
+                                            backdropFilter: 'blur(10px)'
                                         }}
                                     >
-                                        <span style={{ fontSize: '16px' }}>🤝</span>
+                                        <span style={{ fontSize: '18px' }}>🤝</span>
                                         OFERTAR
                                     </motion.button>
                                 )}
 
                                 <motion.button
+                                    whileHover={{ scale: 1.02, backgroundColor: 'rgba(255,255,255,0.08)' }}
                                     whileTap={{ scale: 0.95 }}
                                     onClick={async () => {
                                         setAddingToCart(selectedProduct.id);
@@ -779,27 +782,29 @@ const Shop: React.FC = () => {
                                     disabled={selectedProduct.seller_id === user?.id || selectedProduct.status === 'negotiating'}
                                     style={{
                                         flex: 1,
-                                        background: 'rgba(255,255,255,0.05)',
+                                        background: 'linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02))',
                                         color: selectedProduct.status === 'negotiating' ? 'rgba(255,255,255,0.2)' : 'white',
-                                        height: '56px',
-                                        borderRadius: '18px',
-                                        fontWeight: '700',
+                                        height: '60px',
+                                        borderRadius: '20px',
+                                        fontWeight: '900',
                                         fontSize: '11px',
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
-                                        gap: '6px',
-                                        border: '1px solid rgba(255,255,255,0.1)',
+                                        gap: '8px',
+                                        border: '1px solid rgba(255,255,255,0.15)',
                                         textTransform: 'uppercase',
-                                        letterSpacing: '0.05em',
-                                        opacity: selectedProduct.status === 'negotiating' ? 0.5 : 1
+                                        letterSpacing: '0.08em',
+                                        opacity: selectedProduct.status === 'negotiating' ? 0.5 : 1,
+                                        backdropFilter: 'blur(10px)'
                                     }}
                                 >
-                                    {addingToCart === selectedProduct.id ? <CheckCircle2 size={16} color="var(--secondary)" /> : <Plus size={16} />}
+                                    {addingToCart === selectedProduct.id ? <CheckCircle2 size={18} color="var(--secondary)" /> : <Plus size={18} />}
                                     {addingToCart === selectedProduct.id ? 'VISTO' : 'CARRITO'}
                                 </motion.button>
 
                                 <motion.button
+                                    whileHover={{ scale: 1.02, boxShadow: '0 15px 35px rgba(163, 230, 53, 0.4)' }}
                                     whileTap={{ scale: 0.95 }}
                                     onClick={async () => {
                                         if (!user) {
@@ -820,24 +825,26 @@ const Shop: React.FC = () => {
                                     }}
                                     disabled={buying || (selectedProduct?.seller_id === user?.id) || selectedProduct.status === 'negotiating'}
                                     style={{
-                                        flex: 1.5,
-                                        background: (selectedProduct?.seller_id === user?.id || selectedProduct.status === 'negotiating') ? 'rgba(255,255,255,0.05)' : 'var(--secondary)',
+                                        flex: 1.8,
+                                        background: (selectedProduct?.seller_id === user?.id || selectedProduct.status === 'negotiating')
+                                            ? 'rgba(255,255,255,0.05)'
+                                            : 'linear-gradient(135deg, #bef264 0%, #a3e635 100%)',
                                         color: (selectedProduct?.seller_id === user?.id || selectedProduct.status === 'negotiating') ? 'rgba(255,255,255,0.2)' : 'var(--primary)',
-                                        height: '56px',
-                                        borderRadius: '18px',
+                                        height: '60px',
+                                        borderRadius: '20px',
                                         fontWeight: '900',
-                                        fontSize: '11px',
+                                        fontSize: '12px',
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
-                                        gap: '8px',
+                                        gap: '10px',
                                         boxShadow: (selectedProduct?.seller_id === user?.id || selectedProduct.status === 'negotiating') ? 'none' : '0 10px 25px rgba(163, 230, 53, 0.3)',
                                         textTransform: 'uppercase',
-                                        letterSpacing: '0.05em',
+                                        letterSpacing: '0.08em',
                                         border: (selectedProduct?.seller_id === user?.id || selectedProduct.status === 'negotiating') ? '1px solid rgba(255,255,255,0.1)' : 'none'
                                     }}
                                 >
-                                    <ShoppingCart size={18} strokeWidth={3} />
+                                    <ShoppingCart size={20} strokeWidth={3} />
                                     {(selectedProduct?.seller_id === user?.id) ? 'MI PRODUCTO' : (selectedProduct.status === 'negotiating' ? 'EN TRATO' : (buying ? '...' : 'COMPRAR YA'))}
                                 </motion.button>
                             </div>
