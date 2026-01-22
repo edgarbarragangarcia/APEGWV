@@ -19,7 +19,7 @@ type SellerProfile = Database['public']['Tables']['seller_profiles']['Row'];
 type Product = Database['public']['Tables']['products']['Row'];
 type Order = Pick<Database['public']['Tables']['orders']['Row'], 'id' | 'created_at' | 'status' | 'total_amount' | 'seller_net_amount' | 'shipping_address' | 'tracking_number' | 'shipping_provider' | 'buyer_name' | 'buyer_phone'> & {
     product: { name: string; image_url: string | null } | null;
-    buyer: { full_name: string | null; avatar_url: string | null; phone: string | null } | null;
+    buyer: { full_name: string | null; id_photo_url: string | null; phone: string | null } | null;
 };
 type Offer = Pick<Database['public']['Tables']['offers']['Row'], 'id' | 'created_at' | 'status' | 'offer_amount' | 'message' | 'buyer_id'> & {
     product: { name: string; image_url: string | null; price: number } | null;
@@ -100,7 +100,7 @@ const MyStore: React.FC = () => {
         try {
             const { data: userOrders, error } = await supabase
                 .from('orders')
-                .select('id, created_at, status, total_amount, seller_net_amount, shipping_address, tracking_number, shipping_provider, buyer_name, buyer_phone, product:products!orders_product_id_fkey(name, image_url), buyer:profiles!orders_buyer_id_fkey(full_name, avatar_url, phone)')
+                .select('id, created_at, status, total_amount, seller_net_amount, shipping_address, tracking_number, shipping_provider, buyer_name, buyer_phone, product:products!orders_product_id_fkey(name, image_url), buyer:profiles!orders_buyer_id_fkey(full_name, id_photo_url, phone)')
                 .eq('seller_id', userId)
                 .order('created_at', { ascending: false });
 
@@ -180,7 +180,7 @@ const MyStore: React.FC = () => {
                 // Fetch User Products
                 const { data: userProducts, error } = await supabase
                     .from('products')
-                    .select('id, name, price, category, image_url, status, created_at, size_clothing, size_shoes_col')
+                    .select('*')
                     .eq('seller_id', user.id)
                     .order('created_at', { ascending: false });
 
@@ -1122,11 +1122,11 @@ const MyStore: React.FC = () => {
                                             border: `1px solid ${order.status === 'Pendiente' ? 'rgba(245, 158, 11, 0.3)' : 'rgba(16, 185, 129, 0.3)'}`,
                                             letterSpacing: '0.05em'
                                         }}>
-                                            {order.status.toUpperCase()}
+                                            {order.status?.toUpperCase() || 'PENDIENTE'}
                                         </span>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-dim)', fontSize: '11px', fontWeight: '600' }}>
                                             <Calendar size={12} />
-                                            {new Date(order.created_at).toLocaleDateString()}
+                                            {order.created_at ? new Date(order.created_at).toLocaleDateString() : '---'}
                                         </div>
                                     </div>
 
@@ -1295,7 +1295,7 @@ const MyStore: React.FC = () => {
                                         </span>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-dim)', fontSize: '11px', fontWeight: '600' }}>
                                             <Calendar size={12} />
-                                            {new Date(offer.created_at).toLocaleDateString()}
+                                            {offer.created_at ? new Date(offer.created_at).toLocaleDateString() : '---'}
                                         </div>
                                     </div>
 

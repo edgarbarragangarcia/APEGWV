@@ -17,7 +17,7 @@ interface PaymentMethod {
     last_four: string;
     expiry: string;
     card_type: string;
-    is_default: boolean;
+    is_default: boolean | null;
 }
 
 const PaymentMethodsPage: React.FC = () => {
@@ -51,7 +51,7 @@ const PaymentMethodsPage: React.FC = () => {
                 .order('created_at', { ascending: false });
 
             if (error) throw error;
-            setMethods(data || []);
+            setMethods((data as unknown as PaymentMethod[]) || []);
         } catch (err) {
             console.error('Error fetching payment methods:', err);
         } finally {
@@ -81,7 +81,7 @@ const PaymentMethodsPage: React.FC = () => {
 
             if (error) throw error;
 
-            setMethods([data, ...methods]);
+            setMethods([data as unknown as PaymentMethod, ...methods]);
             setShowAddForm(false);
             if (navigator.vibrate) navigator.vibrate(50);
         } catch (err) {
@@ -159,7 +159,7 @@ const PaymentMethodsPage: React.FC = () => {
                             </div>
                         ) : (
                             methods.map((method) => (
-                                <Card key={method.id} style={{ padding: '20px', border: method.is_default ? '1px solid var(--secondary)' : '1px solid rgba(255,255,255,0.05)' }}>
+                                <Card key={method.id} style={{ padding: '20px', border: !!method.is_default ? '1px solid var(--secondary)' : '1px solid rgba(255,255,255,0.05)' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                                         <div style={{
                                             width: '50px',
@@ -178,7 +178,7 @@ const PaymentMethodsPage: React.FC = () => {
                                         <div style={{ flex: 1 }}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                                 <p style={{ fontWeight: '700' }}>•••• {method.last_four}</p>
-                                                {method.is_default && (
+                                                {!!method.is_default && (
                                                     <span style={{ fontSize: '9px', background: 'var(--secondary)', color: 'var(--primary)', padding: '2px 6px', borderRadius: '4px', fontWeight: '900' }}>PREDETERMINADA</span>
                                                 )}
                                             </div>

@@ -27,7 +27,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
             .limit(20);
 
         if (!error && data) {
-            setNotifications(data);
+            setNotifications(data as Notification[]);
         }
     };
 
@@ -128,10 +128,15 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     };
 
     const addNotification = async (notificationData: Omit<Notification, 'id' | 'created_at' | 'read'>) => {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) return;
+
         await supabase
             .from('notifications')
-            .insert(notificationData);
-        // Real-time listener will take care of updating state
+            .insert({
+                ...notificationData,
+                user_id: session.user.id
+            });
     };
 
     const unreadCount = notifications.filter(n => !n.read).length;

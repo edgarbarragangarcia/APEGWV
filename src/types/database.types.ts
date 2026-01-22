@@ -7,11 +7,6 @@ export type Json =
     | Json[]
 
 export type Database = {
-    // Allows to automatically instantiate createClient with right options
-    // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
-    __InternalSupabase: {
-        PostgrestVersion: "14.1"
-    }
     public: {
         Tables: {
             cart_items: {
@@ -75,227 +70,252 @@ export type Database = {
                         isOneToOne: false
                         referencedRelation: "products"
                         referencedColumns: ["id"]
-                    }
+                    },
                 ]
             }
-            seller_profiles: {
+            course_holes: {
                 Row: {
                     id: string
-                    user_id: string
-                    store_name: string
-                    entity_type: 'natural' | 'juridica'
-                    full_name: string | null
-                    document_type: string | null
-                    document_number: string | null
-                    company_name: string | null
-                    nit: string | null
-                    legal_representative: string | null
-                    bank_name: string
-                    account_type: 'ahorros' | 'corriente'
-                    account_number: string
-                    account_holder_name: string
-                    account_holder_document: string
-                    status: string
-                    created_at: string
-                    updated_at: string
+                    course_id: string
+                    recorrido: string | null
+                    hole_number: number
+                    par: number
+                    handicap: number | null
+                    created_at: string | null
                 }
                 Insert: {
                     id?: string
-                    user_id: string
-                    store_name: string
-                    entity_type: 'natural' | 'juridica'
-                    full_name?: string | null
-                    document_type?: string | null
-                    document_number?: string | null
-                    company_name?: string | null
-                    nit?: string | null
-                    legal_representative?: string | null
-                    bank_name: string
-                    account_type: 'ahorros' | 'corriente'
-                    account_number: string
-                    account_holder_name: string
-                    account_holder_document: string
-                    status?: string
-                    created_at?: string
-                    updated_at?: string
+                    course_id: string
+                    recorrido?: string | null
+                    hole_number: number
+                    par: number
+                    handicap?: number | null
+                    created_at?: string | null
                 }
                 Update: {
                     id?: string
-                    user_id?: string
-                    store_name?: string
-                    entity_type?: 'natural' | 'juridica'
-                    full_name?: string | null
-                    document_type?: string | null
-                    document_number?: string | null
-                    company_name?: string | null
-                    nit?: string | null
-                    legal_representative?: string | null
-                    bank_name?: string
-                    account_type?: 'ahorros' | 'corriente'
-                    account_number?: string
-                    account_holder_name?: string
-                    account_holder_document?: string
-                    status?: string
-                    created_at?: string
-                    updated_at?: string
+                    course_id?: string
+                    recorrido?: string | null
+                    hole_number?: number
+                    par?: number
+                    handicap?: number | null
+                    created_at?: string | null
+                }
+                Relationships: []
+            }
+            messages: {
+                Row: {
+                    chat_id: string | null
+                    content: string
+                    created_at: string | null
+                    id: string
+                    sender_id: string | null
+                }
+                Insert: {
+                    chat_id?: string | null
+                    content: string
+                    created_at?: string | null
+                    id?: string
+                    sender_id?: string | null
+                }
+                Update: {
+                    chat_id?: string | null
+                    content?: string
+                    created_at?: string | null
+                    id?: string
+                    sender_id?: string | null
                 }
                 Relationships: [
                     {
-                        foreignKeyName: "seller_profiles_user_id_fkey"
-                        columns: ["user_id"]
-                        isOneToOne: true
-                        referencedRelation: "users"
+                        foreignKeyName: "messages_chat_id_fkey"
+                        columns: ["chat_id"]
+                        isOneToOne: false
+                        referencedRelation: "chats"
+                        referencedColumns: ["id"]
+                    },
+                ]
+            }
+            notifications: {
+                Row: {
+                    created_at: string | null
+                    id: string
+                    link: string | null
+                    message: string
+                    read: boolean | null
+                    title: string
+                    type: string | null
+                    user_id: string | null
+                }
+                Insert: {
+                    created_at?: string | null
+                    id?: string
+                    link?: string | null
+                    message: string
+                    read?: boolean | null
+                    title: string
+                    type?: string | null
+                    user_id?: string | null
+                }
+                Update: {
+                    created_at?: string | null
+                    id?: string
+                    link?: string | null
+                    message?: string
+                    read?: boolean | null
+                    title?: string
+                    type?: string | null
+                    user_id?: string | null
+                }
+                Relationships: []
+            }
+            offers: {
+                Row: {
+                    buyer_id: string
+                    created_at: string | null
+                    id: string
+                    message: string | null
+                    offer_amount: number
+                    product_id: string
+                    seller_id: string
+                    status: string | null
+                    updated_at: string | null
+                }
+                Insert: {
+                    buyer_id: string
+                    created_at?: string | null
+                    id?: string
+                    message?: string | null
+                    offer_amount: number
+                    product_id: string
+                    seller_id: string
+                    status?: string | null
+                    updated_at?: string | null
+                }
+                Update: {
+                    buyer_id?: string
+                    created_at?: string | null
+                    id?: string
+                    message?: string | null
+                    offer_amount?: number
+                    product_id?: string
+                    seller_id?: string
+                    status?: string | null
+                    updated_at?: string | null
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "offers_product_id_fkey"
+                        columns: ["product_id"]
+                        isOneToOne: false
+                        referencedRelation: "products"
                         referencedColumns: ["id"]
                     }
                 ]
             }
-            products: {
+            order_items: {
                 Row: {
                     id: string
-                    price: number
-                    stock_quantity: number
+                    order_id: string
+                    product_id: string | null
+                    quantity: number
+                    price_at_purchase: number
                     created_at: string
-                    updated_at: string
-                    seller_id: string
-                    image_url: string | null
-                    size_shoes_col: string | null
-                    size_shoes_cm: string | null
-                    clothing_type: string | null
-                    status: string | null
-                    images: string[]
-                    size: string | null
-                    size_clothing: string | null
-                    size_shoes_us: string | null
-                    name: string
-                    brand: string | null
-                    description: string | null
-                    size_shoes_eu: string | null
-                    category: string | null
-                    is_negotiable: boolean
                 }
                 Insert: {
                     id?: string
-                    price: number
-                    stock_quantity?: number
+                    order_id: string
+                    product_id?: string | null
+                    quantity: number
+                    price_at_purchase: number
                     created_at?: string
-                    updated_at?: string
-                    seller_id: string
-                    image_url?: string | null
-                    size_shoes_col?: string | null
-                    size_shoes_cm?: string | null
-                    clothing_type?: string | null
-                    status?: string | null
-                    images?: string[]
-                    size?: string | null
-                    size_clothing?: string | null
-                    size_shoes_us?: string | null
-                    name: string
-                    brand?: string | null
-                    description?: string | null
-                    size_shoes_eu?: string | null
-                    category?: string | null
                 }
                 Update: {
                     id?: string
-                    price?: number
-                    stock_quantity?: number
+                    order_id?: string
+                    product_id?: string | null
+                    quantity?: number
+                    price_at_purchase?: number
                     created_at?: string
-                    updated_at?: string
-                    seller_id?: string
-                    image_url?: string | null
-                    size_shoes_col?: string | null
-                    size_shoes_cm?: string | null
-                    clothing_type?: string | null
-                    status?: string | null
-                    images?: string[]
-                    size?: string | null
-                    size_clothing?: string | null
-                    size_shoes_us?: string | null
-                    name?: string
-                    brand?: string | null
-                    description?: string | null
-                    size_shoes_eu?: string | null
-                    category?: string | null
                 }
                 Relationships: [
                     {
-                        foreignKeyName: "products_seller_id_fkey"
-                        columns: ["seller_id"]
+                        foreignKeyName: "order_items_order_id_fkey"
+                        columns: ["order_id"]
                         isOneToOne: false
-                        referencedRelation: "users"
+                        referencedRelation: "orders"
+                        referencedColumns: ["id"]
+                    },
+                    {
+                        foreignKeyName: "order_items_product_id_fkey"
+                        columns: ["product_id"]
+                        isOneToOne: false
+                        referencedRelation: "products"
                         referencedColumns: ["id"]
                     }
                 ]
             }
             orders: {
                 Row: {
-                    id: string
-                    user_id: string
-                    items: Json
-                    total_amount: number
-                    status: string
-                    created_at: string
-                    updated_at: string
-                    seller_id: string
-                    shipping_address: string
+                    buyer_id: string | null
                     buyer_name: string | null
                     buyer_phone: string | null
-                    seller_net_amount: number
                     commission_amount: number
-                    tracking_number: string | null
-                    shipping_provider: string | null
+                    created_at: string | null
+                    id: string
+                    items: Json | null
                     product_id: string | null
-                    buyer_id: string | null
+                    seller_id: string | null
+                    seller_net_amount: number
+                    shipping_address: string
+                    shipping_provider: string | null
+                    status: string | null
+                    total_amount: number
+                    tracking_number: string | null
+                    updated_at: string | null
+                    user_id: string | null
                 }
                 Insert: {
-                    id?: string
-                    user_id: string
-                    items: Json
-                    total_amount: number
-                    status?: string
-                    created_at?: string
-                    updated_at?: string
-                    seller_id: string
-                    shipping_address: string
+                    buyer_id?: string | null
                     buyer_name?: string | null
                     buyer_phone?: string | null
-                    seller_net_amount: number
-                    commission_amount: number
-                    tracking_number?: string | null
-                    shipping_provider?: string | null
+                    commission_amount?: number
+                    created_at?: string | null
+                    id?: string
+                    items?: Json | null
                     product_id?: string | null
-                    buyer_id?: string | null
+                    seller_id?: string | null
+                    seller_net_amount?: number
+                    shipping_address: string
+                    shipping_provider?: string | null
+                    status?: string | null
+                    total_amount: number
+                    tracking_number?: string | null
+                    updated_at?: string | null
+                    user_id?: string | null
                 }
                 Update: {
-                    id?: string
-                    user_id?: string
-                    items?: Json
-                    total_amount?: number
-                    status?: string
-                    created_at?: string
-                    updated_at?: string
-                    seller_id?: string
-                    shipping_address?: string
+                    buyer_id?: string | null
                     buyer_name?: string | null
                     buyer_phone?: string | null
-                    seller_net_amount?: number
                     commission_amount?: number
-                    tracking_number?: string | null
-                    shipping_provider?: string | null
+                    created_at?: string | null
+                    id?: string
+                    items?: Json | null
                     product_id?: string | null
-                    buyer_id?: string | null
+                    seller_id?: string | null
+                    seller_net_amount?: number
+                    shipping_address?: string
+                    shipping_provider?: string | null
+                    status?: string | null
+                    total_amount?: number
+                    tracking_number?: string | null
+                    updated_at?: string | null
+                    user_id?: string | null
                 }
                 Relationships: [
                     {
-                        foreignKeyName: "orders_user_id_fkey"
-                        columns: ["user_id"]
-                        isOneToOne: false
-                        referencedRelation: "users"
-                        referencedColumns: ["id"]
-                    },
-                    {
-                        foreignKeyName: "orders_seller_id_fkey"
-                        columns: ["seller_id"]
+                        foreignKeyName: "orders_buyer_id_fkey"
+                        columns: ["buyer_id"]
                         isOneToOne: false
                         referencedRelation: "profiles"
                         referencedColumns: ["id"]
@@ -308,133 +328,556 @@ export type Database = {
                         referencedColumns: ["id"]
                     },
                     {
-                        foreignKeyName: "orders_buyer_id_fkey"
-                        columns: ["buyer_id"]
+                        foreignKeyName: "orders_seller_id_fkey"
+                        columns: ["seller_id"]
                         isOneToOne: false
                         referencedRelation: "profiles"
                         referencedColumns: ["id"]
                     }
                 ]
             }
+            payment_methods: {
+                Row: {
+                    card_holder: string
+                    card_type: string
+                    created_at: string | null
+                    expiry: string
+                    id: string
+                    is_default: boolean | null
+                    last_four: string
+                    user_id: string | null
+                }
+                Insert: {
+                    card_holder: string
+                    card_type: string
+                    created_at?: string | null
+                    expiry: string
+                    id?: string
+                    is_default?: boolean | null
+                    last_four: string
+                    user_id?: string | null
+                }
+                Update: {
+                    card_holder?: string
+                    card_type?: string
+                    created_at?: string | null
+                    expiry?: string
+                    id?: string
+                    is_default?: boolean | null
+                    last_four?: string
+                    user_id?: string | null
+                }
+                Relationships: []
+            }
+            products: {
+                Row: {
+                    brand: string | null
+                    category: string | null
+                    clothing_type: string | null
+                    created_at: string | null
+                    description: string | null
+                    id: string
+                    image_url: string | null
+                    images: string[] | null
+                    is_negotiable: boolean | null
+                    name: string
+                    price: number
+                    seller_id: string
+                    size: string | null
+                    size_clothing: string | null
+                    size_shoes_cm: string | null
+                    size_shoes_col: string | null
+                    size_shoes_eu: string | null
+                    size_shoes_us: string | null
+                    status: string | null
+                    stock_quantity: number | null
+                    updated_at: string | null
+                }
+                Insert: {
+                    brand?: string | null
+                    category?: string | null
+                    clothing_type?: string | null
+                    created_at?: string | null
+                    description?: string | null
+                    id?: string
+                    image_url?: string | null
+                    images?: string[] | null
+                    is_negotiable?: boolean | null
+                    name: string
+                    price: number
+                    seller_id: string
+                    size?: string | null
+                    size_clothing?: string | null
+                    size_shoes_cm?: string | null
+                    size_shoes_col?: string | null
+                    size_shoes_eu?: string | null
+                    size_shoes_us?: string | null
+                    status?: string | null
+                    stock_quantity?: number | null
+                    updated_at?: string | null
+                }
+                Update: {
+                    brand?: string | null
+                    category?: string | null
+                    clothing_type?: string | null
+                    created_at?: string | null
+                    description?: string | null
+                    id?: string
+                    image_url?: string | null
+                    images?: string[] | null
+                    is_negotiable?: boolean | null
+                    name?: string
+                    price?: number
+                    seller_id?: string
+                    size?: string | null
+                    size_clothing?: string | null
+                    size_shoes_cm?: string | null
+                    size_shoes_col?: string | null
+                    size_shoes_eu?: string | null
+                    size_shoes_us?: string | null
+                    status?: string | null
+                    stock_quantity?: number | null
+                    updated_at?: string | null
+                }
+                Relationships: []
+            }
             profiles: {
                 Row: {
-                    id: string
-                    full_name: string | null
-                    federation_code: string | null
-                    id_photo_url: string | null
-                    updated_at: string | null
-                    is_premium: boolean | null
-                    handicap: number | null
-                    email: string | null
-                    phone: string | null
-                    total_rounds: number | null
-                    average_score: number | null
-                    putts_avg: number | null
-                    fairways_hit_rate: number | null
-                    best_score: number | null
                     address: string | null
+                    average_score: number | null
+                    best_score: number | null
+                    email: string | null
+                    fairways_hit_rate: number | null
+                    federation_code: string | null
+                    full_name: string | null
+                    handicap: number | null
+                    id: string
+                    id_photo_url: string | null
+                    is_premium: boolean | null
+                    phone: string | null
+                    putts_avg: number | null
+                    total_rounds: number | null
+                    updated_at: string | null
                 }
                 Insert: {
-                    id: string
-                    full_name?: string | null
-                    federation_code?: string | null
-                    id_photo_url?: string | null
-                    updated_at?: string | null
-                    is_premium?: boolean | null
-                    handicap?: number | null
-                    email?: string | null
-                    phone?: string | null
-                    total_rounds?: number | null
-                    average_score?: number | null
-                    putts_avg?: number | null
-                    fairways_hit_rate?: number | null
-                    best_score?: number | null
                     address?: string | null
+                    average_score?: number | null
+                    best_score?: number | null
+                    email?: string | null
+                    fairways_hit_rate?: number | null
+                    federation_code?: string | null
+                    full_name?: string | null
+                    handicap?: number | null
+                    id: string
+                    id_photo_url?: string | null
+                    is_premium?: boolean | null
+                    phone?: string | null
+                    putts_avg?: number | null
+                    total_rounds?: number | null
+                    updated_at?: string | null
                 }
                 Update: {
-                    id?: string
-                    full_name?: string | null
-                    federation_code?: string | null
-                    id_photo_url?: string | null
-                    updated_at?: string | null
-                    is_premium?: boolean | null
-                    handicap?: number | null
-                    email?: string | null
-                    phone?: string | null
-                    total_rounds?: number | null
-                    average_score?: number | null
-                    putts_avg?: number | null
-                    fairways_hit_rate?: number | null
-                    best_score?: number | null
                     address?: string | null
+                    average_score?: number | null
+                    best_score?: number | null
+                    email?: string | null
+                    fairways_hit_rate?: number | null
+                    federation_code?: string | null
+                    full_name?: string | null
+                    handicap?: number | null
+                    id?: string
+                    id_photo_url?: string | null
+                    is_premium?: boolean | null
+                    phone?: string | null
+                    putts_avg?: number | null
+                    total_rounds?: number | null
+                    updated_at?: string | null
                 }
-                Relationships: [
-                    {
-                        foreignKeyName: "profiles_id_fkey"
-                        columns: ["id"]
-                        isOneToOne: true
-                        referencedRelation: "users"
-                        referencedColumns: ["id"]
-                    }
-                ]
+                Relationships: []
             }
-            offers: {
+            reservations: {
+                Row: {
+                    club_id: string | null
+                    created_at: string | null
+                    date: string
+                    id: string
+                    status: string | null
+                    time: string
+                    user_id: string | null
+                }
+                Insert: {
+                    club_id?: string | null
+                    created_at?: string | null
+                    date: string
+                    id?: string
+                    status?: string | null
+                    time: string
+                    user_id?: string | null
+                }
+                Update: {
+                    club_id?: string | null
+                    created_at?: string | null
+                    date?: string
+                    id?: string
+                    status?: string | null
+                    time?: string
+                    user_id?: string | null
+                }
+                Relationships: []
+            }
+            reviews: {
                 Row: {
                     id: string
-                    product_id: string
-                    buyer_id: string
-                    seller_id: string
-                    offer_amount: number
-                    message: string | null
-                    status: 'pending' | 'accepted' | 'rejected' | 'countered'
-                    created_at: string
-                    updated_at: string
+                    product_id: string | null
+                    reviewer_id: string | null
+                    rating: number
+                    comment: string | null
+                    created_at: string | null
                 }
                 Insert: {
                     id?: string
-                    product_id: string
-                    buyer_id: string
-                    seller_id: string
-                    offer_amount: number
-                    message?: string | null
-                    status?: 'pending' | 'accepted' | 'rejected' | 'countered'
-                    created_at?: string
-                    updated_at?: string
+                    product_id?: string | null
+                    reviewer_id?: string | null
+                    rating: number
+                    comment?: string | null
+                    created_at?: string | null
                 }
                 Update: {
                     id?: string
-                    product_id?: string
-                    buyer_id?: string
-                    seller_id?: string
-                    offer_amount?: number
-                    message?: string | null
-                    status?: 'pending' | 'accepted' | 'rejected' | 'countered'
-                    created_at?: string
-                    updated_at?: string
+                    product_id?: string | null
+                    reviewer_id?: string | null
+                    rating?: number
+                    comment?: string | null
+                    created_at?: string | null
                 }
                 Relationships: [
                     {
-                        foreignKeyName: "offers_product_id_fkey"
+                        foreignKeyName: "reviews_product_id_fkey"
                         columns: ["product_id"]
                         isOneToOne: false
                         referencedRelation: "products"
                         referencedColumns: ["id"]
                     },
                     {
-                        foreignKeyName: "offers_buyer_id_fkey"
-                        columns: ["buyer_id"]
+                        foreignKeyName: "reviews_reviewer_id_fkey"
+                        columns: ["reviewer_id"]
                         isOneToOne: false
-                        referencedRelation: "users"
-                        referencedColumns: ["id"]
-                    },
-                    {
-                        foreignKeyName: "offers_seller_id_fkey"
-                        columns: ["seller_id"]
-                        isOneToOne: false
-                        referencedRelation: "users"
+                        referencedRelation: "profiles"
                         referencedColumns: ["id"]
                     }
                 ]
+            }
+            round_holes: {
+                Row: {
+                    id: string
+                    round_id: string
+                    hole_number: number
+                    par: number
+                    score: number
+                    putts: number | null
+                    fairway_hit: boolean | null
+                    gir: boolean | null
+                    created_at: string | null
+                }
+                Insert: {
+                    id?: string
+                    round_id: string
+                    hole_number: number
+                    par: number
+                    score: number
+                    putts?: number | null
+                    fairway_hit?: boolean | null
+                    gir?: boolean | null
+                    created_at?: string | null
+                }
+                Update: {
+                    id?: string
+                    round_id?: string
+                    hole_number?: number
+                    par?: number
+                    score?: number
+                    putts?: number | null
+                    fairway_hit?: boolean | null
+                    gir?: boolean | null
+                    created_at?: string | null
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "round_holes_round_id_fkey"
+                        columns: ["round_id"]
+                        isOneToOne: false
+                        referencedRelation: "rounds"
+                        referencedColumns: ["id"]
+                    }
+                ]
+            }
+            round_scores: {
+                Row: {
+                    id: string
+                    round_id: string
+                    hole_number: number
+                    par: number
+                    score: number
+                    fairways_hit: boolean | null
+                    gir: boolean | null
+                    putts: number | null
+                    created_at: string
+                }
+                Insert: {
+                    id?: string
+                    round_id: string
+                    hole_number: number
+                    par: number
+                    score: number
+                    fairways_hit?: boolean | null
+                    gir?: boolean | null
+                    putts?: number | null
+                    created_at?: string
+                }
+                Update: {
+                    id?: string
+                    round_id?: string
+                    hole_number?: number
+                    par?: number
+                    score?: number
+                    fairways_hit?: boolean | null
+                    gir?: boolean | null
+                    putts?: number | null
+                    created_at?: string
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "round_scores_round_id_fkey"
+                        columns: ["round_id"]
+                        isOneToOne: false
+                        referencedRelation: "rounds"
+                        referencedColumns: ["id"]
+                    }
+                ]
+            }
+            rounds: {
+                Row: {
+                    id: string
+                    user_id: string
+                    course_name: string
+                    course_location: string | null
+                    date_played: string
+                    total_score: number | null
+                    status: string | null
+                    created_at: string
+                    first_nine_score: number | null
+                    second_nine_score: number | null
+                    total_putts: number | null
+                    fairways_hit: number | null
+                    greens_in_regulation: number | null
+                    weather_conditions: string | null
+                    notes: string | null
+                    ai_analysis: string | null
+                    updated_at: string | null
+                }
+                Insert: {
+                    id?: string
+                    user_id: string
+                    course_name: string
+                    course_location?: string | null
+                    date_played: string
+                    total_score?: number | null
+                    status?: string | null
+                    created_at?: string
+                    first_nine_score?: number | null
+                    second_nine_score?: number | null
+                    total_putts?: number | null
+                    fairways_hit?: number | null
+                    greens_in_regulation?: number | null
+                    weather_conditions?: string | null
+                    notes?: string | null
+                    ai_analysis?: string | null
+                    updated_at?: string | null
+                }
+                Update: {
+                    id?: string
+                    user_id?: string
+                    course_name?: string
+                    course_location?: string | null
+                    date_played?: string
+                    total_score?: number | null
+                    status?: string | null
+                    created_at?: string
+                    first_nine_score?: number | null
+                    second_nine_score?: number | null
+                    total_putts?: number | null
+                    fairways_hit?: number | null
+                    greens_in_regulation?: number | null
+                    weather_conditions?: string | null
+                    notes?: string | null
+                    ai_analysis?: string | null
+                    updated_at?: string | null
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "rounds_user_id_fkey"
+                        columns: ["user_id"]
+                        isOneToOne: false
+                        referencedRelation: "profiles"
+                        referencedColumns: ["id"]
+                    },
+                ]
+            }
+            seller_profiles: {
+                Row: {
+                    account_holder_document: string
+                    account_holder_name: string
+                    account_number: string
+                    account_type: string
+                    bank_name: string
+                    company_name: string | null
+                    created_at: string | null
+                    document_number: string | null
+                    document_type: string | null
+                    entity_type: string
+                    full_name: string | null
+                    id: string
+                    legal_representative: string | null
+                    nit: string | null
+                    status: string | null
+                    store_name: string
+                    updated_at: string | null
+                    user_id: string
+                }
+                Insert: {
+                    account_holder_document: string
+                    account_holder_name: string
+                    account_number: string
+                    account_type: string
+                    bank_name: string
+                    company_name?: string | null
+                    created_at?: string | null
+                    document_number?: string | null
+                    document_type?: string | null
+                    entity_type: string
+                    full_name?: string | null
+                    id?: string
+                    legal_representative?: string | null
+                    nit?: string | null
+                    status?: string | null
+                    store_name: string
+                    updated_at?: string | null
+                    user_id: string
+                }
+                Update: {
+                    account_holder_document?: string
+                    account_holder_name?: string
+                    account_number?: string
+                    account_type?: string
+                    bank_name?: string
+                    company_name?: string | null
+                    created_at?: string | null
+                    document_number?: string | null
+                    document_type?: string | null
+                    entity_type?: string
+                    full_name?: string | null
+                    id?: string
+                    legal_representative?: string | null
+                    nit?: string | null
+                    status?: string | null
+                    store_name?: string
+                    updated_at?: string | null
+                    user_id?: string
+                }
+                Relationships: []
+            }
+            tournament_registrations: {
+                Row: {
+                    created_at: string | null
+                    id: string
+                    registration_status: string | null
+                    tournament_id: string | null
+                    user_id: string | null
+                }
+                Insert: {
+                    created_at?: string | null
+                    id?: string
+                    registration_status?: string | null
+                    tournament_id?: string | null
+                    user_id?: string | null
+                }
+                Update: {
+                    created_at?: string | null
+                    id?: string
+                    registration_status?: string | null
+                    tournament_id?: string | null
+                    user_id?: string | null
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "tournament_registrations_tournament_id_fkey"
+                        columns: ["tournament_id"]
+                        isOneToOne: false
+                        referencedRelation: "tournaments"
+                        referencedColumns: ["id"]
+                    },
+                    {
+                        foreignKeyName: "tournament_registrations_user_id_fkey"
+                        columns: ["user_id"]
+                        isOneToOne: false
+                        referencedRelation: "profiles"
+                        referencedColumns: ["id"]
+                    },
+                ]
+            }
+            tournaments: {
+                Row: {
+                    created_at: string | null
+                    date: string
+                    description: string | null
+                    id: string
+                    image_url: string | null
+                    location: string | null
+                    max_participants: number | null
+                    name: string
+                    club: string
+                    price: number
+                    participants_limit: number | null
+                    current_participants: number | null
+                    status: string | null
+                    creator_id: string | null
+                    updated_at: string | null
+                }
+                Insert: {
+                    created_at?: string | null
+                    date: string
+                    description?: string | null
+                    id?: string
+                    image_url?: string | null
+                    location?: string | null
+                    max_participants?: number | null
+                    name: string
+                    club: string
+                    price: number
+                    participants_limit?: number | null
+                    current_participants?: number | null
+                    status?: string | null
+                    creator_id?: string | null
+                    updated_at?: string | null
+                }
+                Update: {
+                    created_at?: string | null
+                    date?: string
+                    description?: string | null
+                    id?: string
+                    image_url?: string | null
+                    location?: string | null
+                    max_participants?: number | null
+                    name?: string
+                    club?: string
+                    price?: number
+                    participants_limit?: number | null
+                    current_participants?: number | null
+                    status?: string | null
+                    creator_id?: string | null
+                    updated_at?: string | null
+                }
+                Relationships: []
             }
         }
         Views: {
@@ -459,10 +902,12 @@ export type Tables<
     | keyof (PublicSchema["Tables"] & PublicSchema["Views"])
     | { schema: keyof Database },
     TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
-    ? keyof (Database[PublicTableNameOrOptions["schema"]] & { Tables: any; Views: any })["Tables" | "Views"]
+    ? keyof (Database[PublicTableNameOrOptions["schema"]] &
+    { Tables: any; Views: any })["Tables" | "Views"]
     : never = never,
 > = PublicTableNameOrOptions extends { schema: keyof Database }
-    ? (Database[PublicTableNameOrOptions["schema"]] & { Tables: any; Views: any })["Tables" | "Views"][TableName] extends {
+    ? (Database[PublicTableNameOrOptions["schema"]] &
+    { Tables: any; Views: any })["Tables" | "Views"][TableName] extends {
         Row: infer R
     }
     ? R
@@ -482,10 +927,12 @@ export type TablesInsert<
     | keyof PublicSchema["Tables"]
     | { schema: keyof Database },
     TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
-    ? keyof (Database[PublicTableNameOrOptions["schema"]] & { Tables: any })["Tables"]
+    ? keyof (Database[PublicTableNameOrOptions["schema"]] &
+    { Tables: any })["Tables"]
     : never = never,
 > = PublicTableNameOrOptions extends { schema: keyof Database }
-    ? (Database[PublicTableNameOrOptions["schema"]] & { Tables: any })["Tables"][TableName] extends {
+    ? (Database[PublicTableNameOrOptions["schema"]] &
+    { Tables: any })["Tables"][TableName] extends {
         Insert: infer I
     }
     ? I
@@ -503,10 +950,12 @@ export type TablesUpdate<
     | keyof PublicSchema["Tables"]
     | { schema: keyof Database },
     TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
-    ? keyof (Database[PublicTableNameOrOptions["schema"]] & { Tables: any })["Tables"]
+    ? keyof (Database[PublicTableNameOrOptions["schema"]] &
+    { Tables: any })["Tables"]
     : never = never,
 > = PublicTableNameOrOptions extends { schema: keyof Database }
-    ? (Database[PublicTableNameOrOptions["schema"]] & { Tables: any })["Tables"][TableName] extends {
+    ? (Database[PublicTableNameOrOptions["schema"]] &
+    { Tables: any })["Tables"][TableName] extends {
         Update: infer U
     }
     ? U
@@ -524,10 +973,12 @@ export type Enums<
     | keyof PublicSchema["Enums"]
     | { schema: keyof Database },
     EnumName extends PublicEnumNameOrOptions extends { schema: keyof Database }
-    ? keyof (Database[PublicEnumNameOrOptions["schema"]] & { Enums: any })["Enums"]
+    ? keyof (Database[PublicEnumNameOrOptions["schema"]] &
+    { Enums: any })["Enums"]
     : never = never,
 > = PublicEnumNameOrOptions extends { schema: keyof Database }
-    ? (Database[PublicEnumNameOrOptions["schema"]] & { Enums: any })["Enums"][EnumName]
+    ? (Database[PublicEnumNameOrOptions["schema"]] &
+    { Enums: any })["Enums"][EnumName]
     : PublicEnumNameOrOptions extends keyof PublicSchema["Enums"]
     ? PublicSchema["Enums"][PublicEnumNameOrOptions]
     : never

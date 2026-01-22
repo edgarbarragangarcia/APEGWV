@@ -7,11 +7,11 @@ import Card from '../components/Card';
 interface Round {
     id: string;
     course_name: string;
-    course_location: string;
+    course_location: string | null;
     date_played: string;
-    total_score: number;
-    first_nine_score?: number;
-    second_nine_score?: number;
+    total_score: number | null;
+    first_nine_score: number | null;
+    second_nine_score: number | null;
 }
 
 const EditRound: React.FC = () => {
@@ -23,15 +23,16 @@ const EditRound: React.FC = () => {
 
     useEffect(() => {
         const fetchRound = async () => {
+            if (!id) return;
             try {
-                const { data, error } = await supabase
+                const { data: roundData, error: roundError } = await supabase
                     .from('rounds')
                     .select('*')
                     .eq('id', id)
                     .single();
 
-                if (error) throw error;
-                setRound(data);
+                if (roundError) throw roundError;
+                setRound(roundData as Round);
             } catch (err) {
                 console.error('Error fetching round:', err);
                 navigate('/rounds');
@@ -97,8 +98,8 @@ const EditRound: React.FC = () => {
                                 onChange={(e) => setRound({ ...round, course_name: e.target.value })}
                                 style={{
                                     width: '100%',
-                                    background: 'rgba(255,255,255,0.05)',
-                                    border: '1px solid rgba(255,255,255,0.1)',
+                                    background: 'rgba(255,b255,b255,0.05)',
+                                    border: '1px solid rgba(255,b255,b255,0.1)',
                                     borderRadius: '10px',
                                     padding: '12px',
                                     color: 'white',
@@ -112,12 +113,12 @@ const EditRound: React.FC = () => {
                             <label style={{ display: 'block', fontSize: '12px', color: 'var(--text-dim)', marginBottom: '8px' }}>UBICACIÓN</label>
                             <input
                                 type="text"
-                                value={round.course_location}
-                                onChange={(e) => setRound({ ...round, course_location: e.target.value })}
+                                value={round.course_location || ''}
+                                onChange={(e) => setRound({ ...round, course_location: e.target.value || null })}
                                 style={{
                                     width: '100%',
-                                    background: 'rgba(255,255,255,0.05)',
-                                    border: '1px solid rgba(255,255,255,0.1)',
+                                    background: 'rgba(255,b255,b255,0.05)',
+                                    border: '1px solid rgba(255,b255,b255,0.1)',
                                     borderRadius: '10px',
                                     padding: '12px',
                                     color: 'white',
@@ -135,8 +136,8 @@ const EditRound: React.FC = () => {
                                     onChange={(e) => setRound({ ...round, date_played: e.target.value })}
                                     style={{
                                         width: '100%',
-                                        background: 'rgba(255,255,255,0.05)',
-                                        border: '1px solid rgba(255,255,255,0.1)',
+                                        background: 'rgba(255,b255,b255,0.05)',
+                                        border: '1px solid rgba(255,b255,b255,0.1)',
                                         borderRadius: '10px',
                                         padding: '12px',
                                         color: 'white',
@@ -149,12 +150,12 @@ const EditRound: React.FC = () => {
                                 <label style={{ display: 'block', fontSize: '12px', color: 'var(--text-dim)', marginBottom: '8px' }}>SCORE TOTAL</label>
                                 <input
                                     type="number"
-                                    value={round.total_score}
-                                    onChange={(e) => setRound({ ...round, total_score: parseInt(e.target.value) || 0 })}
+                                    value={round.total_score || ''}
+                                    onChange={(e) => setRound({ ...round, total_score: parseInt(e.target.value) || null })}
                                     style={{
                                         width: '100%',
-                                        background: 'rgba(255,255,255,0.05)',
-                                        border: '1px solid rgba(255,255,255,0.1)',
+                                        background: 'rgba(255,b255,b255,0.05)',
+                                        border: '1px solid rgba(255,b255,b255,0.1)',
                                         borderRadius: '10px',
                                         padding: '12px',
                                         color: 'white',
@@ -171,11 +172,11 @@ const EditRound: React.FC = () => {
                                 <input
                                     type="number"
                                     value={round.first_nine_score || ''}
-                                    onChange={(e) => setRound({ ...round, first_nine_score: parseInt(e.target.value) || undefined })}
+                                    onChange={(e) => setRound({ ...round, first_nine_score: parseInt(e.target.value) || null })}
                                     style={{
                                         width: '100%',
-                                        background: 'rgba(255,255,255,0.05)',
-                                        border: '1px solid rgba(255,255,255,0.1)',
+                                        background: 'rgba(255,b255,b255,0.05)',
+                                        border: '1px solid rgba(255,b255,b255,0.1)',
                                         borderRadius: '10px',
                                         padding: '12px',
                                         color: 'white',
@@ -188,11 +189,11 @@ const EditRound: React.FC = () => {
                                 <input
                                     type="number"
                                     value={round.second_nine_score || ''}
-                                    onChange={(e) => setRound({ ...round, second_nine_score: parseInt(e.target.value) || undefined })}
+                                    onChange={(e) => setRound({ ...round, second_nine_score: parseInt(e.target.value) || null })}
                                     style={{
                                         width: '100%',
-                                        background: 'rgba(255,255,255,0.05)',
-                                        border: '1px solid rgba(255,255,255,0.1)',
+                                        background: 'rgba(255,b255,b255,0.05)',
+                                        border: '1px solid rgba(255,b255,b255,0.1)',
                                         borderRadius: '10px',
                                         padding: '12px',
                                         color: 'white',

@@ -5,10 +5,12 @@ import { analyzeRound, type RoundData, type AIAnalysis } from '../services/AISer
 import { ArrowLeft, Calendar, MapPin, Loader2, Sparkles, TrendingUp, TrendingDown, Target } from 'lucide-react';
 import Card from '../components/Card';
 
-interface Round extends RoundData {
+interface Round extends Omit<RoundData, 'course_location' | 'status'> {
     id: string;
-    course_location?: string;
-    status?: string;
+    course_location: string | null;
+    status: string | null;
+    ai_analysis: string | null;
+    handicap?: number;
 }
 
 interface Hole {
@@ -26,7 +28,7 @@ const RoundDetail: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [analyzing, setAnalyzing] = useState(false);
     const [round, setRound] = useState<Round | null>(null);
-    const [holes, setHoles] = useState<Hole[]>([]);
+    const [holes, setHoles] = useState<any[]>([]);
     const [analysis, setAnalysis] = useState<AIAnalysis | null>(null);
 
     useEffect(() => {
@@ -38,6 +40,8 @@ const RoundDetail: React.FC = () => {
                     return;
                 }
 
+                if (!id) return;
+
                 // Fetch round
                 const { data: roundData, error: roundError } = await supabase
                     .from('rounds')
@@ -47,7 +51,7 @@ const RoundDetail: React.FC = () => {
                     .single();
 
                 if (roundError) throw roundError;
-                setRound(roundData);
+                setRound(roundData as unknown as Round);
 
                 // Fetch holes
                 const { data: holesData, error: holesError } = await supabase
@@ -91,7 +95,7 @@ const RoundDetail: React.FC = () => {
                 total_putts: round.total_putts,
                 fairways_hit: round.fairways_hit,
                 greens_in_regulation: round.greens_in_regulation,
-                handicap: round.handicap,
+                handicap: round.handicap ?? undefined,
                 holes: holes
             };
 
@@ -99,10 +103,12 @@ const RoundDetail: React.FC = () => {
             setAnalysis(aiAnalysis);
 
             // Save analysis to database
-            await supabase
-                .from('rounds')
-                .update({ ai_analysis: JSON.stringify(aiAnalysis) })
-                .eq('id', id);
+            if (id) {
+                await supabase
+                    .from('rounds')
+                    .update({ ai_analysis: JSON.stringify(aiAnalysis) })
+                    .eq('id', id);
+            }
         } catch (error) {
             console.error('Error generating analysis:', error);
         } finally {

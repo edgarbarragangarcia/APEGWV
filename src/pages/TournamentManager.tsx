@@ -9,14 +9,14 @@ import { useAuth } from '../context/AuthContext';
 interface Tournament {
     id: string;
     name: string;
-    description: string;
+    description: string | null;
     date: string;
     club: string;
     price: number;
-    participants_limit: number;
-    current_participants: number;
-    status: string;
-    image_url: string;
+    participants_limit: number | null;
+    current_participants: number | null;
+    status: string | null;
+    image_url: string | null;
 }
 
 const TournamentManager: React.FC = () => {
@@ -89,7 +89,7 @@ const TournamentManager: React.FC = () => {
                 .order('created_at', { ascending: false });
 
             if (error) throw error;
-            setTournaments((userTourneys as Tournament[]) || []);
+            setTournaments((userTourneys as unknown as Tournament[]) || []);
         } catch (err) {
             console.error('Error fetching tournament data:', err);
         } finally {
@@ -152,9 +152,9 @@ const TournamentManager: React.FC = () => {
             if (error) throw error;
 
             if (editingId) {
-                setTournaments(tournaments.map(t => t.id === editingId ? data : t));
+                setTournaments(tournaments.map(t => t.id === editingId ? data as unknown as Tournament : t));
             } else {
-                setTournaments([data, ...tournaments]);
+                setTournaments([data as unknown as Tournament, ...tournaments]);
             }
 
             setShowForm(false);
@@ -190,8 +190,8 @@ const TournamentManager: React.FC = () => {
             club: tournament.club,
             price: p,
             displayPrice: formatPrice(p),
-            participants_limit: tournament.participants_limit.toString(),
-            image_url: tournament.image_url
+            participants_limit: (tournament.participants_limit || 100).toString(),
+            image_url: tournament.image_url || 'https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?q=80&w=1000&auto=format&fit=crop'
         });
         setEditingId(tournament.id);
         setShowForm(true);

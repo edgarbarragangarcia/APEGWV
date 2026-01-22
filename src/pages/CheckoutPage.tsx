@@ -17,7 +17,7 @@ interface PaymentMethod {
     last_four: string;
     expiry: string;
     card_type: string;
-    is_default: boolean;
+    is_default: boolean | null;
 }
 
 const CheckoutPage: React.FC = () => {
@@ -121,13 +121,16 @@ const CheckoutPage: React.FC = () => {
                     buyer_id: user.id,
                     seller_id: sellerId === 'admin' ? null : sellerId,
                     product_id: item.id,
-                    total_price: item.price * item.quantity,
                     total_amount: item.price * item.quantity,
-                    // platform_fee and seller_payout calculated by trigger
+                    // commission_amount and seller_net_amount are required by current types
+                    // but usually calculated by triggers. Setting to 0 as fallback.
+                    commission_amount: 0,
+                    seller_net_amount: 0,
                     status: 'Pagado',
                     shipping_address: fullAddress,
                     buyer_name: shipping.name,
-                    buyer_phone: shipping.phone
+                    buyer_phone: shipping.phone,
+                    items: JSON.stringify([item])
                 });
 
                 if (orderError) throw orderError;

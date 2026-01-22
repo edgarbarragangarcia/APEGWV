@@ -23,7 +23,7 @@ const Home: React.FC = () => {
                     .select('*')
                     .eq('id', session.user.id)
                     .maybeSingle();
-                setProfile(profileData);
+                setProfile(profileData || null);
 
                 // Fetch Stats
                 // This was statsData, but we now use live round count
@@ -48,7 +48,7 @@ const Home: React.FC = () => {
                 if (productsData) {
                     setFeaturedProducts(productsData.map(p => ({
                         ...p,
-                        price: parseFloat(p.price)
+                        price: typeof p.price === 'string' ? parseFloat(p.price) : p.price
                     })));
                 }
             } catch (err) {

@@ -9,14 +9,14 @@ import { optimizeImage } from '../services/SupabaseManager';
 interface Tournament {
     id: string;
     name: string;
-    description: string;
+    description: string | null;
     date: string;
     club: string;
     price: number;
-    participants_limit: number;
-    current_participants: number;
-    status: string;
-    image_url: string;
+    participants_limit: number | null;
+    current_participants: number | null;
+    status: string | null;
+    image_url: string | null;
 }
 
 const Tournaments: React.FC = () => {
@@ -42,7 +42,7 @@ const Tournaments: React.FC = () => {
                 .order('date', { ascending: true });
 
             if (tError) throw tError;
-            setTournaments((allTourneys as Tournament[]) || []);
+            setTournaments((allTourneys as unknown as Tournament[]) || []);
 
             // Fetch user registrations
             if (user) {

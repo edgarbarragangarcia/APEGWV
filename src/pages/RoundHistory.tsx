@@ -10,12 +10,12 @@ import { useAuth } from '../context/AuthContext';
 interface Round {
     id: string;
     course_name: string;
-    course_location: string;
+    course_location: string | null;
     date_played: string;
-    total_score: number;
-    first_nine_score?: number;
-    second_nine_score?: number;
-    status: string;
+    total_score: number | null;
+    first_nine_score: number | null;
+    second_nine_score: number | null;
+    status: string | null;
 }
 
 const RoundHistory: React.FC = () => {
@@ -29,6 +29,12 @@ const RoundHistory: React.FC = () => {
         courseName: ''
     });
 
+    // Note: The provided snippet for `fetchRounds` seems to be mixing logic for 'rounds' and 'tournaments'
+    // and introduces undefined variables like `editingId`, `setTournaments`, `tournaments` into this component.
+    // To maintain syntactic correctness and avoid new build errors, I'm applying only the `setRounds` part
+    // that aligns with the existing component's purpose of fetching rounds.
+    // If the intention was to add tournament-related functionality, that would require more extensive changes
+    // including state management for tournaments and a separate fetch function.
     useEffect(() => {
         const fetchRounds = async () => {
             if (!user) return;
@@ -40,7 +46,16 @@ const RoundHistory: React.FC = () => {
                     .order('date_played', { ascending: false });
 
                 if (error) throw error;
-                setRounds(data || []);
+                setRounds((data as any[]) || []);
+                // The following lines from the user's instruction are commented out
+                // because they introduce undefined variables (editingId, setTournaments, tournaments)
+                // and logic unrelated to fetching 'rounds' in the 'RoundHistory' component,
+                // which would cause build errors.
+                // if (editingId) {
+                //     setTournaments(tournaments.map(t => t.id === editingId ? data as unknown as Tournament : t));
+                // } else {
+                //     setTournaments([data as unknown as Tournament, ...tournaments]);
+                // }
             } catch (err) {
                 console.error('Error fetching rounds:', err);
             } finally {

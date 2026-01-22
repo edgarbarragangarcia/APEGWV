@@ -97,7 +97,7 @@ const Shop: React.FC = () => {
             try {
                 const { data, error } = await supabase
                     .from('products')
-                    .select('id, name, price, category, image_url, status, seller_id, description')
+                    .select('*')
                     .eq('status', 'active')
                     .order('created_at', { ascending: false });
 
@@ -446,16 +446,16 @@ const Shop: React.FC = () => {
                             </div>
                         ) : (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                                {myOrders.map((order: any) => (
+                                {myOrders.map((order: Order) => (
                                     <Card key={order.id} style={{ padding: '20px' }}>
                                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px' }}>
                                             <span style={{
                                                 background: (order.status === 'Pendiente' || order.status === 'Pagado') ? '#f59e0b' : '#10b981',
                                                 padding: '4px 10px', borderRadius: '8px', fontSize: '11px', fontWeight: '800', color: 'white'
                                             }}>
-                                                {order.status.toUpperCase()}
+                                                {order.status?.toUpperCase() || 'PENDIENTE'}
                                             </span>
-                                            <span style={{ fontSize: '11px', color: 'var(--text-dim)' }}>{new Date(order.created_at).toLocaleDateString()}</span>
+                                            <span style={{ fontSize: '11px', color: 'var(--text-dim)' }}>{order.created_at ? new Date(order.created_at).toLocaleDateString() : '---'}</span>
                                         </div>
                                         <div style={{ display: 'flex', gap: '15px', marginBottom: '15px' }}>
                                             <img
@@ -465,7 +465,7 @@ const Shop: React.FC = () => {
                                             />
                                             <div>
                                                 <h4 style={{ fontSize: '15px', fontWeight: '800' }}>{order.product?.name || 'Pedido sin información'}</h4>
-                                                <p style={{ color: 'var(--secondary)', fontWeight: '800' }}>$ {new Intl.NumberFormat('es-CO').format(order.total_price || order.total_amount || 0)}</p>
+                                                <p style={{ color: 'var(--secondary)', fontWeight: '800' }}>$ {new Intl.NumberFormat('es-CO').format(order.total_amount || 0)}</p>
                                             </div>
                                         </div>
 
@@ -480,7 +480,7 @@ const Shop: React.FC = () => {
                                                     </div>
                                                     <div style={{ fontSize: '12px' }}>
                                                         <p style={{ fontWeight: '700' }}>Orden confirmada</p>
-                                                        <p style={{ fontSize: '10px', color: 'var(--text-dim)' }}>{new Date(order.created_at).toLocaleString()}</p>
+                                                        <p style={{ fontSize: '10px', color: 'var(--text-dim)' }}>{order.created_at ? new Date(order.created_at).toLocaleString() : '---'}</p>
                                                     </div>
                                                 </div>
                                                 <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
