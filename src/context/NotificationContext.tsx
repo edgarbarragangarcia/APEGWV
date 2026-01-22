@@ -7,6 +7,8 @@ interface NotificationContextType {
     unreadCount: number;
     markAsRead: (id: string) => Promise<void>;
     markAllAsRead: () => Promise<void>;
+    deleteNotification: (id: string) => Promise<void>;
+    deleteAllNotifications: () => Promise<void>;
     addNotification: (notification: Omit<Notification, 'id' | 'created_at' | 'read'>) => Promise<void>;
 }
 
@@ -117,6 +119,31 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
         }
     };
 
+    const deleteNotification = async (id: string) => {
+        const { error } = await supabase
+            .from('notifications')
+            .delete()
+            .eq('id', id);
+
+        if (!error) {
+            setNotifications(prev => prev.filter(n => n.id !== id));
+        }
+    };
+
+    const deleteAllNotifications = async () => {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) return;
+
+        const { error } = await supabase
+            .from('notifications')
+            .delete()
+            .eq('user_id', session.user.id);
+
+        if (!error) {
+            setNotifications([]);
+        }
+    };
+
     const addNotification = async (notificationData: Omit<Notification, 'id' | 'created_at' | 'read'>) => {
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) return;
@@ -137,6 +164,8 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
             unreadCount,
             markAsRead,
             markAllAsRead,
+            deleteNotification,
+            deleteAllNotifications,
             addNotification
         }}>
             {children}
