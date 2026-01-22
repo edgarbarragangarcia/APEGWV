@@ -21,6 +21,7 @@ export const COLOMBIAN_COURSES: GolfCourse[] = [
     { id: 'la-pradera', name: 'Campo Principal', club: 'La Pradera de Potosí', city: 'La Calera', zone: 'Bogotá', description: 'Campo de alta montaña con vistas espectaculares.', lat: 4.7500, lon: -73.9667 },
     { id: 'pueblo-viejo', name: 'Campo Principal', club: 'Pueblo Viejo Country Club', city: 'Cota', zone: 'Bogotá', description: 'Terreno plano y vientos cruzados desafiantes.', lat: 4.8167, lon: -74.1167 },
     { id: 'briceno-18', name: 'Campo Principal', club: 'Briceño 18', city: 'Sopó', zone: 'Bogotá', description: 'Campo público de gran calidad, sede de múltiples eventos.', lat: 4.9000, lon: -73.9167 },
+    { id: 'club-militar', name: 'Campo Principal', club: 'Club Militar de Golf', city: 'Bogotá', zone: 'Bogotá', description: 'Campo par 72 de 18 hoyos ubicado en la zona norte de Bogotá. Diseñado con amplias calles y greens rápidos, ofrece un desafío técnico para jugadores de todos los niveles.', lat: 4.7500, lon: -74.0333 },
 
     // ZONA ANTIOQUIA
     { id: 'llanogrande', name: 'Llanogrande', club: 'Club Campestre Medellín', city: 'Rionegro', zone: 'Antioquia', description: 'Campo par 72 en el Eje Cafetero, clima perfecto para el golf.', lat: 6.1333, lon: -75.4333 },
