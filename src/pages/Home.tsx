@@ -4,7 +4,6 @@ import Card from '../components/Card';
 import { ArrowRight, Heart, Users } from 'lucide-react';
 import { supabase } from '../services/SupabaseManager';
 import ActivityCard from '../components/ActivityCard';
-import { motion } from 'framer-motion';
 
 const Home: React.FC = () => {
     const navigate = useNavigate();

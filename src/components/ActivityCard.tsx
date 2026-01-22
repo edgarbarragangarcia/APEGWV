@@ -39,18 +39,6 @@ const ActivityCard: React.FC<ActivityCardProps> = ({
         }
     };
 
-    const getBadgeText = () => {
-        switch (type) {
-            case 'registration':
-                return 'Nuevo Registro';
-            case 'product':
-                return 'Nuevo en Tienda';
-            case 'offer':
-                return 'Nueva Oferta';
-            default:
-                return '';
-        }
-    };
 
     return (
         <motion.div

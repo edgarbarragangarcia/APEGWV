@@ -1062,7 +1062,7 @@ const Shop: React.FC = () => {
                     </div>
                 )}
             </AnimatePresence>
-        </div >
+        </div>
     );
 };
 
