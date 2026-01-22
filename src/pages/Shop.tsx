@@ -968,7 +968,7 @@ const Shop: React.FC = () => {
                     <div style={{
                         position: 'fixed',
                         inset: 0,
-                        zIndex: 4000,
+                        zIndex: 9999, // Super high z-index to be on top of everything
                         display: 'flex',
                         alignItems: 'flex-end',
                         justifyContent: 'center',
@@ -995,10 +995,10 @@ const Shop: React.FC = () => {
                             style={{
                                 width: '100%',
                                 maxWidth: 'var(--app-max-width)',
-                                background: '#121212',
+                                background: 'var(--primary)', // Match app background color
                                 borderTopLeftRadius: '32px',
                                 borderTopRightRadius: '32px',
-                                padding: '30px 25px 50px 25px',
+                                padding: '30px 25px calc(110px + env(safe-area-inset-bottom)) 25px', // Increased padding to clear navbar clearly
                                 position: 'relative',
                                 pointerEvents: 'auto',
                                 boxShadow: '0 -10px 40px rgba(0,0,0,0.5)',
@@ -1035,10 +1035,16 @@ const Shop: React.FC = () => {
                                         <div style={{ position: 'relative' }}>
                                             <span style={{ position: 'absolute', left: '20px', top: '50%', transform: 'translateY(-50%)', fontWeight: '900', color: 'var(--secondary)', fontSize: '20px' }}>$</span>
                                             <input
-                                                type="number"
-                                                value={offerAmount}
-                                                onChange={(e) => setOfferAmount(e.target.value)}
+                                                type="text" // Changed to text to support separators
+                                                inputMode="numeric"
+                                                value={offerAmount ? new Intl.NumberFormat('es-CO').format(parseInt(offerAmount.replace(/\D/g, '') || '0')) : ''}
+                                                onChange={(e) => {
+                                                    // Remove non-digits and set state
+                                                    const rawValue = e.target.value.replace(/\D/g, '');
+                                                    setOfferAmount(rawValue);
+                                                }}
                                                 autoFocus
+                                                placeholder="0"
                                                 style={{
                                                     width: '100%',
                                                     background: 'rgba(255,255,255,0.03)',
