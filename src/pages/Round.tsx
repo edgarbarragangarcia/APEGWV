@@ -469,28 +469,27 @@ const Round: React.FC = () => {
 
             {/* AI Caddie Card */}
             <Card style={{
-                flex: 1,
                 marginBottom: 0,
-                padding: '12px 15px',
+                padding: '8px 15px',
                 background: 'rgba(163, 230, 53, 0.05)',
                 border: '1px dashed rgba(163, 230, 53, 0.3)',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '15px',
-                minHeight: '60px'
+                gap: '12px',
+                minHeight: '45px'
             }}>
                 <div style={{
-                    width: '40px',
-                    height: '40px',
+                    width: '32px',
+                    height: '32px',
                     borderRadius: '50%',
                     background: 'var(--secondary)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     flexShrink: 0,
-                    boxShadow: '0 0 15px rgba(163, 230, 53, 0.3)'
+                    boxShadow: '0 0 10px rgba(163, 230, 53, 0.3)'
                 }}>
-                    <Navigation size={20} color="var(--primary)" />
+                    <Navigation size={16} color="var(--primary)" />
                 </div>
                 <div style={{ textAlign: 'left' }}>
                     <div style={{ fontSize: '10px', fontWeight: '900', color: 'var(--secondary)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '2px' }}>Caddie Virtual</div>
