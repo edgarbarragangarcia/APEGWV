@@ -139,7 +139,7 @@ const Home: React.FC = () => {
             {/* Area de Scroll para el resto del contenido */}
             <div style={{
                 position: 'absolute',
-                top: 'calc(env(safe-area-inset-top) + 245px)',
+                top: 'calc(env(safe-area-inset-top) + 295px)',
                 left: '0',
                 right: '0',
                 bottom: 'calc(var(--nav-height) + 10px)',
@@ -149,7 +149,7 @@ const Home: React.FC = () => {
             }}>
 
                 {/* Market Categories */}
-                <div style={{ marginBottom: '35px' }}>
+                <div style={{ marginBottom: '10px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '18px', paddingRight: '5px' }}>
                         <div>
                             <h3 style={{ fontSize: '20px', fontWeight: '800', letterSpacing: '-0.5px' }}>Marketplace</h3>
@@ -167,7 +167,7 @@ const Home: React.FC = () => {
                         gap: '15px',
                         overflowX: 'auto',
                         margin: '0 -20px',
-                        padding: '20px',
+                        padding: '0 20px 10px 20px',
                         scrollSnapType: 'x mandatory',
                         scrollbarWidth: 'none',
                         WebkitOverflowScrolling: 'touch'

@@ -31,6 +31,7 @@ const Round: React.FC = () => {
     const [strokes, setStrokes] = React.useState<Record<number, number>>({});
     const [isSaving, setIsSaving] = React.useState(false);
     const [weather, setWeather] = React.useState<WeatherData | null>(null);
+    const [roundId, setRoundId] = React.useState<string | null>(null);
 
     const currentStrokes = strokes[currentHole] || 0;
 
@@ -115,10 +116,12 @@ const Round: React.FC = () => {
     };
 
     const handleStrokeChange = (change: number) => {
+        const newScore = Math.max(0, (strokes[currentHole] || 0) + change);
         setStrokes(prev => ({
             ...prev,
-            [currentHole]: Math.max(0, (prev[currentHole] || 0) + change)
+            [currentHole]: newScore
         }));
+        syncHoleScore(currentHole, newScore);
     };
 
     const handleHoleChange = (direction: 'next' | 'prev') => {
@@ -144,13 +147,69 @@ const Round: React.FC = () => {
         return `+${diff}`;
     };
 
+    const syncHoleScore = async (holeNum: number, score: number) => {
+        if (score === 0) return;
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) return;
+
+            let currentRoundId = roundId;
+
+            if (!currentRoundId) {
+                const { data: newRound, error: rErr } = await supabase
+                    .from('rounds')
+                    .insert([{
+                        user_id: user.id,
+                        course_name: clubName,
+                        course_location: course?.city || '',
+                        status: 'in_progress',
+                        date_played: new Date().toISOString()
+                    }])
+                    .select()
+                    .single();
+
+                if (rErr) throw rErr;
+                currentRoundId = newRound.id;
+                setRoundId(currentRoundId);
+            }
+
+            const holePar = holeData.find(hd => hd.hole_number === holeNum)?.par || 4;
+
+            // Verificamos si ya existe este hoyo para esta ronda para evitar duplicados
+            const { data: existingHole } = await supabase
+                .from('round_holes')
+                .select('id')
+                .eq('round_id', currentRoundId)
+                .eq('hole_number', holeNum)
+                .single();
+
+            if (existingHole) {
+                await supabase
+                    .from('round_holes')
+                    .update({ score, par: holePar })
+                    .eq('id', existingHole.id);
+            } else {
+                await supabase
+                    .from('round_holes')
+                    .insert([{
+                        round_id: currentRoundId,
+                        hole_number: holeNum,
+                        par: holePar,
+                        score: score
+                    }]);
+            }
+        } catch (err) {
+            console.error('Error syncing score:', err);
+        }
+    };
+
     const handleFinishRound = async () => {
         if (isSaving) return;
         setIsSaving(true);
         try {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) {
-                alert('Debes iniciar sesión para guardar tu ronda');
+                alert('Debes iniciar sesión para finalizar la ronda');
                 setIsSaving(false);
                 return;
             }
@@ -160,37 +219,54 @@ const Round: React.FC = () => {
             const firstNine = holeNumbers.filter(h => h >= 1 && h <= 9).reduce((acc, h) => acc + (strokes[h] || 0), 0);
             const secondNine = holeNumbers.filter(h => h >= 10 && h <= 18).reduce((acc, h) => acc + (strokes[h] || 0), 0);
 
-            const { data: round, error: roundError } = await supabase
-                .from('rounds')
-                .insert([{
-                    user_id: user.id,
-                    course_name: clubName,
-                    course_location: course?.city || '',
-                    date_played: new Date().toISOString(),
-                    total_score: totalScore,
-                    first_nine_score: firstNine,
-                    second_nine_score: secondNine,
-                    status: 'completed'
-                }])
-                .select()
-                .single();
+            if (roundId) {
+                // Actualizamos la ronda existente
+                const { error: updateError } = await supabase
+                    .from('rounds')
+                    .update({
+                        total_score: totalScore,
+                        first_nine_score: firstNine,
+                        second_nine_score: secondNine,
+                        status: 'completed'
+                    })
+                    .eq('id', roundId);
 
-            if (roundError) throw roundError;
+                if (updateError) throw updateError;
+            } else {
+                // Si por alguna razón no se creó en tiempo real, la creamos ahora
+                const { data: round, error: roundError } = await supabase
+                    .from('rounds')
+                    .insert([{
+                        user_id: user.id,
+                        course_name: clubName,
+                        course_location: course?.city || '',
+                        date_played: new Date().toISOString(),
+                        total_score: totalScore,
+                        first_nine_score: firstNine,
+                        second_nine_score: secondNine,
+                        status: 'completed'
+                    }])
+                    .select()
+                    .single();
 
-            if (round && holeNumbers.length > 0) {
-                const holesToInsert = holeNumbers.map(h => ({
-                    round_id: round.id,
-                    hole_number: h,
-                    par: holeData.find(hd => hd.hole_number === h)?.par || 4,
-                    score: strokes[h]
-                }));
-                await supabase.from('round_holes').insert(holesToInsert);
+                if (roundError) throw roundError;
+
+                if (round && holeNumbers.length > 0) {
+                    const holesToInsert = holeNumbers.map(h => ({
+                        round_id: round.id,
+                        hole_number: h,
+                        par: holeData.find(hd => hd.hole_number === h)?.par || 4,
+                        score: strokes[h]
+                    }));
+                    await supabase.from('round_holes').insert(holesToInsert);
+                }
             }
+
             if (navigator.vibrate) navigator.vibrate([10, 30, 10]);
             navigate('/rounds');
         } catch (error) {
             console.error('Error al finalizar ronda:', error);
-            alert('Error al guardar la ronda.');
+            alert('Error al guardar los datos finales.');
             setIsSaving(false);
         }
     };
@@ -198,8 +274,15 @@ const Round: React.FC = () => {
     const [showFinishModal, setShowFinishModal] = React.useState(false);
 
     return (
-        <div className="animate-fade" style={{ maxWidth: 'var(--app-max-width)', margin: '0 auto' }}>
-            <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+        <div className="animate-fade" style={{
+            maxWidth: 'var(--app-max-width)',
+            margin: '0 auto',
+            height: 'calc(100dvh - var(--nav-height) - env(safe-area-inset-top) - 20px)',
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden'
+        }}>
+            <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', flexShrink: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <div style={{ padding: '8px', border: '1px solid var(--glass-border)', borderRadius: '10px' }}>
                         <History size={20} />
@@ -212,7 +295,7 @@ const Round: React.FC = () => {
                 <button onClick={() => setShowFinishModal(true)} style={{ color: 'var(--secondary)' }}>Finalizar</button>
             </header>
 
-            <div className="glass" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '15px 25px', marginBottom: '20px' }}>
+            <div className="glass" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 25px', marginBottom: '10px', flexShrink: 0 }}>
                 <button onClick={() => handleHoleChange('prev')} disabled={currentHole === 1} style={{ opacity: currentHole === 1 ? 0.3 : 1 }}><ChevronLeft /></button>
                 <div style={{ textAlign: 'center' }}>
                     <span style={{ fontSize: '14px', color: 'var(--secondary)', fontWeight: '600' }}>HOYO</span>
@@ -222,86 +305,146 @@ const Round: React.FC = () => {
                 <button onClick={() => handleHoleChange('next')} disabled={currentHole === 18} style={{ opacity: currentHole === 18 ? 0.3 : 1 }}><ChevronRight /></button>
             </div>
 
-            <div style={{ marginBottom: '20px', padding: '0 10px' }}>
-                <div style={{ display: 'flex', justifyContent: 'center', gap: '30px', alignItems: 'center' }}>
-                    <button onClick={() => handleStrokeChange(-1)} className="glass" style={{ width: '60px', height: '60px', borderRadius: '50%', fontSize: '28px', background: 'rgba(255,255,255,0.05)' }}>-</button>
-                    <div style={{ textAlign: 'center', minWidth: '100px' }}>
-                        <div style={{ fontSize: '56px', fontWeight: '800', lineHeight: '1' }}>{currentStrokes}</div>
-                        <div style={{
-                            fontSize: '14px',
-                            fontWeight: 'bold',
-                            marginTop: '5px',
-                            color: getScoreTerm(currentHoleInfo.par, currentStrokes) === 'Birdie' || getScoreTerm(currentHoleInfo.par, currentStrokes) === 'Eagle' ? 'var(--secondary)' :
-                                getScoreTerm(currentHoleInfo.par, currentStrokes).includes('Bogey') ? '#f87171' : 'var(--text-dim)'
-                        }}>{getScoreTerm(currentHoleInfo.par, currentStrokes).toUpperCase()}</div>
+            <div style={{ marginBottom: '15px', padding: '0 10px', flexShrink: 0 }}>
+                <div style={{ display: 'flex', justifyContent: 'flex-start', gap: '15px', overflowX: 'auto', paddingBottom: '15px', paddingLeft: '10px', paddingRight: '10px', scrollSnapType: 'x proximity', WebkitOverflowScrolling: 'touch' }}>
+                    {[
+                        { label: 'Eagle', diff: -2, color: '#f59e0b' },
+                        { label: 'Birdie', diff: -1, color: 'var(--secondary)' },
+                        { label: 'Par', diff: 0, color: 'white' },
+                        { label: 'Bogey', diff: 1, color: '#f87171' },
+                        { label: 'D.Bogey', diff: 2, color: '#ef4444' }
+                    ].map((item) => {
+                        const holePar = currentHoleInfo.par;
+                        const scoreValue = holePar + item.diff;
+                        const isSelected = currentStrokes === scoreValue;
+
+                        return (
+                            <div key={item.label} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', minWidth: '60px' }}>
+                                <button
+                                    onClick={() => {
+                                        const scoreValue = currentHoleInfo.par + item.diff;
+                                        setStrokes(prev => ({ ...prev, [currentHole]: scoreValue }));
+                                        syncHoleScore(currentHole, scoreValue);
+                                        if (navigator.vibrate) navigator.vibrate(10);
+                                    }}
+                                    style={{
+                                        width: '50px',
+                                        height: '50px',
+                                        borderRadius: '50%',
+                                        background: isSelected ? item.color : 'white',
+                                        color: isSelected ? (item.label === 'Par' || item.label === 'Birdie' ? 'var(--primary)' : 'white') : '#333',
+                                        border: isSelected ? `3px solid ${item.color}` : '2px solid rgba(255,255,255,0.1)',
+                                        fontSize: '18px',
+                                        fontWeight: '800',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        boxShadow: isSelected ? `0 0 20px ${item.color}66` : '0 4px 10px rgba(0,0,0,0.2)',
+                                        transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                                        cursor: 'pointer',
+                                        position: 'relative',
+                                        overflow: 'hidden'
+                                    }}
+                                >
+                                    {/* Dimple effect for golf ball */}
+                                    {!isSelected && <div style={{ position: 'absolute', inset: 0, opacity: 0.1, backgroundImage: 'radial-gradient(circle, #000 1px, transparent 1px)', backgroundSize: '6px 6px' }} />}
+                                    {scoreValue}
+                                </button>
+                                <span style={{
+                                    fontSize: '10px',
+                                    fontWeight: '700',
+                                    textTransform: 'uppercase',
+                                    color: isSelected ? item.color : 'var(--text-dim)',
+                                    letterSpacing: '0.5px'
+                                }}>
+                                    {item.label}
+                                </span>
+                            </div>
+                        );
+                    })}
+
+                    {/* Manual Adjuster */}
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', minWidth: '60px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                            <button
+                                onClick={() => handleStrokeChange(-1)}
+                                style={{ width: '25px', height: '50px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderTopLeftRadius: '25px', borderBottomLeftRadius: '25px', color: 'white' }}
+                            >-</button>
+                            <button
+                                onClick={() => handleStrokeChange(1)}
+                                style={{ width: '25px', height: '50px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderTopRightRadius: '25px', borderBottomRightRadius: '25px', color: 'white' }}
+                            >+</button>
+                        </div>
+                        <span style={{ fontSize: '10px', fontWeight: '700', color: 'var(--text-dim)', textTransform: 'uppercase' }}>+/-</span>
                     </div>
-                    <button onClick={() => handleStrokeChange(1)} className="glass" style={{ width: '60px', height: '60px', borderRadius: '50%', fontSize: '28px', borderColor: 'var(--secondary)', color: 'var(--secondary)', background: 'rgba(163, 230, 53, 0.1)' }}>+</button>
+                </div>
+
+                <div style={{ textAlign: 'center', marginTop: '10px' }}>
+                    <div style={{ fontSize: '14px', color: 'var(--text-dim)', fontWeight: '500' }}>
+                        Puntaje: <span style={{ color: 'white', fontWeight: '800' }}>{currentStrokes === 0 ? 'PENDIENTE' : getScoreTerm(currentHoleInfo.par, currentStrokes)}</span>
+                    </div>
                 </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr 1fr', gap: '15px', marginBottom: '20px', alignItems: 'center' }}>
-                <div className="glass flex-center" style={{ height: '100px', flexDirection: 'column' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr 1fr', gap: '10px', marginBottom: '10px', alignItems: 'center', flexShrink: 0 }}>
+                <div className="glass flex-center" style={{ height: '80px', flexDirection: 'column' }}>
                     <span style={{ fontSize: '11px', color: 'var(--text-dim)' }}>FRONT</span>
-                    <span style={{ fontSize: '24px', fontWeight: '700' }}>{distanceToHole ? Math.max(0, distanceToHole - 15) : (140 + currentHole * 2)}</span>
+                    <span style={{ fontSize: '20px', fontWeight: '700' }}>{distanceToHole ? Math.max(0, distanceToHole - 15) : (140 + currentHole * 2)}</span>
                 </div>
 
                 <div className="glass flex-center" style={{
-                    height: '140px',
+                    height: '110px',
                     flexDirection: 'column',
                     border: '2px solid transparent',
                     transition: 'all 0.5s ease',
                     position: 'relative'
                 }}>
-                    <span style={{ fontSize: '12px', color: 'var(--text-dim)', fontWeight: '600' }}>
+                    <span style={{ fontSize: '11px', color: 'var(--text-dim)', fontWeight: '600' }}>
                         DISTANCIA AL CENTRO
                     </span>
 
                     {distanceToHole !== null ? (
-                        <span style={{ fontSize: '48px', fontWeight: '800' }}>
+                        <span style={{ fontSize: '40px', fontWeight: '800' }}>
                             {distanceToHole}
                         </span>
                     ) : (
-                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
-                            <span style={{ fontSize: '10px', color: 'var(--text-dim)' }}>
-                                ESPERANDO GPS...
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px' }}>
+                            <span style={{ fontSize: '9px', color: 'var(--text-dim)' }}>
+                                BUSCANDO...
                             </span>
                         </div>
                     )}
 
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '12px', color: 'var(--text-dim)', marginTop: '5px' }}>
-                        <Target size={12} color={distanceToHole !== null ? 'var(--secondary)' : 'var(--text-dim)'} />
-                        <span>{distanceToHole !== null ? ' m (En vivo)' : 'Esperando GPS'}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '11px', color: 'var(--text-dim)', marginTop: '2px' }}>
+                        <Target size={10} color={distanceToHole !== null ? 'var(--secondary)' : 'var(--text-dim)'} />
+                        <span>{distanceToHole !== null ? ' m' : '---'}</span>
                     </div>
                 </div>
 
-                <div className="glass flex-center" style={{ height: '100px', flexDirection: 'column' }}>
+                <div className="glass flex-center" style={{ height: '80px', flexDirection: 'column' }}>
                     <span style={{ fontSize: '11px', color: 'var(--text-dim)' }}>BACK</span>
-                    <span style={{ fontSize: '24px', fontWeight: '700' }}>{distanceToHole ? (distanceToHole + 15) : (170 + currentHole * 4)}</span>
+                    <span style={{ fontSize: '20px', fontWeight: '700' }}>{distanceToHole ? (distanceToHole + 15) : (170 + currentHole * 4)}</span>
                 </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '20px' }}>
-                <Card style={{ marginBottom: 0, padding: '15px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
-                        <Wind size={16} color="var(--secondary)" />
-                        <span style={{ fontSize: '11px', color: 'var(--text-dim)', fontWeight: '600' }}>VIENTO</span>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '10px', flexShrink: 0 }}>
+                <Card style={{ marginBottom: 0, padding: '10px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '5px' }}>
+                        <Wind size={14} color="var(--secondary)" />
+                        <span style={{ fontSize: '10px', color: 'var(--text-dim)', fontWeight: '600' }}>VIENTO</span>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-                        <span style={{ fontSize: '28px', fontWeight: '800' }}>{weather?.wind || '--'}</span>
-                        <span style={{ fontSize: '12px', color: 'var(--text-dim)' }}>km/h</span>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginTop: '5px' }}>
-                        <Navigation size={12} style={{ transform: `rotate(${(weather?.windDirection || 0) + 180}deg)`, color: 'var(--secondary)' }} />
-                        <span style={{ fontSize: '13px', fontWeight: '600' }}>{getWindDirection(weather?.windDirection)}</span>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '5px' }}>
+                        <span style={{ fontSize: '22px', fontWeight: '800' }}>{weather?.wind || '--'}</span>
+                        <span style={{ fontSize: '10px', color: 'var(--text-dim)' }}>km/h</span>
                     </div>
                 </Card>
 
-                <Card style={{ marginBottom: 0, padding: '15px', background: 'linear-gradient(135deg, rgba(163, 230, 53, 0.1), rgba(163, 230, 53, 0.02))', border: '1px solid rgba(163, 230, 53, 0.2)' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
-                        <Info size={16} color="var(--secondary)" />
-                        <span style={{ fontSize: '11px', color: 'var(--text-dim)', fontWeight: '600' }}>PALO SUGERIDO</span>
+                <Card style={{ marginBottom: 0, padding: '10px', background: 'linear-gradient(135deg, rgba(163, 230, 53, 0.1), rgba(163, 230, 53, 0.02))', border: '1px solid rgba(163, 230, 53, 0.2)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '5px' }}>
+                        <Info size={14} color="var(--secondary)" />
+                        <span style={{ fontSize: '10px', color: 'var(--text-dim)', fontWeight: '600' }}>SUGERIDO</span>
                     </div>
-                    <div style={{ fontSize: '18px', fontWeight: '800', color: 'white', lineHeight: '1.2' }}>{getClubRecommendation(distanceToHole, weather?.wind, getWindDirection(weather?.windDirection))}</div>
+                    <div style={{ fontSize: '14px', fontWeight: '800', color: 'white', lineHeight: '1.2' }}>{getClubRecommendation(distanceToHole, weather?.wind, getWindDirection(weather?.windDirection))}</div>
                 </Card>
             </div>
 
