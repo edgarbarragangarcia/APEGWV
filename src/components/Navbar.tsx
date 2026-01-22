@@ -75,7 +75,7 @@ const Navbar: React.FC = () => {
             width: '100%',
             maxWidth: 'var(--app-max-width)',
             margin: '0 auto',
-            paddingTop: 'calc(env(safe-area-inset-top) + 10px)',
+            paddingTop: 'calc(env(safe-area-inset-top) + 15px)',
             paddingBottom: '10px',
             paddingLeft: '20px',
             paddingRight: '20px',

@@ -692,7 +692,7 @@ const Shop: React.FC = () => {
                                 onClick={() => setSelectedProduct(null)}
                                 style={{
                                     position: 'absolute',
-                                    top: 'calc(var(--safe-top) + 15px)',
+                                    top: 'calc(var(--safe-top) + 25px)',
                                     left: '20px',
                                     background: 'var(--secondary)',
                                     color: 'var(--primary)',
@@ -811,7 +811,7 @@ const Shop: React.FC = () => {
                             </div>
 
                             {/* Description */}
-                            <div style={{ flex: 1 }}>
+                            <div style={{ marginBottom: '15px' }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                                     <h4 style={{ fontSize: '14px', fontWeight: '900', color: 'var(--text-dim)', textTransform: 'uppercase' }}>Resumen</h4>
                                     {selectedProduct.is_negotiable && (
@@ -832,8 +832,7 @@ const Shop: React.FC = () => {
 
                             {/* Bottom Fixed Action Bar */}
                             <div style={{
-                                marginTop: 'auto',
-                                paddingTop: '20px',
+                                paddingTop: '10px',
                                 paddingBottom: 'calc(var(--safe-bottom) + 15px)',
                                 display: 'flex',
                                 gap: '15px'

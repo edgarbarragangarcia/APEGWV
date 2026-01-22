@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     Bell, CheckCircle2, ShoppingBag,
@@ -7,10 +7,12 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNotifications } from '../context/NotificationContext';
 import PageHeader from '../components/PageHeader';
+import ConfirmationModal from '../components/ConfirmationModal';
 
 const NotificationsPage: React.FC = () => {
     const navigate = useNavigate();
     const { notifications, markAsRead, markAllAsRead, unreadCount, deleteNotification, deleteAllNotifications } = useNotifications();
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
     const getIcon = (type: string) => {
         const iconSize = 22;
@@ -119,11 +121,7 @@ const NotificationsPage: React.FC = () => {
                     </motion.button>
                     <motion.button
                         whileTap={{ scale: 0.95 }}
-                        onClick={() => {
-                            if (window.confirm('¿Eliminar todas las notificaciones?')) {
-                                deleteAllNotifications();
-                            }
-                        }}
+                        onClick={() => setIsDeleteModalOpen(true)}
                         style={{
                             background: 'rgba(239, 68, 68, 0.1)',
                             border: '1px solid rgba(239, 68, 68, 0.2)',
@@ -143,6 +141,17 @@ const NotificationsPage: React.FC = () => {
                     </motion.button>
                 </motion.div>
             )}
+
+            <ConfirmationModal
+                isOpen={isDeleteModalOpen}
+                onClose={() => setIsDeleteModalOpen(false)}
+                onConfirm={deleteAllNotifications}
+                title="¿Eliminar todo?"
+                message="Esta acción borrará permanentemente todas tus notificaciones. ¿Deseas continuar?"
+                confirmText="Sí, eliminar todo"
+                cancelText="Cancelar"
+                type="danger"
+            />
 
             {notifications.length === 0 ? (
                 <motion.div
