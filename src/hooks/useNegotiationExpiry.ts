@@ -10,10 +10,25 @@ export const useNegotiationExpiry = () => {
         const resetExpiredNegotiations = async () => {
             try {
                 // Call the database function to reset expired negotiations
-                const { error } = await supabase.rpc('reset_expired_negotiations' as any) as any;
+                // Using fetch directly to avoid TypeScript issues with rpc
+                const { data: { session } } = await supabase.auth.getSession();
 
-                if (error) {
-                    console.error('Error resetting expired negotiations:', error);
+                if (!session) return;
+
+                const response = await fetch(
+                    `${import.meta.env.VITE_SUPABASE_URL}/rest/v1/rpc/reset_expired_negotiations`,
+                    {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+                            'Authorization': `Bearer ${session.access_token}`
+                        }
+                    }
+                );
+
+                if (!response.ok) {
+                    console.error('Error resetting expired negotiations:', await response.text());
                     return;
                 }
 
