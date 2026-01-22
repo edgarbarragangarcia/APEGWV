@@ -677,7 +677,7 @@ const Shop: React.FC = () => {
                         }}
                     >
                         {/* High Impact Image Section */}
-                        <div style={{ position: 'relative', height: '40vh', width: '100%', overflow: 'hidden' }}>
+                        <div style={{ position: 'relative', height: '55vh', width: '100%', overflow: 'hidden' }}>
                             <img src={selectedProduct.image_url || ''} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" />
                             <div style={{
                                 position: 'absolute',
@@ -762,13 +762,13 @@ const Shop: React.FC = () => {
                             marginTop: '-30px',
                             position: 'relative',
                             zIndex: 2,
-                            padding: '25px',
+                            padding: '20px',
                             display: 'flex',
                             flexDirection: 'column',
                             overflowY: 'auto',
                             paddingBottom: '100px'
                         }}>
-                            <div style={{ marginBottom: '25px' }}>
+                            <div style={{ marginBottom: '15px' }}>
                                 <span style={{
                                     background: 'rgba(163, 230, 53, 0.1)',
                                     color: 'var(--secondary)',
@@ -781,10 +781,10 @@ const Shop: React.FC = () => {
                                 }}>
                                     {selectedProduct.category}
                                 </span>
-                                <h2 style={{ fontSize: '32px', fontWeight: '900', marginTop: '12px', lineHeight: '1.1', color: 'white' }}>
+                                <h2 style={{ fontSize: '32px', fontWeight: '900', marginTop: '8px', lineHeight: '1.1', color: 'white' }}>
                                     {selectedProduct.name}
                                 </h2>
-                                <div style={{ marginTop: '12px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', gap: '10px' }}>
                                     <p style={{
                                         fontSize: (selectedProduct.status === 'negotiating' && selectedProduct.negotiating_buyer_id === user?.id) ? '18px' : '24px',
                                         fontWeight: '800',
