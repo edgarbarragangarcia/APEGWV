@@ -399,28 +399,28 @@ export const OnboardingTour: React.FC<OnboardingTourProps> = ({ userId, onComple
                                     onClick={handleBack}
                                     style={{
                                         visibility: currentStep === 0 ? 'hidden' : 'visible',
-                                        background: 'rgba(255,255,255,0.05)',
-                                        border: '1px solid rgba(255,255,255,0.1)',
-                                        color: 'white',
-                                        padding: '10px 16px',
-                                        borderRadius: '12px',
-                                        fontSize: '13px',
-                                        fontWeight: '700',
+                                        background: 'rgba(255,255,255,0.03)',
+                                        border: '1px solid rgba(255,255,255,0.08)',
+                                        color: 'rgba(255,255,255,0.6)',
+                                        padding: '6px 10px',
+                                        borderRadius: '8px',
+                                        fontSize: '11px',
+                                        fontWeight: '600',
                                         cursor: 'pointer'
                                     }}
                                 >
                                     Anterior
                                 </button>
 
-                                <div style={{ display: 'flex', gap: '8px' }}>
+                                <div style={{ display: 'flex', gap: '5px' }}>
                                     {steps.map((_, i) => (
                                         <div
                                             key={i}
                                             style={{
-                                                width: i === currentStep ? '20px' : '6px',
-                                                height: '6px',
-                                                borderRadius: '3px',
-                                                background: i === currentStep ? step.color : 'rgba(255, 255, 255, 0.15)',
+                                                width: i === currentStep ? '12px' : '4px',
+                                                height: '4px',
+                                                borderRadius: '2px',
+                                                background: i === currentStep ? step.color : 'rgba(255, 255, 255, 0.12)',
                                                 transition: 'all 0.4s cubic-bezier(0.23, 1, 0.32, 1)'
                                             }}
                                         />
@@ -428,26 +428,26 @@ export const OnboardingTour: React.FC<OnboardingTourProps> = ({ userId, onComple
                                 </div>
 
                                 <motion.button
-                                    whileHover={{ scale: 1.05, boxShadow: `0 8px 16px ${step.color}44` }}
+                                    whileHover={{ scale: 1.05, boxShadow: `0 4px 10px ${step.color}22` }}
                                     whileTap={{ scale: 0.95 }}
                                     onClick={handleNext}
                                     style={{
                                         background: step.gradient,
                                         color: 'white',
-                                        padding: '12px 24px',
-                                        borderRadius: '16px',
+                                        padding: '6px 14px',
+                                        borderRadius: '10px',
                                         border: 'none',
                                         fontWeight: '800',
-                                        fontSize: '14px',
+                                        fontSize: '11px',
                                         cursor: 'pointer',
                                         display: 'flex',
                                         alignItems: 'center',
-                                        gap: '8px',
-                                        boxShadow: `0 8px 20px -5px ${step.color}66`
+                                        gap: '5px',
+                                        boxShadow: `0 4px 12px -3px ${step.color}44`
                                     }}
                                 >
-                                    {currentStep === steps.length - 1 ? '¡Listo!' : 'Siguiente'}
-                                    {currentStep === steps.length - 1 ? <CheckCircle2 size={18} /> : <ChevronRight size={18} />}
+                                    {currentStep === steps.length - 1 ? 'Listo' : 'Siguiente'}
+                                    {currentStep === steps.length - 1 ? <CheckCircle2 size={13} /> : <ChevronRight size={13} />}
                                 </motion.button>
                             </div>
                         </div>
