@@ -24,7 +24,6 @@ interface ActivityItem {
 const Home: React.FC = () => {
     const navigate = useNavigate();
     const activitiesRef = React.useRef<HTMLDivElement>(null);
-    const marketplaceRef = React.useRef<HTMLDivElement>(null);
     const { user } = useAuth();
     const { data: profile } = useProfile();
     const { data: roundCount = 0 } = useUserRoundCount(user?.id);
@@ -111,25 +110,6 @@ const Home: React.FC = () => {
         return () => clearInterval(interval);
     }, [activities.length]);
 
-    // Auto-scroll logic for marketplace carousel
-    useEffect(() => {
-        if (!marketplaceRef.current || featuredProducts.length === 0) return;
-
-        const interval = setInterval(() => {
-            if (marketplaceRef.current) {
-                const { scrollLeft, scrollWidth, clientWidth } = marketplaceRef.current;
-                const maxScroll = scrollWidth - clientWidth;
-
-                if (scrollLeft >= maxScroll - 10) {
-                    marketplaceRef.current.scrollTo({ left: 0, behavior: 'smooth' });
-                } else {
-                    marketplaceRef.current.scrollBy({ left: 200, behavior: 'smooth' }); // Item width (185) + gap (15)
-                }
-            }
-        }, 4000);
-
-        return () => clearInterval(interval);
-    }, [featuredProducts.length]);
 
 
 
@@ -290,18 +270,11 @@ const Home: React.FC = () => {
                         </button>
                     </div>
                     <div
-                        ref={marketplaceRef}
                         style={{
-                            display: 'flex',
+                            display: 'grid',
+                            gridTemplateColumns: '1fr 1fr',
                             gap: '15px',
-                            overflowX: 'auto',
-                            overflowY: 'hidden',
-                            margin: '0 -20px',
-                            padding: '0 20px 10px 20px',
-                            scrollSnapType: 'x mandatory',
-                            scrollbarWidth: 'none',
-                            WebkitOverflowScrolling: 'touch',
-                            touchAction: 'pan-x'
+                            paddingBottom: '10px'
                         }}
                     >
                         {featuredProducts.length > 0 ? (
@@ -309,71 +282,50 @@ const Home: React.FC = () => {
                                 <Card
                                     key={product.id}
                                     style={{
-                                        minWidth: '185px',
-                                        width: '185px',
-                                        padding: '12px 0 15px 0',
-                                        scrollSnapAlign: 'start',
+                                        padding: '0',
                                         position: 'relative',
                                         overflow: 'hidden',
-                                        marginBottom: 0
+                                        marginBottom: 0,
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        height: '100%'
                                     }}
                                     onClick={() => navigate('/shop')}
                                 >
                                     <div style={{
                                         position: 'relative',
-                                        marginBottom: '10px',
-                                        display: 'flex',
-                                        justifyContent: 'center',
-                                        width: '100%'
+                                        width: '100%',
+                                        aspectRatio: '1/1',
+                                        overflow: 'hidden'
                                     }}>
-                                        <div style={{ position: 'relative', width: '90%' }}>
-                                            <img
-                                                src={product.image_url || undefined}
-                                                alt={product.name}
-                                                style={{
-                                                    width: '100%',
-                                                    aspectRatio: '1/1',
-                                                    objectFit: 'cover',
-                                                    borderRadius: '20px',
-                                                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
-                                                }}
-                                            />
-                                            <div style={{
-                                                position: 'absolute',
-                                                top: '8px',
-                                                right: '8px',
-                                                background: 'rgba(0,0,0,0.4)',
-                                                backdropFilter: 'blur(8px)',
-                                                borderRadius: '50%',
-                                                padding: '6px',
-                                                display: 'flex',
-                                                border: '1px solid rgba(255,255,255,0.1)'
-                                            }}>
-                                                <Heart size={14} color="white" />
-                                            </div>
-                                            {(product as any).condition && (
-                                                <div style={{
-                                                    position: 'absolute',
-                                                    bottom: '8px',
-                                                    left: '8px',
-                                                    background: 'var(--secondary)',
-                                                    color: 'var(--primary)',
-                                                    fontSize: '9px',
-                                                    fontWeight: '900',
-                                                    padding: '3px 8px',
-                                                    borderRadius: '6px',
-                                                    boxShadow: '0 2px 8px rgba(163, 230, 53, 0.2)'
-                                                }}>
-                                                    {(product as any).condition}
-                                                </div>
-                                            )}
+                                        <img
+                                            src={product.image_url || undefined}
+                                            alt={product.name}
+                                            style={{
+                                                width: '100%',
+                                                height: '100%',
+                                                objectFit: 'cover'
+                                            }}
+                                        />
+                                        <div style={{
+                                            position: 'absolute',
+                                            top: '8px',
+                                            right: '8px',
+                                            background: 'rgba(0,0,0,0.4)',
+                                            backdropFilter: 'blur(8px)',
+                                            borderRadius: '50%',
+                                            padding: '6px',
+                                            display: 'flex',
+                                            border: '1px solid rgba(255,255,255,0.1)'
+                                        }}>
+                                            <Heart size={14} color="white" />
                                         </div>
                                     </div>
-                                    <div style={{ padding: '0 12px', display: 'flex', flexDirection: 'column' }}>
+                                    <div style={{ padding: '10px 12px', display: 'flex', flexDirection: 'column', flex: 1 }}>
                                         <h4 style={{
-                                            fontSize: '17px',
+                                            fontSize: '15px',
                                             fontWeight: '800',
-                                            marginBottom: '4px',
+                                            marginBottom: '2px',
                                             whiteSpace: 'nowrap',
                                             overflow: 'hidden',
                                             textOverflow: 'ellipsis',
@@ -383,25 +335,24 @@ const Home: React.FC = () => {
                                             {product.name}
                                         </h4>
 
-                                        <div style={{ marginBottom: '8px' }}>
+                                        <div style={{ marginBottom: '4px' }}>
                                             <div style={{
                                                 color: 'var(--secondary)',
-                                                fontSize: '14px',
-                                                fontWeight: '900',
-                                                whiteSpace: 'nowrap'
+                                                fontSize: '13px',
+                                                fontWeight: '900'
                                             }}>
                                                 {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(product.price)}
                                             </div>
                                         </div>
 
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                            <span style={{ fontSize: '10px', color: 'var(--text-dim)', fontWeight: '600', textTransform: 'uppercase' }}>{product.category}</span>
+                                        <div style={{ marginTop: 'auto' }}>
+                                            <span style={{ fontSize: '9px', color: 'var(--text-dim)', fontWeight: '600', textTransform: 'uppercase' }}>{product.category}</span>
                                         </div>
                                     </div>
                                 </Card>
                             ))
                         ) : (
-                            <div style={{ color: 'var(--text-dim)', fontSize: '14px', padding: '20px 0' }}>No hay productos destacados aún.</div>
+                            <div style={{ color: 'var(--text-dim)', fontSize: '14px', padding: '20px 0', gridColumn: 'span 2', textAlign: 'center' }}>No hay productos destacados aún.</div>
                         )}
                     </div>
                 </div>
