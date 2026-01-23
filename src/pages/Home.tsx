@@ -297,11 +297,13 @@ const Home: React.FC = () => {
                             display: 'flex',
                             gap: '15px',
                             overflowX: 'auto',
+                            overflowY: 'hidden',
                             margin: '0 -20px',
                             padding: '0 20px 10px 20px',
                             scrollSnapType: 'x mandatory',
                             scrollbarWidth: 'none',
-                            WebkitOverflowScrolling: 'touch'
+                            WebkitOverflowScrolling: 'touch',
+                            touchAction: 'pan-x'
                         }}
                     >
                         {featuredProducts.length > 0 ? (
