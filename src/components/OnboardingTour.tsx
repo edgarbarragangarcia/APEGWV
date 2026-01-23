@@ -1,54 +1,62 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     X,
     ChevronRight,
-    ChevronLeft,
-    Home,
-    ShoppingBag,
-    Calendar,
-    Trophy,
     CheckCircle2,
-    Sparkles
+    Sparkles,
+    MousePointer2
 } from 'lucide-react';
 import { supabase } from '../services/SupabaseManager';
 
 interface Step {
     title: string;
     description: string;
-    icon: React.ReactNode;
+    targetId?: string;
+    position: 'center' | 'bottom';
     color: string;
 }
 
 const steps: Step[] = [
     {
         title: "¡Bienvenido a APEG!",
-        description: "Estamos emocionados de tenerte aquí. Deja que te mostremos cómo aprovechar al máximo nuestra plataforma de golf.",
-        icon: <Sparkles size={48} />,
-        color: "var(--secondary)"
+        description: "Estamos muy emocionados de tenerte en la comunidad. Permítenos guiarte por las funciones principales de tu nueva app de golf.",
+        position: 'center',
+        color: "#a3e635"
     },
     {
-        title: "Tu Dashboard Personal",
-        description: "En el inicio podrás ver tus estadísticas, hándicap y un resumen de tu actividad reciente.",
-        icon: <Home size={48} />,
+        title: "Tu Dashboard",
+        description: "Aquí encontrarás tus estadísticas, hándicap y la actividad más reciente de otros golfistas. ¡Mantente conectado!",
+        targetId: 'nav-inicio',
+        position: 'bottom',
         color: "#3b82f6"
     },
     {
-        title: "Marketplace Exclusivo",
-        description: "Compra y vende equipamiento de golf. Negocia precios y encuentra las mejores ofertas de la comunidad.",
-        icon: <ShoppingBag size={48} />,
-        color: "#ec4899"
+        title: "¡A Jugar!",
+        description: "Este es el corazón de la app. Desde aquí podrás iniciar tus rondas, registrar cada golpe y seguir tu progreso en tiempo real.",
+        targetId: 'nav-jugar',
+        position: 'bottom',
+        color: "#a3e635"
     },
     {
-        title: "Reservas de Green Fees",
-        description: "Reserva tus salidas en los mejores campos de forma rápida y sencilla.",
-        icon: <Calendar size={48} />,
+        title: "Green Fees",
+        description: "¿Planeando tu próxima salida? Reserva tus turnos en los mejores campos del país de forma rápida y segura.",
+        targetId: 'nav-green-fee',
+        position: 'bottom',
         color: "#10b981"
     },
     {
-        title: "Torneos y Competencias",
-        description: "Mantente al tanto de todos los torneos, inscríbete y sigue los resultados en tiempo real.",
-        icon: <Trophy size={48} />,
+        title: "Marketplace",
+        description: "Encuentra el mejor equipamiento o vende lo que ya no usas. ¡Incluso puedes negociar precios con otros usuarios!",
+        targetId: 'nav-marketplace',
+        position: 'bottom',
+        color: "#ec4899"
+    },
+    {
+        title: "Eventos y Torneos",
+        description: "No te pierdas ninguna competencia. Inscríbete a los próximos torneos y consulta los resultados oficiales.",
+        targetId: 'nav-eventos',
+        position: 'bottom',
         color: "#f59e0b"
     }
 ];
@@ -61,6 +69,23 @@ interface OnboardingTourProps {
 export const OnboardingTour: React.FC<OnboardingTourProps> = ({ userId, onComplete }) => {
     const [currentStep, setCurrentStep] = useState(0);
     const [isClosing, setIsClosing] = useState(false);
+    const [highlightRect, setHighlightRect] = useState<DOMRect | null>(null);
+
+    useEffect(() => {
+        const step = steps[currentStep];
+        if (step.targetId) {
+            // Give a small timeout to ensure DOM is ready and layout has settled
+            const timer = setTimeout(() => {
+                const element = document.getElementById(step.targetId!);
+                if (element) {
+                    setHighlightRect(element.getBoundingClientRect());
+                }
+            }, 100);
+            return () => clearTimeout(timer);
+        } else {
+            setHighlightRect(null);
+        }
+    }, [currentStep]);
 
     const handleNext = () => {
         if (currentStep < steps.length - 1) {
@@ -79,25 +104,21 @@ export const OnboardingTour: React.FC<OnboardingTourProps> = ({ userId, onComple
     const handleComplete = async () => {
         setIsClosing(true);
         try {
-            const { error } = await supabase
+            await supabase
                 .from('profiles')
                 .update({ has_completed_onboarding: true })
                 .eq('id', userId);
 
-            if (error) throw error;
-
-            // Give time for animation
             setTimeout(() => {
                 onComplete();
             }, 500);
         } catch (err) {
             console.error('Error updating onboarding status:', err);
-            onComplete(); // Still complete even if DB update fails to not block the user
+            onComplete();
         }
     };
 
     const step = steps[currentStep];
-    const progress = ((currentStep + 1) / steps.length) * 100;
 
     return (
         <AnimatePresence>
@@ -110,194 +131,172 @@ export const OnboardingTour: React.FC<OnboardingTourProps> = ({ userId, onComple
                         position: 'fixed',
                         inset: 0,
                         zIndex: 9999,
-                        background: 'rgba(6, 26, 17, 0.8)',
-                        backdropFilter: 'blur(10px)',
+                        background: 'rgba(6, 26, 17, 0.7)',
+                        backdropFilter: 'blur(5px)',
                         display: 'flex',
+                        flexDirection: 'column',
                         alignItems: 'center',
-                        justifyContent: 'center',
-                        padding: '20px'
+                        justifyContent: step.position === 'center' ? 'center' : 'flex-end',
+                        padding: '20px',
+                        paddingBottom: step.position === 'bottom' ? '120px' : '20px',
+                        overflow: 'hidden'
                     }}
                 >
+                    {/* Spotlight effect */}
+                    {highlightRect && (
+                        <motion.div
+                            initial={false}
+                            animate={{
+                                top: highlightRect.top - 8,
+                                left: highlightRect.left - 8,
+                                width: highlightRect.width + 16,
+                                height: highlightRect.height + 16,
+                            }}
+                            style={{
+                                position: 'fixed',
+                                background: 'rgba(255, 255, 255, 0.1)',
+                                border: `2px solid ${step.color}`,
+                                boxShadow: `0 0 0 9999px rgba(6, 26, 17, 0.7), 0 0 20px ${step.color}`,
+                                borderRadius: '16px',
+                                pointerEvents: 'none',
+                                zIndex: 10000
+                            }}
+                        />
+                    )}
+
+                    {/* Instruction Card */}
                     <motion.div
-                        initial={{ scale: 0.9, y: 20 }}
-                        animate={{ scale: 1, y: 0 }}
-                        exit={{ scale: 0.9, y: 20 }}
+                        key={currentStep}
+                        initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                        transition={{ duration: 0.4, ease: "easeOut" }}
                         style={{
                             width: '100%',
-                            maxWidth: '400px',
-                            background: 'rgba(255, 255, 255, 0.05)',
-                            border: '1px solid rgba(255, 255, 255, 0.1)',
+                            maxWidth: '380px',
+                            background: 'rgba(255, 255, 255, 0.08)',
+                            backdropFilter: 'blur(20px)',
+                            border: '1px solid rgba(255, 255, 255, 0.15)',
                             borderRadius: '32px',
-                            padding: '30px',
-                            position: 'relative',
-                            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
-                            color: 'white',
+                            padding: '28px',
                             textAlign: 'center',
-                            overflow: 'hidden'
+                            zIndex: 10001,
+                            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.6)'
                         }}
                     >
-                        {/* Progress Bar */}
-                        <div style={{
-                            position: 'absolute',
-                            top: 0,
-                            left: 0,
-                            height: '4px',
-                            width: '100%',
-                            background: 'rgba(255, 255, 255, 0.1)'
-                        }}>
-                            <motion.div
-                                initial={{ width: 0 }}
-                                animate={{ width: `${progress}%` }}
-                                style={{
-                                    height: '100%',
-                                    background: 'var(--secondary)',
-                                    boxShadow: '0 0 10px var(--secondary)'
-                                }}
-                            />
-                        </div>
-
-                        {/* Skip Button */}
+                        {/* Skip */}
                         <button
                             onClick={handleComplete}
                             style={{
                                 position: 'absolute',
-                                top: '20px',
-                                right: '20px',
-                                background: 'none',
+                                top: '16px',
+                                right: '16px',
+                                background: 'rgba(255,255,255,0.05)',
                                 border: 'none',
-                                color: 'rgba(255, 255, 255, 0.4)',
+                                color: 'rgba(255, 255, 255, 0.3)',
                                 cursor: 'pointer',
-                                padding: '5px'
+                                padding: '8px',
+                                borderRadius: '50%'
                             }}
                         >
-                            <X size={20} />
+                            <X size={16} />
                         </button>
 
-                        {/* Content */}
-                        <div style={{ marginTop: '20px' }}>
-                            <motion.div
-                                key={currentStep}
-                                initial={{ opacity: 0, x: 20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                exit={{ opacity: 0, x: -20 }}
-                                transition={{ duration: 0.3 }}
-                                style={{
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    alignItems: 'center',
-                                    gap: '24px'
-                                }}
-                            >
-                                <div style={{
-                                    width: '100px',
-                                    height: '100px',
-                                    borderRadius: '30px',
-                                    background: `linear-gradient(135deg, ${step.color}22 0%, ${step.color}44 100%)`,
-                                    border: `1px solid ${step.color}55`,
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    color: step.color,
-                                    boxShadow: `0 10px 30px -10px ${step.color}33`
-                                }}>
-                                    {step.icon}
-                                </div>
-
-                                <div>
-                                    <h2 style={{
-                                        fontSize: '24px',
-                                        fontWeight: '700',
-                                        marginBottom: '12px',
-                                        background: `linear-gradient(to right, #fff, ${step.color})`,
-                                        WebkitBackgroundClip: 'text',
-                                        WebkitTextFillColor: 'transparent'
-                                    }}>
-                                        {step.title}
-                                    </h2>
-                                    <p style={{
-                                        color: 'rgba(255, 255, 255, 0.7)',
-                                        fontSize: '15px',
-                                        lineHeight: '1.6',
-                                        padding: '0 10px'
-                                    }}>
-                                        {step.description}
-                                    </p>
-                                </div>
-                            </motion.div>
-                        </div>
-
-                        {/* Navigation */}
-                        <div style={{
-                            marginTop: '40px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
-                            gap: '12px'
-                        }}>
-                            <button
-                                onClick={handleBack}
-                                style={{
-                                    visibility: currentStep === 0 ? 'hidden' : 'visible',
-                                    background: 'rgba(255, 255, 255, 0.05)',
-                                    border: '1px solid rgba(255, 255, 255, 0.1)',
-                                    color: 'white',
-                                    padding: '12px',
-                                    borderRadius: '16px',
-                                    cursor: 'pointer',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center'
-                                }}
-                            >
-                                <ChevronLeft size={20} />
-                            </button>
-
-                            <div style={{ display: 'flex', gap: '6px' }}>
-                                {steps.map((_, i) => (
-                                    <div
-                                        key={i}
-                                        style={{
-                                            width: i === currentStep ? '20px' : '6px',
-                                            height: '6px',
-                                            borderRadius: '3px',
-                                            background: i === currentStep ? 'var(--secondary)' : 'rgba(255, 255, 255, 0.2)',
-                                            transition: 'all 0.3s ease'
-                                        }}
-                                    />
-                                ))}
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}>
+                            <div style={{
+                                width: '64px',
+                                height: '64px',
+                                borderRadius: '20px',
+                                background: `linear-gradient(135deg, ${step.color}22 0%, ${step.color}44 100%)`,
+                                border: `1px solid ${step.color}55`,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                color: step.color
+                            }}>
+                                {currentStep === 0 ? <Sparkles size={32} /> : <MousePointer2 size={32} />}
                             </div>
 
-                            <motion.button
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                                onClick={handleNext}
-                                style={{
-                                    background: 'var(--secondary)',
-                                    color: '#0f3923',
-                                    padding: '12px 24px',
-                                    borderRadius: '16px',
-                                    border: 'none',
-                                    fontWeight: '700',
-                                    fontSize: '14px',
-                                    cursor: 'pointer',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '8px',
-                                    boxShadow: '0 10px 20px -5px rgba(163, 230, 53, 0.3)'
-                                }}
-                            >
-                                {currentStep === steps.length - 1 ? (
-                                    <>
-                                        ¡EMPEZAR!
-                                        <CheckCircle2 size={18} />
-                                    </>
-                                ) : (
-                                    <>
-                                        SIGUIENTE
-                                        <ChevronRight size={18} />
-                                    </>
-                                )}
-                            </motion.button>
+                            <div>
+                                <h3 style={{
+                                    fontSize: '22px',
+                                    fontWeight: '800',
+                                    marginBottom: '10px',
+                                    color: 'white',
+                                    letterSpacing: '-0.5px'
+                                }}>
+                                    {step.title}
+                                </h3>
+                                <p style={{
+                                    color: 'rgba(255, 255, 255, 0.65)',
+                                    fontSize: '15px',
+                                    lineHeight: '1.6',
+                                    fontWeight: '400'
+                                }}>
+                                    {step.description}
+                                </p>
+                            </div>
+
+                            {/* Nav */}
+                            <div style={{
+                                width: '100%',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                marginTop: '10px'
+                            }}>
+                                <button
+                                    onClick={handleBack}
+                                    style={{
+                                        visibility: currentStep === 0 ? 'hidden' : 'visible',
+                                        background: 'none',
+                                        border: 'none',
+                                        color: 'rgba(255, 255, 255, 0.4)',
+                                        fontSize: '14px',
+                                        fontWeight: '600',
+                                        cursor: 'pointer'
+                                    }}
+                                >
+                                    Anterior
+                                </button>
+
+                                <div style={{ display: 'flex', gap: '6px' }}>
+                                    {steps.map((_, i) => (
+                                        <div
+                                            key={i}
+                                            style={{
+                                                width: i === currentStep ? '12px' : '6px',
+                                                height: '6px',
+                                                borderRadius: '3px',
+                                                background: i === currentStep ? step.color : 'rgba(255, 255, 255, 0.15)',
+                                                transition: 'all 0.3s ease'
+                                            }}
+                                        />
+                                    ))}
+                                </div>
+
+                                <motion.button
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                    onClick={handleNext}
+                                    style={{
+                                        background: step.color,
+                                        color: '#0f3923',
+                                        padding: '10px 20px',
+                                        borderRadius: '14px',
+                                        border: 'none',
+                                        fontWeight: '800',
+                                        fontSize: '14px',
+                                        cursor: 'pointer',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '6px'
+                                    }}
+                                >
+                                    {currentStep === steps.length - 1 ? '¡Empezar!' : 'Siguiente'}
+                                    {currentStep === steps.length - 1 ? <CheckCircle2 size={16} /> : <ChevronRight size={16} />}
+                                </motion.button>
+                            </div>
                         </div>
                     </motion.div>
                 </motion.div>

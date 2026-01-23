@@ -8,21 +8,18 @@ import { useNavigate } from 'react-router-dom';
 
 
 import PageHeader from '../components/PageHeader';
+import { useProfile, useUpdateProfile } from '../hooks/useProfile';
+import { useAuth } from '../context/AuthContext';
 
 const EditProfile: React.FC = () => {
     const navigate = useNavigate();
-    const [loading, setLoading] = useState(true);
+    const { user } = useAuth();
+    const { data: profile, isLoading: isFetching } = useProfile();
+    const updateProfile = useUpdateProfile();
+
     const [saving, setSaving] = useState(false);
     const [uploading, setUploading] = useState(false);
-    const [formData, setFormData] = useState<{
-        full_name: string;
-        handicap: string;
-        federation_code: string;
-        id_photo_url: string;
-        email: string;
-        phone: string;
-        address: string;
-    }>({
+    const [formData, setFormData] = useState({
         full_name: '',
         handicap: '',
         federation_code: '',
@@ -33,7 +30,6 @@ const EditProfile: React.FC = () => {
     });
 
     const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
-    // Draft address for the modal
     const [addressDetails, setAddressDetails] = useState({
         street: '',
         city: '',
@@ -42,52 +38,34 @@ const EditProfile: React.FC = () => {
     });
 
     useEffect(() => {
-        const fetchUserData = async () => {
-            try {
-                const { data: { session } } = await supabase.auth.getSession();
-                if (!session) {
-                    navigate('/auth');
-                    return;
-                }
+        if (profile) {
+            setFormData({
+                full_name: profile.full_name || '',
+                handicap: profile.handicap?.toString() || '',
+                federation_code: profile.federation_code || '',
+                id_photo_url: profile.id_photo_url || '',
+                email: profile.email || '',
+                phone: profile.phone || '',
+                address: profile.address || ''
+            });
 
-                const { data, error } = await supabase
-                    .from('profiles')
-                    .select('*')
-                    .eq('id', session.user.id)
-                    .maybeSingle();
-
-                if (error) throw error;
-                if (data) {
-                    setFormData({
-                        full_name: data.full_name || '',
-                        handicap: data.handicap?.toString() || '',
-                        federation_code: data.federation_code || '',
-                        id_photo_url: data.id_photo_url || '',
-                        email: data.email || '',
-                        phone: data.phone || '',
-                        address: data.address || ''
-                    });
-
-                    // Parse address if it exists to pre-fill modal
-                    if (data.address) {
-                        const parts = data.address.split(',').map((p: string) => p.trim());
-                        setAddressDetails({
-                            street: parts[0] || '',
-                            city: parts[1] || '',
-                            dept: parts[2] || '',
-                            zip: parts[3] || ''
-                        });
-                    }
-                }
-            } catch (err) {
-                console.error('Error fetching profile:', err);
-            } finally {
-                setLoading(false);
+            if (profile.address) {
+                const parts = profile.address.split(',').map((p: string) => p.trim());
+                setAddressDetails({
+                    street: parts[0] || '',
+                    city: parts[1] || '',
+                    dept: parts[2] || '',
+                    zip: parts[3] || ''
+                });
             }
-        };
+        }
+    }, [profile]);
 
-        fetchUserData();
-    }, [navigate]);
+    useEffect(() => {
+        if (!user && !isFetching) {
+            navigate('/auth');
+        }
+    }, [user, isFetching, navigate]);
 
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -131,11 +109,7 @@ const EditProfile: React.FC = () => {
         e.preventDefault();
         setSaving(true);
         try {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (!session) return;
-
             const updates = {
-                id: session.user.id,
                 full_name: formData.full_name,
                 handicap: formData.handicap ? parseFloat(formData.handicap) : null,
                 federation_code: formData.federation_code,
@@ -146,8 +120,7 @@ const EditProfile: React.FC = () => {
                 updated_at: new Date().toISOString(),
             };
 
-            const { error } = await supabase.from('profiles').upsert(updates);
-            if (error) throw error;
+            await updateProfile(updates);
 
             // Notificar a otros componentes (como el Navbar) que el perfil cambió
             window.dispatchEvent(new Event('profile-updated'));
@@ -161,7 +134,7 @@ const EditProfile: React.FC = () => {
         }
     };
 
-    if (loading) {
+    if (isFetching && !profile) {
         return <div className="flex-center" style={{ height: '70vh' }}><Loader2 className="animate-spin" /></div>;
     }
 

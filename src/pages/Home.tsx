@@ -1,68 +1,38 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Card from '../components/Card';
 import { ArrowRight, Heart, Users } from 'lucide-react';
 import { supabase } from '../services/SupabaseManager';
 import ActivityCard from '../components/ActivityCard';
+import type { ActivityType } from '../components/ActivityCard';
+import { useProfile } from '../hooks/useProfile';
+import { useFeaturedProducts, useUpcomingTournaments, useUserRoundCount } from '../hooks/useHomeData';
+import { useQuery } from '@tanstack/react-query';
+import { useAuth } from '../context/AuthContext';
+
+interface ActivityItem {
+    id: string;
+    type: ActivityType;
+    userName: string;
+    userImage?: string;
+    description: string;
+    itemName?: string;
+    itemImage?: string;
+    created_at: string | null;
+}
 
 const Home: React.FC = () => {
     const navigate = useNavigate();
+    const { user } = useAuth();
+    const { data: profile } = useProfile();
+    const { data: roundCount = 0 } = useUserRoundCount(user?.id);
+    const { data: featuredProducts = [] } = useFeaturedProducts(4);
+    const { data: tournaments = [] } = useUpcomingTournaments(3);
 
-    const [profile, setProfile] = useState<any>(null);
-    const [roundCount, setRoundCount] = useState<number>(0);
-    const [featuredProducts, setFeaturedProducts] = useState<any[]>([]);
-    const [tournaments, setTournaments] = useState<any[]>([]);
-    const [activities, setActivities] = useState<any[]>([]);
-
-    const fetchHomeData = async () => {
-        try {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (!session) return;
-
-            // Fetch Profile
-            const { data: profileData } = await supabase
-                .from('profiles')
-                .select('*')
-                .eq('id', session.user.id)
-                .maybeSingle();
-            setProfile(profileData || null);
-
-            // Fetch Live Round Count
-            const { count, error: countError } = await supabase
-                .from('rounds')
-                .select('*', { count: 'exact', head: true })
-                .eq('user_id', session.user.id);
-
-            if (!countError) {
-                setRoundCount(count || 0);
-            }
-
-            // Fetch Featured Products
-            const { data: productsData } = await supabase
-                .from('products')
-                .select('*')
-                .order('created_at', { ascending: false })
-                .limit(4);
-
-            if (productsData) {
-                setFeaturedProducts(productsData.map(p => ({
-                    ...p,
-                    price: typeof p.price === 'string' ? parseFloat(p.price) : p.price
-                })));
-            }
-
-            // Fetch Real Tournaments
-            const { data: tournamentsData } = await supabase
-                .from('tournaments')
-                .select('*')
-                .order('date', { ascending: true })
-                .limit(3);
-
-            if (tournamentsData) {
-                setTournaments(tournamentsData);
-            }
-
-            // Fetch Activities
+    // Fetch Activities with React Query
+    const { data: activities = [], refetch: refetchActivities } = useQuery({
+        queryKey: ['activities'],
+        queryFn: async () => {
             const { data: registrations } = await supabase
                 .from('tournament_registrations')
                 .select('*, profiles(full_name, id_photo_url), tournaments(name)')
@@ -75,23 +45,23 @@ const Home: React.FC = () => {
                 .order('created_at', { ascending: false })
                 .limit(5);
 
-            const combinedActivities = [
+            const combinedActivities: ActivityItem[] = [
                 ...(registrations?.map(r => ({
                     id: r.id,
-                    type: 'registration',
+                    type: 'registration' as ActivityType,
                     userName: r.profiles?.full_name || 'Alguien',
-                    userImage: r.profiles?.id_photo_url,
+                    userImage: r.profiles?.id_photo_url || undefined,
                     description: `Se inscribió al torneo`,
                     itemName: r.tournaments?.name,
                     created_at: r.created_at
                 })) || []),
                 ...(newProducts?.map(p => ({
                     id: p.id,
-                    type: 'product',
+                    type: 'product' as ActivityType,
                     userName: 'Comunidad APEG',
                     description: `Nuevo artículo disponible`,
                     itemName: p.name,
-                    itemImage: p.image_url,
+                    itemImage: p.image_url || undefined,
                     created_at: p.created_at
                 })) || [])
             ].sort((a, b) => {
@@ -100,53 +70,24 @@ const Home: React.FC = () => {
                 return dateB - dateA;
             }).slice(0, 10);
 
-            setActivities(combinedActivities);
-
-        } catch (err) {
-            console.error('Error fetching home data:', err);
-        }
-    };
+            return combinedActivities;
+        },
+        staleTime: 1000 * 60 * 5,
+    });
 
     useEffect(() => {
-        fetchHomeData();
-
         // Real-time subscription for tournament registrations
         const channel = supabase
             .channel('public:tournament_registrations')
-            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'tournament_registrations' }, async (payload) => {
-                // Fetch full info for the new record
-                const { data } = await supabase
-                    .from('tournament_registrations')
-                    .select('*, profiles(full_name, id_photo_url), tournaments(name)')
-                    .eq('id', payload.new.id)
-                    .single();
-
-                if (data) {
-                    const newActivity = {
-                        id: data.id,
-                        type: 'registration',
-                        userName: data.profiles?.full_name || 'Alguien',
-                        userImage: data.profiles?.id_photo_url,
-                        description: `Se inscribió al torneo`,
-                        itemName: data.tournaments?.name,
-                        created_at: data.created_at
-                    };
-                    setActivities(prev => [newActivity, ...prev].slice(0, 10));
-                }
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'tournament_registrations' }, () => {
+                refetchActivities();
             })
             .subscribe();
 
-        const handleProfileUpdate = () => {
-            fetchHomeData();
-        };
-
-        window.addEventListener('profile-updated', handleProfileUpdate);
-
         return () => {
-            window.removeEventListener('profile-updated', handleProfileUpdate);
             supabase.removeChannel(channel);
         };
-    }, []);
+    }, [refetchActivities]);
 
 
 
@@ -245,7 +186,7 @@ const Home: React.FC = () => {
                                     userName={activity.userName}
                                     userImage={activity.userImage}
                                     description={activity.description}
-                                    time={new Date(activity.created_at).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
+                                    time={activity.created_at ? new Date(activity.created_at).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) : '--:--'}
                                     itemName={activity.itemName}
                                     itemImage={activity.itemImage}
                                     onClick={() => {
@@ -317,7 +258,7 @@ const Home: React.FC = () => {
                                     }}>
                                         <div style={{ position: 'relative', width: '90%' }}>
                                             <img
-                                                src={product.image_url}
+                                                src={product.image_url || undefined}
                                                 alt={product.name}
                                                 style={{
                                                     width: '100%',
@@ -340,7 +281,7 @@ const Home: React.FC = () => {
                                             }}>
                                                 <Heart size={14} color="white" />
                                             </div>
-                                            {product.condition && (
+                                            {(product as any).condition && (
                                                 <div style={{
                                                     position: 'absolute',
                                                     bottom: '8px',
@@ -353,7 +294,7 @@ const Home: React.FC = () => {
                                                     borderRadius: '6px',
                                                     boxShadow: '0 2px 8px rgba(163, 230, 53, 0.2)'
                                                 }}>
-                                                    {product.condition}
+                                                    {(product as any).condition}
                                                 </div>
                                             )}
                                         </div>

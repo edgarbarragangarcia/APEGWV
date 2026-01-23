@@ -31,11 +31,12 @@ import CheckoutPage from './pages/CheckoutPage';
 import PaymentMethodsPage from './pages/PaymentMethodsPage';
 
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { QueryProvider } from './context/QueryProvider';
 
 const AppContent: React.FC = () => {
   const { session, loading } = useAuth();
   const location = useLocation();
-  const [showOnboarding, setShowOnboarding] = React.useState(true);
+  const [showOnboarding, setShowOnboarding] = React.useState(false);
 
   React.useEffect(() => {
     // Intentar bloquear la orientación
@@ -148,11 +149,13 @@ const AppContent: React.FC = () => {
 
 const App: React.FC = () => {
   return (
-    <AuthProvider>
-      <Router>
-        <AppContent />
-      </Router>
-    </AuthProvider>
+    <QueryProvider>
+      <AuthProvider>
+        <Router>
+          <AppContent />
+        </Router>
+      </AuthProvider>
+    </QueryProvider>
   );
 };
 

@@ -1,13 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { Bell, ShoppingBag } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import { supabase } from '../services/SupabaseManager';
 import { useCart } from '../context/CartContext';
 import { useNotifications } from '../context/NotificationContext';
+import { useProfile } from '../hooks/useProfile';
 
 const Navbar: React.FC = () => {
     const navigate = useNavigate();
-    const [profile, setProfile] = useState<any>(null);
+    const { data: profile } = useProfile();
     const { totalItems } = useCart();
     const { unreadCount } = useNotifications();
     const videoRef = React.useRef<HTMLVideoElement>(null);
@@ -48,24 +48,6 @@ const Navbar: React.FC = () => {
         };
     }, []);
 
-    useEffect(() => {
-        const fetchProfile = async () => {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) {
-                const { data } = await supabase
-                    .from('profiles')
-                    .select('full_name, id_photo_url')
-                    .eq('id', session.user.id)
-                    .single();
-                setProfile(data);
-            }
-        };
-        fetchProfile();
-
-        // Escuchar actualizaciones del perfil
-        window.addEventListener('profile-updated', fetchProfile);
-        return () => window.removeEventListener('profile-updated', fetchProfile);
-    }, []);
     return (
         <nav className="glass-dark" style={{
             position: 'fixed',
