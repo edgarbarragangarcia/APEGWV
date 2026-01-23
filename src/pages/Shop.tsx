@@ -428,7 +428,7 @@ const Shop: React.FC = () => {
                 bottom: 'calc(var(--nav-height))',
                 overflowY: 'auto',
                 overflowX: 'hidden',
-                padding: '0 20px 20px 20px',
+                padding: '20px',
                 transition: 'top 0.3s ease'
             }}>
                 {viewTab === 'marketplace' ? (
@@ -450,21 +450,21 @@ const Shop: React.FC = () => {
                                 gridTemplateColumns: '1fr 1fr',
                                 gap: '15px'
                             }}>
-                                {filteredProducts.map((product, index) => (
+                                {filteredProducts.map((product) => (
                                     <Card
                                         key={product.id}
                                         onClick={() => setSelectedProduct(product)}
                                         style={{
                                             overflow: 'hidden',
                                             padding: 0,
-                                            paddingTop: index < 2 ? '15px' : '0',
                                             height: '100%',
                                             marginBottom: 0,
                                             display: 'flex',
                                             flexDirection: 'column',
                                             cursor: 'pointer',
-                                            border: 'none',
-                                            background: 'rgba(255,255,255,0.02)'
+                                            background: 'rgba(255,255,255,0.03)',
+                                            borderRadius: '28px',
+                                            border: '1px solid rgba(255,255,255,0.05)'
                                         }}
                                     >
                                         <div style={{
@@ -518,16 +518,18 @@ const Shop: React.FC = () => {
                                                     position: 'absolute',
                                                     top: '10px',
                                                     right: '10px',
-                                                    background: 'rgba(0,0,0,0.4)',
-                                                    padding: '8px',
+                                                    backgroundColor: 'rgba(0,0,0,0.3)',
+                                                    backdropFilter: 'blur(8px)',
+                                                    WebkitBackdropFilter: 'blur(8px)',
+                                                    padding: '10px',
                                                     borderRadius: '50%',
                                                     display: 'flex',
                                                     alignItems: 'center',
                                                     justifyContent: 'center',
-                                                    border: '1px solid rgba(255,255,255,0.1)',
+                                                    border: '1px solid rgba(255,255,255,0.15)',
                                                     cursor: 'pointer',
                                                     zIndex: 2,
-                                                    transition: 'all 0.2s ease'
+                                                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
                                                 }}
                                             >
                                                 <Heart
@@ -540,16 +542,16 @@ const Shop: React.FC = () => {
                                         </div>
 
                                         <div style={{
-                                            padding: '0 14px',
+                                            padding: '0 16px 16px 16px',
                                             display: 'flex',
                                             flexDirection: 'column',
                                             flex: 1,
-                                            minHeight: '80px'
+                                            gap: '4px'
                                         }}>
                                             <h4 style={{
-                                                fontSize: '18px',
+                                                fontSize: '17px',
                                                 fontWeight: '800',
-                                                marginBottom: '4px',
+                                                marginBottom: 0,
                                                 whiteSpace: 'nowrap',
                                                 overflow: 'hidden',
                                                 textOverflow: 'ellipsis',
@@ -560,19 +562,19 @@ const Shop: React.FC = () => {
                                                 {product.name}
                                             </h4>
 
-                                            <div style={{ marginBottom: '2px' }}>
-                                                <span style={{ color: 'var(--secondary)', fontWeight: '900', fontSize: '15px' }}>
+                                            <div style={{ marginBottom: 0 }}>
+                                                <span style={{ color: 'var(--secondary)', fontWeight: '900', fontSize: '16px' }}>
                                                     $ {new Intl.NumberFormat('es-CO').format(product.price)}
                                                 </span>
                                             </div>
 
                                             <div>
                                                 <p style={{
-                                                    fontSize: '11px',
+                                                    fontSize: '10px',
                                                     color: 'var(--text-dim)',
-                                                    fontWeight: '600',
+                                                    fontWeight: '700',
                                                     textTransform: 'uppercase',
-                                                    letterSpacing: '0.02em'
+                                                    letterSpacing: '0.05em'
                                                 }}>
                                                     {product.category}
                                                 </p>

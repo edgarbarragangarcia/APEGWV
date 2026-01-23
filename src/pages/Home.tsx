@@ -191,7 +191,7 @@ const Home: React.FC = () => {
             {/* Area de Scroll para el resto del contenido */}
             <div style={{
                 position: 'absolute',
-                top: 'calc(env(safe-area-inset-top) + 270px)',
+                top: 'calc(env(safe-area-inset-top) + 260px)',
                 left: '0',
                 right: '0',
                 bottom: 'calc(var(--nav-height) + 5px)',
@@ -201,8 +201,8 @@ const Home: React.FC = () => {
             }}>
 
                 {/* Activity Feed Section */}
-                <div style={{ marginBottom: '25px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '18px', paddingRight: '5px' }}>
+                <div style={{ marginBottom: '10px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '8px', paddingRight: '5px' }}>
                         <div>
                             <h3 style={{ fontSize: '20px', fontWeight: '900', letterSpacing: '-0.5px', display: 'flex', alignItems: 'center', gap: '8px', color: 'white' }}>
                                 Actividad <span style={{ color: 'var(--secondary)' }}>Comunidad</span>
@@ -258,7 +258,7 @@ const Home: React.FC = () => {
 
                 {/* Marketplace Section */}
                 <div style={{ marginBottom: '10px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '18px', paddingRight: '5px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '8px', paddingRight: '5px' }}>
                         <div>
                             <h3 style={{ fontSize: '20px', fontWeight: '900', letterSpacing: '-0.5px', color: 'white' }}>Marketplace</h3>
                         </div>
