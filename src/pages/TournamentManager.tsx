@@ -17,6 +17,8 @@ interface Tournament {
     current_participants: number | null;
     status: string | null;
     image_url: string | null;
+    game_mode: string | null;
+    address: string | null;
 }
 
 interface Participant {
@@ -58,7 +60,9 @@ const TournamentManager: React.FC = () => {
         displayPrice: '', // String with thousand separators for UI
         participants_limit: '100',
         image_url: 'https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?q=80&w=1000&auto=format&fit=crop',
-        status: 'Abierto'
+        status: 'Abierto',
+        game_mode: 'Juego por Golpes',
+        address: ''
     });
 
     const formatPrice = (val: string) => {
@@ -99,7 +103,7 @@ const TournamentManager: React.FC = () => {
             // Fetch User Tournaments
             const { data: userTourneys, error } = await supabase
                 .from('tournaments')
-                .select('id, name, description, date, club, price, participants_limit, current_participants, status, image_url')
+                .select('id, name, description, date, club, price, participants_limit, current_participants, status, image_url, game_mode, address')
                 .eq('creator_id', user.id)
                 .order('created_at', { ascending: false });
 
@@ -142,6 +146,8 @@ const TournamentManager: React.FC = () => {
                         participants_limit: parseInt(formData.participants_limit),
                         image_url: formData.image_url,
                         status: formData.status,
+                        game_mode: formData.game_mode,
+                        address: formData.address,
                         updated_at: new Date().toISOString()
                     })
                     .eq('id', editingId)
@@ -159,6 +165,8 @@ const TournamentManager: React.FC = () => {
                         participants_limit: parseInt(formData.participants_limit),
                         image_url: formData.image_url,
                         status: formData.status,
+                        game_mode: formData.game_mode,
+                        address: formData.address,
                         creator_id: user.id
                     }])
                     .select()
@@ -194,7 +202,9 @@ const TournamentManager: React.FC = () => {
             displayPrice: '',
             participants_limit: '100',
             image_url: 'https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?q=80&w=1000&auto=format&fit=crop',
-            status: 'Abierto'
+            status: 'Abierto',
+            game_mode: 'Juego por Golpes',
+            address: ''
         });
         setEditingId(null);
     };
@@ -210,7 +220,9 @@ const TournamentManager: React.FC = () => {
             displayPrice: formatPrice(p),
             participants_limit: (tournament.participants_limit || 100).toString(),
             image_url: tournament.image_url || 'https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?q=80&w=1000&auto=format&fit=crop',
-            status: tournament.status || 'Abierto'
+            status: tournament.status || 'Abierto',
+            game_mode: tournament.game_mode || 'Juego por Golpes',
+            address: tournament.address || ''
         });
         setEditingId(tournament.id);
         setShowForm(true);
@@ -299,9 +311,19 @@ const TournamentManager: React.FC = () => {
     }
 
     return (
-        <div className="animate-fade" style={{ paddingBottom: 'calc(var(--nav-height) + 20px)' }}>
-            {/* Standard Header */}
-            <div style={{ marginBottom: '20px', textAlign: 'center' }}>
+        <div className="animate-fade" style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'var(--primary)',
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden',
+            zIndex: 900,
+            paddingTop: '80px', // Push content below global navbar
+            paddingBottom: 'var(--nav-height)'
+        }}>
+            {/* Fixed Title Header */}
+            <div style={{ flexShrink: 0, zIndex: 10, background: 'var(--primary)', padding: '0 20px 20px 20px', textAlign: 'center' }}>
                 <span style={{
                     fontSize: '11px',
                     fontWeight: '900',
@@ -322,257 +344,300 @@ const TournamentManager: React.FC = () => {
                 </h1>
             </div>
 
-            {!showForm && (
-                <button
-                    onClick={() => setShowForm(true)}
-                    style={{
-                        background: 'var(--secondary)',
-                        color: 'var(--primary)',
-                        padding: '12px',
-                        borderRadius: '15px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '8px',
-                        fontWeight: '700',
-                        fontSize: '14px',
-                        width: '100%',
-                        marginBottom: '20px'
-                    }}
-                >
-                    <Plus size={18} />
-                    <span>Organizar Nuevo Torneo</span>
-                </button>
-            )}
+            {/* Scrollable Content */}
+            <div style={{
+                flex: 1,
+                overflowY: 'auto',
+                padding: '0 20px 20px 20px',
+                display: 'flex',
+                flexDirection: 'column',
+                WebkitOverflowScrolling: 'touch',
+                gap: '20px'
+            }}>
+                {!showForm && (
+                    <button
+                        onClick={() => setShowForm(true)}
+                        style={{
+                            background: 'var(--secondary)',
+                            color: 'var(--primary)',
+                            padding: '12px',
+                            borderRadius: '15px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '8px',
+                            fontWeight: '700',
+                            fontSize: '14px',
+                            width: '100%',
+                            flexShrink: 0
+                        }}
+                    >
+                        <Plus size={18} />
+                        <span>Organizar Nuevo Torneo</span>
+                    </button>
+                )}
 
-            {showForm ? (
-                <form onSubmit={handleSubmit} className="glass" style={{ padding: '25px', marginBottom: '30px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
-                        <h2 style={{ fontSize: '18px', fontWeight: '700' }}>{editingId ? 'Editar Evento' : 'Nuevo Evento'}</h2>
-                        <button type="button" onClick={() => { setShowForm(false); resetForm(); }} style={{ color: 'var(--text-dim)', fontSize: '14px' }}>Cancelar</button>
-                    </div>
-
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                        <div>
-                            <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Nombre del Torneo</label>
-                            <input
-                                required
-                                value={formData.name}
-                                onChange={e => setFormData({ ...formData, name: e.target.value })}
-                                style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '12px', color: 'white', fontSize: '15px' }}
-                                placeholder="Ej: Abierto APEG Verano"
-                            />
+                {showForm ? (
+                    <form onSubmit={handleSubmit} className="glass" style={{ padding: '25px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+                            <h2 style={{ fontSize: '18px', fontWeight: '700' }}>{editingId ? 'Editar Evento' : 'Nuevo Evento'}</h2>
+                            <button type="button" onClick={() => { setShowForm(false); resetForm(); }} style={{ color: 'var(--text-dim)', fontSize: '14px' }}>Cancelar</button>
                         </div>
 
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                             <div>
-                                <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Fecha</label>
+                                <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Nombre del Torneo</label>
                                 <input
                                     required
-                                    type="date"
-                                    value={formData.date}
-                                    onChange={e => setFormData({ ...formData, date: e.target.value })}
+                                    value={formData.name}
+                                    onChange={e => setFormData({ ...formData, name: e.target.value })}
                                     style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '12px', color: 'white', fontSize: '15px' }}
+                                    placeholder="Ej: Abierto APEG Verano"
                                 />
                             </div>
+
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                                <div>
+                                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Cant. Jugadores</label>
+                                    <input
+                                        type="number"
+                                        required
+                                        value={formData.participants_limit}
+                                        onChange={e => setFormData({ ...formData, participants_limit: e.target.value })}
+                                        style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '12px', color: 'white', fontSize: '15px' }}
+                                    />
+                                </div>
+                                <div>
+                                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Precio (COP)</label>
+                                    <div style={{ position: 'relative' }}>
+                                        <input
+                                            required
+                                            type="text"
+                                            inputMode="numeric"
+                                            value={formData.displayPrice}
+                                            onChange={handlePriceChange}
+                                            style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '12px', color: 'white', fontSize: '15px' }}
+                                            placeholder="0"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
                             <div>
-                                <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Precio Green Fee (COP)</label>
-                                <div style={{ position: 'relative' }}>
+                                <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Modalidad de Juego</label>
+                                <select
+                                    value={formData.game_mode}
+                                    onChange={e => setFormData({ ...formData, game_mode: e.target.value })}
+                                    style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '12px', color: 'white', fontSize: '15px', outline: 'none' }}
+                                >
+                                    <option value="Juego por Golpes">Juego por Golpes (Medal Play)</option>
+                                    <option value="Juego por Hoyos">Juego por Hoyos (Match Play)</option>
+                                    <option value="Stableford">Stableford</option>
+                                    <option value="Foursome">Foursome</option>
+                                    <option value="Fourball">Fourball</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Club de Golf</label>
+                                <input
+                                    required
+                                    value={formData.club}
+                                    onChange={e => setFormData({ ...formData, club: e.target.value })}
+                                    style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '12px', color: 'white', fontSize: '15px' }}
+                                    placeholder="Nombre del club"
+                                />
+                            </div>
+
+                            <div>
+                                <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Dirección (Google Maps)</label>
+                                <input
+                                    value={formData.address}
+                                    onChange={e => setFormData({ ...formData, address: e.target.value })}
+                                    style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '12px', color: 'white', fontSize: '15px' }}
+                                    placeholder="Pegar enlace o dirección"
+                                />
+                            </div>
+
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                                <div>
+                                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Fecha</label>
                                     <input
                                         required
-                                        type="text"
-                                        inputMode="numeric"
-                                        value={formData.displayPrice}
-                                        onChange={handlePriceChange}
+                                        type="date"
+                                        value={formData.date}
+                                        onChange={e => setFormData({ ...formData, date: e.target.value })}
                                         style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '12px', color: 'white', fontSize: '15px' }}
-                                        placeholder="0"
                                     />
-                                    <span style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-dim)', fontSize: '12px', pointerEvents: 'none' }}>
-                                        $
-                                    </span>
+                                </div>
+                                <div>
+                                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Estado</label>
+                                    <select
+                                        value={formData.status}
+                                        onChange={e => setFormData({ ...formData, status: e.target.value })}
+                                        style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '12px', color: 'white', fontSize: '15px', outline: 'none' }}
+                                    >
+                                        <option value="Abierto">Abierto</option>
+                                        <option value="Cerrado">Cerrado</option>
+                                        <option value="Finalizado">Finalizado</option>
+                                    </select>
                                 </div>
                             </div>
-                        </div>
 
-                        <div>
-                            <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Club de Golf</label>
-                            <input
-                                required
-                                value={formData.club}
-                                onChange={e => setFormData({ ...formData, club: e.target.value })}
-                                style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '12px', color: 'white', fontSize: '15px' }}
-                                placeholder="Nombre del club"
-                            />
-                        </div>
-
-                        <div>
-                            <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Estado de Inscripciones</label>
-                            <select
-                                value={formData.status}
-                                onChange={e => setFormData({ ...formData, status: e.target.value })}
-                                style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '12px', color: 'white', fontSize: '15px', outline: 'none' }}
-                            >
-                                <option value="Abierto">Abierto</option>
-                                <option value="Cerrado">Cerrado</option>
-                                <option value="Finalizado">Finalizado</option>
-                            </select>
-                        </div>
-
-                        <div>
-                            <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Descripción y Reglas</label>
-                            <textarea
-                                value={formData.description}
-                                onChange={e => setFormData({ ...formData, description: e.target.value })}
-                                style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '12px', color: 'white', fontSize: '15px', minHeight: '80px', resize: 'none' }}
-                                placeholder="Detalles del formato, premios, etc..."
-                            />
-                        </div>
-
-                        <button
-                            type="submit"
-                            disabled={saving}
-                            style={{
-                                width: '100%',
-                                background: saving ? 'rgba(163, 230, 53, 0.3)' : 'var(--secondary)',
-                                color: 'var(--primary)',
-                                padding: '15px',
-                                borderRadius: '15px',
-                                fontWeight: '800',
-                                marginTop: '10px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                gap: '10px'
-                            }}
-                        >
-                            {saving ? <Loader2 className="animate-spin" size={20} /> : <CheckCircle2 size={20} />}
-                            {saving ? 'GUARDANDO...' : 'PUBLICAR TORNEO'}
-                        </button>
-                    </div>
-                </form>
-            ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                    {loading ? (
-                        [1, 2].map(i => (
-                            <div key={i} className="glass" style={{ padding: '20px', borderRadius: '28px' }}>
-                                <div style={{ display: 'flex', gap: '15px', alignItems: 'center', marginBottom: '15px' }}>
-                                    <Skeleton width="60px" height="60px" borderRadius="15px" />
-                                    <div style={{ flex: 1 }}>
-                                        <Skeleton width="70%" height="20px" style={{ marginBottom: '8px' }} />
-                                        <Skeleton width="40%" height="15px" />
-                                    </div>
-                                </div>
-                                <Skeleton height="40px" borderRadius="12px" />
+                            <div>
+                                <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Descripción y Reglas</label>
+                                <textarea
+                                    value={formData.description}
+                                    onChange={e => setFormData({ ...formData, description: e.target.value })}
+                                    style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '12px', color: 'white', fontSize: '15px', minHeight: '80px', resize: 'none' }}
+                                    placeholder="Detalles del formato, premios, etc..."
+                                />
                             </div>
-                        ))
-                    ) : tournaments.length === 0 ? (
-                        <div className="glass" style={{ padding: '60px 20px', textAlign: 'center', borderRadius: '30px' }}>
-                            <div style={{
-                                width: '80px',
-                                height: '80px',
-                                background: 'rgba(255,255,255,0.03)',
-                                borderRadius: '50%',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                margin: '0 auto 20px',
-                                border: '1px solid rgba(255,255,255,0.05)'
-                            }}>
-                                <Trophy size={32} color="var(--text-dim)" style={{ opacity: 0.5 }} />
-                            </div>
-                            <h3 style={{ fontSize: '18px', fontWeight: '800', color: 'white', marginBottom: '8px' }}>Sin eventos organizados</h3>
-                            <p style={{ color: 'var(--text-dim)', fontSize: '14px' }}>Crea tu primer torneo y empieza a gestionar participantes.</p>
-                        </div>
-                    ) : (
-                        tournaments.map(tourney => (
-                            <div key={tourney.id} className="animate-fade-up">
-                                <Card style={{
-                                    marginBottom: 0,
+
+                            <button
+                                type="submit"
+                                disabled={saving}
+                                style={{
+                                    width: '100%',
+                                    background: saving ? 'rgba(163, 230, 53, 0.3)' : 'var(--secondary)',
+                                    color: 'var(--primary)',
                                     padding: '15px',
+                                    borderRadius: '15px',
+                                    fontWeight: '800',
+                                    marginTop: '10px',
                                     display: 'flex',
-                                    gap: '18px',
                                     alignItems: 'center',
-                                    background: 'rgba(255,255,255,0.03)',
-                                    borderRadius: '26px',
-                                    border: '1px solid rgba(255,b255,b255,0.06)',
-                                    boxShadow: '0 10px 30px rgba(0,0,0,0.2)'
-                                }}>
-                                    <div style={{
-                                        width: '75px',
-                                        height: '75px',
-                                        borderRadius: '20px',
-                                        background: 'var(--primary-light)',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        border: '1px solid rgba(255,255,255,0.1)',
-                                        flexShrink: 0
-                                    }}>
-                                        <Trophy size={32} color="var(--secondary)" />
-                                    </div>
-                                    <div style={{ flex: 1, minWidth: 0 }}>
-                                        <h3 style={{
-                                            fontSize: '17px',
-                                            fontWeight: '900',
-                                            marginBottom: '6px',
-                                            color: 'white',
-                                            letterSpacing: '-0.3px',
-                                            overflow: 'hidden',
-                                            textOverflow: 'ellipsis',
-                                            whiteSpace: 'nowrap'
-                                        }}>{tourney.name}</h3>
-                                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', fontSize: '13px' }}>
-                                            <span style={{ display: 'flex', alignItems: 'center', gap: '5px', color: 'var(--text-dim)', fontWeight: '600' }}>
-                                                <Calendar size={14} color="var(--secondary)" />
-                                                {new Date(tourney.date).toLocaleDateString()}
-                                            </span>
-                                            <span style={{ color: 'var(--secondary)', fontWeight: '900' }}>
-                                                {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(tourney.price)}
-                                            </span>
-                                            <span style={{
-                                                fontSize: '10px',
-                                                fontWeight: '800',
-                                                padding: '2px 8px',
-                                                borderRadius: '6px',
-                                                background: tourney.status === 'Abierto' ? 'rgba(163, 230, 53, 0.1)' : 'rgba(255,255,255,0.05)',
-                                                color: tourney.status === 'Abierto' ? 'var(--secondary)' : 'var(--text-dim)',
-                                                textTransform: 'uppercase'
-                                            }}>
-                                                {tourney.status || 'Abierto'}
-                                            </span>
-                                            <button
-                                                onClick={() => handleViewParticipants(tourney)}
-                                                style={{
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    gap: '5px',
-                                                    color: 'var(--secondary)',
-                                                    fontSize: '12px',
-                                                    fontWeight: '700',
-                                                    background: 'rgba(163, 230, 53, 0.1)',
-                                                    padding: '4px 10px',
-                                                    borderRadius: '8px',
-                                                    border: 'none',
-                                                    cursor: 'pointer'
-                                                }}
-                                            >
-                                                <Users size={14} />
-                                                <span>{tourney.current_participants || 0} Participantes</span>
-                                            </button>
+                                    justifyContent: 'center',
+                                    gap: '10px'
+                                }}
+                            >
+                                {saving ? <Loader2 className="animate-spin" size={20} /> : <CheckCircle2 size={20} />}
+                                {saving ? 'GUARDANDO...' : 'PUBLICAR TORNEO'}
+                            </button>
+                        </div>
+                    </form>
+                ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                        {loading ? (
+                            [1, 2].map(i => (
+                                <div key={i} className="glass" style={{ padding: '20px', borderRadius: '28px' }}>
+                                    <div style={{ display: 'flex', gap: '15px', alignItems: 'center', marginBottom: '15px' }}>
+                                        <Skeleton width="60px" height="60px" borderRadius="15px" />
+                                        <div style={{ flex: 1 }}>
+                                            <Skeleton width="70%" height="20px" style={{ marginBottom: '8px' }} />
+                                            <Skeleton width="40%" height="15px" />
                                         </div>
                                     </div>
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', paddingRight: '5px' }}>
-                                        <button onClick={() => handleEditClick(tourney)} style={{ color: 'var(--text-dim)', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '10px', cursor: 'pointer' }}><Pencil size={18} /></button>
-                                        <button onClick={() => handleDeleteClick(tourney)} style={{ color: '#ef4444', background: 'rgba(239, 68, 68, 0.04)', border: '1px solid rgba(239, 68, 68, 0.1)', borderRadius: '12px', padding: '10px', cursor: 'pointer' }}><Trash2 size={18} /></button>
-                                    </div>
-                                </Card>
+                                    <Skeleton height="40px" borderRadius="12px" />
+                                </div>
+                            ))
+                        ) : tournaments.length === 0 ? (
+                            <div className="glass" style={{ padding: '60px 20px', textAlign: 'center', borderRadius: '30px' }}>
+                                <div style={{
+                                    width: '80px',
+                                    height: '80px',
+                                    background: 'rgba(255,255,255,0.03)',
+                                    borderRadius: '50%',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    margin: '0 auto 20px',
+                                    border: '1px solid rgba(255,255,255,0.05)'
+                                }}>
+                                    <Trophy size={32} color="var(--text-dim)" style={{ opacity: 0.5 }} />
+                                </div>
+                                <h3 style={{ fontSize: '18px', fontWeight: '800', color: 'white', marginBottom: '8px' }}>Sin eventos organizados</h3>
+                                <p style={{ color: 'var(--text-dim)', fontSize: '14px' }}>Crea tu primer torneo y empieza a gestionar participantes.</p>
                             </div>
-                        ))
-                    )}
-                </div>
-            )}
-
-            {/* Delete Confirmation Modal */}
+                        ) : (
+                            tournaments.map(tourney => (
+                                <div key={tourney.id} className="animate-fade-up">
+                                    <Card style={{
+                                        marginBottom: 0,
+                                        padding: '15px',
+                                        display: 'flex',
+                                        gap: '18px',
+                                        alignItems: 'center',
+                                        background: 'rgba(255,255,255,0.03)',
+                                        borderRadius: '26px',
+                                        border: '1px solid rgba(255,b255,b255,0.06)',
+                                        boxShadow: '0 10px 30px rgba(0,0,0,0.2)'
+                                    }}>
+                                        <div style={{
+                                            width: '75px',
+                                            height: '75px',
+                                            borderRadius: '20px',
+                                            background: 'var(--primary-light)',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            border: '1px solid rgba(255,255,255,0.1)',
+                                            flexShrink: 0
+                                        }}>
+                                            <Trophy size={32} color="var(--secondary)" />
+                                        </div>
+                                        <div style={{ flex: 1, minWidth: 0 }}>
+                                            <h3 style={{
+                                                fontSize: '17px',
+                                                fontWeight: '900',
+                                                marginBottom: '6px',
+                                                color: 'white',
+                                                letterSpacing: '-0.3px',
+                                                overflow: 'hidden',
+                                                textOverflow: 'ellipsis',
+                                                whiteSpace: 'nowrap'
+                                            }}>{tourney.name}</h3>
+                                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', fontSize: '13px' }}>
+                                                <span style={{ display: 'flex', alignItems: 'center', gap: '5px', color: 'var(--text-dim)', fontWeight: '600' }}>
+                                                    <Calendar size={14} color="var(--secondary)" />
+                                                    {new Date(tourney.date).toLocaleDateString()}
+                                                </span>
+                                                <span style={{ color: 'var(--secondary)', fontWeight: '900' }}>
+                                                    {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(tourney.price)}
+                                                </span>
+                                                <span style={{
+                                                    fontSize: '10px',
+                                                    fontWeight: '800',
+                                                    padding: '2px 8px',
+                                                    borderRadius: '6px',
+                                                    background: tourney.status === 'Abierto' ? 'rgba(163, 230, 53, 0.1)' : 'rgba(255,255,255,0.05)',
+                                                    color: tourney.status === 'Abierto' ? 'var(--secondary)' : 'var(--text-dim)',
+                                                    textTransform: 'uppercase'
+                                                }}>
+                                                    {tourney.status || 'Abierto'}
+                                                </span>
+                                                <button
+                                                    onClick={() => handleViewParticipants(tourney)}
+                                                    style={{
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: '5px',
+                                                        color: 'var(--secondary)',
+                                                        fontSize: '12px',
+                                                        fontWeight: '700',
+                                                        background: 'rgba(163, 230, 53, 0.1)',
+                                                        padding: '4px 10px',
+                                                        borderRadius: '8px',
+                                                        border: 'none',
+                                                        cursor: 'pointer'
+                                                    }}
+                                                >
+                                                    <Users size={14} />
+                                                    <span>{tourney.current_participants || 0} Participantes</span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', paddingRight: '5px' }}>
+                                            <button onClick={() => handleEditClick(tourney)} style={{ color: 'var(--text-dim)', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '10px', cursor: 'pointer' }}><Pencil size={18} /></button>
+                                            <button onClick={() => handleDeleteClick(tourney)} style={{ color: '#ef4444', background: 'rgba(239, 68, 68, 0.04)', border: '1px solid rgba(239, 68, 68, 0.1)', borderRadius: '12px', padding: '10px', cursor: 'pointer' }}><Trash2 size={18} /></button>
+                                        </div>
+                                    </Card>
+                                </div>
+                            ))
+                        )}
+                    </div>
+                )}
+            </div>     {/* Delete Confirmation Modal */}
             {deleteModal.isOpen && (
                 <div style={{
                     position: 'fixed',
