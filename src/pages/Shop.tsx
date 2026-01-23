@@ -41,13 +41,12 @@ const Shop: React.FC = () => {
     const [offerMessage, setOfferMessage] = useState('');
     const [sendingOffer, setSendingOffer] = useState(false);
     const [offerSuccess, setOfferSuccess] = useState(false);
-    const { addToCart, totalItems } = useCart();
     const [addingToCart, setAddingToCart] = useState<string | null>(null);
+    const { addToCart, totalItems } = useCart();
     const [ordersLoading, setOrdersLoading] = useState(false);
     const [ordersError, setOrdersError] = useState<string | null>(null);
     const [productsLoading, setProductsLoading] = useState(true);
     const [likedProducts, setLikedProducts] = useState<Set<string>>(new Set());
-    const [isDetailsExpanded, setIsDetailsExpanded] = useState(false);
     const location = useLocation();
 
     // Auto-reset expired negotiations
@@ -362,13 +361,13 @@ const Shop: React.FC = () => {
                         {/* Search Bar */}
                         <div style={{
                             marginBottom: '10px',
-                            padding: '10px 15px',
+                            padding: '12px 18px',
                             display: 'flex',
                             alignItems: 'center',
                             gap: '12px',
-                            background: 'rgba(255,255,255,0.05)',
-                            borderRadius: '16px',
-                            border: '1px solid rgba(255,255,255,0.1)'
+                            background: 'rgba(255,255,255,0.06)',
+                            borderRadius: '18px',
+                            border: 'none'
                         }}>
                             <Search size={18} color="var(--text-dim)" />
                             <input
@@ -451,98 +450,92 @@ const Shop: React.FC = () => {
                                 gridTemplateColumns: '1fr 1fr',
                                 gap: '15px'
                             }}>
-                                {filteredProducts.map((product) => (
+                                {filteredProducts.map((product, index) => (
                                     <Card
                                         key={product.id}
                                         onClick={() => setSelectedProduct(product)}
                                         style={{
                                             overflow: 'hidden',
-                                            padding: '20px 0 16px 0',
+                                            padding: 0,
+                                            paddingTop: index < 2 ? '15px' : '0',
                                             height: '100%',
                                             marginBottom: 0,
                                             display: 'flex',
                                             flexDirection: 'column',
-                                            cursor: 'pointer'
+                                            cursor: 'pointer',
+                                            border: 'none',
+                                            background: 'rgba(255,255,255,0.02)'
                                         }}
                                     >
                                         <div style={{
                                             position: 'relative',
-                                            display: 'flex',
-                                            justifyContent: 'center',
                                             width: '100%',
-                                            marginBottom: '10px'
+                                            aspectRatio: '1/1',
+                                            overflow: 'hidden',
+                                            marginBottom: '12px'
                                         }}>
-                                            <div style={{
-                                                position: 'relative',
-                                                width: '90%',
-                                                aspectRatio: '1/1',
-                                                background: 'rgba(255,255,255,0.03)',
-                                                borderRadius: '20px',
-                                                overflow: 'hidden'
-                                            }}>
-                                                <img
-                                                    src={optimizeImage(product.image_url, { width: 400, height: 400 })}
-                                                    alt={product.name}
-                                                    loading="lazy"
-                                                    onError={(e) => {
-                                                        const target = e.target as HTMLImageElement;
-                                                        target.style.display = 'none';
-                                                        target.parentElement!.style.display = 'flex';
-                                                        target.parentElement!.style.alignItems = 'center';
-                                                        target.parentElement!.style.justifyContent = 'center';
-                                                        target.parentElement!.innerHTML = `<div style="color: var(--text-dim); display: flex; flex-direction: column; align-items: center; gap: 8px;">
+                                            <img
+                                                src={optimizeImage(product.image_url, { width: 400, height: 400 })}
+                                                alt={product.name}
+                                                loading="lazy"
+                                                onError={(e) => {
+                                                    const target = e.target as HTMLImageElement;
+                                                    target.style.display = 'none';
+                                                    target.parentElement!.style.display = 'flex';
+                                                    target.parentElement!.style.alignItems = 'center';
+                                                    target.parentElement!.style.justifyContent = 'center';
+                                                    target.parentElement!.innerHTML = `<div style="color: var(--text-dim); display: flex; flex-direction: column; align-items: center; gap: 8px;">
                                                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
                                                         </div>`;
-                                                    }}
-                                                    style={{
-                                                        width: '100%',
-                                                        height: '100%',
-                                                        objectFit: 'cover',
-                                                        filter: product.status === 'negotiating' ? 'grayscale(0.5)' : 'none',
-                                                        transition: 'all 0.5s ease'
-                                                    }}
-                                                />
-                                                {product.status === 'negotiating' && (
-                                                    <div style={{
-                                                        position: 'absolute',
-                                                        inset: 0,
-                                                        display: 'flex',
-                                                        flexDirection: 'column',
-                                                        alignItems: 'center',
-                                                        justifyContent: 'center',
-                                                        background: 'rgba(0,0,0,0.4)',
-                                                        borderRadius: '20px',
-                                                        color: 'white'
-                                                    }}>
-                                                        <Lock size={24} style={{ marginBottom: '5px' }} />
-                                                        <span style={{ fontSize: '10px', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '0.1em' }}>En Negociación</span>
-                                                    </div>
-                                                )}
-                                                <div
-                                                    onClick={(e) => toggleLike(e, product.id)}
-                                                    style={{
-                                                        position: 'absolute',
-                                                        top: '10px',
-                                                        right: '10px',
-                                                        background: 'rgba(0,0,0,0.4)',
-                                                        padding: '8px',
-                                                        borderRadius: '50%',
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        justifyContent: 'center',
-                                                        border: '1px solid rgba(255,255,255,0.1)',
-                                                        cursor: 'pointer',
-                                                        zIndex: 2,
-                                                        transition: 'all 0.2s ease'
-                                                    }}
-                                                >
-                                                    <Heart
-                                                        size={16}
-                                                        fill={likedProducts.has(product.id) ? "var(--secondary)" : "none"}
-                                                        color={likedProducts.has(product.id) ? "var(--secondary)" : "white"}
-                                                        style={{ transform: likedProducts.has(product.id) ? 'scale(1.1)' : 'scale(1)' }}
-                                                    />
+                                                }}
+                                                style={{
+                                                    width: '100%',
+                                                    height: '100%',
+                                                    objectFit: 'cover',
+                                                    filter: product.status === 'negotiating' ? 'grayscale(0.5)' : 'none',
+                                                    transition: 'all 0.5s ease'
+                                                }}
+                                            />
+                                            {product.status === 'negotiating' && (
+                                                <div style={{
+                                                    position: 'absolute',
+                                                    inset: 0,
+                                                    display: 'flex',
+                                                    flexDirection: 'column',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    background: 'rgba(0,0,0,0.4)',
+                                                    borderRadius: '20px',
+                                                    color: 'white'
+                                                }}>
+                                                    <Lock size={24} style={{ marginBottom: '5px' }} />
+                                                    <span style={{ fontSize: '10px', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '0.1em' }}>En Negociación</span>
                                                 </div>
+                                            )}
+                                            <div
+                                                onClick={(e) => toggleLike(e, product.id)}
+                                                style={{
+                                                    position: 'absolute',
+                                                    top: '10px',
+                                                    right: '10px',
+                                                    background: 'rgba(0,0,0,0.4)',
+                                                    padding: '8px',
+                                                    borderRadius: '50%',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    border: '1px solid rgba(255,255,255,0.1)',
+                                                    cursor: 'pointer',
+                                                    zIndex: 2,
+                                                    transition: 'all 0.2s ease'
+                                                }}
+                                            >
+                                                <Heart
+                                                    size={16}
+                                                    fill={likedProducts.has(product.id) ? "var(--secondary)" : "none"}
+                                                    color={likedProducts.has(product.id) ? "var(--secondary)" : "white"}
+                                                    style={{ transform: likedProducts.has(product.id) ? 'scale(1.1)' : 'scale(1)' }}
+                                                />
                                             </div>
                                         </div>
 
@@ -768,8 +761,8 @@ const Shop: React.FC = () => {
                             flexDirection: 'column',
                             overflow: 'hidden'
                         }}>
-                            {/* Compact Image - 40% of screen */}
-                            <div style={{ position: 'relative', height: '40vh', width: '100%', flexShrink: 0 }}>
+                            {/* Product Image - Large (60% of viewport approx) */}
+                            <div style={{ position: 'relative', height: '60vh', width: '100%', flexShrink: 0 }}>
                                 <img
                                     src={optimizeImage(selectedProduct.image_url, { width: 600, height: 800 })}
                                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
@@ -787,318 +780,240 @@ const Shop: React.FC = () => {
                                     onClick={() => setSelectedProduct(null)}
                                     style={{
                                         position: 'absolute',
-                                        top: 'calc(env(safe-area-inset-top) + 15px)',
+                                        top: '15px',
                                         left: '15px',
-                                        background: 'var(--secondary)',
-                                        border: 'none',
-                                        width: '36px',
-                                        height: '36px',
+                                        background: 'rgba(0,0,0,0.5)',
+                                        backdropFilter: 'blur(10px)',
+                                        border: '1px solid rgba(255,255,255,0.1)',
+                                        width: '40px',
+                                        height: '40px',
                                         borderRadius: '50%',
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
-                                        color: 'var(--primary)',
-                                        zIndex: 10,
+                                        color: 'white',
+                                        zIndex: 100,
                                         cursor: 'pointer',
-                                        boxShadow: '0 4px 12px rgba(163, 230, 53, 0.4)'
+                                        boxShadow: '0 4px 15px rgba(0,0,0,0.3)'
                                     }}
                                 >
-                                    <ArrowLeft size={20} strokeWidth={3} />
+                                    <ArrowLeft size={22} strokeWidth={3} />
                                 </button>
                             </div>
 
-                            {/* Info "Sheet" */}
+                            {/* Compact Info Sheet */}
                             <div style={{
                                 position: 'relative',
                                 flex: 1,
                                 background: 'var(--primary)',
-                                borderTopLeftRadius: '32px',
-                                borderTopRightRadius: '32px',
-                                marginTop: '-32px',
-                                padding: '30px 24px',
+                                borderTopLeftRadius: '24px',
+                                borderTopRightRadius: '24px',
+                                marginTop: '-24px',
+                                padding: '15px 18px calc(var(--nav-height) + 10px)',
                                 zIndex: 5,
                                 display: 'flex',
-                                flexDirection: 'column'
+                                flexDirection: 'column',
+                                overflow: 'hidden'
                             }}>
-                                {/* Handle decoration */}
+                                {/* Handle */}
                                 <div style={{
-                                    width: '40px',
-                                    height: '4px',
+                                    width: '32px',
+                                    height: '3px',
                                     background: 'rgba(255,255,255,0.1)',
                                     borderRadius: '2px',
-                                    margin: '-15px auto 25px'
+                                    margin: '-6px auto 12px'
                                 }} />
 
                                 {selectedProduct.status === 'negotiating' && (
                                     <div style={{
-                                        position: 'absolute',
-                                        bottom: '40px',
-                                        left: '20px',
-                                        right: '20px',
-                                        background: 'rgba(0,0,0,0.6)',
-                                        backdropFilter: 'blur(15px)',
-                                        padding: '12px 20px',
-                                        borderRadius: '16px',
+                                        background: 'rgba(0,0,0,0.3)',
+                                        padding: '6px 10px',
+                                        borderRadius: '10px',
                                         color: 'white',
                                         display: 'flex',
                                         alignItems: 'center',
-                                        gap: '12px',
+                                        gap: '6px',
                                         border: '1px solid rgba(255,255,255,0.1)',
-                                        zIndex: 5
+                                        marginBottom: '8px'
                                     }}>
-                                        <div style={{ background: 'var(--secondary)', padding: '8px', borderRadius: '50%', color: 'var(--primary)' }}>
-                                            {selectedProduct.negotiating_buyer_id === user?.id ? <Clock size={18} /> : <Lock size={18} />}
+                                        <div style={{ background: 'var(--secondary)', padding: '4px', borderRadius: '50%', color: 'var(--primary)' }}>
+                                            {selectedProduct.negotiating_buyer_id === user?.id ? <Clock size={12} /> : <Lock size={12} />}
                                         </div>
                                         <div style={{ flex: 1 }}>
-                                            <p style={{ fontSize: '13px', fontWeight: '800', margin: 0 }}>
-                                                {selectedProduct.negotiating_buyer_id === user?.id ? 'TIENES UNA RESERVA ACTIVA' : 'PRODUCTO RESERVADO'}
-                                            </p>
-                                            <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)', margin: 0 }}>
-                                                {selectedProduct.negotiating_buyer_id === user?.id
-                                                    ? 'Completa el pago antes de que expire el tiempo'
-                                                    : 'Este artículo está en proceso de venta'}
+                                            <p style={{ fontSize: '10px', fontWeight: '800', margin: 0 }}>
+                                                {selectedProduct.negotiating_buyer_id === user?.id ? 'TU RESERVA ACTIVA' : 'RESERVADO'}
                                             </p>
                                         </div>
-                                        {selectedProduct.negotiating_buyer_id === user?.id && selectedProduct.negotiation_expires_at && (
-                                            <div style={{ textAlign: 'right' }}>
-                                                <span style={{ fontSize: '10px', fontWeight: '700', color: 'var(--secondary)', display: 'block' }}>EXPIRE EN</span>
-                                                <span style={{ fontSize: '14px', fontWeight: '900', color: 'white' }}>
-                                                    {Math.max(0, Math.floor((new Date(selectedProduct.negotiation_expires_at).getTime() - Date.now()) / 1000 / 60))}m
-                                                </span>
+                                    </div>
+                                )}
+
+                                {/* Compact Product Header */}
+                                <div style={{ marginBottom: '6px' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2px' }}>
+                                        <span style={{
+                                            background: 'rgba(163, 230, 53, 0.1)',
+                                            color: 'var(--secondary)',
+                                            padding: '2px 6px',
+                                            borderRadius: '6px',
+                                            fontSize: '7px',
+                                            fontWeight: '900',
+                                            textTransform: 'uppercase'
+                                        }}>
+                                            {selectedProduct.category}
+                                        </span>
+                                        {selectedProduct.is_negotiable && (
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '3px', color: 'var(--secondary)' }}>
+                                                <span style={{ fontSize: '10px' }}>🤝</span>
+                                                <span style={{ fontSize: '7px', fontWeight: '900' }}>NEGOCIABLE</span>
                                             </div>
                                         )}
                                     </div>
-                                )}
-                            </div>
-
-                            {/* Product Details within the Sheet */}
-                            <div style={{ marginBottom: '25px' }}>
-                                <span style={{
-                                    background: 'rgba(163, 230, 53, 0.1)',
-                                    color: 'var(--secondary)',
-                                    padding: '5px 12px',
-                                    borderRadius: '30px',
-                                    fontSize: '10px',
-                                    fontWeight: '900',
-                                    textTransform: 'uppercase',
-                                    letterSpacing: '0.05em'
-                                }}>
-                                    {selectedProduct.category}
-                                </span>
-                                <h2 style={{ fontSize: '26px', fontWeight: '900', marginTop: '14px', marginBottom: '8px', lineHeight: '1.2', color: 'white' }}>
-                                    {selectedProduct.name}
-                                </h2>
-                                <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                    <h2 style={{ fontSize: '15px', fontWeight: '900', marginBottom: '2px', lineHeight: '1.1', color: 'white' }}>
+                                        {selectedProduct.name}
+                                    </h2>
                                     <p style={{
-                                        fontSize: (selectedProduct.status === 'negotiating' && selectedProduct.negotiating_buyer_id === user?.id) ? '18px' : '24px',
+                                        fontSize: '17px',
                                         fontWeight: '800',
                                         color: 'var(--secondary)',
-                                        margin: 0,
-                                        textDecoration: (selectedProduct.status === 'negotiating' && selectedProduct.negotiating_buyer_id === user?.id) ? 'line-through' : 'none',
-                                        opacity: (selectedProduct.status === 'negotiating' && selectedProduct.negotiating_buyer_id === user?.id) ? 0.5 : 1
+                                        margin: 0
                                     }}>
                                         $ {new Intl.NumberFormat('es-CO').format(selectedProduct.price)}
                                     </p>
-                                    {selectedProduct.status === 'negotiating' && selectedProduct.negotiating_buyer_id === user?.id && (
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                            <span style={{ color: 'white', fontSize: '20px', fontWeight: '900' }}>→</span>
-                                            <p style={{ fontSize: '24px', fontWeight: '900', color: '#10b981', margin: 0 }}>
-                                                $ {new Intl.NumberFormat('es-CO').format(
-                                                    myOffers.find(o => o.product_id === selectedProduct.id && (o.status === 'accepted' || o.status === 'countered'))?.status === 'countered'
-                                                        ? (myOffers.find(o => o.product_id === selectedProduct.id && o.status === 'countered')?.counter_amount || selectedProduct.price)
-                                                        : (myOffers.find(o => o.product_id === selectedProduct.id && o.status === 'accepted')?.offer_amount || selectedProduct.price)
-                                                )}
-                                            </p>
-                                        </div>
-                                    )}
                                 </div>
-                            </div>
 
-                            <div style={{ marginBottom: '30px' }}>
-                                <button
-                                    onClick={() => setIsDetailsExpanded(!isDetailsExpanded)}
-                                    style={{
-                                        width: '100%',
-                                        display: 'flex',
-                                        justifyContent: 'space-between',
-                                        alignItems: 'center',
-                                        background: 'rgba(255,255,255,0.03)',
-                                        border: '1px solid rgba(255,255,255,0.1)',
-                                        borderRadius: '16px',
-                                        padding: '14px 18px',
-                                        cursor: 'pointer',
-                                        marginBottom: isDetailsExpanded ? '12px' : '0',
-                                        transition: 'all 0.3s ease'
-                                    }}
-                                >
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                        <h4 style={{ fontSize: '13px', fontWeight: '900', color: 'white', textTransform: 'uppercase', letterSpacing: '0.05em', margin: 0 }}>Resumen</h4>
-                                        {selectedProduct.is_negotiable && (
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--secondary)' }}>
-                                                <span style={{ fontSize: '14px' }}>🤝</span>
-                                                <span style={{ fontSize: '11px', fontWeight: '900' }}>NEGOCIABLE</span>
-                                            </div>
-                                        )}
+                                {/* Description - Compact 3 lines max */}
+                                {selectedProduct.description && (
+                                    <div style={{ marginBottom: '10px' }}>
+                                        <p style={{
+                                            color: 'var(--text-dim)',
+                                            lineHeight: '1.3',
+                                            fontSize: '12px',
+                                            margin: 0,
+                                            display: '-webkit-box',
+                                            WebkitLineClamp: 3,
+                                            WebkitBoxOrient: 'vertical',
+                                            overflow: 'hidden'
+                                        }}>
+                                            {selectedProduct.description}
+                                        </p>
                                     </div>
-                                    <motion.div
-                                        animate={{ rotate: isDetailsExpanded ? 180 : 0 }}
-                                        transition={{ duration: 0.3 }}
-                                        style={{ display: 'flex', alignItems: 'center', color: 'var(--secondary)' }}
-                                    >
-                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                                            <polyline points="6 9 12 15 18 9"></polyline>
-                                        </svg>
-                                    </motion.div>
-                                </button>
+                                )}
 
-                                <AnimatePresence>
-                                    {isDetailsExpanded && (
-                                        <motion.div
-                                            initial={{ height: 0, opacity: 0 }}
-                                            animate={{ height: 'auto', opacity: 1 }}
-                                            exit={{ height: 0, opacity: 0 }}
-                                            transition={{ duration: 0.3 }}
-                                            style={{ overflow: 'hidden' }}
+                                {/* Action Buttons - Pushed to bottom */}
+                                <div style={{
+                                    display: 'flex',
+                                    gap: '6px',
+                                    marginTop: 'auto',
+                                    paddingTop: '6px'
+                                }}>
+                                    {selectedProduct.is_negotiable && selectedProduct.seller_id !== user?.id && selectedProduct.status === 'active' && (
+                                        <motion.button
+                                            whileTap={{ scale: 0.95 }}
+                                            onClick={() => {
+                                                if (!user) return navigate('/auth');
+                                                setShowOfferModal(true);
+                                                setOfferAmount(selectedProduct.price.toString());
+                                                setOfferMessage('');
+                                            }}
+                                            style={{
+                                                flex: 0.8,
+                                                background: 'rgba(255,255,255,0.05)',
+                                                color: 'white',
+                                                height: '40px',
+                                                borderRadius: '10px',
+                                                fontWeight: '900',
+                                                fontSize: '9px',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                gap: '4px',
+                                                border: '1px solid rgba(255,255,255,0.1)',
+                                                textTransform: 'uppercase'
+                                            }}
                                         >
-                                            <p style={{
-                                                color: 'var(--text-dim)',
-                                                lineHeight: '1.6',
-                                                fontSize: '15px',
-                                                padding: '12px 18px 0',
-                                                margin: 0
-                                            }}>
-                                                {selectedProduct.description || 'Este producto premium está verificado y ha pasado los controles de calidad de la comunidad APEG.'}
-                                            </p>
-                                        </motion.div>
+                                            🤝 OFERTA
+                                        </motion.button>
                                     )}
-                                </AnimatePresence>
-                            </div>
 
-                            {/* Bottom Fixed Action Bar */}
-                            <div style={{
-                                paddingTop: '10px',
-                                paddingBottom: 'calc(var(--nav-height) + var(--safe-bottom) + 15px)',
-                                display: 'flex',
-                                gap: '15px'
-                            }}>
-                                {selectedProduct.is_negotiable && selectedProduct.seller_id !== user?.id && selectedProduct.status === 'active' && (
                                     <motion.button
-                                        whileHover={{ scale: 1.02, backgroundColor: 'rgba(255,255,255,0.08)' }}
                                         whileTap={{ scale: 0.95 }}
-                                        onClick={() => {
-                                            if (!user) return navigate('/auth');
-                                            setShowOfferModal(true);
-                                            setOfferAmount(selectedProduct.price.toString());
-                                            setOfferMessage('');
+                                        onClick={async () => {
+                                            setAddingToCart(selectedProduct.id);
+                                            await addToCart(selectedProduct as any);
+                                            setTimeout(() => setAddingToCart(null), 1500);
+                                            if (navigator.vibrate) navigator.vibrate(50);
                                         }}
+                                        disabled={selectedProduct.seller_id === user?.id || selectedProduct.status === 'negotiating'}
                                         style={{
-                                            flex: 1,
-                                            background: 'linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02))',
-                                            color: 'white',
-                                            height: '48px',
-                                            borderRadius: '20px',
-                                            fontWeight: '900',
-                                            fontSize: '11px',
+                                            width: '40px',
+                                            height: '40px',
+                                            background: 'rgba(255,255,255,0.05)',
+                                            color: addingToCart === selectedProduct.id ? 'var(--secondary)' : 'white',
+                                            borderRadius: '10px',
                                             display: 'flex',
                                             alignItems: 'center',
                                             justifyContent: 'center',
-                                            gap: '8px',
-                                            border: '1px solid rgba(255,255,255,0.15)',
-                                            textTransform: 'uppercase',
-                                            letterSpacing: '0.08em'
+                                            border: '1px solid rgba(255,255,255,0.1)',
+                                            flexShrink: 0
                                         }}
                                     >
-                                        <span style={{ fontSize: '18px' }}>🤝</span>
-                                        OFERTAR
+                                        {addingToCart === selectedProduct.id ? <CheckCircle2 size={18} /> : <Plus size={18} />}
                                     </motion.button>
-                                )}
 
-                                <motion.button
-                                    whileHover={{ scale: 1.02, backgroundColor: 'rgba(255,255,255,0.08)' }}
-                                    whileTap={{ scale: 0.95 }}
-                                    onClick={async () => {
-                                        setAddingToCart(selectedProduct.id);
-                                        await addToCart(selectedProduct as any);
-                                        setTimeout(() => setAddingToCart(null), 1500);
-                                        if (navigator.vibrate) navigator.vibrate(50);
-                                    }}
-                                    disabled={selectedProduct.seller_id === user?.id || selectedProduct.status === 'negotiating'}
-                                    style={{
-                                        flex: 1,
-                                        background: 'linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02))',
-                                        color: selectedProduct.status === 'negotiating' ? 'rgba(255,255,255,0.2)' : 'white',
-                                        height: '48px',
-                                        borderRadius: '20px',
-                                        fontWeight: '900',
-                                        fontSize: '11px',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        gap: '8px',
-                                        border: '1px solid rgba(255,255,255,0.15)',
-                                        textTransform: 'uppercase',
-                                        letterSpacing: '0.08em',
-                                        opacity: selectedProduct.status === 'negotiating' ? 0.5 : 1
-                                    }}
-                                >
-                                    {addingToCart === selectedProduct.id ? <CheckCircle2 size={18} color="var(--secondary)" /> : <Plus size={18} />}
-                                    {addingToCart === selectedProduct.id ? 'VISTO' : 'CARRITO'}
-                                </motion.button>
+                                    <motion.button
+                                        whileTap={{ scale: 0.95 }}
+                                        onClick={async () => {
+                                            if (!user) {
+                                                navigate('/auth');
+                                                return;
+                                            }
+                                            setBuying(true);
+                                            try {
+                                                const activeOffer = myOffers.find(o => o.product_id === selectedProduct.id && (o.status === 'accepted' || o.status === 'countered'));
+                                                const finalPrice = activeOffer
+                                                    ? (activeOffer.status === 'countered' ? (activeOffer.counter_amount || selectedProduct.price) : activeOffer.offer_amount)
+                                                    : selectedProduct.price;
 
-                                <motion.button
-                                    whileHover={{ scale: 1.02, boxShadow: '0 15px 35px rgba(163, 230, 53, 0.4)' }}
-                                    whileTap={{ scale: 0.95 }}
-                                    onClick={async () => {
-                                        if (!user) {
-                                            navigate('/auth');
-                                            return;
-                                        }
-
-                                        setBuying(true);
-                                        try {
-                                            const activeOffer = myOffers.find(o => o.product_id === selectedProduct.id && (o.status === 'accepted' || o.status === 'countered'));
-                                            const finalPrice = activeOffer
-                                                ? (activeOffer.status === 'countered' ? (activeOffer.counter_amount || selectedProduct.price) : activeOffer.offer_amount)
-                                                : selectedProduct.price;
-
-                                            await addToCart({ ...selectedProduct, price: finalPrice } as any);
-                                            setSelectedProduct(null);
-                                            navigate('/checkout');
-                                        } catch (err) {
-                                            console.error(err);
-                                        } finally {
-                                            setBuying(false);
-                                        }
-                                    }}
-                                    disabled={buying || (selectedProduct?.seller_id === user?.id) || (selectedProduct.status === 'negotiating' && selectedProduct.negotiating_buyer_id !== user?.id)}
-                                    style={{
-                                        flex: 1.8,
-                                        background: (selectedProduct?.seller_id === user?.id || (selectedProduct.status === 'negotiating' && selectedProduct.negotiating_buyer_id !== user?.id))
-                                            ? 'rgba(255,255,255,0.05)'
-                                            : 'linear-gradient(135deg, #bef264 0%, #a3e635 100%)',
-                                        color: (selectedProduct?.seller_id === user?.id || (selectedProduct.status === 'negotiating' && selectedProduct.negotiating_buyer_id !== user?.id)) ? 'rgba(255,255,255,0.2)' : 'var(--primary)',
-                                        height: '48px',
-                                        borderRadius: '20px',
-                                        fontWeight: '900',
-                                        fontSize: '12px',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        gap: '10px',
-                                        boxShadow: (selectedProduct?.seller_id === user?.id || (selectedProduct.status === 'negotiating' && selectedProduct.negotiating_buyer_id !== user?.id)) ? 'none' : '0 10px 25px rgba(163, 230, 53, 0.3)',
-                                        textTransform: 'uppercase',
-                                        letterSpacing: '0.08em',
-                                        border: (selectedProduct?.seller_id === user?.id || (selectedProduct.status === 'negotiating' && selectedProduct.negotiating_buyer_id !== user?.id)) ? '1px solid rgba(255,255,255,0.1)' : 'none'
-                                    }}
-                                >
-                                    <ShoppingCart size={20} strokeWidth={3} />
-                                    {(selectedProduct?.seller_id === user?.id) ? 'MI PRODUCTO' : (selectedProduct.status === 'negotiating' ? (selectedProduct.negotiating_buyer_id === user?.id ? 'COMPLETAR PAGO' : 'EN TRATO') : (buying ? '...' : 'COMPRAR YA'))}
-                                </motion.button>
+                                                await addToCart({ ...selectedProduct, price: finalPrice } as any);
+                                                setSelectedProduct(null);
+                                                navigate('/checkout');
+                                            } catch (err) {
+                                                console.error(err);
+                                            } finally {
+                                                setBuying(false);
+                                            }
+                                        }}
+                                        disabled={buying || (selectedProduct?.seller_id === user?.id) || (selectedProduct.status === 'negotiating' && selectedProduct.negotiating_buyer_id !== user?.id)}
+                                        style={{
+                                            flex: 2,
+                                            background: (selectedProduct?.seller_id === user?.id || (selectedProduct.status === 'negotiating' && selectedProduct.negotiating_buyer_id !== user?.id))
+                                                ? 'rgba(255,255,255,0.05)'
+                                                : 'linear-gradient(135deg, #bef264 0%, #a3e635 100%)',
+                                            color: (selectedProduct?.seller_id === user?.id || (selectedProduct.status === 'negotiating' && selectedProduct.negotiating_buyer_id !== user?.id)) ? 'rgba(255,255,255,0.2)' : 'var(--primary)',
+                                            height: '40px',
+                                            borderRadius: '10px',
+                                            fontWeight: '900',
+                                            fontSize: '10px',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            gap: '5px',
+                                            boxShadow: (selectedProduct?.seller_id === user?.id || (selectedProduct.status === 'negotiating' && selectedProduct.negotiating_buyer_id !== user?.id)) ? 'none' : '0 4px 12px rgba(163, 230, 53, 0.3)',
+                                            textTransform: 'uppercase',
+                                            border: 'none'
+                                        }}
+                                    >
+                                        <ShoppingCart size={14} strokeWidth={3} />
+                                        {(selectedProduct?.seller_id === user?.id) ? 'MÍO' : (selectedProduct.status === 'negotiating' ? (selectedProduct.negotiating_buyer_id === user?.id ? 'PAGAR' : 'RESERVADO') : (buying ? '...' : 'COMPRAR'))}
+                                    </motion.button>
+                                </div>
                             </div>
+
+
                         </div>
-                    </motion.div>
+                    </motion.div >
                 )}
-            </AnimatePresence>
+            </AnimatePresence >
 
             <AnimatePresence>
                 {showOfferModal && selectedProduct && (
@@ -1322,7 +1237,7 @@ const Shop: React.FC = () => {
                     </div>
                 )}
             </AnimatePresence>
-        </div>
+        </div >
     );
 };
 

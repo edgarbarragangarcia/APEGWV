@@ -227,7 +227,6 @@ const Home: React.FC = () => {
                             <h3 style={{ fontSize: '20px', fontWeight: '900', letterSpacing: '-0.5px', display: 'flex', alignItems: 'center', gap: '8px', color: 'white' }}>
                                 Actividad <span style={{ color: 'var(--secondary)' }}>Comunidad</span>
                             </h3>
-                            <div style={{ width: '30px', height: '3px', background: 'var(--secondary)', borderRadius: '2px', marginTop: '4px' }}></div>
                         </div>
                     </div>
 
@@ -282,7 +281,6 @@ const Home: React.FC = () => {
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '18px', paddingRight: '5px' }}>
                         <div>
                             <h3 style={{ fontSize: '20px', fontWeight: '900', letterSpacing: '-0.5px', color: 'white' }}>Marketplace</h3>
-                            <div style={{ width: '30px', height: '3px', background: 'var(--secondary)', borderRadius: '2px', marginTop: '4px' }}></div>
                         </div>
                         <button
                             onClick={() => navigate('/shop')}
@@ -413,7 +411,6 @@ const Home: React.FC = () => {
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '15px' }}>
                     <div style={{ marginBottom: '5px' }}>
                         <h3 style={{ fontSize: '20px', fontWeight: '900', letterSpacing: '-0.5px', color: 'white' }}>Torneos</h3>
-                        <div style={{ width: '30px', height: '3px', background: 'var(--secondary)', borderRadius: '2px', marginTop: '4px' }}></div>
                     </div>
                     <Card style={{ marginTop: '5px' }}>
                         <div style={{ marginBottom: '15px' }}>
