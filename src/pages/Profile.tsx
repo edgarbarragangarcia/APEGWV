@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../services/SupabaseManager';
-import { Settings, LogOut, Shield, CreditCard, ChevronRight, Edit2, Mail, Phone, MapPin, Store, Trophy } from 'lucide-react';
+import { Settings, LogOut, Shield, CreditCard, ChevronRight, Edit2, Mail, Phone, MapPin, Store, Trophy, Ticket } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import type { Database } from '../types/database.types';
@@ -280,6 +280,25 @@ const Profile: React.FC = () => {
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                             <Trophy size={18} color="var(--secondary)" />
                             <span style={{ fontWeight: '600', fontSize: '13px' }}>Mis Eventos Organizados</span>
+                        </div>
+                        <ChevronRight size={16} color="var(--text-dim)" />
+                    </button>
+
+                    <button
+                        onClick={() => navigate('/my-coupons')}
+                        className="glass"
+                        style={{
+                            padding: '12px 18px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            width: '100%',
+                            background: 'rgba(255,255,255,0.05)',
+                            border: '1px solid rgba(255,255,255,0.1)'
+                        }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                            <Ticket size={18} color="var(--secondary)" />
+                            <span style={{ fontWeight: '600', fontSize: '13px' }}>Mis Cupones</span>
                         </div>
                         <ChevronRight size={16} color="var(--text-dim)" />
                     </button>

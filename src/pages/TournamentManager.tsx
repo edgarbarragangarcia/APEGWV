@@ -19,6 +19,9 @@ interface Tournament {
     image_url: string | null;
     game_mode: string | null;
     address: string | null;
+    budget_per_player: number | null;
+    budget_prizes: number | null;
+    budget_operational: number | null;
 }
 
 interface Participant {
@@ -62,8 +65,19 @@ const TournamentManager: React.FC = () => {
         image_url: 'https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?q=80&w=1000&auto=format&fit=crop',
         status: 'Abierto',
         game_mode: 'Juego por Golpes',
-        address: ''
+        address: '',
+        budget_per_player: '',
+        budget_prizes: '',
+        budget_operational: ''
     });
+
+    const calculateBudget = () => {
+        const income = (parseInt(formData.displayPrice.replace(/\D/g, '')) || 0) * (parseInt(formData.participants_limit) || 0);
+        const expenses = ((parseInt(formData.budget_per_player) || 0) * (parseInt(formData.participants_limit) || 0)) +
+            (parseInt(formData.budget_prizes) || 0) +
+            (parseInt(formData.budget_operational) || 0);
+        return { income, expenses, profit: income - expenses };
+    };
 
     const formatPrice = (val: string) => {
         const numeric = val.replace(/\D/g, '');
@@ -103,7 +117,7 @@ const TournamentManager: React.FC = () => {
             // Fetch User Tournaments
             const { data: userTourneys, error } = await supabase
                 .from('tournaments')
-                .select('id, name, description, date, club, price, participants_limit, current_participants, status, image_url, game_mode, address')
+                .select('*')
                 .eq('creator_id', user.id)
                 .order('created_at', { ascending: false });
 
@@ -148,6 +162,9 @@ const TournamentManager: React.FC = () => {
                         status: formData.status,
                         game_mode: formData.game_mode,
                         address: formData.address,
+                        budget_per_player: parseFloat(formData.budget_per_player) || 0,
+                        budget_prizes: parseFloat(formData.budget_prizes) || 0,
+                        budget_operational: parseFloat(formData.budget_operational) || 0,
                         updated_at: new Date().toISOString()
                     })
                     .eq('id', editingId)
@@ -167,6 +184,9 @@ const TournamentManager: React.FC = () => {
                         status: formData.status,
                         game_mode: formData.game_mode,
                         address: formData.address,
+                        budget_per_player: parseFloat(formData.budget_per_player) || 0,
+                        budget_prizes: parseFloat(formData.budget_prizes) || 0,
+                        budget_operational: parseFloat(formData.budget_operational) || 0,
                         creator_id: user.id
                     }])
                     .select()
@@ -204,7 +224,10 @@ const TournamentManager: React.FC = () => {
             image_url: 'https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?q=80&w=1000&auto=format&fit=crop',
             status: 'Abierto',
             game_mode: 'Juego por Golpes',
-            address: ''
+            address: '',
+            budget_per_player: '',
+            budget_prizes: '',
+            budget_operational: ''
         });
         setEditingId(null);
     };
@@ -222,7 +245,10 @@ const TournamentManager: React.FC = () => {
             image_url: tournament.image_url || 'https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?q=80&w=1000&auto=format&fit=crop',
             status: tournament.status || 'Abierto',
             game_mode: tournament.game_mode || 'Juego por Golpes',
-            address: tournament.address || ''
+            address: tournament.address || '',
+            budget_per_player: (tournament.budget_per_player || '').toString(),
+            budget_prizes: (tournament.budget_prizes || '').toString(),
+            budget_operational: (tournament.budget_operational || '').toString()
         });
         setEditingId(tournament.id);
         setShowForm(true);
@@ -482,6 +508,68 @@ const TournamentManager: React.FC = () => {
                                         <option value="Finalizado">Finalizado</option>
                                     </select>
                                 </div>
+                            </div>
+
+                            <hr style={{ borderColor: 'rgba(255,255,255,0.1)', margin: '10px 0' }} />
+
+                            {/* Budget Section */}
+                            <h3 style={{ fontSize: '16px', fontWeight: '800', color: 'var(--secondary)', marginBottom: '5px' }}>Mini Presupuesto</h3>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                                <div>
+                                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Costo Op. por Jugador</label>
+                                    <input
+                                        type="number"
+                                        value={formData.budget_per_player}
+                                        onChange={e => setFormData({ ...formData, budget_per_player: e.target.value })}
+                                        style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '12px', color: 'white', fontSize: '15px' }}
+                                        placeholder="Comida, GreenFee..."
+                                    />
+                                </div>
+                                <div>
+                                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Bolsa de Premios</label>
+                                    <input
+                                        type="number"
+                                        value={formData.budget_prizes}
+                                        onChange={e => setFormData({ ...formData, budget_prizes: e.target.value })}
+                                        style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '12px', color: 'white', fontSize: '15px' }}
+                                        placeholder="Total Premios"
+                                    />
+                                </div>
+                            </div>
+                            <div>
+                                <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Otros Gastos Operativos</label>
+                                <input
+                                    type="number"
+                                    value={formData.budget_operational}
+                                    onChange={e => setFormData({ ...formData, budget_operational: e.target.value })}
+                                    style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '12px', color: 'white', fontSize: '15px' }}
+                                    placeholder="Jueces, trofeos, staff..."
+                                />
+                            </div>
+
+                            {/* Live Budget Summary */}
+                            <div style={{ background: 'rgba(0,0,0,0.2)', padding: '15px', borderRadius: '15px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                {(() => {
+                                    const { income, expenses, profit } = calculateBudget();
+                                    return (
+                                        <>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px', fontSize: '13px' }}>
+                                                <span style={{ color: 'var(--text-dim)' }}>Ingresos Estimados:</span>
+                                                <span style={{ color: '#4ade80' }}>+ {new Intl.NumberFormat('es-CO').format(income)}</span>
+                                            </div>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', fontSize: '13px' }}>
+                                                <span style={{ color: 'var(--text-dim)' }}>Gastos Totales:</span>
+                                                <span style={{ color: '#f87171' }}>- {new Intl.NumberFormat('es-CO').format(expenses)}</span>
+                                            </div>
+                                            <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '8px', display: 'flex', justifyContent: 'space-between', fontWeight: '800' }}>
+                                                <span>Utilidad Neta:</span>
+                                                <span style={{ color: profit >= 0 ? 'var(--secondary)' : '#f87171' }}>
+                                                    {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(profit)}
+                                                </span>
+                                            </div>
+                                        </>
+                                    );
+                                })()}
                             </div>
 
                             <div>
