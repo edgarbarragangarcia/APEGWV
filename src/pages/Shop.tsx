@@ -810,7 +810,7 @@ const Shop: React.FC = () => {
                                 background: 'var(--primary)',
                                 borderTopLeftRadius: '24px',
                                 borderTopRightRadius: '24px',
-                                marginTop: '-24px',
+                                marginTop: '-50px',
                                 padding: '15px 18px calc(var(--nav-height) + 40px)',
                                 zIndex: 5,
                                 display: 'flex',
