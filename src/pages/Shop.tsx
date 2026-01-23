@@ -47,6 +47,7 @@ const Shop: React.FC = () => {
     const [ordersError, setOrdersError] = useState<string | null>(null);
     const [productsLoading, setProductsLoading] = useState(true);
     const [likedProducts, setLikedProducts] = useState<Set<string>>(new Set());
+    const [isDetailsExpanded, setIsDetailsExpanded] = useState(false);
     const location = useLocation();
 
     // Auto-reset expired negotiations
@@ -914,22 +915,63 @@ const Shop: React.FC = () => {
                             </div>
 
                             <div style={{ marginBottom: '30px' }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                                    <h4 style={{ fontSize: '13px', fontWeight: '900', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Resumen</h4>
-                                    {selectedProduct.is_negotiable && (
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--secondary)' }}>
-                                            <span style={{ fontSize: '14px' }}>🤝</span>
-                                            <span style={{ fontSize: '11px', fontWeight: '900' }}>NEGOCIABLE</span>
-                                        </div>
+                                <button
+                                    onClick={() => setIsDetailsExpanded(!isDetailsExpanded)}
+                                    style={{
+                                        width: '100%',
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'center',
+                                        background: 'rgba(255,255,255,0.03)',
+                                        border: '1px solid rgba(255,255,255,0.1)',
+                                        borderRadius: '16px',
+                                        padding: '14px 18px',
+                                        cursor: 'pointer',
+                                        marginBottom: isDetailsExpanded ? '12px' : '0',
+                                        transition: 'all 0.3s ease'
+                                    }}
+                                >
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                        <h4 style={{ fontSize: '13px', fontWeight: '900', color: 'white', textTransform: 'uppercase', letterSpacing: '0.05em', margin: 0 }}>Resumen</h4>
+                                        {selectedProduct.is_negotiable && (
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--secondary)' }}>
+                                                <span style={{ fontSize: '14px' }}>🤝</span>
+                                                <span style={{ fontSize: '11px', fontWeight: '900' }}>NEGOCIABLE</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <motion.div
+                                        animate={{ rotate: isDetailsExpanded ? 180 : 0 }}
+                                        transition={{ duration: 0.3 }}
+                                        style={{ display: 'flex', alignItems: 'center', color: 'var(--secondary)' }}
+                                    >
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                                            <polyline points="6 9 12 15 18 9"></polyline>
+                                        </svg>
+                                    </motion.div>
+                                </button>
+
+                                <AnimatePresence>
+                                    {isDetailsExpanded && (
+                                        <motion.div
+                                            initial={{ height: 0, opacity: 0 }}
+                                            animate={{ height: 'auto', opacity: 1 }}
+                                            exit={{ height: 0, opacity: 0 }}
+                                            transition={{ duration: 0.3 }}
+                                            style={{ overflow: 'hidden' }}
+                                        >
+                                            <p style={{
+                                                color: 'var(--text-dim)',
+                                                lineHeight: '1.6',
+                                                fontSize: '15px',
+                                                padding: '12px 18px 0',
+                                                margin: 0
+                                            }}>
+                                                {selectedProduct.description || 'Este producto premium está verificado y ha pasado los controles de calidad de la comunidad APEG.'}
+                                            </p>
+                                        </motion.div>
                                     )}
-                                </div>
-                                <p style={{
-                                    color: 'var(--text-dim)',
-                                    lineHeight: '1.6',
-                                    fontSize: '15px'
-                                }}>
-                                    {selectedProduct.description || 'Este producto premium está verificado y ha pasado los controles de calidad de la comunidad APEG.'}
-                                </p>
+                                </AnimatePresence>
                             </div>
 
                             {/* Bottom Fixed Action Bar */}
