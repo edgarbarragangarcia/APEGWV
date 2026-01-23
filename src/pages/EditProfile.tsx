@@ -139,315 +139,392 @@ const EditProfile: React.FC = () => {
     }
 
     return (
-        <div className="animate-fade">
-            <PageHeader title="Editar Perfil" onBack={() => navigate('/profile')} />
+        <div className="animate-fade" style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'var(--primary)',
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden',
+            zIndex: 900,
+            paddingTop: '80px'
+        }}>
+            <div style={{ flexShrink: 0, zIndex: 10, background: 'var(--primary)', padding: '0 20px' }}>
+                <PageHeader title="Editar Perfil" onBack={() => navigate('/profile')} />
+            </div>
 
-            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                {/* Foto de Perfil Section */}
-                <div style={{ textAlign: 'center', marginBottom: '10px' }}>
-                    <div style={{ position: 'relative', width: '120px', height: '120px', margin: '0 auto 15px' }}>
-                        <div style={{
-                            width: '100%',
-                            height: '100%',
-                            borderRadius: '30px',
-                            background: 'var(--glass-bg)',
-                            border: '1px solid var(--glass-border)',
-                            overflow: 'hidden',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center'
-                        }}>
-                            {formData.id_photo_url ? (
-                                <img
-                                    src={optimizeImage(formData.id_photo_url, { width: 240, height: 240 })}
-                                    alt="Profile"
-                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                />
-                            ) : (
-                                <Camera size={40} color="var(--text-dim)" />
-                            )}
+            <div style={{
+                flex: 1,
+                overflowY: 'auto',
+                padding: '0 20px 120px 20px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '12px',
+                WebkitOverflowScrolling: 'touch'
+            }}>
+                <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                    {/* Foto de Perfil Section */}
+                    <div style={{ textAlign: 'center', marginBottom: '5px' }}>
+                        <div style={{ position: 'relative', width: '90px', height: '90px', margin: '0 auto 10px' }}> {/* Smaller photo */}
+                            <div style={{
+                                width: '100%',
+                                height: '100%',
+                                borderRadius: '25px',
+                                background: 'rgba(255,255,255,0.05)',
+                                border: '1px solid rgba(255,255,255,0.1)',
+                                overflow: 'hidden',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center'
+                            }}>
+                                {formData.id_photo_url ? (
+                                    <img
+                                        src={optimizeImage(formData.id_photo_url, { width: 180, height: 180 })}
+                                        alt="Profile"
+                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                    />
+                                ) : (
+                                    <Camera size={32} color="var(--text-dim)" />
+                                )}
+                            </div>
+
+                            <label
+                                className="flex-center"
+                                style={{
+                                    position: 'absolute',
+                                    bottom: '-8px',
+                                    right: '-8px',
+                                    padding: '8px',
+                                    borderRadius: '12px',
+                                    background: 'var(--secondary)',
+                                    color: 'var(--primary)',
+                                    cursor: 'pointer',
+                                    boxShadow: '0 4px 10px rgba(0,0,0,0.3)',
+                                    zIndex: 5
+                                }}
+                            >
+                                <input type="file" hidden accept="image/*" onChange={handleFileUpload} />
+                                {uploading ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
+                            </label>
                         </div>
 
-                        <label
-                            className="flex-center"
-                            style={{
-                                position: 'absolute',
-                                bottom: '-10px',
-                                right: '-10px',
-                                padding: '10px',
-                                borderRadius: '15px',
-                                background: 'var(--secondary)',
-                                color: 'var(--primary)',
-                                cursor: 'pointer',
-                                boxShadow: '0 4px 10px rgba(0,0,0,0.3)'
-                            }}
-                        >
-                            <input type="file" hidden accept="image/*" onChange={handleFileUpload} />
-                            {uploading ? <Loader2 size={18} className="animate-spin" /> : <Upload size={18} />}
-                        </label>
+                        {formData.id_photo_url && (
+                            <button
+                                type="button"
+                                onClick={handleDeletePhoto}
+                                style={{
+                                    fontSize: '11px',
+                                    color: '#ff6b6b',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '4px',
+                                    margin: '0 auto',
+                                    background: 'none',
+                                    border: 'none',
+                                    fontWeight: '600'
+                                }}
+                            >
+                                <Trash2 size={11} /> Eliminar foto
+                            </button>
+                        )}
                     </div>
 
-                    {formData.id_photo_url && (
-                        <button
-                            type="button"
-                            onClick={handleDeletePhoto}
-                            style={{ fontSize: '12px', color: '#ff4444', display: 'flex', alignItems: 'center', gap: '5px', margin: '0 auto' }}
+                    <div className="form-group">
+                        <label style={{ display: 'block', marginBottom: '4px', fontSize: '11px', color: 'var(--text-dim)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                            Nombre Completo
+                        </label>
+                        <input
+                            type="text"
+                            className="glass"
+                            style={{
+                                width: '100%',
+                                padding: '12px',
+                                borderRadius: '12px',
+                                border: '1px solid rgba(255,255,255,0.05)',
+                                color: 'white',
+                                background: 'rgba(255,255,255,0.03)',
+                                fontSize: '14px'
+                            }}
+                            value={formData.full_name}
+                            onChange={e => setFormData({ ...formData, full_name: e.target.value })}
+                            required
+                        />
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                        <div className="form-group">
+                            <label style={{ display: 'block', marginBottom: '4px', fontSize: '11px', color: 'var(--text-dim)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                                Hándicap
+                            </label>
+                            <input
+                                type="number"
+                                step="0.1"
+                                className="glass"
+                                style={{
+                                    width: '100%',
+                                    padding: '12px',
+                                    borderRadius: '12px',
+                                    border: '1px solid rgba(255,255,255,0.05)',
+                                    color: 'white',
+                                    background: 'rgba(255,255,255,0.03)',
+                                    fontSize: '14px'
+                                }}
+                                value={formData.handicap}
+                                onChange={e => setFormData({ ...formData, handicap: e.target.value })}
+                            />
+                        </div>
+
+                        <div className="form-group">
+                            <label style={{ display: 'block', marginBottom: '4px', fontSize: '11px', color: 'var(--text-dim)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                                Cód. Federación
+                            </label>
+                            <input
+                                type="text"
+                                className="glass"
+                                style={{
+                                    width: '100%',
+                                    padding: '12px',
+                                    borderRadius: '12px',
+                                    border: '1px solid rgba(255,255,255,0.05)',
+                                    color: 'white',
+                                    background: 'rgba(255,255,255,0.03)',
+                                    fontSize: '14px'
+                                }}
+                                value={formData.federation_code}
+                                onChange={e => setFormData({ ...formData, federation_code: e.target.value })}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="form-group">
+                        <label style={{ display: 'block', marginBottom: '4px', fontSize: '11px', color: 'var(--text-dim)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                            Correo Electrónico
+                        </label>
+                        <input
+                            type="email"
+                            className="glass"
+                            style={{
+                                width: '100%',
+                                padding: '12px',
+                                borderRadius: '12px',
+                                border: '1px solid rgba(255,255,255,0.05)',
+                                color: 'white',
+                                background: 'rgba(255,255,255,0.03)',
+                                fontSize: '14px'
+                            }}
+                            value={formData.email}
+                            onChange={e => setFormData({ ...formData, email: e.target.value })}
+                        />
+                    </div>
+
+                    <div className="form-group">
+                        <label style={{ display: 'block', marginBottom: '4px', fontSize: '11px', color: 'var(--text-dim)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                            Teléfono Celular
+                        </label>
+                        <input
+                            type="tel"
+                            className="glass"
+                            style={{
+                                width: '100%',
+                                padding: '12px',
+                                borderRadius: '12px',
+                                border: '1px solid rgba(255,255,255,0.05)',
+                                color: 'white',
+                                background: 'rgba(255,255,255,0.03)',
+                                fontSize: '14px'
+                            }}
+                            value={formData.phone}
+                            onChange={e => setFormData({ ...formData, phone: e.target.value })}
+                        />
+                    </div>
+
+                    <div className="form-group">
+                        <label style={{ display: 'block', marginBottom: '4px', fontSize: '11px', color: 'var(--text-dim)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                            Dirección de Envío
+                        </label>
+                        <div
+                            onClick={() => setIsAddressModalOpen(true)}
+                            className="glass"
+                            style={{
+                                width: '100%',
+                                padding: '12px',
+                                borderRadius: '12px',
+                                border: '1px solid rgba(255,255,255,0.05)',
+                                color: formData.address ? 'white' : 'var(--text-dim)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                cursor: 'pointer',
+                                background: 'rgba(255,255,255,0.03)'
+                            }}
                         >
-                            <Trash2 size={12} /> Eliminar foto
-                        </button>
-                    )}
-                </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', overflow: 'hidden' }}>
+                                <MapPin size={16} color={formData.address ? 'var(--secondary)' : 'var(--text-dim)'} />
+                                <span style={{ fontSize: '14px', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>
+                                    {formData.address || 'Ingresa tu dirección'}
+                                </span>
+                            </div>
+                            <ChevronRight size={14} color="var(--secondary)" />
+                        </div>
+                    </div>
 
-                <div className="form-group">
-                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', color: 'var(--text-dim)' }}>
-                        Nombre Completo
-                    </label>
-                    <input
-                        type="text"
-                        className="glass"
-                        style={{ width: '100%', padding: '15px', borderRadius: '12px', border: 'none', color: 'var(--text)' }}
-                        value={formData.full_name}
-                        onChange={e => setFormData({ ...formData, full_name: e.target.value })}
-                        required
-                    />
-                </div>
 
-                <div className="form-group">
-                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', color: 'var(--text-dim)' }}>
-                        Hándicap
-                    </label>
-                    <input
-                        type="number"
-                        step="0.1"
-                        className="glass"
-                        style={{ width: '100%', padding: '15px', borderRadius: '12px', border: 'none', color: 'var(--text)' }}
-                        value={formData.handicap}
-                        onChange={e => setFormData({ ...formData, handicap: e.target.value })}
-                    />
-                </div>
-
-                <div className="form-group">
-                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', color: 'var(--text-dim)' }}>
-                        Código Federación
-                    </label>
-                    <input
-                        type="text"
-                        className="glass"
-                        style={{ width: '100%', padding: '15px', borderRadius: '12px', border: 'none', color: 'var(--text)' }}
-                        value={formData.federation_code}
-                        onChange={e => setFormData({ ...formData, federation_code: e.target.value })}
-                    />
-                </div>
-
-                <div className="form-group">
-                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', color: 'var(--text-dim)' }}>
-                        Correo Electrónico
-                    </label>
-                    <input
-                        type="email"
-                        className="glass"
-                        style={{ width: '100%', padding: '15px', borderRadius: '12px', border: 'none', color: 'var(--text)' }}
-                        value={formData.email}
-                        onChange={e => setFormData({ ...formData, email: e.target.value })}
-                    />
-                </div>
-
-                <div className="form-group">
-                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', color: 'var(--text-dim)' }}>
-                        Teléfono Celular
-                    </label>
-                    <input
-                        type="tel"
-                        className="glass"
-                        style={{ width: '100%', padding: '15px', borderRadius: '12px', border: 'none', color: 'var(--text)' }}
-                        value={formData.phone}
-                        onChange={e => setFormData({ ...formData, phone: e.target.value })}
-                    />
-                </div>
-
-                <div className="form-group">
-                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', color: 'var(--text-dim)' }}>
-                        Dirección de Envío
-                    </label>
-                    <div
-                        onClick={() => setIsAddressModalOpen(true)}
-                        className="glass"
+                    <button
+                        type="submit"
+                        disabled={saving}
                         style={{
-                            width: '100%',
-                            padding: '15px',
-                            borderRadius: '12px',
-                            border: 'none',
-                            color: formData.address ? 'var(--text)' : 'var(--text-dim)',
+                            marginTop: '15px',
                             display: 'flex',
                             alignItems: 'center',
-                            justifyContent: 'space-between',
-                            cursor: 'pointer'
+                            justifyContent: 'center',
+                            gap: '10px',
+                            padding: '16px',
+                            borderRadius: '14px',
+                            background: 'var(--secondary)',
+                            color: 'var(--primary)',
+                            border: 'none',
+                            fontWeight: '900',
+                            fontSize: '15px',
+                            boxShadow: '0 8px 20px rgba(163, 230, 53, 0.2)',
+                            cursor: saving ? 'not-allowed' : 'pointer',
+                            opacity: saving ? 0.7 : 1,
+                            width: '100%',
+                            letterSpacing: '0.5px'
                         }}
                     >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                            <MapPin size={18} color={formData.address ? 'var(--secondary)' : 'var(--text-dim)'} />
-                            <span style={{ fontSize: '15px' }}>
-                                {formData.address || 'Ingresa tu dirección'}
-                            </span>
-                        </div>
-                        <ChevronRight size={16} style={{ transform: 'rotate(90deg)', opacity: 0.5 }} />
-                    </div>
-                </div>
+                        {saving ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />}
+                        {saving ? 'GUARDANDO...' : 'GUARDAR CAMBIOS'}
+                    </button>
+                </form>
 
-
-                <button
-                    type="submit"
-                    disabled={saving}
-                    style={{
-                        marginTop: '20px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '10px',
-                        padding: '18px',
-                        borderRadius: '16px',
-                        background: 'var(--secondary)',
-                        color: 'var(--primary)',
-                        border: 'none',
-                        fontWeight: '800',
-                        fontSize: '16px',
-                        boxShadow: '0 4px 15px rgba(163, 230, 53, 0.3)',
-                        cursor: saving ? 'not-allowed' : 'pointer',
-                        opacity: saving ? 0.7 : 1,
-                        width: '100%'
-                    }}
-                >
-                    {saving ? <Loader2 className="animate-spin" size={20} /> : <Save size={20} />}
-                    {saving ? 'Guardando...' : 'Guardar Cambios'}
-                </button>
-            </form>
-
-            {/* Address Modal */}
-            <AnimatePresence>
-                {isAddressModalOpen && (
-                    <>
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            onClick={() => setIsAddressModalOpen(false)}
-                            style={{
-                                position: 'fixed',
-                                inset: 0,
-                                background: 'rgba(0,0,0,0.8)',
-                                backdropFilter: 'blur(5px)',
-                                zIndex: 2000
-                            }}
-                        />
-                        <motion.div
-                            initial={{ y: '100%' }}
-                            animate={{ y: 0 }}
-                            exit={{ y: '100%' }}
-                            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                            style={{
-                                position: 'fixed',
-                                bottom: 0,
-                                left: 0,
-                                right: 0,
-                                background: 'var(--primary)',
-                                borderTop: '1px solid rgba(163, 230, 53, 0.3)',
-                                borderRadius: '30px 30px 0 0',
-                                padding: '30px',
-                                paddingBottom: 'calc(var(--safe-bottom) + 30px)',
-                                zIndex: 2001,
-                                maxWidth: 'var(--app-max-width)',
-                                margin: '0 auto'
-                            }}
-                        >
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px' }}>
-                                <h2 style={{ fontSize: '20px', fontWeight: '900', color: 'white' }}>
-                                    Detalles <span style={{ color: 'var(--secondary)' }}>de</span> Dirección
-                                </h2>
-                                <button onClick={() => setIsAddressModalOpen(false)} style={{ background: 'none', border: 'none', color: 'white' }}>
-                                    <X size={24} />
-                                </button>
-                            </div>
-
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                                <div className="form-group">
-                                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Calle / Carrera / Apto</label>
-                                    <input
-                                        type="text"
-                                        className="glass"
-                                        style={{ width: '100%', padding: '15px', borderRadius: '12px', border: 'none', color: 'var(--text)', background: 'rgba(255,255,255,0.05)' }}
-                                        value={addressDetails.street}
-                                        onChange={e => setAddressDetails({ ...addressDetails, street: e.target.value })}
-                                        placeholder="Ej: Calle 100 #15-30 Apto 402"
-                                    />
+                {/* Address Modal */}
+                <AnimatePresence>
+                    {isAddressModalOpen && (
+                        <>
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                onClick={() => setIsAddressModalOpen(false)}
+                                style={{
+                                    position: 'fixed',
+                                    inset: 0,
+                                    background: 'rgba(0,0,0,0.8)',
+                                    backdropFilter: 'blur(10px)',
+                                    zIndex: 2000
+                                }}
+                            />
+                            <motion.div
+                                initial={{ y: '100%' }}
+                                animate={{ y: 0 }}
+                                exit={{ y: '100%' }}
+                                transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                                style={{
+                                    position: 'fixed',
+                                    bottom: 0,
+                                    left: 0,
+                                    right: 0,
+                                    background: 'var(--primary)',
+                                    borderTop: '1px solid rgba(163, 230, 53, 0.3)',
+                                    borderRadius: '32px 32px 0 0',
+                                    padding: '30px',
+                                    paddingBottom: 'calc(env(safe-area-inset-bottom) + 30px)',
+                                    zIndex: 2001,
+                                    maxWidth: 'var(--app-max-width)',
+                                    margin: '0 auto'
+                                }}
+                            >
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px' }}>
+                                    <h2 style={{ fontSize: '20px', fontWeight: '900', color: 'white' }}>
+                                        Detalles <span style={{ color: 'var(--secondary)' }}>de</span> Dirección
+                                    </h2>
+                                    <button onClick={() => setIsAddressModalOpen(false)} style={{ background: 'none', border: 'none', color: 'white' }}>
+                                        <X size={24} />
+                                    </button>
                                 </div>
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                                     <div className="form-group">
-                                        <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Ciudad</label>
+                                        <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Calle / Carrera / Apto</label>
                                         <input
                                             type="text"
                                             className="glass"
-                                            style={{ width: '100%', padding: '15px', borderRadius: '12px', border: 'none', color: 'var(--text)', background: 'rgba(255,255,255,0.05)' }}
-                                            value={addressDetails.city}
-                                            onChange={e => setAddressDetails({ ...addressDetails, city: e.target.value })}
-                                            placeholder="Bogotá"
+                                            style={{ width: '100%', padding: '16px', borderRadius: '12px', border: 'none', color: 'white', background: 'rgba(255,255,255,0.05)', fontSize: '15px' }}
+                                            value={addressDetails.street}
+                                            onChange={e => setAddressDetails({ ...addressDetails, street: e.target.value })}
+                                            placeholder="Ej: Calle 100 #15-30 Apto 402"
                                         />
                                     </div>
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                                        <div className="form-group">
+                                            <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Ciudad</label>
+                                            <input
+                                                type="text"
+                                                className="glass"
+                                                style={{ width: '100%', padding: '16px', borderRadius: '12px', border: 'none', color: 'white', background: 'rgba(255,255,255,0.05)', fontSize: '15px' }}
+                                                value={addressDetails.city}
+                                                onChange={e => setAddressDetails({ ...addressDetails, city: e.target.value })}
+                                                placeholder="Bogotá"
+                                            />
+                                        </div>
+                                        <div className="form-group">
+                                            <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Departamento</label>
+                                            <input
+                                                type="text"
+                                                className="glass"
+                                                style={{ width: '100%', padding: '16px', borderRadius: '12px', border: 'none', color: 'white', background: 'rgba(255,255,255,0.05)', fontSize: '15px' }}
+                                                value={addressDetails.dept}
+                                                onChange={e => setAddressDetails({ ...addressDetails, dept: e.target.value })}
+                                                placeholder="Cundinamarca"
+                                            />
+                                        </div>
+                                    </div>
                                     <div className="form-group">
-                                        <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Departamento</label>
+                                        <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Código Postal</label>
                                         <input
                                             type="text"
                                             className="glass"
-                                            style={{ width: '100%', padding: '15px', borderRadius: '12px', border: 'none', color: 'var(--text)', background: 'rgba(255,255,255,0.05)' }}
-                                            value={addressDetails.dept}
-                                            onChange={e => setAddressDetails({ ...addressDetails, dept: e.target.value })}
-                                            placeholder="Cundinamarca"
+                                            style={{ width: '100%', padding: '16px', borderRadius: '12px', border: 'none', color: 'white', background: 'rgba(255,255,255,0.05)', fontSize: '15px' }}
+                                            value={addressDetails.zip}
+                                            onChange={e => setAddressDetails({ ...addressDetails, zip: e.target.value })}
+                                            placeholder="110111"
                                         />
                                     </div>
-                                </div>
-                                <div className="form-group">
-                                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Código Postal</label>
-                                    <input
-                                        type="text"
-                                        className="glass"
-                                        style={{ width: '100%', padding: '15px', borderRadius: '12px', border: 'none', color: 'var(--text)', background: 'rgba(255,255,255,0.05)' }}
-                                        value={addressDetails.zip}
-                                        onChange={e => setAddressDetails({ ...addressDetails, zip: e.target.value })}
-                                        placeholder="110111"
-                                    />
-                                </div>
 
-                                <button
-                                    onClick={() => {
-                                        const fullAddress = [addressDetails.street, addressDetails.city, addressDetails.dept, addressDetails.zip]
-                                            .filter(Boolean)
-                                            .join(', ');
-                                        setFormData({ ...formData, address: fullAddress });
-                                        setIsAddressModalOpen(false);
-                                    }}
-                                    style={{
-                                        marginTop: '15px',
-                                        background: 'var(--secondary)',
-                                        color: 'var(--primary)',
-                                        padding: '18px',
-                                        borderRadius: '16px',
-                                        fontWeight: '900',
-                                        border: 'none',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        gap: '10px'
-                                    }}
-                                >
-                                    <Check size={20} />
-                                    CONFIRMAR DIRECCIÓN
-                                </button>
-                            </div>
-                        </motion.div>
-                    </>
-                )}
-            </AnimatePresence>
+                                    <button
+                                        onClick={() => {
+                                            const fullAddress = [addressDetails.street, addressDetails.city, addressDetails.dept, addressDetails.zip]
+                                                .filter(Boolean)
+                                                .join(', ');
+                                            setFormData({ ...formData, address: fullAddress });
+                                            setIsAddressModalOpen(false);
+                                        }}
+                                        style={{
+                                            marginTop: '15px',
+                                            background: 'var(--secondary)',
+                                            color: 'var(--primary)',
+                                            padding: '18px',
+                                            borderRadius: '16px',
+                                            fontWeight: '900',
+                                            border: 'none',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            gap: '10px',
+                                            letterSpacing: '0.5px'
+                                        }}
+                                    >
+                                        <Check size={20} />
+                                        CONFIRMAR DIRECCIÓN
+                                    </button>
+                                </div>
+                            </motion.div>
+                        </>
+                    )}
+                </AnimatePresence>
+            </div>
         </div>
     );
 };
-
 export default EditProfile;
+
