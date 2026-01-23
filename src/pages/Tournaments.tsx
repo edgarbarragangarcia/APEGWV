@@ -17,6 +17,7 @@ interface Tournament {
     current_participants: number | null;
     status: string | null;
     image_url: string | null;
+    budget_prizes: number | null;
 }
 
 const Tournaments: React.FC = () => {
@@ -38,7 +39,7 @@ const Tournaments: React.FC = () => {
             // Fetch all tournaments
             const { data: allTourneys, error: tError } = await supabase
                 .from('tournaments')
-                .select('id, name, description, date, club, price, participants_limit, current_participants, status, image_url')
+                .select('id, name, description, date, club, price, participants_limit, current_participants, status, image_url, budget_prizes')
                 .order('date', { ascending: true });
 
             if (tError) throw tError;
@@ -299,7 +300,16 @@ const Tournaments: React.FC = () => {
                                                     <MapPin size={16} color="var(--secondary)" /> {tourney.club}
                                                 </div>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: 'var(--text-dim)', fontWeight: '500' }}>
-                                                    <Users size={15} color="var(--text-dim)" /> {tourney.current_participants}/{tourney.participants_limit} participantes
+                                                    {tourney.budget_prizes && tourney.budget_prizes > 0 ? (
+                                                        <>
+                                                            <Trophy size={15} color="var(--secondary)" />
+                                                            Bolsa: {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(tourney.budget_prizes)}
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <Users size={15} color="var(--text-dim)" /> {tourney.current_participants}/{tourney.participants_limit} participantes
+                                                        </>
+                                                    )}
                                                 </div>
                                             </div>
                                             <div style={{ textAlign: 'right' }}>
