@@ -844,6 +844,9 @@ const Shop: React.FC = () => {
                             marginTop: '-30px',
                             position: 'relative',
                             zIndex: 2,
+                            padding: '25px',
+                            display: 'flex',
+                            flexDirection: 'column',
                             paddingBottom: 'calc(var(--nav-height) + 120px)'
                         }}>
                             <div style={{ marginBottom: '15px' }}>
@@ -859,7 +862,7 @@ const Shop: React.FC = () => {
                                 }}>
                                     {selectedProduct.category}
                                 </span>
-                                <h2 style={{ fontSize: '32px', fontWeight: '900', marginTop: '8px', lineHeight: '1.1', color: 'white' }}>
+                                <h2 style={{ fontSize: '28px', fontWeight: '900', marginTop: '12px', marginBottom: '4px', lineHeight: '1.2', color: 'white' }}>
                                     {selectedProduct.name}
                                 </h2>
                                 <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -939,8 +942,7 @@ const Shop: React.FC = () => {
                                             gap: '8px',
                                             border: '1px solid rgba(255,255,255,0.15)',
                                             textTransform: 'uppercase',
-                                            letterSpacing: '0.08em',
-                                            backdropFilter: 'blur(10px)'
+                                            letterSpacing: '0.08em'
                                         }}
                                     >
                                         <span style={{ fontSize: '18px' }}>🤝</span>
@@ -973,8 +975,7 @@ const Shop: React.FC = () => {
                                         border: '1px solid rgba(255,255,255,0.15)',
                                         textTransform: 'uppercase',
                                         letterSpacing: '0.08em',
-                                        opacity: selectedProduct.status === 'negotiating' ? 0.5 : 1,
-                                        backdropFilter: 'blur(10px)'
+                                        opacity: selectedProduct.status === 'negotiating' ? 0.5 : 1
                                     }}
                                 >
                                     {addingToCart === selectedProduct.id ? <CheckCircle2 size={18} color="var(--secondary)" /> : <Plus size={18} />}

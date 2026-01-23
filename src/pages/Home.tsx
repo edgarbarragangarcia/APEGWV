@@ -23,6 +23,7 @@ interface ActivityItem {
 
 const Home: React.FC = () => {
     const navigate = useNavigate();
+    const activitiesRef = React.useRef<HTMLDivElement>(null);
     const { user } = useAuth();
     const { data: profile } = useProfile();
     const { data: roundCount = 0 } = useUserRoundCount(user?.id);
@@ -189,23 +190,36 @@ const Home: React.FC = () => {
                         </div>
                     </div>
 
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                    <div
+                        ref={activitiesRef}
+                        style={{
+                            display: 'flex',
+                            gap: '12px',
+                            overflowX: 'auto',
+                            margin: '0 -20px',
+                            padding: '0 20px 10px 20px',
+                            scrollSnapType: 'x mandatory',
+                            scrollbarWidth: 'none',
+                            WebkitOverflowScrolling: 'touch'
+                        }}
+                    >
                         {activities.length > 0 ? (
                             activities.map((activity, index) => (
-                                <ActivityCard
-                                    key={activity.id + index}
-                                    type={activity.type}
-                                    userName={activity.userName}
-                                    userImage={activity.userImage}
-                                    description={activity.description}
-                                    time={activity.created_at ? new Date(activity.created_at).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) : '--:--'}
-                                    itemName={activity.itemName}
-                                    itemImage={activity.itemImage}
-                                    onClick={() => {
-                                        if (activity.type === 'registration') navigate('/tournaments');
-                                        if (activity.type === 'product') navigate('/shop');
-                                    }}
-                                />
+                                <div key={activity.id + index} style={{ minWidth: '280px', width: '280px', scrollSnapAlign: 'start' }}>
+                                    <ActivityCard
+                                        type={activity.type}
+                                        userName={activity.userName}
+                                        userImage={activity.userImage}
+                                        description={activity.description}
+                                        time={activity.created_at ? new Date(activity.created_at).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) : '--:--'}
+                                        itemName={activity.itemName}
+                                        itemImage={activity.itemImage}
+                                        onClick={() => {
+                                            if (activity.type === 'registration') navigate('/tournaments');
+                                            if (activity.type === 'product') navigate('/shop');
+                                        }}
+                                    />
+                                </div>
                             ))
                         ) : (
                             <div style={{
