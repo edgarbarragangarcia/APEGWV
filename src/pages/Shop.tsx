@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
     Search, ShoppingBag,
-    ArrowLeft, ShoppingCart, ChevronRight, Plus, CheckCircle2,
-    Loader2, AlertCircle, Clock, Lock, Handshake
+    ArrowLeft, ShoppingCart, Plus, CheckCircle2,
+    Loader2, AlertCircle, Clock, Lock, Handshake, Heart
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Card from '../components/Card';
@@ -46,6 +46,7 @@ const Shop: React.FC = () => {
     const [ordersLoading, setOrdersLoading] = useState(false);
     const [ordersError, setOrdersError] = useState<string | null>(null);
     const [productsLoading, setProductsLoading] = useState(true);
+    const [likedProducts, setLikedProducts] = useState<Set<string>>(new Set());
     const location = useLocation();
 
     // Auto-reset expired negotiations
@@ -65,8 +66,25 @@ const Shop: React.FC = () => {
         if (user) {
             fetchMyOrders(user.id);
             fetchMyOffers(user.id);
+            fetchMyLikes(user.id);
         }
     }, [user]);
+
+    const fetchMyLikes = async (userId: string) => {
+        try {
+            const { data, error } = await (supabase
+                .from('product_likes' as any) as any)
+                .select('product_id')
+                .eq('user_id', userId);
+
+            if (error) throw error;
+            if (data) {
+                setLikedProducts(new Set(data.map((l: any) => l.product_id)));
+            }
+        } catch (err) {
+            console.error('Error fetching likes:', err);
+        }
+    };
 
     const fetchMyOffers = async (userId: string) => {
         try {
@@ -186,7 +204,38 @@ const Shop: React.FC = () => {
         return matchesCategory && matchesSearch;
     });
 
+    const toggleLike = async (e: React.MouseEvent, productId: string) => {
+        e.stopPropagation();
+        if (!user) return;
 
+        const isLiked = likedProducts.has(productId);
+
+        // Optimistic update
+        const newLiked = new Set(likedProducts);
+        if (isLiked) newLiked.delete(productId);
+        else newLiked.add(productId);
+        setLikedProducts(newLiked);
+
+        try {
+            if (isLiked) {
+                const { error } = await (supabase
+                    .from('product_likes' as any) as any)
+                    .delete()
+                    .eq('user_id', user.id)
+                    .eq('product_id', productId);
+                if (error) throw error;
+            } else {
+                const { error } = await (supabase
+                    .from('product_likes' as any) as any)
+                    .insert({ user_id: user.id, product_id: productId } as any);
+                if (error) throw error;
+            }
+        } catch (err) {
+            console.error('Error toggling like:', err);
+            // Revert on error
+            setLikedProducts(likedProducts);
+        }
+    };
 
     return (
         <div style={{
@@ -310,12 +359,15 @@ const Shop: React.FC = () => {
                 {viewTab === 'marketplace' && (
                     <>
                         {/* Search Bar */}
-                        <div className="glass" style={{
+                        <div style={{
                             marginBottom: '10px',
                             padding: '10px 15px',
                             display: 'flex',
                             alignItems: 'center',
-                            gap: '12px'
+                            gap: '12px',
+                            background: 'rgba(255,255,255,0.05)',
+                            borderRadius: '16px',
+                            border: '1px solid rgba(255,255,255,0.1)'
                         }}>
                             <Search size={18} color="var(--text-dim)" />
                             <input
@@ -365,18 +417,6 @@ const Shop: React.FC = () => {
                         </div>
                     </>
                 )}
-
-                {/* Translucent fade transition at the bottom of the fixed section */}
-                <div style={{
-                    position: 'absolute',
-                    bottom: '-35px',
-                    left: '0',
-                    right: '0',
-                    height: '35px',
-                    background: 'linear-gradient(to bottom, var(--primary), transparent)',
-                    pointerEvents: 'none',
-                    zIndex: 901
-                }} />
             </div>
 
             {/* Área de Scroll */}
@@ -410,7 +450,7 @@ const Shop: React.FC = () => {
                                 gridTemplateColumns: '1fr 1fr',
                                 gap: '15px'
                             }}>
-                                {filteredProducts.map(product => (
+                                {filteredProducts.map((product) => (
                                     <Card
                                         key={product.id}
                                         onClick={() => setSelectedProduct(product)}
@@ -431,18 +471,33 @@ const Shop: React.FC = () => {
                                             width: '100%',
                                             marginBottom: '10px'
                                         }}>
-                                            <div style={{ position: 'relative', width: '90%' }}>
+                                            <div style={{
+                                                position: 'relative',
+                                                width: '90%',
+                                                aspectRatio: '1/1',
+                                                background: 'rgba(255,255,255,0.03)',
+                                                borderRadius: '20px',
+                                                overflow: 'hidden'
+                                            }}>
                                                 <img
                                                     src={optimizeImage(product.image_url, { width: 400, height: 400 })}
                                                     alt={product.name}
                                                     loading="lazy"
+                                                    onError={(e) => {
+                                                        const target = e.target as HTMLImageElement;
+                                                        target.style.display = 'none';
+                                                        target.parentElement!.style.display = 'flex';
+                                                        target.parentElement!.style.alignItems = 'center';
+                                                        target.parentElement!.style.justifyContent = 'center';
+                                                        target.parentElement!.innerHTML = `<div style="color: var(--text-dim); display: flex; flex-direction: column; align-items: center; gap: 8px;">
+                                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+                                                        </div>`;
+                                                    }}
                                                     style={{
                                                         width: '100%',
-                                                        aspectRatio: '1/1',
+                                                        height: '100%',
                                                         objectFit: 'cover',
-                                                        borderRadius: '20px',
-                                                        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                                                        filter: product.status === 'negotiating' ? 'blur(8px) grayscale(0.5)' : 'none',
+                                                        filter: product.status === 'negotiating' ? 'grayscale(0.5)' : 'none',
                                                         transition: 'all 0.5s ease'
                                                     }}
                                                 />
@@ -462,20 +517,30 @@ const Shop: React.FC = () => {
                                                         <span style={{ fontSize: '10px', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '0.1em' }}>En Negociación</span>
                                                     </div>
                                                 )}
-                                                <div style={{
-                                                    position: 'absolute',
-                                                    top: '10px',
-                                                    right: '10px',
-                                                    background: 'rgba(0,0,0,0.4)',
-                                                    backdropFilter: 'blur(10px)',
-                                                    padding: '8px',
-                                                    borderRadius: '50%',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center',
-                                                    border: '1px solid rgba(255,255,255,0.1)'
-                                                }}>
-                                                    {product.status === 'negotiating' ? <Clock size={16} color="var(--secondary)" /> : <ChevronRight size={16} color="white" />}
+                                                <div
+                                                    onClick={(e) => toggleLike(e, product.id)}
+                                                    style={{
+                                                        position: 'absolute',
+                                                        top: '10px',
+                                                        right: '10px',
+                                                        background: 'rgba(0,0,0,0.4)',
+                                                        padding: '8px',
+                                                        borderRadius: '50%',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        border: '1px solid rgba(255,255,255,0.1)',
+                                                        cursor: 'pointer',
+                                                        zIndex: 2,
+                                                        transition: 'all 0.2s ease'
+                                                    }}
+                                                >
+                                                    <Heart
+                                                        size={16}
+                                                        fill={likedProducts.has(product.id) ? "var(--secondary)" : "none"}
+                                                        color={likedProducts.has(product.id) ? "var(--secondary)" : "white"}
+                                                        style={{ transform: likedProducts.has(product.id) ? 'scale(1.1)' : 'scale(1)' }}
+                                                    />
                                                 </div>
                                             </div>
                                         </div>
@@ -485,7 +550,7 @@ const Shop: React.FC = () => {
                                             display: 'flex',
                                             flexDirection: 'column',
                                             flex: 1,
-                                            minHeight: '100px'
+                                            minHeight: '80px'
                                         }}>
                                             <h4 style={{
                                                 fontSize: '18px',
@@ -501,13 +566,13 @@ const Shop: React.FC = () => {
                                                 {product.name}
                                             </h4>
 
-                                            <div style={{ marginBottom: '10px' }}>
+                                            <div style={{ marginBottom: '2px' }}>
                                                 <span style={{ color: 'var(--secondary)', fontWeight: '900', fontSize: '15px' }}>
                                                     $ {new Intl.NumberFormat('es-CO').format(product.price)}
                                                 </span>
                                             </div>
 
-                                            <div style={{ marginTop: 'auto' }}>
+                                            <div>
                                                 <p style={{
                                                     fontSize: '11px',
                                                     color: 'var(--text-dim)',
@@ -779,11 +844,7 @@ const Shop: React.FC = () => {
                             marginTop: '-30px',
                             position: 'relative',
                             zIndex: 2,
-                            padding: '20px',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            overflow: 'hidden',
-                            paddingBottom: '100px'
+                            paddingBottom: 'calc(var(--nav-height) + 120px)'
                         }}>
                             <div style={{ marginBottom: '15px' }}>
                                 <span style={{
@@ -850,7 +911,7 @@ const Shop: React.FC = () => {
                             {/* Bottom Fixed Action Bar */}
                             <div style={{
                                 paddingTop: '10px',
-                                paddingBottom: 'calc(var(--safe-bottom) + 15px)',
+                                paddingBottom: 'calc(var(--nav-height) + var(--safe-bottom) + 15px)',
                                 display: 'flex',
                                 gap: '15px'
                             }}>
