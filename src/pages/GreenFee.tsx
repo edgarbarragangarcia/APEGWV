@@ -87,14 +87,14 @@ const GreenFee: React.FC = () => {
                 right: '0',
                 width: '100%',
                 zIndex: 900,
-                background: 'linear-gradient(180deg, var(--primary) 0%, var(--primary) 90%, transparent 100%)',
-                paddingTop: '10px',
-                paddingBottom: '10px',
+                background: 'var(--primary)',
+                paddingTop: '5px',
+                paddingBottom: '4px',
                 paddingLeft: '20px',
                 paddingRight: '20px',
                 pointerEvents: 'auto'
             }}>
-                <header style={{ marginBottom: '15px' }}>
+                <header style={{ marginBottom: '8px' }}>
                     <h1 style={{ fontSize: '28px', fontWeight: '900', marginBottom: '5px', color: 'white' }}>
                         Green <span style={{ color: 'var(--secondary)' }}>Fees</span>
                     </h1>
@@ -109,7 +109,7 @@ const GreenFee: React.FC = () => {
                     background: 'rgba(255,255,255,0.05)',
                     padding: '4px',
                     borderRadius: '16px',
-                    marginBottom: '15px'
+                    marginBottom: '10px'
                 }}>
                     <button
                         onClick={() => setActiveTab('courses')}
@@ -161,7 +161,8 @@ const GreenFee: React.FC = () => {
                         display: 'flex',
                         gap: '10px',
                         overflowX: 'auto',
-                        paddingBottom: '5px',
+                        paddingBottom: '4px',
+                        marginBottom: '4px',
                         scrollbarWidth: 'none'
                     }}>
                         {cities.map(city => (
@@ -185,12 +186,24 @@ const GreenFee: React.FC = () => {
                         ))}
                     </div>
                 )}
+
+                {/* Translucent fade transition at the bottom of the fixed section */}
+                <div style={{
+                    position: 'absolute',
+                    bottom: '-35px',
+                    left: '0',
+                    right: '0',
+                    height: '35px',
+                    background: 'linear-gradient(to bottom, var(--primary), transparent)',
+                    pointerEvents: 'none',
+                    zIndex: 901
+                }} />
             </div>
 
             {/* Área de Scroll */}
             <div style={{
                 position: 'absolute',
-                top: activeTab === 'courses' ? 'calc(env(safe-area-inset-top) + 335px)' : 'calc(env(safe-area-inset-top) + 262px)',
+                top: activeTab === 'courses' ? 'calc(env(safe-area-inset-top) + 275px)' : 'calc(env(safe-area-inset-top) + 225px)',
                 left: '0',
                 right: '0',
                 bottom: 'calc(var(--nav-height))',
