@@ -781,25 +781,25 @@ const Shop: React.FC = () => {
                                 <button
                                     onClick={() => setSelectedProduct(null)}
                                     style={{
-                                        position: 'absolute',
-                                        top: '15px',
-                                        left: '15px',
+                                        position: 'fixed',
+                                        top: 'calc(env(safe-area-inset-top) + 20px)',
+                                        left: '20px',
                                         background: 'rgba(0,0,0,0.5)',
                                         backdropFilter: 'blur(10px)',
-                                        border: '1px solid rgba(255,255,255,0.1)',
-                                        width: '40px',
-                                        height: '40px',
-                                        borderRadius: '50%',
+                                        border: '1px solid rgba(255,255,255,0.2)',
+                                        width: '45px',
+                                        height: '45px',
+                                        borderRadius: '14px',
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
                                         color: 'white',
-                                        zIndex: 100,
+                                        zIndex: 9999,
                                         cursor: 'pointer',
                                         boxShadow: '0 4px 15px rgba(0,0,0,0.3)'
                                     }}
                                 >
-                                    <ArrowLeft size={22} strokeWidth={3} />
+                                    <ArrowLeft size={24} strokeWidth={3} />
                                 </button>
                             </div>
 
