@@ -6,82 +6,106 @@ import {
     ChevronRight,
     CheckCircle2,
     Sparkles,
-    MousePointer2
+    LayoutDashboard,
+    Flag,
+    Calendar,
+    ShoppingBag,
+    Trophy,
+    User,
+    Settings
 } from 'lucide-react';
 import { supabase } from '../services/SupabaseManager';
 
 interface Step {
     title: string;
     description: string;
+    icon: React.ReactNode;
     targetId?: string;
     path: string;
     position: 'center' | 'bottom';
     color: string;
+    gradient: string;
 }
 
 const steps: Step[] = [
     {
         title: "¡Bienvenido a APEG!",
         description: "Estamos muy emocionados de tenerte en la comunidad. Permítenos guiarte por las funciones principales de tu nueva app de golf.",
+        icon: <Sparkles size={32} />,
         path: "/",
         position: 'center',
-        color: "#a3e635"
+        color: "#a3e635",
+        gradient: "linear-gradient(135deg, #a3e635 0%, #65a30d 100%)"
     },
     {
         title: "Tu Dashboard",
         description: "Aquí encontrarás tus estadísticas, hándicap y la actividad más reciente de otros golfistas. ¡Mantente conectado!",
+        icon: <LayoutDashboard size={32} />,
         targetId: 'nav-inicio',
         path: "/",
         position: 'bottom',
-        color: "#3b82f6"
+        color: "#3b82f6",
+        gradient: "linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)"
     },
     {
         title: "¡A Jugar!",
         description: "Este es el corazón de la app. Desde aquí podrás iniciar tus rondas, registrar cada golpe y seguir tu progreso en tiempo real.",
+        icon: <Flag size={32} />,
         targetId: 'nav-jugar',
         path: "/select-course",
         position: 'bottom',
-        color: "#a3e635"
+        color: "#a3e635",
+        gradient: "linear-gradient(135deg, #a3e635 0%, #65a30d 100%)"
     },
     {
         title: "Green Fees",
         description: "¿Planeando tu próxima salida? Reserva tus turnos en los mejores campos del país de forma rápida y segura.",
+        icon: <Calendar size={32} />,
         targetId: 'nav-green-fee',
         path: "/green-fee",
         position: 'bottom',
-        color: "#10b981"
+        color: "#10b981",
+        gradient: "linear-gradient(135deg, #10b981 0%, #059669 100%)"
     },
     {
         title: "Marketplace",
         description: "Encuentra el mejor equipamiento o vende lo que ya no usas. ¡Incluso puedes negociar precios con otros usuarios!",
+        icon: <ShoppingBag size={32} />,
         targetId: 'nav-marketplace',
         path: "/shop",
         position: 'bottom',
-        color: "#ec4899"
+        color: "#ec4899",
+        gradient: "linear-gradient(135deg, #ec4899 0%, #be185d 100%)"
     },
     {
         title: "Eventos y Torneos",
         description: "No te pierdas ninguna competencia. Inscríbete a los próximos torneos y consulta los resultados oficiales.",
+        icon: <Trophy size={32} />,
         targetId: 'nav-eventos',
         path: "/tournaments",
         position: 'bottom',
-        color: "#f59e0b"
+        color: "#f59e0b",
+        gradient: "linear-gradient(135deg, #f59e0b 0%, #b45309 100%)"
     },
     {
         title: "Tu Perfil",
         description: "Personaliza tu información de golfista, vincula tu código de federación y revisa tus estadísticas personales.",
+        icon: <User size={32} />,
         targetId: 'nav-profile',
         path: "/profile",
         position: 'bottom',
-        color: "#a3e635"
+        color: "#8b5cf6",
+        gradient: "linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)"
     },
     {
         title: "Configuración",
         description: "Administra los ajustes de tu cuenta, notificaciones y preferencias de seguridad para una mejor experiencia.",
+        icon: <Settings size={32} />,
         targetId: 'btn-settings',
         path: "/profile",
         position: 'bottom',
-        color: "#94a3b8"
+        color: "#94a3b8",
+        gradient: "linear-gradient(135deg, #94a3b8 0%, #475569 100%)"
     }
 ];
 
@@ -167,9 +191,41 @@ export const OnboardingTour: React.FC<OnboardingTourProps> = ({ userId, onComple
                         justifyContent: step.position === 'center' ? 'center' : 'flex-end',
                         padding: '20px',
                         paddingBottom: step.position === 'bottom' ? '120px' : '20px',
-                        overflow: 'hidden'
+                        overflow: 'hidden',
+                        perspective: '1000px'
                     }}
                 >
+                    <style>{`
+                        @keyframes borderBeam {
+                            0% { offset-distance: 0%; }
+                            100% { offset-distance: 100%; }
+                        }
+                        .border-beam {
+                            position: absolute;
+                            inset: 0;
+                            border: 2px solid transparent;
+                            border-radius: 35px;
+                            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+                            mask-composite: exclude;
+                            pointer-events: none;
+                        }
+                        .border-beam::after {
+                            content: "";
+                            position: absolute;
+                            aspect-ratio: 1;
+                            width: 150px;
+                            background: linear-gradient(to right, transparent, var(--beam-color), transparent);
+                            offset-path: rect(0 auto auto 0 round 35px);
+                            animation: borderBeam 4s linear infinite;
+                        }
+                        .grain {
+                            position: absolute;
+                            inset: 0;
+                            opacity: 0.03;
+                            pointer-events: none;
+                            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+                        }
+                    `}</style>
                     {/* Spotlight effect */}
                     {highlightRect && (
                         <motion.div
@@ -195,70 +251,122 @@ export const OnboardingTour: React.FC<OnboardingTourProps> = ({ userId, onComple
                     {/* Instruction Card */}
                     <motion.div
                         key={currentStep}
-                        initial={{ opacity: 0, scale: 0.9, y: 20 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                        transition={{ duration: 0.4, ease: "easeOut" }}
+                        initial={{ opacity: 0, scale: 0.8, y: 40, rotateX: 15 }}
+                        animate={{ opacity: 1, scale: 1, y: 0, rotateX: 0 }}
+                        exit={{ opacity: 0, scale: 0.8, y: 40, rotateX: -15 }}
+                        transition={{
+                            type: "spring",
+                            damping: 20,
+                            stiffness: 100
+                        }}
                         style={{
                             width: '100%',
-                            maxWidth: '380px',
-                            background: 'rgba(15, 45, 30, 0.95)',
-                            border: '1px solid rgba(255, 255, 255, 0.15)',
-                            borderRadius: '32px',
-                            padding: '28px',
+                            maxWidth: '400px',
+                            background: 'rgba(10, 25, 20, 0.95)',
+                            border: '1px solid rgba(255, 255, 255, 0.08)',
+                            borderRadius: '35px',
+                            padding: '35px',
                             textAlign: 'center',
                             zIndex: 10001,
-                            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.6)'
-                        }}
+                            boxShadow: `0 30px 60px -12px rgba(0, 0, 0, 0.8), 0 0 30px ${step.color}08`,
+                            position: 'relative',
+                            overflow: 'hidden',
+                            transformStyle: 'preserve-3d',
+                            '--beam-color': step.color
+                        } as any}
                     >
+                        {/* Grain Texture */}
+                        <div className="grain" />
+
+                        {/* Border Beam Light */}
+                        <div className="border-beam" />
+                        {/* Background Glow */}
+                        <div style={{
+                            position: 'absolute',
+                            top: '-50%',
+                            left: '-50%',
+                            width: '200%',
+                            height: '200%',
+                            background: `radial-gradient(circle at center, ${step.color}15 0%, transparent 50%)`,
+                            pointerEvents: 'none',
+                        }} />
+
                         {/* Skip */}
                         <button
                             onClick={handleComplete}
                             style={{
                                 position: 'absolute',
-                                top: '16px',
-                                right: '16px',
+                                top: '20px',
+                                right: '20px',
                                 background: 'rgba(255,255,255,0.05)',
                                 border: 'none',
-                                color: 'rgba(255, 255, 255, 0.3)',
+                                color: 'white',
+                                opacity: 0.5,
                                 cursor: 'pointer',
                                 padding: '8px',
-                                borderRadius: '50%'
+                                borderRadius: '50%',
+                                zIndex: 10
                             }}
                         >
-                            <X size={16} />
+                            <X size={18} />
                         </button>
 
-                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}>
-                            <div style={{
-                                width: '64px',
-                                height: '64px',
-                                borderRadius: '20px',
-                                background: `linear-gradient(135deg, ${step.color}22 0%, ${step.color}44 100%)`,
-                                border: `1px solid ${step.color}55`,
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                color: step.color
-                            }}>
-                                {currentStep === 0 ? <Sparkles size={32} /> : <MousePointer2 size={32} />}
-                            </div>
+                        <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '24px' }}>
+                            <motion.div
+                                key={`icon-box-${currentStep}`}
+                                initial={{ scale: 0.5, opacity: 0, rotate: -30 }}
+                                animate={{ scale: 1, opacity: 1, rotate: 0 }}
+                                transition={{ type: "spring", bounce: 0.5 }}
+                                style={{
+                                    width: '80px',
+                                    height: '80px',
+                                    borderRadius: '28px',
+                                    background: step.gradient,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    color: 'white',
+                                    boxShadow: `0 15px 30px -10px ${step.color}aa, inset 0 0 15px rgba(255,255,255,0.3)`,
+                                    position: 'relative',
+                                    overflow: 'hidden'
+                                }}
+                            >
+                                {/* Icon Inner Glow */}
+                                <div style={{
+                                    position: 'absolute',
+                                    top: '-10%',
+                                    left: '-10%',
+                                    width: '120%',
+                                    height: '120%',
+                                    background: 'radial-gradient(circle at 30% 30%, rgba(255,255,255,0.4) 0%, transparent 70%)',
+                                    pointerEvents: 'none'
+                                }} />
+                                <div style={{ position: 'relative', zIndex: 1 }}>
+                                    {step.icon}
+                                </div>
+                            </motion.div>
 
                             <div>
-                                <h3 style={{
-                                    fontSize: '22px',
-                                    fontWeight: '800',
-                                    marginBottom: '10px',
-                                    color: 'white',
-                                    letterSpacing: '-0.5px'
-                                }}>
+                                <motion.h3
+                                    key={`title-${currentStep}`}
+                                    initial={{ y: 10, opacity: 0 }}
+                                    animate={{ y: 0, opacity: 1 }}
+                                    style={{
+                                        fontSize: '24px',
+                                        fontWeight: '900',
+                                        marginBottom: '12px',
+                                        color: 'white',
+                                        letterSpacing: '-0.5px'
+                                    }}
+                                >
                                     {step.title}
-                                </h3>
+                                </motion.h3>
                                 <p style={{
-                                    color: 'rgba(255, 255, 255, 0.65)',
+                                    color: 'rgba(255, 255, 255, 0.7)',
                                     fontSize: '15px',
                                     lineHeight: '1.6',
-                                    fontWeight: '400'
+                                    fontWeight: '400',
+                                    padding: '0 10px'
                                 }}>
                                     {step.description}
                                 </p>
@@ -276,52 +384,55 @@ export const OnboardingTour: React.FC<OnboardingTourProps> = ({ userId, onComple
                                     onClick={handleBack}
                                     style={{
                                         visibility: currentStep === 0 ? 'hidden' : 'visible',
-                                        background: 'none',
-                                        border: 'none',
-                                        color: 'rgba(255, 255, 255, 0.4)',
-                                        fontSize: '14px',
-                                        fontWeight: '600',
+                                        background: 'rgba(255,255,255,0.05)',
+                                        border: '1px solid rgba(255,255,255,0.1)',
+                                        color: 'white',
+                                        padding: '10px 16px',
+                                        borderRadius: '12px',
+                                        fontSize: '13px',
+                                        fontWeight: '700',
                                         cursor: 'pointer'
                                     }}
                                 >
                                     Anterior
                                 </button>
 
-                                <div style={{ display: 'flex', gap: '6px' }}>
+                                <div style={{ display: 'flex', gap: '8px' }}>
                                     {steps.map((_, i) => (
                                         <div
                                             key={i}
                                             style={{
-                                                width: i === currentStep ? '12px' : '6px',
+                                                width: i === currentStep ? '20px' : '6px',
                                                 height: '6px',
                                                 borderRadius: '3px',
                                                 background: i === currentStep ? step.color : 'rgba(255, 255, 255, 0.15)',
-                                                transition: 'all 0.3s ease'
+                                                transition: 'all 0.4s cubic-bezier(0.23, 1, 0.32, 1)'
                                             }}
                                         />
                                     ))}
                                 </div>
 
                                 <motion.button
-                                    whileHover={{ scale: 1.05 }}
+                                    whileHover={{ scale: 1.05, boxShadow: `0 8px 16px ${step.color}44` }}
                                     whileTap={{ scale: 0.95 }}
                                     onClick={handleNext}
                                     style={{
-                                        background: step.color,
-                                        color: '#0f3923',
-                                        padding: '10px 20px',
-                                        borderRadius: '14px',
+                                        background: step.gradient,
+                                        color: 'white',
+                                        padding: '12px 24px',
+                                        borderRadius: '16px',
                                         border: 'none',
                                         fontWeight: '800',
                                         fontSize: '14px',
                                         cursor: 'pointer',
                                         display: 'flex',
                                         alignItems: 'center',
-                                        gap: '6px'
+                                        gap: '8px',
+                                        boxShadow: `0 8px 20px -5px ${step.color}66`
                                     }}
                                 >
-                                    {currentStep === steps.length - 1 ? '¡Empezar!' : 'Siguiente'}
-                                    {currentStep === steps.length - 1 ? <CheckCircle2 size={16} /> : <ChevronRight size={16} />}
+                                    {currentStep === steps.length - 1 ? '¡Listo!' : 'Siguiente'}
+                                    {currentStep === steps.length - 1 ? <CheckCircle2 size={18} /> : <ChevronRight size={18} />}
                                 </motion.button>
                             </div>
                         </div>
