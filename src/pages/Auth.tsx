@@ -65,22 +65,47 @@ const Auth: React.FC = () => {
             fontFamily: '"Outfit", sans-serif',
             overflow: 'hidden'
         }}>
-            {/* Background Image with Overlay */}
+            {/* Cinematic Video Background */}
             <div style={{
                 position: 'absolute',
                 inset: 0,
-                backgroundImage: 'url("https://images.unsplash.com/photo-1535131749006-b7f58c9f0363?q=80&w=2070&auto=format&fit=crop")',
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                zIndex: -2
-            }} />
-            <div style={{
-                position: 'absolute',
-                inset: 0,
-                background: 'linear-gradient(to bottom, rgba(11, 46, 30, 0.85), rgba(6, 26, 17, 0.95))',
-                zIndex: -1,
-                backdropFilter: 'blur(3px)'
-            }} />
+                zIndex: -2,
+                overflow: 'hidden'
+            }}>
+                <video
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    style={{
+                        position: 'absolute',
+                        top: '50%',
+                        left: '50%',
+                        minWidth: '100%',
+                        minHeight: '100%',
+                        width: 'auto',
+                        height: 'auto',
+                        transform: 'translate(-50%, -50%)',
+                        objectFit: 'cover',
+                        filter: 'brightness(0.6) contrast(1.1)'
+                    }}
+                >
+                    <source src="https://drqyvhwgnuvrcmwthwwn.supabase.co/storage/v1/object/public/video/watermarked-4f9c0c88-80ff-4880-9dd5-4ccce3509025.MP4" type="video/mp4" />
+                </video>
+                {/* Advanced Overlay for Video */}
+                <div style={{
+                    position: 'absolute',
+                    inset: 0,
+                    background: 'linear-gradient(to bottom, rgba(11, 46, 30, 0.4), rgba(6, 26, 17, 0.95))',
+                    zIndex: 1
+                }} />
+                <div style={{
+                    position: 'absolute',
+                    inset: 0,
+                    background: 'radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.4) 100%)',
+                    zIndex: 2
+                }} />
+            </div>
 
             <motion.div
                 initial={{ opacity: 0, y: 30 }}

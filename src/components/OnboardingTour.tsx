@@ -261,20 +261,35 @@ export const OnboardingTour: React.FC<OnboardingTourProps> = ({ userId, onComple
                         }}
                         style={{
                             width: '100%',
-                            maxWidth: '400px',
-                            background: 'rgba(10, 25, 20, 0.95)',
-                            border: '1px solid rgba(255, 255, 255, 0.08)',
-                            borderRadius: '35px',
-                            padding: '35px',
+                            maxWidth: '280px',
+                            background: 'rgba(10, 25, 20, 0.98)',
+                            border: '1px solid rgba(255, 255, 255, 0.12)',
+                            borderRadius: '24px',
+                            padding: '20px 24px',
                             textAlign: 'center',
                             zIndex: 10001,
-                            boxShadow: `0 30px 60px -12px rgba(0, 0, 0, 0.8), 0 0 30px ${step.color}08`,
+                            boxShadow: `0 20px 50px rgba(0, 0, 0, 0.9), 0 0 20px ${step.color}05`,
                             position: 'relative',
-                            overflow: 'hidden',
+                            overflow: 'visible', // Changed to visible for the arrow
                             transformStyle: 'preserve-3d',
                             '--beam-color': step.color
                         } as any}
                     >
+                        {/* bubble arrow/tail */}
+                        {step.position === 'bottom' && (
+                            <div style={{
+                                position: 'absolute',
+                                bottom: '-10px',
+                                left: '50%',
+                                transform: 'translateX(-50%) rotate(45deg)',
+                                width: '20px',
+                                height: '20px',
+                                background: 'rgba(10, 25, 20, 0.98)',
+                                borderRight: '1px solid rgba(255, 255, 255, 0.12)',
+                                borderBottom: '1px solid rgba(255, 255, 255, 0.12)',
+                                zIndex: -1
+                            }} />
+                        )}
                         {/* Grain Texture */}
                         <div className="grain" />
 
@@ -318,9 +333,9 @@ export const OnboardingTour: React.FC<OnboardingTourProps> = ({ userId, onComple
                                 animate={{ scale: 1, opacity: 1, rotate: 0 }}
                                 transition={{ type: "spring", bounce: 0.5 }}
                                 style={{
-                                    width: '80px',
-                                    height: '80px',
-                                    borderRadius: '28px',
+                                    width: '64px',
+                                    height: '64px',
+                                    borderRadius: '22px',
                                     background: step.gradient,
                                     display: 'flex',
                                     alignItems: 'center',
@@ -352,9 +367,9 @@ export const OnboardingTour: React.FC<OnboardingTourProps> = ({ userId, onComple
                                     initial={{ y: 10, opacity: 0 }}
                                     animate={{ y: 0, opacity: 1 }}
                                     style={{
-                                        fontSize: '24px',
+                                        fontSize: '20px',
                                         fontWeight: '900',
-                                        marginBottom: '12px',
+                                        marginBottom: '8px',
                                         color: 'white',
                                         letterSpacing: '-0.5px'
                                     }}
@@ -362,11 +377,11 @@ export const OnboardingTour: React.FC<OnboardingTourProps> = ({ userId, onComple
                                     {step.title}
                                 </motion.h3>
                                 <p style={{
-                                    color: 'rgba(255, 255, 255, 0.7)',
-                                    fontSize: '15px',
-                                    lineHeight: '1.6',
+                                    color: 'rgba(255, 255, 255, 0.8)',
+                                    fontSize: '12.5px',
+                                    lineHeight: '1.4',
                                     fontWeight: '400',
-                                    padding: '0 10px'
+                                    padding: '0'
                                 }}>
                                     {step.description}
                                 </p>
