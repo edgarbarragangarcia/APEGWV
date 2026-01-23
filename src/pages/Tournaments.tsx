@@ -95,26 +95,29 @@ const Tournaments: React.FC = () => {
 
     const handleUnregister = async (tournamentId: string) => {
         if (!confirm('¿Estás seguro de cancelar tu inscripción a este torneo?')) return;
+        if (!user) return;
 
         const previousRegistrations = [...registrations];
+        // Optimistic update
         setRegistrations(prev => prev.filter(id => id !== tournamentId));
         if (navigator.vibrate) navigator.vibrate(50);
 
         try {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (!session) return;
-
             const { error } = await supabase
                 .from('tournament_registrations')
                 .delete()
                 .eq('tournament_id', tournamentId)
-                .eq('user_id', session.user.id);
+                .eq('user_id', user.id);
 
-            if (error) throw error;
-        } catch (err) {
+            if (error) {
+                console.error('Supabase delete error:', error);
+                throw error;
+            }
+        } catch (err: any) {
             console.error('Error unregistering:', err);
+            // Revert state
             setRegistrations(previousRegistrations);
-            alert('Error al cancelar inscripción');
+            alert(`Error al cancelar inscripción: ${err.message || 'Intente nuevamente'}`);
         }
     };
 
