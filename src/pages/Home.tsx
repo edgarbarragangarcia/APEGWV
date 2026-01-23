@@ -24,6 +24,7 @@ interface ActivityItem {
 const Home: React.FC = () => {
     const navigate = useNavigate();
     const activitiesRef = React.useRef<HTMLDivElement>(null);
+    const marketplaceRef = React.useRef<HTMLDivElement>(null);
     const { user } = useAuth();
     const { data: profile } = useProfile();
     const { data: roundCount = 0 } = useUserRoundCount(user?.id);
@@ -89,6 +90,46 @@ const Home: React.FC = () => {
             supabase.removeChannel(channel);
         };
     }, [refetchActivities]);
+
+    // Auto-scroll logic for activities carousel
+    useEffect(() => {
+        if (!activitiesRef.current || activities.length === 0) return;
+
+        const interval = setInterval(() => {
+            if (activitiesRef.current) {
+                const { scrollLeft, scrollWidth, clientWidth } = activitiesRef.current;
+                const maxScroll = scrollWidth - clientWidth;
+
+                if (scrollLeft >= maxScroll - 10) {
+                    activitiesRef.current.scrollTo({ left: 0, behavior: 'smooth' });
+                } else {
+                    activitiesRef.current.scrollBy({ left: 292, behavior: 'smooth' }); // Item width (280) + gap (12)
+                }
+            }
+        }, 3500);
+
+        return () => clearInterval(interval);
+    }, [activities.length]);
+
+    // Auto-scroll logic for marketplace carousel
+    useEffect(() => {
+        if (!marketplaceRef.current || featuredProducts.length === 0) return;
+
+        const interval = setInterval(() => {
+            if (marketplaceRef.current) {
+                const { scrollLeft, scrollWidth, clientWidth } = marketplaceRef.current;
+                const maxScroll = scrollWidth - clientWidth;
+
+                if (scrollLeft >= maxScroll - 10) {
+                    marketplaceRef.current.scrollTo({ left: 0, behavior: 'smooth' });
+                } else {
+                    marketplaceRef.current.scrollBy({ left: 200, behavior: 'smooth' }); // Item width (185) + gap (15)
+                }
+            }
+        }, 4000);
+
+        return () => clearInterval(interval);
+    }, [featuredProducts.length]);
 
 
 
@@ -250,16 +291,19 @@ const Home: React.FC = () => {
                             Ver todo <ArrowRight size={12} />
                         </button>
                     </div>
-                    <div style={{
-                        display: 'flex',
-                        gap: '15px',
-                        overflowX: 'auto',
-                        margin: '0 -20px',
-                        padding: '0 20px 10px 20px',
-                        scrollSnapType: 'x mandatory',
-                        scrollbarWidth: 'none',
-                        WebkitOverflowScrolling: 'touch'
-                    }}>
+                    <div
+                        ref={marketplaceRef}
+                        style={{
+                            display: 'flex',
+                            gap: '15px',
+                            overflowX: 'auto',
+                            margin: '0 -20px',
+                            padding: '0 20px 10px 20px',
+                            scrollSnapType: 'x mandatory',
+                            scrollbarWidth: 'none',
+                            WebkitOverflowScrolling: 'touch'
+                        }}
+                    >
                         {featuredProducts.length > 0 ? (
                             featuredProducts.map((product) => (
                                 <Card

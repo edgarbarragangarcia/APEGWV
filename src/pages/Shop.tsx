@@ -758,111 +758,133 @@ const Shop: React.FC = () => {
                             overflow: 'hidden'
                         }}
                     >
-                        {/* High Impact Image Section */}
-                        <div style={{ position: 'relative', height: '55vh', width: '100%', overflow: 'hidden' }}>
-                            <img src={selectedProduct.image_url || ''} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" />
-                            <div style={{
-                                position: 'absolute',
-                                top: 0,
-                                left: 0,
-                                right: 0,
-                                height: '100px',
-                                background: 'linear-gradient(to bottom, rgba(0,0,0,0.4), transparent)',
-                                zIndex: 1
-                            }} />
-                            <button
-                                onClick={() => setSelectedProduct(null)}
-                                style={{
-                                    position: 'absolute',
-                                    top: 'calc(var(--safe-top) + 110px)',
-                                    left: '20px',
-                                    background: 'var(--secondary)',
-                                    color: 'var(--primary)',
-                                    border: 'none',
-                                    width: '44px',
-                                    height: '44px',
-                                    borderRadius: '50%',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    zIndex: 10,
-                                    cursor: 'pointer',
-                                    boxShadow: '0 8px 25px rgba(163, 230, 53, 0.4)'
-                                }}
-                            >
-                                <ArrowLeft size={24} strokeWidth={3} />
-                            </button>
-
-                            {selectedProduct.status === 'negotiating' && (
-                                <div style={{
-                                    position: 'absolute',
-                                    bottom: '40px',
-                                    left: '20px',
-                                    right: '20px',
-                                    background: 'rgba(0,0,0,0.6)',
-                                    backdropFilter: 'blur(15px)',
-                                    padding: '12px 20px',
-                                    borderRadius: '16px',
-                                    color: 'white',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '12px',
-                                    border: '1px solid rgba(255,255,255,0.1)',
-                                    zIndex: 5
-                                }}>
-                                    <div style={{ background: 'var(--secondary)', padding: '8px', borderRadius: '50%', color: 'var(--primary)' }}>
-                                        {selectedProduct.negotiating_buyer_id === user?.id ? <Clock size={18} /> : <Lock size={18} />}
-                                    </div>
-                                    <div style={{ flex: 1 }}>
-                                        <p style={{ fontSize: '13px', fontWeight: '800', margin: 0 }}>
-                                            {selectedProduct.negotiating_buyer_id === user?.id ? 'TIENES UNA RESERVA ACTIVA' : 'PRODUCTO RESERVADO'}
-                                        </p>
-                                        <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)', margin: 0 }}>
-                                            {selectedProduct.negotiating_buyer_id === user?.id
-                                                ? 'Completa el pago antes de que expire el tiempo'
-                                                : 'Este artículo está en proceso de venta'}
-                                        </p>
-                                    </div>
-                                    {selectedProduct.negotiating_buyer_id === user?.id && selectedProduct.negotiation_expires_at && (
-                                        <div style={{ textAlign: 'right' }}>
-                                            <span style={{ fontSize: '10px', fontWeight: '700', color: 'var(--secondary)', display: 'block' }}>EXPIRE EN</span>
-                                            <span style={{ fontSize: '14px', fontWeight: '900', color: 'white' }}>
-                                                {Math.max(0, Math.floor((new Date(selectedProduct.negotiation_expires_at).getTime() - Date.now()) / 1000 / 60))}m
-                                            </span>
-                                        </div>
-                                    )}
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Product Info Section - One Page Layout */}
+                        {/* Full Screen View */}
                         <div style={{
-                            flex: 1,
-                            background: 'var(--primary)',
-                            borderTopLeftRadius: '30px',
-                            borderTopRightRadius: '30px',
-                            marginTop: '-30px',
                             position: 'relative',
-                            zIndex: 2,
-                            padding: '25px',
+                            width: '100%',
+                            height: '100%',
                             display: 'flex',
                             flexDirection: 'column',
-                            paddingBottom: 'calc(var(--nav-height) + 120px)'
+                            overflowY: 'auto'
                         }}>
-                            <div style={{ marginBottom: '15px' }}>
+                            {/* Hero Image Section */}
+                            <div style={{ position: 'relative', height: '60vh', width: '100%', flexShrink: 0 }}>
+                                <img
+                                    src={optimizeImage(selectedProduct.image_url, { width: 800, height: 1200 })}
+                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                    alt={selectedProduct.name}
+                                />
+                                {/* Overlay Gradients */}
+                                <div style={{
+                                    position: 'absolute',
+                                    inset: 0,
+                                    background: 'linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, transparent 20%, transparent 60%, var(--primary) 100%)'
+                                }} />
+
+                                {/* Close Button */}
+                                <button
+                                    onClick={() => setSelectedProduct(null)}
+                                    style={{
+                                        position: 'absolute',
+                                        top: 'calc(env(safe-area-inset-top) + 20px)',
+                                        left: '20px',
+                                        background: 'rgba(255,255,255,0.15)',
+                                        backdropFilter: 'blur(10px)',
+                                        border: '1px solid rgba(255,255,255,0.2)',
+                                        width: '40px',
+                                        height: '40px',
+                                        borderRadius: '50%',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        color: 'white',
+                                        zIndex: 10,
+                                        cursor: 'pointer'
+                                    }}
+                                >
+                                    <ArrowLeft size={22} strokeWidth={3} />
+                                </button>
+                            </div>
+
+                            {/* Info "Sheet" */}
+                            <div style={{
+                                position: 'relative',
+                                flex: 1,
+                                background: 'var(--primary)',
+                                borderTopLeftRadius: '32px',
+                                borderTopRightRadius: '32px',
+                                marginTop: '-32px',
+                                padding: '30px 24px',
+                                zIndex: 5,
+                                display: 'flex',
+                                flexDirection: 'column'
+                            }}>
+                                {/* Handle decoration */}
+                                <div style={{
+                                    width: '40px',
+                                    height: '4px',
+                                    background: 'rgba(255,255,255,0.1)',
+                                    borderRadius: '2px',
+                                    margin: '-15px auto 25px'
+                                }} />
+
+                                {selectedProduct.status === 'negotiating' && (
+                                    <div style={{
+                                        position: 'absolute',
+                                        bottom: '40px',
+                                        left: '20px',
+                                        right: '20px',
+                                        background: 'rgba(0,0,0,0.6)',
+                                        backdropFilter: 'blur(15px)',
+                                        padding: '12px 20px',
+                                        borderRadius: '16px',
+                                        color: 'white',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '12px',
+                                        border: '1px solid rgba(255,255,255,0.1)',
+                                        zIndex: 5
+                                    }}>
+                                        <div style={{ background: 'var(--secondary)', padding: '8px', borderRadius: '50%', color: 'var(--primary)' }}>
+                                            {selectedProduct.negotiating_buyer_id === user?.id ? <Clock size={18} /> : <Lock size={18} />}
+                                        </div>
+                                        <div style={{ flex: 1 }}>
+                                            <p style={{ fontSize: '13px', fontWeight: '800', margin: 0 }}>
+                                                {selectedProduct.negotiating_buyer_id === user?.id ? 'TIENES UNA RESERVA ACTIVA' : 'PRODUCTO RESERVADO'}
+                                            </p>
+                                            <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)', margin: 0 }}>
+                                                {selectedProduct.negotiating_buyer_id === user?.id
+                                                    ? 'Completa el pago antes de que expire el tiempo'
+                                                    : 'Este artículo está en proceso de venta'}
+                                            </p>
+                                        </div>
+                                        {selectedProduct.negotiating_buyer_id === user?.id && selectedProduct.negotiation_expires_at && (
+                                            <div style={{ textAlign: 'right' }}>
+                                                <span style={{ fontSize: '10px', fontWeight: '700', color: 'var(--secondary)', display: 'block' }}>EXPIRE EN</span>
+                                                <span style={{ fontSize: '14px', fontWeight: '900', color: 'white' }}>
+                                                    {Math.max(0, Math.floor((new Date(selectedProduct.negotiation_expires_at).getTime() - Date.now()) / 1000 / 60))}m
+                                                </span>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Product Details within the Sheet */}
+                            <div style={{ marginBottom: '25px' }}>
                                 <span style={{
                                     background: 'rgba(163, 230, 53, 0.1)',
                                     color: 'var(--secondary)',
-                                    padding: '6px 14px',
+                                    padding: '5px 12px',
                                     borderRadius: '30px',
-                                    fontSize: '11px',
+                                    fontSize: '10px',
                                     fontWeight: '900',
                                     textTransform: 'uppercase',
                                     letterSpacing: '0.05em'
                                 }}>
                                     {selectedProduct.category}
                                 </span>
-                                <h2 style={{ fontSize: '28px', fontWeight: '900', marginTop: '12px', marginBottom: '4px', lineHeight: '1.2', color: 'white' }}>
+                                <h2 style={{ fontSize: '26px', fontWeight: '900', marginTop: '14px', marginBottom: '8px', lineHeight: '1.2', color: 'white' }}>
                                     {selectedProduct.name}
                                 </h2>
                                 <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -891,23 +913,22 @@ const Shop: React.FC = () => {
                                 </div>
                             </div>
 
-                            {/* Description */}
-                            <div style={{ marginBottom: '15px' }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                                    <h4 style={{ fontSize: '14px', fontWeight: '900', color: 'var(--text-dim)', textTransform: 'uppercase' }}>Resumen</h4>
+                            <div style={{ marginBottom: '30px' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                                    <h4 style={{ fontSize: '13px', fontWeight: '900', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Resumen</h4>
                                     {selectedProduct.is_negotiable && (
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: 'var(--secondary)' }}>
-                                            <span style={{ fontSize: '16px', fontWeight: '900' }}>🤝</span>
-                                            <span style={{ fontSize: '11px', fontWeight: '800' }}>NEGOCIABLE</span>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--secondary)' }}>
+                                            <span style={{ fontSize: '14px' }}>🤝</span>
+                                            <span style={{ fontSize: '11px', fontWeight: '900' }}>NEGOCIABLE</span>
                                         </div>
                                     )}
                                 </div>
                                 <p style={{
-                                    color: 'rgba(255,255,255,0.7)',
-                                    lineHeight: '1.5',
+                                    color: 'var(--text-dim)',
+                                    lineHeight: '1.6',
                                     fontSize: '15px'
                                 }}>
-                                    {selectedProduct.description || 'Este producto premium está verificado y listo para ser enviado a tu campo de golf.'}
+                                    {selectedProduct.description || 'Este producto premium está verificado y ha pasado los controles de calidad de la comunidad APEG.'}
                                 </p>
                             </div>
 
