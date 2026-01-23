@@ -759,51 +759,51 @@ const Shop: React.FC = () => {
                             overflow: 'hidden'
                         }}
                     >
-                        {/* Full Screen View */}
+                        {/* Single Screen - No Scroll */}
                         <div style={{
                             position: 'relative',
                             width: '100%',
                             height: '100%',
                             display: 'flex',
                             flexDirection: 'column',
-                            overflowY: 'auto'
+                            overflow: 'hidden'
                         }}>
-                            {/* Hero Image Section */}
-                            <div style={{ position: 'relative', height: '60vh', width: '100%', flexShrink: 0 }}>
+                            {/* Compact Image - 40% of screen */}
+                            <div style={{ position: 'relative', height: '40vh', width: '100%', flexShrink: 0 }}>
                                 <img
-                                    src={optimizeImage(selectedProduct.image_url, { width: 800, height: 1200 })}
+                                    src={optimizeImage(selectedProduct.image_url, { width: 600, height: 800 })}
                                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                     alt={selectedProduct.name}
                                 />
-                                {/* Overlay Gradients */}
+                                {/* Overlay */}
                                 <div style={{
                                     position: 'absolute',
                                     inset: 0,
-                                    background: 'linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, transparent 20%, transparent 60%, var(--primary) 100%)'
+                                    background: 'linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, transparent 30%, transparent 70%, var(--primary) 100%)'
                                 }} />
 
-                                {/* Close Button */}
+                                {/* Back to Marketplace Button */}
                                 <button
                                     onClick={() => setSelectedProduct(null)}
                                     style={{
                                         position: 'absolute',
-                                        top: 'calc(env(safe-area-inset-top) + 20px)',
-                                        left: '20px',
-                                        background: 'rgba(255,255,255,0.15)',
-                                        backdropFilter: 'blur(10px)',
-                                        border: '1px solid rgba(255,255,255,0.2)',
-                                        width: '40px',
-                                        height: '40px',
+                                        top: 'calc(env(safe-area-inset-top) + 15px)',
+                                        left: '15px',
+                                        background: 'var(--secondary)',
+                                        border: 'none',
+                                        width: '36px',
+                                        height: '36px',
                                         borderRadius: '50%',
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
-                                        color: 'white',
+                                        color: 'var(--primary)',
                                         zIndex: 10,
-                                        cursor: 'pointer'
+                                        cursor: 'pointer',
+                                        boxShadow: '0 4px 12px rgba(163, 230, 53, 0.4)'
                                     }}
                                 >
-                                    <ArrowLeft size={22} strokeWidth={3} />
+                                    <ArrowLeft size={20} strokeWidth={3} />
                                 </button>
                             </div>
 
