@@ -211,6 +211,7 @@ const Profile: React.FC = () => {
             {/* Interactive Settings and Actions */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 <button
+                    id="btn-settings"
                     onClick={() => navigate('/settings')}
                     className="glass"
                     style={{

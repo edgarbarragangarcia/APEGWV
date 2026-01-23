@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import {
     X,
     ChevronRight,
@@ -13,6 +14,7 @@ interface Step {
     title: string;
     description: string;
     targetId?: string;
+    path: string;
     position: 'center' | 'bottom';
     color: string;
 }
@@ -21,6 +23,7 @@ const steps: Step[] = [
     {
         title: "¡Bienvenido a APEG!",
         description: "Estamos muy emocionados de tenerte en la comunidad. Permítenos guiarte por las funciones principales de tu nueva app de golf.",
+        path: "/",
         position: 'center',
         color: "#a3e635"
     },
@@ -28,6 +31,7 @@ const steps: Step[] = [
         title: "Tu Dashboard",
         description: "Aquí encontrarás tus estadísticas, hándicap y la actividad más reciente de otros golfistas. ¡Mantente conectado!",
         targetId: 'nav-inicio',
+        path: "/",
         position: 'bottom',
         color: "#3b82f6"
     },
@@ -35,6 +39,7 @@ const steps: Step[] = [
         title: "¡A Jugar!",
         description: "Este es el corazón de la app. Desde aquí podrás iniciar tus rondas, registrar cada golpe y seguir tu progreso en tiempo real.",
         targetId: 'nav-jugar',
+        path: "/select-course",
         position: 'bottom',
         color: "#a3e635"
     },
@@ -42,6 +47,7 @@ const steps: Step[] = [
         title: "Green Fees",
         description: "¿Planeando tu próxima salida? Reserva tus turnos en los mejores campos del país de forma rápida y segura.",
         targetId: 'nav-green-fee',
+        path: "/green-fee",
         position: 'bottom',
         color: "#10b981"
     },
@@ -49,6 +55,7 @@ const steps: Step[] = [
         title: "Marketplace",
         description: "Encuentra el mejor equipamiento o vende lo que ya no usas. ¡Incluso puedes negociar precios con otros usuarios!",
         targetId: 'nav-marketplace',
+        path: "/shop",
         position: 'bottom',
         color: "#ec4899"
     },
@@ -56,8 +63,25 @@ const steps: Step[] = [
         title: "Eventos y Torneos",
         description: "No te pierdas ninguna competencia. Inscríbete a los próximos torneos y consulta los resultados oficiales.",
         targetId: 'nav-eventos',
+        path: "/tournaments",
         position: 'bottom',
         color: "#f59e0b"
+    },
+    {
+        title: "Tu Perfil",
+        description: "Personaliza tu información de golfista, vincula tu código de federación y revisa tus estadísticas personales.",
+        targetId: 'nav-profile',
+        path: "/profile",
+        position: 'bottom',
+        color: "#a3e635"
+    },
+    {
+        title: "Configuración",
+        description: "Administra los ajustes de tu cuenta, notificaciones y preferencias de seguridad para una mejor experiencia.",
+        targetId: 'btn-settings',
+        path: "/profile",
+        position: 'bottom',
+        color: "#94a3b8"
     }
 ];
 
@@ -67,6 +91,7 @@ interface OnboardingTourProps {
 }
 
 export const OnboardingTour: React.FC<OnboardingTourProps> = ({ userId, onComplete }) => {
+    const navigate = useNavigate();
     const [currentStep, setCurrentStep] = useState(0);
     const [isClosing, setIsClosing] = useState(false);
     const [highlightRect, setHighlightRect] = useState<DOMRect | null>(null);
@@ -89,7 +114,9 @@ export const OnboardingTour: React.FC<OnboardingTourProps> = ({ userId, onComple
 
     const handleNext = () => {
         if (currentStep < steps.length - 1) {
-            setCurrentStep(currentStep + 1);
+            const nextStep = currentStep + 1;
+            setCurrentStep(nextStep);
+            navigate(steps[nextStep].path);
         } else {
             handleComplete();
         }
@@ -97,7 +124,9 @@ export const OnboardingTour: React.FC<OnboardingTourProps> = ({ userId, onComple
 
     const handleBack = () => {
         if (currentStep > 0) {
-            setCurrentStep(currentStep - 1);
+            const prevStep = currentStep - 1;
+            setCurrentStep(prevStep);
+            navigate(steps[prevStep].path);
         }
     };
 
@@ -131,8 +160,7 @@ export const OnboardingTour: React.FC<OnboardingTourProps> = ({ userId, onComple
                         position: 'fixed',
                         inset: 0,
                         zIndex: 9999,
-                        background: 'rgba(6, 26, 17, 0.7)',
-                        backdropFilter: 'blur(5px)',
+                        background: 'rgba(6, 26, 17, 0.4)',
                         display: 'flex',
                         flexDirection: 'column',
                         alignItems: 'center',
@@ -154,9 +182,9 @@ export const OnboardingTour: React.FC<OnboardingTourProps> = ({ userId, onComple
                             }}
                             style={{
                                 position: 'fixed',
-                                background: 'rgba(255, 255, 255, 0.1)',
+                                background: 'transparent',
                                 border: `2px solid ${step.color}`,
-                                boxShadow: `0 0 0 9999px rgba(6, 26, 17, 0.7), 0 0 20px ${step.color}`,
+                                boxShadow: `0 0 0 9999px rgba(6, 26, 17, 0.4)`,
                                 borderRadius: '16px',
                                 pointerEvents: 'none',
                                 zIndex: 10000
@@ -174,8 +202,7 @@ export const OnboardingTour: React.FC<OnboardingTourProps> = ({ userId, onComple
                         style={{
                             width: '100%',
                             maxWidth: '380px',
-                            background: 'rgba(255, 255, 255, 0.08)',
-                            backdropFilter: 'blur(20px)',
+                            background: 'rgba(15, 45, 30, 0.95)',
                             border: '1px solid rgba(255, 255, 255, 0.15)',
                             borderRadius: '32px',
                             padding: '28px',

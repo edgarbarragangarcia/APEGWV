@@ -205,18 +205,21 @@ const Navbar: React.FC = () => {
                     )}
                 </button>
 
-                <Link to="/profile" style={{
-                    marginLeft: '4px',
-                    width: '40px',
-                    height: '40px',
-                    borderRadius: '50%',
-                    overflow: 'hidden',
-                    border: '2px solid var(--secondary)',
-                    boxShadow: '0 0 15px rgba(163, 230, 53, 0.1)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                }}>
+                <Link
+                    id="nav-profile"
+                    to="/profile"
+                    style={{
+                        marginLeft: '4px',
+                        width: '40px',
+                        height: '40px',
+                        borderRadius: '50%',
+                        overflow: 'hidden',
+                        border: '2px solid var(--secondary)',
+                        boxShadow: '0 0 15px rgba(163, 230, 53, 0.1)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                    }}>
                     <img
                         src={profile?.id_photo_url || `https://ui-avatars.com/api/?name=${profile?.full_name || 'User'}&background=0E2F1F&color=A3E635`}
                         alt="Profile"
