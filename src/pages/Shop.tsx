@@ -850,34 +850,36 @@ const Shop: React.FC = () => {
                                 )}
 
                                 {/* Compact Product Header */}
-                                <div style={{ marginBottom: '6px' }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2px' }}>
+                                <div style={{ marginBottom: '10px' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                                         <span style={{
-                                            background: 'rgba(163, 230, 53, 0.1)',
+                                            background: 'rgba(163, 230, 53, 0.15)',
                                             color: 'var(--secondary)',
-                                            padding: '2px 6px',
-                                            borderRadius: '6px',
-                                            fontSize: '7px',
+                                            padding: '4px 10px',
+                                            borderRadius: '8px',
+                                            fontSize: '11px',
                                             fontWeight: '900',
-                                            textTransform: 'uppercase'
+                                            textTransform: 'uppercase',
+                                            letterSpacing: '0.05em'
                                         }}>
                                             {selectedProduct.category}
                                         </span>
                                         {selectedProduct.is_negotiable && (
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '3px', color: 'var(--secondary)' }}>
-                                                <span style={{ fontSize: '10px' }}>🤝</span>
-                                                <span style={{ fontSize: '7px', fontWeight: '900' }}>NEGOCIABLE</span>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: 'var(--secondary)' }}>
+                                                <span style={{ fontSize: '14px' }}>🤝</span>
+                                                <span style={{ fontSize: '11px', fontWeight: '900', letterSpacing: '0.05em' }}>NEGOCIABLE</span>
                                             </div>
                                         )}
                                     </div>
-                                    <h2 style={{ fontSize: '15px', fontWeight: '900', marginBottom: '2px', lineHeight: '1.1', color: 'white' }}>
+                                    <h2 style={{ fontSize: '24px', fontWeight: '900', marginBottom: '4px', lineHeight: '1.2', color: 'white', letterSpacing: '-0.02em' }}>
                                         {selectedProduct.name}
                                     </h2>
                                     <p style={{
-                                        fontSize: '17px',
-                                        fontWeight: '800',
+                                        fontSize: '28px',
+                                        fontWeight: '900',
                                         color: 'var(--secondary)',
-                                        margin: 0
+                                        margin: 0,
+                                        letterSpacing: '-0.01em'
                                     }}>
                                         $ {new Intl.NumberFormat('es-CO').format(selectedProduct.price)}
                                     </p>
@@ -885,16 +887,17 @@ const Shop: React.FC = () => {
 
                                 {/* Description - Compact 3 lines max */}
                                 {selectedProduct.description && (
-                                    <div style={{ marginBottom: '10px' }}>
+                                    <div style={{ marginBottom: '20px' }}>
                                         <p style={{
-                                            color: 'var(--text-dim)',
-                                            lineHeight: '1.3',
-                                            fontSize: '12px',
+                                            color: 'rgba(255,255,255,0.7)',
+                                            lineHeight: '1.5',
+                                            fontSize: '15px',
                                             margin: 0,
                                             display: '-webkit-box',
-                                            WebkitLineClamp: 3,
+                                            WebkitLineClamp: 4,
                                             WebkitBoxOrient: 'vertical',
-                                            overflow: 'hidden'
+                                            overflow: 'hidden',
+                                            fontWeight: '400'
                                         }}>
                                             {selectedProduct.description}
                                         </p>
@@ -921,16 +924,17 @@ const Shop: React.FC = () => {
                                                 flex: 0.8,
                                                 background: 'rgba(255,255,255,0.05)',
                                                 color: 'white',
-                                                height: '40px',
-                                                borderRadius: '10px',
+                                                height: '56px',
+                                                borderRadius: '16px',
                                                 fontWeight: '900',
-                                                fontSize: '9px',
+                                                fontSize: '12px',
                                                 display: 'flex',
                                                 alignItems: 'center',
                                                 justifyContent: 'center',
-                                                gap: '4px',
+                                                gap: '8px',
                                                 border: '1px solid rgba(255,255,255,0.1)',
-                                                textTransform: 'uppercase'
+                                                textTransform: 'uppercase',
+                                                letterSpacing: '0.05em'
                                             }}
                                         >
                                             🤝 OFERTA
@@ -947,11 +951,11 @@ const Shop: React.FC = () => {
                                         }}
                                         disabled={selectedProduct.seller_id === user?.id || selectedProduct.status === 'negotiating'}
                                         style={{
-                                            width: '40px',
-                                            height: '40px',
+                                            width: '56px',
+                                            height: '56px',
                                             background: 'rgba(255,255,255,0.05)',
                                             color: addingToCart === selectedProduct.id ? 'var(--secondary)' : 'white',
-                                            borderRadius: '10px',
+                                            borderRadius: '16px',
                                             display: 'flex',
                                             alignItems: 'center',
                                             justifyContent: 'center',
@@ -959,7 +963,7 @@ const Shop: React.FC = () => {
                                             flexShrink: 0
                                         }}
                                     >
-                                        {addingToCart === selectedProduct.id ? <CheckCircle2 size={18} /> : <Plus size={18} />}
+                                        {addingToCart === selectedProduct.id ? <CheckCircle2 size={24} /> : <Plus size={24} />}
                                     </motion.button>
 
                                     <motion.button
@@ -992,20 +996,21 @@ const Shop: React.FC = () => {
                                                 ? 'rgba(255,255,255,0.05)'
                                                 : 'linear-gradient(135deg, #bef264 0%, #a3e635 100%)',
                                             color: (selectedProduct?.seller_id === user?.id || (selectedProduct.status === 'negotiating' && selectedProduct.negotiating_buyer_id !== user?.id)) ? 'rgba(255,255,255,0.2)' : 'var(--primary)',
-                                            height: '40px',
-                                            borderRadius: '10px',
+                                            height: '56px',
+                                            borderRadius: '16px',
                                             fontWeight: '900',
-                                            fontSize: '10px',
+                                            fontSize: '14px',
                                             display: 'flex',
                                             alignItems: 'center',
                                             justifyContent: 'center',
-                                            gap: '5px',
-                                            boxShadow: (selectedProduct?.seller_id === user?.id || (selectedProduct.status === 'negotiating' && selectedProduct.negotiating_buyer_id !== user?.id)) ? 'none' : '0 4px 12px rgba(163, 230, 53, 0.3)',
+                                            gap: '10px',
+                                            boxShadow: (selectedProduct?.seller_id === user?.id || (selectedProduct.status === 'negotiating' && selectedProduct.negotiating_buyer_id !== user?.id)) ? 'none' : '0 10px 20px rgba(163, 230, 53, 0.2)',
                                             textTransform: 'uppercase',
+                                            letterSpacing: '0.05em',
                                             border: 'none'
                                         }}
                                     >
-                                        <ShoppingCart size={14} strokeWidth={3} />
+                                        <ShoppingCart size={20} strokeWidth={3} />
                                         {(selectedProduct?.seller_id === user?.id) ? 'MÍO' : (selectedProduct.status === 'negotiating' ? (selectedProduct.negotiating_buyer_id === user?.id ? 'PAGAR' : 'RESERVADO') : (buying ? '...' : 'COMPRAR'))}
                                     </motion.button>
                                 </div>
