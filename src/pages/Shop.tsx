@@ -213,7 +213,7 @@ const Shop: React.FC = () => {
                 margin: '0 auto',
                 zIndex: 900,
                 background: 'var(--primary)',
-                paddingTop: '10px',
+                paddingTop: '5px',
                 paddingBottom: '20px',
                 paddingLeft: '20px',
                 paddingRight: '20px',
@@ -223,7 +223,7 @@ const Shop: React.FC = () => {
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'flex-start',
-                    marginBottom: '15px'
+                    marginBottom: '8px'
                 }}>
                     <div>
                         <h1 style={{ fontSize: '28px', fontWeight: '900', marginBottom: '5px', color: 'white' }}>Marketplace</h1>
@@ -259,7 +259,7 @@ const Shop: React.FC = () => {
                     background: 'rgba(255,255,255,0.05)',
                     padding: '4px',
                     borderRadius: '16px',
-                    marginBottom: '15px',
+                    marginBottom: '10px',
                     gap: '4px'
                 }}>
                     <button
@@ -365,12 +365,24 @@ const Shop: React.FC = () => {
                         </div>
                     </>
                 )}
+
+                {/* Translucent fade transition at the bottom of the fixed section */}
+                <div style={{
+                    position: 'absolute',
+                    bottom: '-35px',
+                    left: '0',
+                    right: '0',
+                    height: '35px',
+                    background: 'linear-gradient(to bottom, var(--primary), transparent)',
+                    pointerEvents: 'none',
+                    zIndex: 901
+                }} />
             </div>
 
             {/* Área de Scroll */}
             <div style={{
                 position: 'absolute',
-                top: viewTab === 'marketplace' ? 'calc(env(safe-area-inset-top) + 352px)' : 'calc(env(safe-area-inset-top) + 232px)',
+                top: viewTab === 'marketplace' ? 'calc(env(safe-area-inset-top) + 307px)' : 'calc(env(safe-area-inset-top) + 217px)',
                 left: '0',
                 right: '0',
                 bottom: 'calc(var(--nav-height))',
@@ -404,7 +416,7 @@ const Shop: React.FC = () => {
                                         onClick={() => setSelectedProduct(product)}
                                         style={{
                                             overflow: 'hidden',
-                                            padding: '12px 0 16px 0',
+                                            padding: '20px 0 16px 0',
                                             height: '100%',
                                             marginBottom: 0,
                                             display: 'flex',
