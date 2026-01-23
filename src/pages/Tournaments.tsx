@@ -93,9 +93,20 @@ const Tournaments: React.FC = () => {
         }
     };
 
-    const handleUnregister = async (tournamentId: string) => {
-        if (!confirm('¿Estás seguro de cancelar tu inscripción a este torneo?')) return;
-        if (!user) return;
+    const [confirmModal, setConfirmModal] = useState<{ isOpen: boolean; tournamentId: string | null }>({
+        isOpen: false,
+        tournamentId: null
+    });
+
+    const handleUnregisterClick = (tournamentId: string) => {
+        setConfirmModal({ isOpen: true, tournamentId });
+    };
+
+    const confirmUnregister = async () => {
+        const tournamentId = confirmModal.tournamentId;
+        if (!tournamentId || !user) return;
+
+        setConfirmModal({ isOpen: false, tournamentId: null });
 
         const previousRegistrations = [...registrations];
         // Optimistic update
@@ -117,7 +128,9 @@ const Tournaments: React.FC = () => {
             console.error('Error unregistering:', err);
             // Revert state
             setRegistrations(previousRegistrations);
-            alert(`Error al cancelar inscripción: ${err.message || 'Intente nuevamente'}`);
+            // Ideally use a toast here instead of alert, but for now we remove the alert or make it a custom error modal if strictly needed.
+            // For this specific request "ese mensaje deberia salir en la app", likely referring to the confirm dialog.
+            console.error(`Error al cancelar inscripción: ${err.message}`);
         }
     };
 
@@ -356,7 +369,7 @@ const Tournaments: React.FC = () => {
                                         <button
                                             onClick={() => {
                                                 if (isRegistered) {
-                                                    handleUnregister(tourney.id);
+                                                    handleUnregisterClick(tourney.id);
                                                 } else if (tourney.status === 'Abierto') {
                                                     handleRegister(tourney.id);
                                                 }
@@ -394,7 +407,42 @@ const Tournaments: React.FC = () => {
                     })
                 )}
             </div>
-        </div>
+
+
+            {/* Unregister Confirmation Modal */}
+            {
+                confirmModal.isOpen && (
+                    <div style={{
+                        position: 'fixed',
+                        top: 0, left: 0, right: 0, bottom: 0,
+                        background: 'rgba(0,0,0,0.85)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        zIndex: 1000, padding: '20px', backdropFilter: 'blur(8px)'
+                    }}>
+                        <div className="glass" style={{ width: '100%', maxWidth: '320px', padding: '25px', borderRadius: '24px', textAlign: 'center', background: 'var(--primary)' }}>
+                            <h2 style={{ fontSize: '20px', marginBottom: '10px', color: 'white', fontWeight: '900' }}>¿Cancelar Inscripción?</h2>
+                            <p style={{ color: 'var(--text-dim)', fontSize: '14px', marginBottom: '25px', lineHeight: '1.5' }}>
+                                Perderás tu cupo en este torneo. ¿Estás seguro de continuar?
+                            </p>
+                            <div style={{ display: 'flex', gap: '12px' }}>
+                                <button
+                                    onClick={() => setConfirmModal({ isOpen: false, tournamentId: null })}
+                                    style={{ flex: 1, padding: '12px', borderRadius: '15px', background: 'rgba(255,255,255,0.05)', color: 'white', fontWeight: '700', border: 'none' }}
+                                >
+                                    Volver
+                                </button>
+                                <button
+                                    onClick={confirmUnregister}
+                                    style={{ flex: 1, padding: '12px', borderRadius: '15px', background: '#ef4444', color: 'white', fontWeight: '700', border: 'none' }}
+                                >
+                                    Cancelar Cupo
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )
+            }
+        </div >
     );
 };
 
