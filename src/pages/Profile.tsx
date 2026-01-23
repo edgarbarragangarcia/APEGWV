@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { supabase } from '../services/SupabaseManager';
 import { Settings, LogOut, Shield, CreditCard, ChevronRight, Edit2, Mail, Phone, MapPin, Store, Trophy } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import type { Database } from '../types/database.types';
 
 type Profile = Database['public']['Tables']['profiles']['Row'];
@@ -10,6 +11,7 @@ const Profile: React.FC = () => {
     const navigate = useNavigate();
     const [profile, setProfile] = useState<Profile | null>(null);
     const [loggingOut, setLoggingOut] = useState(false);
+    const [showInfo, setShowInfo] = useState(false);
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -66,49 +68,35 @@ const Profile: React.FC = () => {
         }
     };
 
-
-
-
-
     return (
         <div className="animate-fade" style={{
-            paddingBottom: 'calc(var(--nav-height) + 20px)',
-            width: '100%',
-            overflowX: 'hidden',
-            position: 'relative'
+            position: 'absolute',
+            top: 'calc(env(safe-area-inset-top) + 82px)',
+            left: '0',
+            right: '0',
+            bottom: 'var(--nav-height)',
+            overflow: 'hidden',
+            padding: '0 20px 10px 20px',
+            display: 'flex',
+            flexDirection: 'column'
         }}>
-            {/* Header Section */}
-            <div style={{ textAlign: 'center', marginBottom: '35px', position: 'relative' }}>
-                <div
-                    onClick={() => navigate('/profile/edit')}
-                    style={{
-                        position: 'absolute',
-                        top: '25px',
-                        right: '0',
-                        padding: '12px',
-                        cursor: 'pointer',
-                        color: 'var(--secondary)',
-                        background: 'rgba(163, 230, 53, 0.1)',
-                        borderRadius: '12px'
-                    }}>
-                    <Edit2 size={18} />
-                </div>
-
+            {/* Header Section - Premium & Ultra-Compact */}
+            <div style={{ textAlign: 'center', marginBottom: '20px', position: 'relative' }}>
                 <div style={{ position: 'relative', display: 'inline-block' }}>
                     <div style={{
-                        width: '110px',
-                        height: '110px',
-                        borderRadius: '35px',
-                        border: '3px solid var(--secondary)',
-                        padding: '4px',
-                        marginBottom: '15px',
+                        width: '74px',
+                        height: '74px',
+                        borderRadius: '24px',
+                        border: '2px solid var(--secondary)',
+                        padding: '3px',
+                        marginBottom: '8px',
                         background: 'linear-gradient(135deg, var(--secondary), #7cc42b)',
                         transform: 'rotate(-2deg)'
                     }}>
                         <div style={{
                             width: '100%',
                             height: '100%',
-                            borderRadius: '28px',
+                            borderRadius: '20px',
                             overflow: 'hidden',
                             transform: 'rotate(2deg)',
                             background: 'var(--primary)'
@@ -120,102 +108,115 @@ const Profile: React.FC = () => {
                             />
                         </div>
                     </div>
-                    {profile?.is_premium && (
-                        <div style={{
-                            position: 'absolute',
-                            bottom: '10px',
-                            right: '-5px',
-                            background: 'var(--accent)',
-                            color: 'var(--primary)',
-                            padding: '4px 10px',
-                            borderRadius: '10px',
-                            fontSize: '9px',
-                            fontWeight: '900',
-                            letterSpacing: '0.5px',
-                            boxShadow: '0 4px 10px rgba(0,0,0,0.3)',
-                            transform: 'rotate(5deg)'
-                        }}>
-                            PREMIUM
-                        </div>
-                    )}
                 </div>
-                <h1 style={{ fontSize: '26px', fontWeight: '900', marginBottom: '4px', letterSpacing: '-0.5px', color: 'white' }}>
-                    {(() => {
-                        const name = profile?.full_name || 'Golfista';
-                        const words = name.split(' ');
-                        if (words.length <= 1) return <span style={{ color: 'white' }}>{name}</span>;
-                        return (
-                            <>
-                                <span style={{ color: 'white' }}>{words[0]} </span>
-                                <span style={{ color: 'var(--secondary)' }}>{words[1]}</span>
-                                {words.length > 2 && <span style={{ color: 'white' }}> {words.slice(2).join(' ')}</span>}
-                            </>
-                        );
-                    })()}
-                </h1>
-                <p style={{ color: 'var(--text-dim)', fontSize: '14px', fontWeight: '500' }}>
-                    Socio APEG • Hándicap {profile?.handicap ?? '--'}
-                </p>
+
+                <div style={{ position: 'relative' }}>
+                    <h1 style={{ fontSize: '22px', fontWeight: '900', marginBottom: '2px', letterSpacing: '-0.5px', color: 'white' }}>
+                        {(() => {
+                            const name = profile?.full_name || 'Golfista';
+                            const words = name.split(' ');
+                            if (words.length <= 1) return <span style={{ color: 'white' }}>{name}</span>;
+                            return (
+                                <>
+                                    <span style={{ color: 'white' }}>{words[0]} </span>
+                                    <span style={{ color: 'var(--secondary)' }}>{words[1]}</span>
+                                </>
+                            );
+                        })()}
+                    </h1>
+                    <p style={{ color: 'var(--text-dim)', fontSize: '11px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                        ID: {profile?.federation_code || 'APEG-User'} • Hcp {profile?.handicap ?? '--'}
+                    </p>
+
+                    <button
+                        onClick={() => navigate('/profile/edit')}
+                        style={{
+                            position: 'absolute',
+                            top: '-30px',
+                            right: '-10px',
+                            padding: '8px',
+                            color: 'var(--secondary)',
+                            background: 'rgba(163, 230, 53, 0.1)',
+                            borderRadius: '10px',
+                            border: '1px solid rgba(163, 230, 53, 0.2)'
+                        }}>
+                        <Edit2 size={14} />
+                    </button>
+                </div>
             </div>
 
-
-            {/* Fixed Personal Data Card */}
-            <div className="glass" style={{ padding: '20px', marginBottom: '25px', background: 'rgba(255,255,255,0.02)' }}>
-                <h3 style={{ fontSize: '13px', fontWeight: '900', color: 'white', marginBottom: '18px', textTransform: 'uppercase', letterSpacing: '1px' }}>
-                    Información <span style={{ color: 'var(--secondary)' }}>de</span> la Cuenta
-                </h3>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                        <div style={{ background: 'rgba(163, 230, 53, 0.1)', padding: '8px', borderRadius: '10px' }}>
-                            <Shield size={18} color="var(--secondary)" />
+            {/* Collapsible Account Info */}
+            <div style={{ marginBottom: '12px' }}>
+                <button
+                    onClick={() => setShowInfo(!showInfo)}
+                    className="glass"
+                    style={{
+                        width: '100%',
+                        padding: '12px 18px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        background: 'rgba(255,255,255,0.03)',
+                        borderRadius: '16px',
+                        border: '1px solid rgba(255,255,255,0.05)'
+                    }}
+                >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <div style={{ background: 'var(--secondary)', padding: '6px', borderRadius: '8px', color: 'var(--primary)' }}>
+                            <Shield size={14} strokeWidth={3} />
                         </div>
-                        <div style={{ flex: 1 }}>
-                            <p style={{ fontSize: '11px', color: 'var(--text-dim)', fontWeight: '600' }}>FEDERACIÓN</p>
-                            <p style={{ fontSize: '14px', fontWeight: '500' }}>{profile?.federation_code || 'No vinculado'}</p>
-                        </div>
+                        <span style={{ fontSize: '13px', fontWeight: '800', color: 'white' }}>Información de la Cuenta</span>
                     </div>
+                    <ChevronRight
+                        size={16}
+                        color="var(--secondary)"
+                        style={{ transform: showInfo ? 'rotate(90deg)' : 'none', transition: 'transform 0.3s ease' }}
+                    />
+                </button>
 
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                        <div style={{ background: 'rgba(163, 230, 53, 0.1)', padding: '8px', borderRadius: '10px' }}>
-                            <Mail size={18} color="var(--secondary)" />
+                {showInfo && (
+                    <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        style={{ overflow: 'hidden' }}
+                    >
+                        <div style={{
+                            marginTop: '8px',
+                            padding: '12px',
+                            background: 'rgba(0,0,0,0.2)',
+                            borderRadius: '12px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '10px',
+                            border: '1px solid rgba(255,255,255,0.03)'
+                        }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <Mail size={12} color="var(--text-dim)" />
+                                <span style={{ fontSize: '11px', color: 'white' }}>{profile?.email}</span>
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <Phone size={12} color="var(--text-dim)" />
+                                <span style={{ fontSize: '11px', color: 'white' }}>{profile?.phone || 'No configurado'}</span>
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <MapPin size={12} color="var(--text-dim)" />
+                                <span style={{ fontSize: '11px', color: 'white', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                    {profile?.address || 'No configurada'}
+                                </span>
+                            </div>
                         </div>
-                        <div style={{ flex: 1 }}>
-                            <p style={{ fontSize: '11px', color: 'var(--text-dim)', fontWeight: '600' }}>CORREO ELECTRÓNICO</p>
-                            <p style={{ fontSize: '14px', fontWeight: '500' }}>{profile?.email || 'No configurado'}</p>
-                        </div>
-                    </div>
-
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                        <div style={{ background: 'rgba(163, 230, 53, 0.1)', padding: '8px', borderRadius: '10px' }}>
-                            <Phone size={18} color="var(--secondary)" />
-                        </div>
-                        <div style={{ flex: 1 }}>
-                            <p style={{ fontSize: '11px', color: 'var(--text-dim)', fontWeight: '600' }}>TELÉFONO</p>
-                            <p style={{ fontSize: '14px', fontWeight: '500' }}>{profile?.phone || 'No configurado'}</p>
-                        </div>
-                    </div>
-
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                        <div style={{ background: 'rgba(163, 230, 53, 0.1)', padding: '8px', borderRadius: '10px' }}>
-                            <MapPin size={18} color="var(--secondary)" />
-                        </div>
-                        <div style={{ flex: 1 }}>
-                            <p style={{ fontSize: '11px', color: 'var(--text-dim)', fontWeight: '600' }}>DIRECCIÓN</p>
-                            <p style={{ fontSize: '14px', fontWeight: '500' }}>{profile?.address || 'No configurada'}</p>
-                        </div>
-                    </div>
-                </div>
+                    </motion.div>
+                )}
             </div>
 
             {/* Interactive Settings and Actions */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', flex: 1 }}>
                 <button
                     id="btn-settings"
                     onClick={() => navigate('/settings')}
                     className="glass"
                     style={{
-                        padding: '16px 20px',
+                        padding: '12px 18px',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'space-between',
@@ -223,58 +224,18 @@ const Profile: React.FC = () => {
                         background: 'rgba(255,255,255,0.05)',
                         border: '1px solid rgba(255,255,255,0.1)'
                     }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                        <Settings size={20} color="var(--secondary)" />
-                        <span style={{ fontWeight: '600', fontSize: '14px' }}>Configuración del Sistema</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <Settings size={18} color="var(--secondary)" />
+                        <span style={{ fontWeight: '600', fontSize: '13px' }}>Configuración del Sistema</span>
                     </div>
-                    <ChevronRight size={18} color="var(--text-dim)" />
+                    <ChevronRight size={16} color="var(--text-dim)" />
                 </button>
 
                 <button
                     onClick={() => navigate('/my-store')}
                     className="glass"
                     style={{
-                        padding: '16px 20px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        width: '100%',
-                        background: 'rgba(255,255,255,0.05)',
-                        border: '1px solid rgba(255,255,255,0.1)',
-                        marginBottom: '4px'
-                    }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                        <Store size={20} color="var(--secondary)" />
-                        <span style={{ fontWeight: '600', fontSize: '14px' }}>Mi Marketplace APEG</span>
-                    </div>
-                    <ChevronRight size={18} color="var(--text-dim)" />
-                </button>
-
-                <button
-                    onClick={() => navigate('/my-events')}
-                    className="glass"
-                    style={{
-                        padding: '16px 20px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        width: '100%',
-                        background: 'rgba(255,255,255,0.05)',
-                        border: '1px solid rgba(255,255,255,0.1)',
-                        marginBottom: '4px'
-                    }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                        <Trophy size={20} color="var(--secondary)" />
-                        <span style={{ fontWeight: '600', fontSize: '14px' }}>Mis Eventos Organizados</span>
-                    </div>
-                    <ChevronRight size={18} color="var(--text-dim)" />
-                </button>
-
-                <button
-                    onClick={() => navigate('/payment-methods')}
-                    className="glass"
-                    style={{
-                        padding: '16px 20px',
+                        padding: '12px 18px',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'space-between',
@@ -282,38 +243,80 @@ const Profile: React.FC = () => {
                         background: 'rgba(255,255,255,0.05)',
                         border: '1px solid rgba(255,255,255,0.1)'
                     }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                        <CreditCard size={20} color="var(--secondary)" />
-                        <span style={{ fontWeight: '600', fontSize: '14px' }}>Métodos de Pago</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <Store size={18} color="var(--secondary)" />
+                        <span style={{ fontWeight: '600', fontSize: '13px' }}>Mi Marketplace APEG</span>
                     </div>
-                    <ChevronRight size={18} color="var(--text-dim)" />
+                    <ChevronRight size={16} color="var(--text-dim)" />
                 </button>
 
                 <button
-                    onClick={handleLogout}
-                    disabled={loggingOut}
+                    onClick={() => navigate('/my-events')}
                     className="glass"
                     style={{
-                        padding: '18px 20px',
+                        padding: '12px 18px',
                         display: 'flex',
                         alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '12px',
-                        color: '#ff6b6b',
-                        marginTop: '15px',
+                        justifyContent: 'space-between',
                         width: '100%',
-                        border: '1px solid rgba(255, 107, 107, 0.2)',
-                        background: 'rgba(255, 107, 107, 0.05)',
-                        fontWeight: '800',
-                        fontSize: '14px',
-                        cursor: loggingOut ? 'not-allowed' : 'pointer',
-                        opacity: loggingOut ? 0.7 : 1,
-                        touchAction: 'manipulation'
-                    }}
-                >
-                    <LogOut size={20} />
-                    <span>{loggingOut ? 'Cerrando...' : 'Cerrar Sesión'}</span>
+                        background: 'rgba(255,255,255,0.05)',
+                        border: '1px solid rgba(255,255,255,0.1)'
+                    }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <Trophy size={18} color="var(--secondary)" />
+                        <span style={{ fontWeight: '600', fontSize: '13px' }}>Mis Eventos Organizados</span>
+                    </div>
+                    <ChevronRight size={16} color="var(--text-dim)" />
                 </button>
+
+                <button
+                    onClick={() => navigate('/payment-methods')}
+                    className="glass"
+                    style={{
+                        padding: '12px 18px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        width: '100%',
+                        background: 'rgba(255,255,255,0.05)',
+                        border: '1px solid rgba(255,255,255,0.1)'
+                    }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <CreditCard size={18} color="var(--secondary)" />
+                        <span style={{ fontWeight: '600', fontSize: '13px' }}>Métodos de Pago</span>
+                    </div>
+                    <ChevronRight size={16} color="var(--text-dim)" />
+                </button>
+
+                {/* Logout - Pushed to absolute bottom */}
+                <div style={{ marginTop: 'auto', paddingBottom: '10px' }}>
+                    <button
+                        onClick={handleLogout}
+                        disabled={loggingOut}
+                        className="glass"
+                        style={{
+                            padding: '16px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '12px',
+                            color: '#ff6b6b',
+                            width: '100%',
+                            border: '1px solid rgba(255, 107, 107, 0.2)',
+                            background: 'rgba(255, 107, 107, 0.05)',
+                            borderRadius: '16px',
+                            fontWeight: '900',
+                            fontSize: '13px',
+                            cursor: loggingOut ? 'not-allowed' : 'pointer',
+                            opacity: loggingOut ? 0.7 : 1,
+                            textTransform: 'uppercase',
+                            letterSpacing: '1px'
+                        }}
+                    >
+                        <LogOut size={18} strokeWidth={3} />
+                        <span>{loggingOut ? 'Saliendo...' : 'Cerrar Sesión'}</span>
+                    </button>
+                </div>
             </div>
         </div>
     );

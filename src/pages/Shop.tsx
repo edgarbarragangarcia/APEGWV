@@ -781,15 +781,16 @@ const Shop: React.FC = () => {
                                 <button
                                     onClick={() => setSelectedProduct(null)}
                                     style={{
-                                        position: 'fixed',
-                                        top: 'calc(env(safe-area-inset-top) + 20px)',
-                                        left: '20px',
+                                        position: 'absolute',
+                                        top: '25px',
+                                        left: '50%',
+                                        transform: 'translateX(-50%)',
                                         background: 'rgba(0,0,0,0.5)',
                                         backdropFilter: 'blur(10px)',
                                         border: '1px solid rgba(255,255,255,0.2)',
-                                        width: '45px',
-                                        height: '45px',
-                                        borderRadius: '14px',
+                                        width: '50px',
+                                        height: '50px',
+                                        borderRadius: '16px',
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
@@ -799,7 +800,7 @@ const Shop: React.FC = () => {
                                         boxShadow: '0 4px 15px rgba(0,0,0,0.3)'
                                     }}
                                 >
-                                    <ArrowLeft size={24} strokeWidth={3} />
+                                    <ArrowLeft size={26} strokeWidth={3} />
                                 </button>
                             </div>
 
