@@ -36,6 +36,7 @@ const BottomNav: React.FC = () => {
                 <NavLink
                     key={item.path}
                     to={item.path}
+                    id={`nav-${item.label.toLowerCase().replace(' ', '-')}`}
                     style={({ isActive }) => ({
                         display: 'flex',
                         flexDirection: 'column',

@@ -2,6 +2,8 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import BottomNav from './components/BottomNav';
+import { OnboardingTour } from './components/OnboardingTour';
+import { supabase } from './services/SupabaseManager';
 
 import './index.css';
 
@@ -33,6 +35,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 const AppContent: React.FC = () => {
   const { session, loading } = useAuth();
   const location = useLocation();
+  const [showOnboarding, setShowOnboarding] = React.useState(true);
 
   React.useEffect(() => {
     // Intentar bloquear la orientación
@@ -47,6 +50,29 @@ const AppContent: React.FC = () => {
     };
     lockOrientation();
   }, []);
+
+  React.useEffect(() => {
+    if (session) {
+      const checkOnboarding = async () => {
+        try {
+          const { data } = await supabase
+            .from('profiles')
+            .select('has_completed_onboarding')
+            .eq('id', session.user.id)
+            .maybeSingle();
+
+          if (data && data.has_completed_onboarding === false) {
+            setShowOnboarding(true);
+          }
+        } catch (err) {
+          console.error('Error checking onboarding status:', err);
+        }
+      };
+      checkOnboarding();
+    } else {
+      setShowOnboarding(false);
+    }
+  }, [session]);
 
   if (loading) {
     return <div style={{ background: '#0e2f1f', height: '100vh', width: '100%' }} />;
@@ -109,6 +135,13 @@ const AppContent: React.FC = () => {
       </main>
 
       {session && <BottomNav />}
+
+      {showOnboarding && session && (
+        <OnboardingTour
+          userId={session.user.id}
+          onComplete={() => setShowOnboarding(false)}
+        />
+      )}
     </div>
   );
 };

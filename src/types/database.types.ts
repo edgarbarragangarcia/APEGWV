@@ -473,6 +473,7 @@ export type Database = {
                     putts_avg: number | null
                     total_rounds: number | null
                     updated_at: string | null
+                    has_completed_onboarding: boolean | null
                 }
                 Insert: {
                     address?: string | null
@@ -490,6 +491,7 @@ export type Database = {
                     putts_avg?: number | null
                     total_rounds?: number | null
                     updated_at?: string | null
+                    has_completed_onboarding?: boolean | null
                 }
                 Update: {
                     address?: string | null
@@ -507,6 +509,7 @@ export type Database = {
                     putts_avg?: number | null
                     total_rounds?: number | null
                     updated_at?: string | null
+                    has_completed_onboarding?: boolean | null
                 }
                 Relationships: []
             }
