@@ -161,20 +161,7 @@ const CouponManager: React.FC = () => {
                 {!showForm && (
                     <button
                         onClick={() => setShowForm(true)}
-                        style={{
-                            background: 'var(--secondary)',
-                            color: 'var(--primary)',
-                            padding: '12px',
-                            borderRadius: '15px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            gap: '8px',
-                            fontWeight: '700',
-                            fontSize: '14px',
-                            width: '100%',
-                            flexShrink: 0
-                        }}
+                        className="btn-primary"
                     >
                         <Plus size={18} />
                         <span>Crear Nuevo Cupón</span>
@@ -247,18 +234,8 @@ const CouponManager: React.FC = () => {
                         <button
                             type="submit"
                             disabled={saving}
-                            style={{
-                                marginTop: '10px',
-                                background: saving ? 'rgba(163, 230, 53, 0.3)' : 'var(--secondary)',
-                                color: 'var(--primary)',
-                                padding: '15px',
-                                borderRadius: '15px',
-                                fontWeight: '800',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                gap: '10px'
-                            }}
+                            className={saving ? 'btn-disabled' : 'btn-primary'}
+                            style={{ marginTop: '10px' }}
                         >
                             {saving ? <Loader2 className="animate-spin" size={20} /> : <CheckCircle2 size={20} />}
                             {saving ? 'Guardando...' : 'Crear Cupón'}

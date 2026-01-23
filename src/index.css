@@ -122,6 +122,53 @@ button {
   display: none;
 }
 
+/* Global Button Styles */
+.btn-primary {
+  background: linear-gradient(135deg, var(--secondary) 0%, #10b981 100%);
+  color: var(--primary);
+  padding: 16px;
+  border-radius: 20px;
+  font-weight: 900;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(163, 230, 53, 0.2);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  width: 100%;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 25px rgba(163, 230, 53, 0.3);
+  filter: brightness(1.05);
+}
+
+.btn-primary:active {
+  transform: translateY(1px);
+  box-shadow: 0 4px 10px rgba(163, 230, 53, 0.2);
+}
+
+.btn-disabled {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-dim);
+  padding: 16px;
+  border-radius: 20px;
+  font-weight: 900;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border: none;
+  cursor: default;
+  box-shadow: none;
+  width: 100%;
+}
+
 * {
   -ms-overflow-style: none;
   /* IE and Edge */

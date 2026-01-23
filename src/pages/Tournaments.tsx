@@ -323,23 +323,8 @@ const Tournaments: React.FC = () => {
                                         <button
                                             onClick={() => !isRegistered && tourney.status === 'Abierto' && handleRegister(tourney.id)}
                                             disabled={isRegistered || tourney.status !== 'Abierto'}
-                                            style={{
-                                                width: '100%',
-                                                background: (isRegistered || tourney.status !== 'Abierto') ? 'rgba(255,255,255,0.05)' : 'linear-gradient(135deg, var(--secondary) 0%, #10b981 100%)',
-                                                color: (isRegistered || tourney.status !== 'Abierto') ? 'var(--text-dim)' : 'var(--primary)',
-                                                padding: '16px',
-                                                borderRadius: '20px',
-                                                fontWeight: '900',
-                                                fontSize: '14px',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                gap: '10px',
-                                                border: 'none',
-                                                cursor: (isRegistered || tourney.status !== 'Abierto') ? 'default' : 'pointer',
-                                                boxShadow: (isRegistered || tourney.status !== 'Abierto') ? 'none' : '0 8px 20px rgba(163, 230, 53, 0.2)',
-                                                transition: 'all 0.3s ease'
-                                            }}>
+                                            className={(isRegistered || tourney.status !== 'Abierto') ? 'btn-disabled' : 'btn-primary'}
+                                        >
                                             {isRegistered ? (
                                                 <><Trophy size={18} /> ESTÁS INSCRITO</>
                                             ) : tourney.status === 'Abierto' ? (

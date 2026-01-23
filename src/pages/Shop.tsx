@@ -991,24 +991,16 @@ const Shop: React.FC = () => {
                                             }
                                         }}
                                         disabled={buying || (selectedProduct?.seller_id === user?.id) || (selectedProduct.status === 'negotiating' && selectedProduct.negotiating_buyer_id !== user?.id)}
+                                        className={(buying || (selectedProduct?.seller_id === user?.id) || (selectedProduct.status === 'negotiating' && selectedProduct.negotiating_buyer_id !== user?.id)) ? 'btn-disabled' : 'btn-primary'}
                                         style={{
                                             flex: 2,
-                                            background: (selectedProduct?.seller_id === user?.id || (selectedProduct.status === 'negotiating' && selectedProduct.negotiating_buyer_id !== user?.id))
-                                                ? 'rgba(255,255,255,0.05)'
-                                                : 'linear-gradient(135deg, #bef264 0%, #a3e635 100%)',
-                                            color: (selectedProduct?.seller_id === user?.id || (selectedProduct.status === 'negotiating' && selectedProduct.negotiating_buyer_id !== user?.id)) ? 'rgba(255,255,255,0.2)' : 'var(--primary)',
-                                            height: '56px',
-                                            borderRadius: '16px',
-                                            fontWeight: '900',
-                                            fontSize: '14px',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            gap: '10px',
-                                            boxShadow: (selectedProduct?.seller_id === user?.id || (selectedProduct.status === 'negotiating' && selectedProduct.negotiating_buyer_id !== user?.id)) ? 'none' : '0 10px 20px rgba(163, 230, 53, 0.2)',
+                                            // Overriding just flex since class handles the rest, but need to be careful with layout.
+                                            // The class has width: 100%. If I want flex: 2 in a flex container, I should keep it.
+                                            // But width: 100% in class might conflict with flex basis.
+                                            // Usually flex item ignores width if flex-grow/shrink is set, but better reset width.
+                                            width: 'auto',
                                             textTransform: 'uppercase',
-                                            letterSpacing: '0.05em',
-                                            border: 'none'
+                                            letterSpacing: '0.05em'
                                         }}
                                     >
                                         <ShoppingCart size={20} strokeWidth={3} />
@@ -1200,19 +1192,10 @@ const Shop: React.FC = () => {
                                                     setSendingOffer(false);
                                                 }
                                             }}
+                                            className="btn-primary"
                                             style={{
                                                 flex: 2,
-                                                padding: '18px',
-                                                borderRadius: '20px',
-                                                background: 'var(--secondary)',
-                                                color: 'var(--primary)',
-                                                fontWeight: '900',
-                                                fontSize: '14px',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                gap: '8px',
-                                                boxShadow: '0 8px 25px rgba(163, 230, 53, 0.4)'
+                                                width: 'auto'
                                             }}
                                         >
                                             {sendingOffer ? <Loader2 size={20} className="animate-spin" /> : <CheckCircle2 size={20} />}
@@ -1243,8 +1226,9 @@ const Shop: React.FC = () => {
                             )}
                         </motion.div>
                     </div>
-                )}
-            </AnimatePresence>
+                )
+                }
+            </AnimatePresence >
         </div >
     );
 };

@@ -307,21 +307,19 @@ const Auth: React.FC = () => {
                                     whileHover={{ scale: 1.02 }}
                                     whileTap={{ scale: 0.98 }}
                                     disabled={loading}
+                                    className="btn-primary"
                                     style={{
-                                        width: '100%',
-                                        padding: '12px',
-                                        background: 'linear-gradient(135deg, var(--secondary) 0%, #65a30d 100%)',
-                                        color: '#0f3923',
-                                        borderRadius: '12px',
-                                        border: 'none',
-                                        fontSize: '14px',
-                                        fontWeight: '700',
-                                        cursor: 'pointer',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        gap: '8px',
-                                        boxShadow: '0 4px 15px rgba(163, 230, 53, 0.3)'
+                                        color: '#0f3923', // Keep the dark text color for this specific button as it was part of the original design on top of the gradient? Or should I strictly follow the new class which has primary text color? 
+                                        // The new class has `color: var(--primary)` which is dark green #0E2F1F.
+                                        // The original design had `#0f3923`. It's very similar.
+                                        // The new class is: color: var(--primary);
+                                        // Let's use the class fully.
+                                        // However, motion.button might need explicit styled props if I want to override or just className.
+                                        // Since I'm using className, I should remove the style prop EXCEPT for what's not in the class.
+                                        // But wait, the previous style had specific shadows.
+                                        // The class has shadows.
+                                        // I will remove the entire style prop and rely on the class.
+                                        // EXCEPT, wait. motion components accept style.
                                     }}
                                 >
                                     {loading ? <Loader2 className="animate-spin" size={18} /> : (

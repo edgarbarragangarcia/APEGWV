@@ -215,20 +215,12 @@ const CourseSelection: React.FC = () => {
                                                 <button
                                                     key={r}
                                                     onClick={() => handleSelectCourse(course, r)}
+                                                    className="btn-primary"
                                                     style={{
                                                         flex: 1,
-                                                        background: 'var(--secondary)',
-                                                        color: 'var(--primary)',
+                                                        width: 'auto',
                                                         padding: '12px',
-                                                        borderRadius: '12px',
-                                                        fontSize: '13px',
-                                                        fontWeight: '700',
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        justifyContent: 'center',
-                                                        gap: '8px',
-                                                        border: 'none',
-                                                        cursor: 'pointer'
+                                                        fontSize: '13px'
                                                     }}
                                                 >
                                                     {r} <ChevronRight size={14} />
@@ -239,18 +231,8 @@ const CourseSelection: React.FC = () => {
                                 ) : (
                                     <button
                                         onClick={() => handleSelectCourse(course)}
-                                        style={{
-                                            width: '100%',
-                                            background: 'var(--secondary)',
-                                            color: 'var(--primary)',
-                                            padding: '14px',
-                                            borderRadius: '12px',
-                                            fontWeight: '700',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            gap: '10px'
-                                        }}
+                                        className="btn-primary"
+                                        style={{ width: '100%', padding: '14px' }}
                                     >
                                         <Navigation size={18} fill="currentColor" /> Comenzar Partida
                                     </button>

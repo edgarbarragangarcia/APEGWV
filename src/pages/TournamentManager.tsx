@@ -327,7 +327,8 @@ const TournamentManager: React.FC = () => {
                     </p>
                     <button
                         onClick={() => navigate('/profile')}
-                        style={{ background: 'var(--accent)', color: 'var(--primary)', padding: '12px 25px', borderRadius: '15px', fontWeight: '800' }}
+                        className="btn-primary"
+                        style={{ width: 'auto', display: 'inline-flex' }}
                     >
                         MEJORAR A PREMIUM
                     </button>
@@ -383,20 +384,7 @@ const TournamentManager: React.FC = () => {
                 {!showForm && (
                     <button
                         onClick={() => setShowForm(true)}
-                        style={{
-                            background: 'var(--secondary)',
-                            color: 'var(--primary)',
-                            padding: '12px',
-                            borderRadius: '15px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            gap: '8px',
-                            fontWeight: '700',
-                            fontSize: '14px',
-                            width: '100%',
-                            flexShrink: 0
-                        }}
+                        className="btn-primary"
                     >
                         <Plus size={18} />
                         <span>Organizar Nuevo Torneo</span>
@@ -585,19 +573,8 @@ const TournamentManager: React.FC = () => {
                             <button
                                 type="submit"
                                 disabled={saving}
-                                style={{
-                                    width: '100%',
-                                    background: saving ? 'rgba(163, 230, 53, 0.3)' : 'var(--secondary)',
-                                    color: 'var(--primary)',
-                                    padding: '15px',
-                                    borderRadius: '15px',
-                                    fontWeight: '800',
-                                    marginTop: '10px',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    gap: '10px'
-                                }}
+                                className={saving ? 'btn-disabled' : 'btn-primary'}
+                                style={{ marginTop: '10px' }}
                             >
                                 {saving ? <Loader2 className="animate-spin" size={20} /> : <CheckCircle2 size={20} />}
                                 {saving ? 'GUARDANDO...' : 'PUBLICAR TORNEO'}
