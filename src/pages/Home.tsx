@@ -111,9 +111,9 @@ const Home: React.FC = () => {
                 right: '20px',
                 zIndex: 900,
                 background: 'var(--primary)',
-                paddingBottom: '10px'
+                paddingBottom: '5px'
             }}>
-                <header style={{ marginBottom: '20px' }}>
+                <header style={{ marginBottom: '8px' }}>
                     <h1 style={{ fontSize: '26px', fontWeight: '900', marginBottom: '2px', color: 'white' }}>
                         Hola, <span style={{ color: 'var(--secondary)' }}>{profile?.full_name?.split(' ')[0] || 'Golfista'}</span>
                     </h1>
@@ -152,15 +152,27 @@ const Home: React.FC = () => {
                         </div>
                     </Card>
                 </div>
+
+                {/* Translucent fade effect at the bottom of the fixed section */}
+                <div style={{
+                    position: 'absolute',
+                    bottom: '-35px',
+                    left: '-20px',
+                    right: '-20px',
+                    height: '35px',
+                    background: 'linear-gradient(to bottom, var(--primary), transparent)',
+                    pointerEvents: 'none',
+                    zIndex: 901
+                }} />
             </div>
 
             {/* Area de Scroll para el resto del contenido */}
             <div style={{
                 position: 'absolute',
-                top: 'calc(env(safe-area-inset-top) + 295px)',
+                top: 'calc(env(safe-area-inset-top) + 270px)',
                 left: '0',
                 right: '0',
-                bottom: 'calc(var(--nav-height) + 10px)',
+                bottom: 'calc(var(--nav-height) + 5px)',
                 overflowY: 'auto',
                 padding: '0 20px 20px 20px',
                 overflowX: 'hidden'
