@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Calendar, Users, MapPin, Search, UserPlus, Trophy, X } from 'lucide-react';
+import { Calendar, Users, MapPin, Search, UserPlus, Trophy, X, Gift } from 'lucide-react';
 import Card from '../components/Card';
 import { supabase } from '../services/SupabaseManager';
 import Skeleton from '../components/Skeleton';
@@ -92,6 +92,35 @@ const Tournaments: React.FC = () => {
             alert('Error al inscribirse');
         }
     };
+
+    const handleUnregister = async (tournamentId: string) => {
+        if (!confirm('¿Estás seguro de cancelar tu inscripción a este torneo?')) return;
+
+        const previousRegistrations = [...registrations];
+        setRegistrations(prev => prev.filter(id => id !== tournamentId));
+        if (navigator.vibrate) navigator.vibrate(50);
+
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) return;
+
+            const { error } = await supabase
+                .from('tournament_registrations')
+                .delete()
+                .eq('tournament_id', tournamentId)
+                .eq('user_id', session.user.id);
+
+            if (error) throw error;
+        } catch (err) {
+            console.error('Error unregistering:', err);
+            setRegistrations(previousRegistrations);
+            alert('Error al cancelar inscripción');
+        }
+    };
+
+
+
+
 
     const filteredTournaments = tournaments.filter(t => {
         const matchesSearch = t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -307,7 +336,8 @@ const Tournaments: React.FC = () => {
                                                         </>
                                                     ) : (
                                                         <>
-                                                            <Users size={15} color="var(--text-dim)" /> {tourney.current_participants}/{tourney.participants_limit} participantes
+                                                            <Gift size={15} color="var(--secondary)" />
+                                                            {tourney.description ? (tourney.description.length > 30 ? tourney.description.substring(0, 30) + '...' : tourney.description) : 'Premios y Sorpresas'}
                                                         </>
                                                     )}
                                                 </div>
@@ -321,12 +351,33 @@ const Tournaments: React.FC = () => {
                                         </div>
 
                                         <button
-                                            onClick={() => !isRegistered && tourney.status === 'Abierto' && handleRegister(tourney.id)}
-                                            disabled={isRegistered || tourney.status !== 'Abierto'}
-                                            className={(isRegistered || tourney.status !== 'Abierto') ? 'btn-disabled' : 'btn-primary'}
+                                            onClick={() => {
+                                                if (isRegistered) {
+                                                    handleUnregister(tourney.id);
+                                                } else if (tourney.status === 'Abierto') {
+                                                    handleRegister(tourney.id);
+                                                }
+                                            }}
+                                            disabled={!isRegistered && tourney.status !== 'Abierto'}
+                                            className={isRegistered ? '' : (tourney.status !== 'Abierto' ? 'btn-disabled' : 'btn-primary')}
+                                            style={isRegistered ? {
+                                                width: '100%',
+                                                background: 'rgba(239, 68, 68, 0.1)',
+                                                color: '#ef4444',
+                                                border: '1px solid rgba(239, 68, 68, 0.2)',
+                                                padding: '16px',
+                                                borderRadius: '20px',
+                                                fontWeight: '900',
+                                                fontSize: '14px',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                gap: '10px',
+                                                cursor: 'pointer'
+                                            } : {}}
                                         >
                                             {isRegistered ? (
-                                                <><Trophy size={18} /> ESTÁS INSCRITO</>
+                                                <><X size={18} /> CANCELAR INSCRIPCIÓN</>
                                             ) : tourney.status === 'Abierto' ? (
                                                 <><UserPlus size={18} /> INSCRIBIRME AHORA</>
                                             ) : (
