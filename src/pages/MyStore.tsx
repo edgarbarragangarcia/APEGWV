@@ -5,7 +5,7 @@ import { supabase, optimizeImage } from '../services/SupabaseManager';
 import {
     Plus, Package, Trash2,
     Camera, Loader2, CheckCircle2, X, Store, Pencil, Landmark,
-    Truck, TrendingDown, Calendar, User, Phone, MapPin, Handshake, Info, Settings
+    Truck, TrendingDown, Calendar, User, Phone, MapPin, Handshake, Info, Settings, Ticket, Percent
 } from 'lucide-react';
 import TrackingScanner from '../components/TrackingScanner';
 import Card from '../components/Card';
@@ -25,8 +25,7 @@ type Offer = Pick<Database['public']['Tables']['offers']['Row'], 'id' | 'created
     product: { id: string; name: string; image_url: string | null; price: number } | null;
     buyer: { full_name: string | null } | null;
 };
-
-
+type Coupon = Database['public']['Tables']['coupons']['Row'];
 
 
 const MyStore: React.FC = () => {
@@ -48,6 +47,17 @@ const MyStore: React.FC = () => {
     const [showScanner, setShowScanner] = useState(false);
     const [scanningOrderId, setScanningOrderId] = useState<string | null>(null);
     const [offers, setOffers] = useState<Offer[]>([]);
+    const [coupons, setCoupons] = useState<Coupon[]>([]);
+    const [showCouponForm, setShowCouponForm] = useState(false);
+    const [editingCouponId, setEditingCouponId] = useState<string | null>(null);
+    const [couponFormData, setCouponFormData] = useState({
+        code: '',
+        discount_type: 'percentage' as 'percentage' | 'fixed',
+        discount_value: '',
+        usage_limit: '',
+        min_purchase_amount: '',
+        is_active: true
+    });
 
     const [updatingOrder, setUpdatingOrder] = useState<string | null>(null);
     const [isEditingProfile, setIsEditingProfile] = useState(false);
@@ -57,7 +67,7 @@ const MyStore: React.FC = () => {
     const [selectedOfferForCounter, setSelectedOfferForCounter] = useState<Offer | null>(null);
     const [counterAmount, setCounterAmount] = useState('');
     const [counterMessage, setCounterMessage] = useState('');
-    const [activeTab, setActiveTab] = useState<'products' | 'orders' | 'offers' | 'profile'>('products');
+    const [activeTab, setActiveTab] = useState<'products' | 'orders' | 'offers' | 'coupons' | 'profile'>('products');
 
 
     // Form State
@@ -188,8 +198,20 @@ const MyStore: React.FC = () => {
         }
     };
 
+    const fetchCoupons = async (userId: string) => {
+        try {
+            const { data, error } = await supabase
+                .from('coupons')
+                .select('*')
+                .eq('seller_id', userId)
+                .order('created_at', { ascending: false });
 
-
+            if (error) throw error;
+            setCoupons(data || []);
+        } catch (err) {
+            console.error('Error fetching coupons:', err);
+        }
+    };
     const fetchStoreData = async () => {
         if (!user) return;
 
@@ -218,6 +240,7 @@ const MyStore: React.FC = () => {
                 // Fetch Orders and Offers initial data
                 fetchOrders(user.id);
                 fetchOffers(user.id);
+                fetchCoupons(user.id);
             }
         } catch (err) {
             console.error('Error fetching store data:', err);
@@ -262,9 +285,19 @@ const MyStore: React.FC = () => {
                         event: '*',
                         schema: 'public',
                         table: 'offers',
-                        filter: `seller_id = eq.${user.id} `
+                        filter: `seller_id=eq.${user.id}`
                     },
                     () => fetchOffers(user.id)
+                )
+                .on(
+                    'postgres_changes',
+                    {
+                        event: '*',
+                        schema: 'public',
+                        table: 'coupons',
+                        filter: `seller_id=eq.${user.id}`
+                    },
+                    () => fetchCoupons(user.id)
                 )
                 .subscribe();
 
@@ -588,6 +621,82 @@ const MyStore: React.FC = () => {
             setUpdatingOffer(null);
         }
     };
+    const handleCouponSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!user) return;
+        setSaving(true);
+
+        try {
+            const dataToSave = {
+                code: couponFormData.code.toUpperCase(),
+                discount_type: couponFormData.discount_type,
+                discount_value: parseFloat(couponFormData.discount_value),
+                usage_limit: couponFormData.usage_limit ? parseInt(couponFormData.usage_limit) : null,
+                min_purchase_amount: couponFormData.min_purchase_amount ? parseFloat(couponFormData.min_purchase_amount) : 0,
+                is_active: couponFormData.is_active,
+                seller_id: user.id
+            };
+
+            let error;
+            if (editingCouponId) {
+                const { error: err } = await supabase
+                    .from('coupons')
+                    .update(dataToSave)
+                    .eq('id', editingCouponId);
+                error = err;
+            } else {
+                const { error: err } = await supabase
+                    .from('coupons')
+                    .insert([dataToSave]);
+                error = err;
+            }
+
+            if (error) throw error;
+
+            setShowCouponForm(false);
+            setEditingCouponId(null);
+            setCouponFormData({
+                code: '',
+                discount_type: 'percentage',
+                discount_value: '',
+                usage_limit: '',
+                min_purchase_amount: '',
+                is_active: true
+            });
+            fetchCoupons(user.id);
+            if (navigator.vibrate) navigator.vibrate(50);
+        } catch (err) {
+            console.error('Error saving coupon:', err);
+            alert('Error al guardar cupón');
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleEditCoupon = (coupon: Coupon) => {
+        setEditingCouponId(coupon.id);
+        setCouponFormData({
+            code: coupon.code,
+            discount_type: coupon.discount_type as 'percentage' | 'fixed',
+            discount_value: coupon.discount_value.toString(),
+            usage_limit: coupon.usage_limit?.toString() || '',
+            min_purchase_amount: coupon.min_purchase_amount?.toString() || '',
+            is_active: coupon.is_active || true
+        });
+        setShowCouponForm(true);
+    };
+
+    const deleteCoupon = async (id: string) => {
+        if (!window.confirm('¿Estás seguro de eliminar este cupón?')) return;
+        try {
+            const { error } = await supabase.from('coupons').delete().eq('id', id);
+            if (error) throw error;
+            setCoupons(prev => prev.filter(c => c.id !== id));
+        } catch (err) {
+            console.error('Error deleting coupon:', err);
+            alert('Error al eliminar cupón');
+        }
+    };
 
     if (loading) {
         return (
@@ -651,6 +760,7 @@ const MyStore: React.FC = () => {
                         { id: 'products', label: 'PRODUCTOS', icon: Package, count: 0 },
                         { id: 'orders', label: 'PEDIDOS', icon: Truck, count: orders.filter(o => o.status === 'Pendiente').length },
                         { id: 'offers', label: 'OFERTAS', icon: Handshake, count: offers.filter(o => o.status === 'pending').length },
+                        { id: 'coupons', label: 'CUPONES', icon: Ticket, count: 0 },
                         { id: 'profile', label: 'AJUSTES', icon: Settings, count: 0 }
                     ].map((tab) => {
                         const Icon = tab.icon;
@@ -1559,6 +1669,140 @@ const MyStore: React.FC = () => {
                                 ))}
                             </div>
                         )}
+                    </div>
+                ) : activeTab === 'coupons' ? (
+                    <div className="animate-fade">
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '15px' }}>
+                            <h2 style={{ fontSize: '18px', fontWeight: '900', color: 'white' }}>
+                                Mis <span style={{ color: 'var(--secondary)' }}>Cupones</span>
+                            </h2>
+                            {!showCouponForm && (
+                                <button
+                                    onClick={() => setShowCouponForm(true)}
+                                    style={{
+                                        background: 'rgba(255,255,255,0.05)',
+                                        color: 'var(--secondary)',
+                                        padding: '8px 15px',
+                                        borderRadius: '12px',
+                                        fontSize: '12px',
+                                        fontWeight: '800',
+                                        border: '1px solid rgba(163, 230, 53, 0.2)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '6px'
+                                    }}
+                                >
+                                    <Plus size={14} /> NUEVO CUPÓN
+                                </button>
+                            )}
+                        </div>
+
+                        {showCouponForm ? (
+                            <Card style={{ padding: '25px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px', marginBottom: '20px' }}>
+                                <form onSubmit={handleCouponSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <h3 style={{ fontSize: '16px', fontWeight: '800' }}>{editingCouponId ? 'Editar Cupón' : 'Crear Nuevo Cupón'}</h3>
+                                        <button type="button" onClick={() => { setShowCouponForm(false); setEditingCouponId(null); }} style={{ color: 'var(--text-dim)' }}><X size={20} /></button>
+                                    </div>
+
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                                        <div>
+                                            <label style={{ display: 'block', fontSize: '11px', fontWeight: '900', color: 'var(--secondary)', marginBottom: '8px', textTransform: 'uppercase' }}>Código</label>
+                                            <input
+                                                required
+                                                placeholder="GOLF2024"
+                                                value={couponFormData.code}
+                                                onChange={e => setCouponFormData({ ...couponFormData, code: e.target.value.toUpperCase() })}
+                                                style={{ width: '100%', padding: '12px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }}
+                                            />
+                                        </div>
+                                        <div>
+                                            <label style={{ display: 'block', fontSize: '11px', fontWeight: '900', color: 'var(--secondary)', marginBottom: '8px', textTransform: 'uppercase' }}>Tipo</label>
+                                            <select
+                                                value={couponFormData.discount_type}
+                                                onChange={e => setCouponFormData({ ...couponFormData, discount_type: e.target.value as any })}
+                                                style={{ width: '100%', padding: '12px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }}
+                                            >
+                                                <option value="percentage">Porcentaje (%)</option>
+                                                <option value="fixed">Valor Fijo ($)</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                                        <div>
+                                            <label style={{ display: 'block', fontSize: '11px', fontWeight: '900', color: 'var(--secondary)', marginBottom: '8px', textTransform: 'uppercase' }}>Valor Descuento</label>
+                                            <input
+                                                required
+                                                type="number"
+                                                placeholder={couponFormData.discount_type === 'percentage' ? '10' : '50000'}
+                                                value={couponFormData.discount_value}
+                                                onChange={e => setCouponFormData({ ...couponFormData, discount_value: e.target.value })}
+                                                style={{ width: '100%', padding: '12px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }}
+                                            />
+                                        </div>
+                                        <div>
+                                            <label style={{ display: 'block', fontSize: '11px', fontWeight: '900', color: 'var(--secondary)', marginBottom: '8px', textTransform: 'uppercase' }}>Límite de Usos</label>
+                                            <input
+                                                type="number"
+                                                placeholder="Sin límite"
+                                                value={couponFormData.usage_limit}
+                                                onChange={e => setCouponFormData({ ...couponFormData, usage_limit: e.target.value })}
+                                                style={{ width: '100%', padding: '12px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <button
+                                        type="submit"
+                                        disabled={saving}
+                                        style={{ background: 'var(--secondary)', color: 'var(--primary)', padding: '15px', borderRadius: '16px', fontWeight: '900', marginTop: '10px' }}
+                                    >
+                                        {saving ? <Loader2 className="animate-spin" style={{ margin: '0 auto' }} /> : (editingCouponId ? 'GUARDAR CAMBIOS' : 'CREAR CUPÓN')}
+                                    </button>
+                                </form>
+                            </Card>
+                        ) : null}
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                            {coupons.length === 0 ? (
+                                <div className="glass" style={{ padding: '60px 20px', textAlign: 'center' }}>
+                                    <Ticket size={48} color="var(--text-dim)" style={{ marginBottom: '15px', opacity: 0.3 }} />
+                                    <p style={{ color: 'var(--text-dim)' }}>No has creado cupones aún.</p>
+                                </div>
+                            ) : (
+                                coupons.map(coupon => (
+                                    <Card key={coupon.id} style={{ padding: '18px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '20px' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                                                <div style={{ width: '45px', height: '45px', borderRadius: '12px', background: 'rgba(163, 230, 53, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--secondary)' }}>
+                                                    <Percent size={20} />
+                                                </div>
+                                                <div>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                        <span style={{ fontWeight: '900', fontSize: '16px', letterSpacing: '0.05em' }}>{coupon.code}</span>
+                                                        <span style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '6px', background: coupon.is_active ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)', color: coupon.is_active ? '#10b981' : '#ef4444', fontWeight: '800' }}>
+                                                            {coupon.is_active ? 'ACTIVO' : 'INACTIVO'}
+                                                        </span>
+                                                    </div>
+                                                    <p style={{ fontSize: '12px', color: 'var(--text-dim)', marginTop: '2px' }}>
+                                                        {coupon.discount_type === 'percentage' ? `${coupon.discount_value}% de descuento` : `$${coupon.discount_value.toLocaleString()} de descuento`}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <div style={{ display: 'flex', gap: '8px' }}>
+                                                <button onClick={() => handleEditCoupon(coupon)} style={{ padding: '10px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', color: 'white' }}><Pencil size={16} /></button>
+                                                <button onClick={() => deleteCoupon(coupon.id)} style={{ padding: '10px', borderRadius: '10px', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444' }}><Trash2 size={16} /></button>
+                                            </div>
+                                        </div>
+                                        <div style={{ marginTop: '15px', paddingTop: '15px', borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--text-dim)', fontWeight: '600' }}>
+                                            <span>USOS: {coupon.usage_count || 0} / {coupon.usage_limit || '∞'}</span>
+                                            <span>MÍNIMO: ${coupon.min_purchase_amount?.toLocaleString() || 0}</span>
+                                        </div>
+                                    </Card>
+                                ))
+                            )}
+                        </div>
                     </div>
                 ) : (
                     <div className="animate-fade">
