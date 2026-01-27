@@ -338,12 +338,12 @@ const TournamentManager: React.FC = () => {
             const { data, error } = await supabase
                 .from('tournament_registrations')
                 .select(`
-                    profiles:user_id (id, full_name, id_photo_url, handicap)
+                    profiles (id, full_name, id_photo_url, handicap)
                 `)
                 .eq('tournament_id', tournament.id);
 
             if (error) throw error;
-            const list = data?.map((r: any) => Array.isArray(r.profiles) ? r.profiles[0] : r.profiles).filter(Boolean) || [];
+            const list = data?.map((r: any) => r.profiles).filter(Boolean) || [];
             setParticipants(list as Participant[]);
         } catch (err) {
             console.error('Error fetching participants:', err);
