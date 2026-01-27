@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../services/SupabaseManager';
 import { User, Trophy, Calendar, Users, ChevronLeft } from 'lucide-react';
 import Skeleton from '../components/Skeleton';
-import { useAuth } from '../context/AuthContext';
+
 
 interface Participant {
     id: string;
@@ -19,7 +19,7 @@ interface Participant {
 const TournamentParticipants: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
-    const { user } = useAuth();
+
     const [loading, setLoading] = useState(true);
     const [tournamentName, setTournamentName] = useState('');
     const [participants, setParticipants] = useState<Participant[]>([]);
@@ -38,7 +38,7 @@ const TournamentParticipants: React.FC = () => {
             const { data: tournament, error: tournamentError } = await supabase
                 .from('tournaments')
                 .select('name')
-                .eq('id', id)
+                .eq('id', id || '')
                 .single();
 
             if (tournamentError) throw tournamentError;
@@ -50,7 +50,7 @@ const TournamentParticipants: React.FC = () => {
                 .select(`
                     profiles (id, full_name, id_photo_url, handicap, email, phone, total_rounds, average_score)
                 `)
-                .eq('tournament_id', id);
+                .eq('tournament_id', id || '');
 
             if (error) throw error;
             const list = data?.map((r: any) => r.profiles).filter(Boolean) || [];
@@ -70,7 +70,7 @@ const TournamentParticipants: React.FC = () => {
             display: 'flex',
             flexDirection: 'column',
             overflow: 'hidden',
-            zIndex: 900,
+            zIndex: 2000,
             paddingTop: 'calc(env(safe-area-inset-top) + 20px)',
             paddingBottom: 'var(--nav-height)'
         }}>
