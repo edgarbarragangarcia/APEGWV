@@ -216,7 +216,7 @@ const TrackingScanner: React.FC<TrackingScannerProps> = ({ onScanComplete, onClo
             right: 0,
             bottom: 0,
             zIndex: 2000,
-            background: 'var(--background)',
+            background: '#062216', // Solid dark green from theme
             display: 'flex',
             flexDirection: 'column'
         }} className="animate-fade-in">
@@ -307,7 +307,7 @@ const TrackingScanner: React.FC<TrackingScannerProps> = ({ onScanComplete, onClo
                                     width: '100%',
                                     padding: '20px',
                                     borderRadius: '16px',
-                                    background: 'rgba(255,255,255,0.05)',
+                                    background: '#1a332a', // Solid lighter green
                                     color: 'white',
                                     border: '1px solid rgba(255,255,255,0.1)',
                                     fontWeight: 'bold',
@@ -349,10 +349,10 @@ const TrackingScanner: React.FC<TrackingScannerProps> = ({ onScanComplete, onClo
                         <img src={image} alt="Scanned" style={{ width: '100%', borderRadius: '12px', maxHeight: '300px', objectFit: 'contain' }} />
 
                         {scanning ? (
-                            <div style={{ padding: '20px', background: 'rgba(255,255,255,0.05)', borderRadius: '12px', textAlign: 'center' }}>
+                            <div style={{ padding: '20px', background: '#0a2a1d', borderRadius: '12px', textAlign: 'center', border: '1px solid var(--secondary)' }}>
                                 <Loader2 className="animate-spin" size={32} color="var(--secondary)" style={{ margin: '0 auto 10px auto' }} />
                                 <p style={{ color: 'white', fontWeight: 'bold' }}>Procesando imagen...</p>
-                                <div style={{ width: '100%', height: '6px', background: 'rgba(255,255,255,0.1)', borderRadius: '3px', marginTop: '10px', overflow: 'hidden' }}>
+                                <div style={{ width: '100%', height: '6px', background: '#1a332a', borderRadius: '3px', marginTop: '10px', overflow: 'hidden' }}>
                                     <div style={{ width: `${progress}%`, height: '100%', background: 'var(--secondary)', transition: 'width 0.3s ease' }} />
                                 </div>
                                 <p style={{ fontSize: '12px', color: 'var(--text-dim)', marginTop: '5px' }}>{progress}%</p>
@@ -383,16 +383,19 @@ const TrackingScanner: React.FC<TrackingScannerProps> = ({ onScanComplete, onClo
                         {extractedText && !scanning && (
                             <div style={{
                                 padding: '15px',
-                                background: 'rgba(0,0,0,0.3)',
+                                background: '#051d13', // Deep solid green
                                 borderRadius: '12px',
-                                maxHeight: '150px',
+                                maxHeight: '200px',
                                 overflowY: 'auto',
-                                fontSize: '12px',
-                                color: 'var(--text-dim)',
-                                border: '1px solid rgba(255,255,255,0.1)'
+                                fontSize: '13px',
+                                color: 'white', // Bright white for readability
+                                border: '2px solid var(--secondary)', // Border highlight
+                                boxShadow: '0 4px 20px rgba(0,0,0,0.5)'
                             }}>
-                                <p style={{ fontWeight: 'bold', marginBottom: '5px', color: 'var(--secondary)' }}>Texto Detectado:</p>
-                                {extractedText}
+                                <p style={{ fontWeight: 'bold', marginBottom: '8px', color: 'var(--secondary)', fontSize: '14px' }}>Texto Detectado:</p>
+                                <div style={{ lineHeight: '1.5', whiteSpace: 'pre-wrap' }}>
+                                    {extractedText}
+                                </div>
                             </div>
                         )}
                     </div>
