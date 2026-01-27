@@ -122,8 +122,15 @@ const MyStore: React.FC = () => {
             const trackingInput = document.getElementById(`tracking-${scanningOrderId}`) as HTMLInputElement;
             const providerInput = document.getElementById(`provider-${scanningOrderId}`) as HTMLInputElement;
 
-            if (trackingInput) trackingInput.value = trackingNumber;
-            if (providerInput && provider) providerInput.value = provider;
+            if (trackingInput) {
+                trackingInput.value = trackingNumber;
+                // Force triggering any change listeners if necessary
+                trackingInput.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+            if (providerInput && provider) {
+                providerInput.value = provider;
+                providerInput.dispatchEvent(new Event('change', { bubbles: true }));
+            }
 
             setShowScanner(false);
             setScanningOrderId(null);

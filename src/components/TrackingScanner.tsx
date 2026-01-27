@@ -18,12 +18,13 @@ const TrackingScanner: React.FC<TrackingScannerProps> = ({ onScanComplete, onClo
     const [isCameraOpen, setIsCameraOpen] = useState(false);
 
     const CARRIERS = [
-        { name: 'Servientrega', pattern: /\b\d{10}\b/ }, // Example pattern
-        { name: 'Coordinadora', pattern: /\b\d{11}\b/ },
-        { name: 'Interrapidisimo', pattern: /\b\d{10,12}\b/ },
-        { name: 'Deprisa', pattern: /\b\d{9,12}\b/ },
-        { name: 'FedEx', pattern: /\b\d{12,15}\b/ },
-        { name: 'DHL', pattern: /\b\d{10}\b/ }
+        { name: 'Servientrega', pattern: /(servientrega|[0-9]{10,13})/i },
+        { name: 'Coordinadora', pattern: /(coordinadora|[0-9]{11,15})/i },
+        { name: 'Interrapidisimo', pattern: /(interrapidisimo|[0-9]{10,12})/i },
+        { name: 'Envia', pattern: /(envia|[0-9]{9,12})/i },
+        { name: 'TCC', pattern: /(tcc|[0-9]{10,12})/i },
+        { name: 'FedEx', pattern: /(fedex|[0-9]{12,15})/i },
+        { name: 'DHL', pattern: /(dhl|[0-9]{10})/i }
     ];
 
     const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -85,7 +86,7 @@ const TrackingScanner: React.FC<TrackingScannerProps> = ({ onScanComplete, onClo
         try {
             const result = await Tesseract.recognize(
                 imgData,
-                'eng', // English is usually extracting extracted numbers better
+                'eng+spa', // Use both for better results in Colombia
                 {
                     logger: m => {
                         if (m.status === 'recognizing text') {
@@ -108,27 +109,28 @@ const TrackingScanner: React.FC<TrackingScannerProps> = ({ onScanComplete, onClo
     };
 
     const analyzeText = (text: string) => {
-        // Simple heuristic to extract extraction likely tracking extraction numbers
-        // This regex looks for sequences of extraction digits that might be extraction extraction extract tracking extraction numbers
-        // Enhanced pattern matching could be extraction added extraction here
-        const potentialNumbers = text.match(/\b[A-Z0-9]{8,20}\b/g) || [];
+        const potentialNumbers = text.match(/[A-Z0-9]{8,22}/g) || [];
 
-        // Auto-detect extraction extraction carrier if extracted extraction possible
         let extractedProvider = '';
         let bestMatch = '';
 
+        // Prioritize finding carrier in text
         for (const carrier of CARRIERS) {
             if (text.toLowerCase().includes(carrier.name.toLowerCase())) {
                 extractedProvider = carrier.name;
+                break;
             }
         }
 
-        // Just take the extraction extracted extraction extracted longest extraction number extracted extraction found extraction sequence extracted extraction for extracted extraction now extraction if extracted extraction extraction specific
         if (potentialNumbers.length > 0) {
-            // Filter out extracted extracted short extracted extracted extracted extracted extracted noise
-            const validNumbers = potentialNumbers.filter(n => /\d/.test(n)); // extracted extraction Must extracted extraction extracted extraction extraction contain digits
+            // Filter and clean numbers (remove extra spaces or noise)
+            const validNumbers = potentialNumbers
+                .map(n => n.replace(/\s/g, ''))
+                .filter(n => /\d{6,}/.test(n)); // Must have at least 6 digits
+
             if (validNumbers.length > 0) {
-                // Sort by length, assuming tracking extracted extraction numbers extracted extraction extracted extraction are extracted extraction usually extracted extraction extracted longer
+                // If we found a provider, try to find a number matching its pattern if specified
+                // Otherwise, take the most likely candidate (usually the longest one)
                 validNumbers.sort((a, b) => b.length - a.length);
                 bestMatch = validNumbers[0];
 
