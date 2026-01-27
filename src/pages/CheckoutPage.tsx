@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import {
     MapPin, CreditCard,
     ShieldCheck, Loader2, Camera, Scan,
-    CheckCircle2, Sparkles, Plus, X, AlertCircle
+    CheckCircle2, Sparkles, Plus, X, AlertCircle, User, Phone, Edit3
 } from 'lucide-react';
 import PageHeader from '../components/PageHeader';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -48,11 +48,29 @@ const CheckoutPage: React.FC = () => {
             const { data: { session } } = await supabase.auth.getSession();
             if (session) {
                 setUser(session.user);
-                setShipping(prev => ({
-                    ...prev,
-                    name: session.user.user_metadata?.full_name || '',
-                    phone: session.user.user_metadata?.phone || ''
-                }));
+
+                // Fetch full profile
+                const { data: profile } = await supabase
+                    .from('profiles')
+                    .select('*')
+                    .eq('id', session.user.id)
+                    .single();
+
+                if (profile) {
+                    setShipping({
+                        name: profile.full_name || '',
+                        phone: profile.phone || '',
+                        address: profile.address || '',
+                        city: '' // City is now part of the address string or managed in profile
+                    });
+                } else {
+                    // Fallback to metadata if profile fetch fails
+                    setShipping(prev => ({
+                        ...prev,
+                        name: session.user.user_metadata?.full_name || '',
+                        phone: session.user.user_metadata?.phone || ''
+                    }));
+                }
                 fetchSavedMethods(session.user.id);
             } else {
                 navigate('/auth');
@@ -114,7 +132,10 @@ const CheckoutPage: React.FC = () => {
             // Create orders
             for (const item of cartItems) {
                 const sellerId = item.seller_id || 'admin';
-                const fullAddress = `${shipping.address}, ${shipping.city}`;
+                // Address logic: If city is present (legacy or manually added), append it. Otherwise use address as is.
+                const fullAddress = shipping.city && !shipping.address.toLowerCase().includes(shipping.city.toLowerCase())
+                    ? `${shipping.address}, ${shipping.city}`
+                    : shipping.address;
 
                 const { error: orderError } = await supabase.from('orders').insert({
                     user_id: user.id,
@@ -372,72 +393,95 @@ const CheckoutPage: React.FC = () => {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                 {step === 1 ? (
                     <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
-                        <h3 style={{ fontSize: '18px', fontWeight: '800', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                            <MapPin size={20} color="var(--secondary)" /> Datos de Envío
-                        </h3>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                <p style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text-dim)' }}>Nombre completo</p>
-                                <input
-                                    type="text"
-                                    value={shipping.name}
-                                    onChange={(e) => setShipping({ ...shipping, name: e.target.value })}
-                                    placeholder="¿Quién recibe?"
-                                    style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '15px', color: 'white' }}
-                                />
-                            </div>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                <p style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text-dim)' }}>Teléfono</p>
-                                <input
-                                    type="tel"
-                                    value={shipping.phone}
-                                    onChange={(e) => setShipping({ ...shipping, phone: e.target.value })}
-                                    placeholder="Tu número de contacto"
-                                    style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '15px', color: 'white' }}
-                                />
-                            </div>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                <p style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text-dim)' }}>Dirección</p>
-                                <input
-                                    type="text"
-                                    value={shipping.address}
-                                    onChange={(e) => setShipping({ ...shipping, address: e.target.value })}
-                                    placeholder="Calle, carrera, apartamento..."
-                                    style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '15px', color: 'white' }}
-                                />
-                            </div>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                <p style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text-dim)' }}>Ciudad</p>
-                                <select
-                                    value={shipping.city}
-                                    onChange={(e) => setShipping({ ...shipping, city: e.target.value })}
-                                    style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '15px', color: 'white' }}
-                                >
-                                    <option value="Bogotá">Bogotá</option>
-                                    <option value="Medellín">Medellín</option>
-                                    <option value="Cali">Cali</option>
-                                    <option value="Barranquilla">Barranquilla</option>
-                                </select>
-                            </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                            <h3 style={{ fontSize: '18px', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <MapPin size={20} color="var(--secondary)" /> Datos de Envío
+                            </h3>
+                            <button
+                                onClick={() => navigate('/profile/edit')}
+                                style={{
+                                    background: 'none',
+                                    border: 'none',
+                                    color: 'var(--secondary)',
+                                    fontSize: '13px',
+                                    fontWeight: '700',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '5px'
+                                }}
+                            >
+                                <Edit3 size={14} /> EDITAR
+                            </button>
                         </div>
 
-                        <button
-                            onClick={() => setStep(2)}
-                            disabled={!shipping.address || !shipping.name}
-                            style={{
-                                width: '100%',
-                                background: 'white',
-                                color: 'black',
-                                padding: '18px',
-                                borderRadius: '16px',
-                                fontWeight: '900',
-                                marginTop: '30px',
-                                border: 'none',
-                                opacity: (!shipping.address || !shipping.name) ? 0.5 : 1
-                            }}
-                        >
-                            CONTINUAR AL PAGO
-                        </button>
+                        <div className="glass" style={{ padding: '20px', borderRadius: '20px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                            {shipping.address ? (
+                                <>
+                                    <div style={{ display: 'flex', gap: '15px' }}>
+                                        <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                            <User size={20} color="var(--text-dim)" />
+                                        </div>
+                                        <div>
+                                            <p style={{ fontSize: '12px', color: 'var(--text-dim)', fontWeight: '600', marginBottom: '2px' }}>NOMBRE</p>
+                                            <p style={{ fontSize: '15px', color: 'white', fontWeight: '600' }}>{shipping.name}</p>
+                                        </div>
+                                    </div>
+
+                                    <div style={{ display: 'flex', gap: '15px' }}>
+                                        <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                            <Phone size={20} color="var(--text-dim)" />
+                                        </div>
+                                        <div>
+                                            <p style={{ fontSize: '12px', color: 'var(--text-dim)', fontWeight: '600', marginBottom: '2px' }}>TELÉFONO</p>
+                                            <p style={{ fontSize: '15px', color: 'white', fontWeight: '600' }}>{shipping.phone}</p>
+                                        </div>
+                                    </div>
+
+                                    <div style={{ display: 'flex', gap: '15px' }}>
+                                        <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                            <MapPin size={20} color="var(--text-dim)" />
+                                        </div>
+                                        <div style={{ flex: 1 }}>
+                                            <p style={{ fontSize: '12px', color: 'var(--text-dim)', fontWeight: '600', marginBottom: '2px' }}>DIRECCIÓN DE ENTREGA</p>
+                                            <p style={{ fontSize: '15px', color: 'white', fontWeight: '600', lineHeight: '1.4' }}>{shipping.address}</p>
+                                        </div>
+                                    </div>
+                                </>
+                            ) : (
+                                <div style={{ textAlign: 'center', padding: '20px 0' }}>
+                                    <AlertCircle size={32} color="var(--secondary)" style={{ marginBottom: '10px', opacity: 0.8 }} />
+                                    <h4 style={{ fontWeight: '700', marginBottom: '5px' }}>Faltan datos de envío</h4>
+                                    <p style={{ fontSize: '14px', color: 'var(--text-dim)', marginBottom: '20px' }}>Necesitamos tu dirección para poder entregarte el pedido.</p>
+                                    <button
+                                        onClick={() => navigate('/profile/edit')}
+                                        className="btn-secondary"
+                                        style={{ width: 'auto', display: 'inline-flex', padding: '10px 20px' }}
+                                    >
+                                        Completar mi Perfil
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+
+                        {shipping.address && (
+                            <button
+                                onClick={() => setStep(2)}
+                                disabled={!shipping.address || !shipping.name}
+                                style={{
+                                    width: '100%',
+                                    background: 'white',
+                                    color: 'black',
+                                    padding: '18px',
+                                    borderRadius: '16px',
+                                    fontWeight: '900',
+                                    marginTop: '30px',
+                                    border: 'none',
+                                    opacity: (!shipping.address || !shipping.name) ? 0.5 : 1
+                                }}
+                            >
+                                CONFIRMAR Y CONTINUAR
+                            </button>
+                        )}
                     </motion.div>
                 ) : (
                     <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
