@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../services/SupabaseManager';
-import { Plus, Trophy, Trash2, Calendar, Loader2, CheckCircle2, Pencil, Users, X, ChevronDown } from 'lucide-react';
+import { Plus, Trophy, Trash2, Calendar, Loader2, CheckCircle2, Pencil, Users, ChevronDown } from 'lucide-react';
 import Card from '../components/Card';
 import Skeleton from '../components/Skeleton';
 import { useAuth } from '../context/AuthContext';
