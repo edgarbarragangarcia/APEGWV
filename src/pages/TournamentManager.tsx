@@ -30,6 +30,10 @@ interface Participant {
     full_name: string | null;
     id_photo_url: string | null;
     handicap: number | null;
+    email: string | null;
+    phone: string | null;
+    total_rounds: number | null;
+    average_score: number | null;
 }
 
 interface BudgetItem {
@@ -151,6 +155,7 @@ const TournamentManager: React.FC = () => {
     });
     const [participants, setParticipants] = useState<Participant[]>([]);
     const [loadingParticipants, setLoadingParticipants] = useState(false);
+    const [selectedParticipant, setSelectedParticipant] = useState<Participant | null>(null);
 
     // Form State
     const [formData, setFormData] = useState({
@@ -249,15 +254,24 @@ const TournamentManager: React.FC = () => {
 
             setIsPremium(true);
 
-            // Fetch User Tournaments
+            // Fetch User Tournaments with participant count
             const { data: userTourneys, error } = await supabase
                 .from('tournaments')
-                .select('*')
+                .select(`
+                    *,
+                    registrations: tournament_registrations(count)
+                `)
                 .eq('creator_id', user.id)
                 .order('created_at', { ascending: false });
 
             if (error) throw error;
-            setTournaments((userTourneys as unknown as Tournament[]) || []);
+
+            const transformedTourneys = userTourneys?.map((t: any) => ({
+                ...t,
+                current_participants: t.registrations?.[0]?.count || 0
+            })) || [];
+
+            setTournaments(transformedTourneys);
         } catch (err) {
             console.error('Error fetching tournament data:', err);
         } finally {
@@ -429,7 +443,7 @@ const TournamentManager: React.FC = () => {
             const { data, error } = await supabase
                 .from('tournament_registrations')
                 .select(`
-                    profiles (id, full_name, id_photo_url, handicap)
+                    profiles (id, full_name, id_photo_url, handicap, email, phone, total_rounds, average_score)
                 `)
                 .eq('tournament_id', tournament.id);
 
@@ -913,7 +927,10 @@ const TournamentManager: React.FC = () => {
                                 <p style={{ color: 'var(--text-dim)', fontSize: '14px' }}>{viewingParticipants.tournamentName}</p>
                             </div>
                             <button
-                                onClick={() => setViewingParticipants({ ...viewingParticipants, isOpen: false })}
+                                onClick={() => {
+                                    setViewingParticipants({ ...viewingParticipants, isOpen: false });
+                                    setSelectedParticipant(null);
+                                }}
                                 style={{ background: 'rgba(255,255,255,0.05)', border: 'none', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}
                             >
                                 <X size={20} />
@@ -921,7 +938,53 @@ const TournamentManager: React.FC = () => {
                         </div>
 
                         <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                            {loadingParticipants ? (
+                            {selectedParticipant ? (
+                                <div className="animate-fade-in">
+                                    <button
+                                        onClick={() => setSelectedParticipant(null)}
+                                        style={{ marginBottom: '20px', color: 'var(--secondary)', background: 'none', border: 'none', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '5px' }}
+                                    >
+                                        ← Volver a la lista
+                                    </button>
+
+                                    <div style={{ textAlign: 'center', marginBottom: '25px' }}>
+                                        <div style={{ width: '100px', height: '100px', borderRadius: '30px', margin: '0 auto 15px', overflow: 'hidden', border: '2px solid var(--secondary)' }}>
+                                            <img
+                                                src={selectedParticipant.id_photo_url || `https://ui-avatars.com/api/?name=${selectedParticipant.full_name || 'User'}&background=0E2F1F&color=A3E635`}
+                                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                                alt={selectedParticipant.full_name || 'User'}
+                                            />
+                                        </div>
+                                        <h3 style={{ fontSize: '22px', fontWeight: '800', color: 'white', marginBottom: '5px' }}>{selectedParticipant.full_name}</h3>
+                                        <p style={{ color: 'var(--text-dim)' }}>Hándicap: <span style={{ color: 'white', fontWeight: 'bold' }}>{selectedParticipant.handicap ?? '--'}</span></p>
+                                    </div>
+
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '25px' }}>
+                                        <div className="glass" style={{ padding: '15px', borderRadius: '15px', textAlign: 'center' }}>
+                                            <p style={{ fontSize: '12px', color: 'var(--text-dim)', marginBottom: '5px' }}>Rondas Totales</p>
+                                            <p style={{ fontSize: '20px', fontWeight: '800', color: 'white' }}>{selectedParticipant.total_rounds || 0}</p>
+                                        </div>
+                                        <div className="glass" style={{ padding: '15px', borderRadius: '15px', textAlign: 'center' }}>
+                                            <p style={{ fontSize: '12px', color: 'var(--text-dim)', marginBottom: '5px' }}>Promedio Golpe</p>
+                                            <p style={{ fontSize: '20px', fontWeight: '800', color: 'white' }}>{selectedParticipant.average_score || '--'}</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="glass" style={{ padding: '20px', borderRadius: '20px' }}>
+                                        <h4 style={{ fontSize: '14px', fontWeight: '700', color: 'var(--secondary)', marginBottom: '15px', textTransform: 'uppercase' }}>Contacto</h4>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                                            <div>
+                                                <p style={{ fontSize: '11px', color: 'var(--text-dim)', marginBottom: '4px' }}>Email</p>
+                                                <p style={{ color: 'white', fontSize: '14px' }}>{selectedParticipant.email || 'No disponible'}</p>
+                                            </div>
+                                            <div>
+                                                <p style={{ fontSize: '11px', color: 'var(--text-dim)', marginBottom: '4px' }}>Teléfono</p>
+                                                <p style={{ color: 'white', fontSize: '14px' }}>{selectedParticipant.phone || 'No disponible'}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : loadingParticipants ? (
                                 [1, 2, 3].map(i => <Skeleton key={i} height="70px" borderRadius="18px" />)
                             ) : participants.length === 0 ? (
                                 <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-dim)' }}>
@@ -930,15 +993,23 @@ const TournamentManager: React.FC = () => {
                                 </div>
                             ) : (
                                 participants.map(p => (
-                                    <div key={p.id} style={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: '15px',
-                                        padding: '12px',
-                                        background: 'rgba(255,255,255,0.03)',
-                                        borderRadius: '18px',
-                                        border: '1px solid rgba(255,255,255,0.05)'
-                                    }}>
+                                    <div
+                                        key={p.id}
+                                        onClick={() => setSelectedParticipant(p)}
+                                        style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '15px',
+                                            padding: '12px',
+                                            background: 'rgba(255,255,255,0.03)',
+                                            borderRadius: '18px',
+                                            border: '1px solid rgba(255,255,255,0.05)',
+                                            cursor: 'pointer',
+                                            transition: 'transform 0.2s',
+                                        }}
+                                        onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
+                                        onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                                    >
                                         <div style={{ width: '45px', height: '45px', borderRadius: '12px', overflow: 'hidden', background: 'var(--primary-light)' }}>
                                             <img
                                                 src={p.id_photo_url || `https://ui-avatars.com/api/?name=${p.full_name || 'User'}&background=0E2F1F&color=A3E635`}
@@ -951,7 +1022,7 @@ const TournamentManager: React.FC = () => {
                                             <p style={{ fontSize: '12px', color: 'var(--text-dim)' }}>Hándicap: {p.handicap ?? '--'}</p>
                                         </div>
                                         <div style={{ background: 'rgba(163, 230, 53, 0.1)', color: 'var(--secondary)', padding: '4px 8px', borderRadius: '8px', fontSize: '11px', fontWeight: '800' }}>
-                                            CONFIRMADO
+                                            VER INFO
                                         </div>
                                     </div>
                                 ))
