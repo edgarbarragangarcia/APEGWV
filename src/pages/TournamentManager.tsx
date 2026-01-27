@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../services/SupabaseManager';
-import { Plus, Trophy, Trash2, Calendar, Loader2, CheckCircle2, Pencil, Users, X } from 'lucide-react';
+import { Plus, Trophy, Trash2, Calendar, Loader2, CheckCircle2, Pencil, Users, X, ChevronDown } from 'lucide-react';
 import Card from '../components/Card';
 import Skeleton from '../components/Skeleton';
 import { useAuth } from '../context/AuthContext';
@@ -38,6 +38,97 @@ interface BudgetItem {
     amount: string;
     type: 'per_player' | 'fixed';
 }
+
+interface CustomSelectProps {
+    value: string;
+    onChange: (value: string) => void;
+    options: { value: string; label: string }[];
+    placeholder?: string;
+    style?: React.CSSProperties;
+}
+
+const CustomSelect: React.FC<CustomSelectProps> = ({ value, onChange, options, placeholder = "Seleccionar", style }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const containerRef = React.useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+                setIsOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    const selectedLabel = options.find(o => o.value === value)?.label || value || placeholder;
+
+    return (
+        <div ref={containerRef} style={{ position: 'relative', width: '100%', ...style }}>
+            <div
+                onClick={() => setIsOpen(!isOpen)}
+                style={{
+                    width: '100%',
+                    background: 'rgba(255,255,255,0.05)',
+                    border: '1px solid var(--glass-border)',
+                    borderRadius: '12px',
+                    padding: '12px',
+                    color: 'white',
+                    fontSize: '15px',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    cursor: 'pointer',
+                    userSelect: 'none'
+                }}
+            >
+                <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{selectedLabel}</span>
+                <ChevronDown size={16} style={{ transform: isOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s', color: 'var(--text-dim)' }} />
+            </div>
+
+            {isOpen && (
+                <div className="animate-fade-in" style={{
+                    position: 'absolute',
+                    top: 'calc(100% + 5px)',
+                    left: 0,
+                    right: 0,
+                    background: '#1a1a1a', // Solid dark background
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    borderRadius: '12px',
+                    zIndex: 100,
+                    boxShadow: '0 10px 40px rgba(0,0,0,0.5)',
+                    maxHeight: '200px',
+                    overflowY: 'auto'
+                }}>
+                    {options.map((option) => (
+                        <div
+                            key={option.value}
+                            onClick={() => {
+                                onChange(option.value);
+                                setIsOpen(false);
+                            }}
+                            style={{
+                                padding: '12px',
+                                borderBottom: '1px solid rgba(255,255,255,0.05)',
+                                color: option.value === value ? 'var(--secondary)' : 'white',
+                                background: option.value === value ? 'rgba(163, 230, 53, 0.05)' : 'transparent',
+                                cursor: 'pointer',
+                                fontSize: '14px',
+                                fontWeight: option.value === value ? '700' : '400',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px'
+                            }}
+                        >
+                            {option.value === value && <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--secondary)' }} />}
+                            {option.label}
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+};
 
 const TournamentManager: React.FC = () => {
     const navigate = useNavigate();
@@ -485,17 +576,17 @@ const TournamentManager: React.FC = () => {
 
                             <div>
                                 <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Modalidad de Juego</label>
-                                <select
+                                <CustomSelect
                                     value={formData.game_mode}
-                                    onChange={e => setFormData({ ...formData, game_mode: e.target.value })}
-                                    style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '12px', color: 'white', fontSize: '15px', outline: 'none' }}
-                                >
-                                    <option value="Juego por Golpes">Juego por Golpes (Medal Play)</option>
-                                    <option value="Juego por Hoyos">Juego por Hoyos (Match Play)</option>
-                                    <option value="Stableford">Stableford</option>
-                                    <option value="Foursome">Foursome</option>
-                                    <option value="Fourball">Fourball</option>
-                                </select>
+                                    onChange={(val) => setFormData({ ...formData, game_mode: val })}
+                                    options={[
+                                        { value: "Juego por Golpes", label: "Juego por Golpes (Medal Play)" },
+                                        { value: "Juego por Hoyos", label: "Juego por Hoyos (Match Play)" },
+                                        { value: "Stableford", label: "Stableford" },
+                                        { value: "Foursome", label: "Foursome" },
+                                        { value: "Fourball", label: "Fourball" }
+                                    ]}
+                                />
                             </div>
 
                             <div>
@@ -532,15 +623,15 @@ const TournamentManager: React.FC = () => {
                                 </div>
                                 <div>
                                     <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Estado</label>
-                                    <select
+                                    <CustomSelect
                                         value={formData.status}
-                                        onChange={e => setFormData({ ...formData, status: e.target.value })}
-                                        style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '12px', color: 'white', fontSize: '15px', outline: 'none' }}
-                                    >
-                                        <option value="Abierto">Abierto</option>
-                                        <option value="Cerrado">Cerrado</option>
-                                        <option value="Finalizado">Finalizado</option>
-                                    </select>
+                                        onChange={(val) => setFormData({ ...formData, status: val })}
+                                        options={[
+                                            { value: "Abierto", label: "Abierto" },
+                                            { value: "Cerrado", label: "Cerrado" },
+                                            { value: "Finalizado", label: "Finalizado" }
+                                        ]}
+                                    />
                                 </div>
                             </div>
 
@@ -595,14 +686,15 @@ const TournamentManager: React.FC = () => {
                                                 placeholder="Monto"
                                                 style={{ width: '100%', minWidth: 0, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '10px', padding: '8px 12px', color: 'white', fontSize: '14px', boxSizing: 'border-box' }}
                                             />
-                                            <select
+                                            <CustomSelect
                                                 value={item.type}
-                                                onChange={e => updateBudgetItem(item.id, 'type', e.target.value as 'per_player' | 'fixed')}
-                                                style={{ width: '100%', minWidth: 0, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '10px', padding: '8px 12px', color: 'white', fontSize: '13px', outline: 'none', boxSizing: 'border-box' }}
-                                            >
-                                                <option value="fixed" style={{ background: 'var(--primary)', color: 'white' }}>Fijo (Total)</option>
-                                                <option value="per_player" style={{ background: 'var(--primary)', color: 'white' }}>Por Jugador</option>
-                                            </select>
+                                                onChange={(val) => updateBudgetItem(item.id, 'type', val as 'per_player' | 'fixed')}
+                                                options={[
+                                                    { value: "fixed", label: "Fijo (Total)" },
+                                                    { value: "per_player", label: "Por Jugador" }
+                                                ]}
+                                                style={{ fontSize: '13px' }}
+                                            />
                                         </div>
                                     </div>
                                 ))}
