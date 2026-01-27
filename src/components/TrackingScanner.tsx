@@ -109,33 +109,58 @@ const TrackingScanner: React.FC<TrackingScannerProps> = ({ onScanComplete, onClo
     };
 
     const analyzeText = (text: string) => {
-        const potentialNumbers = text.match(/[A-Z0-9]{8,22}/g) || [];
+        console.log("Analyzing text for tracking number/provider:", text);
 
         let extractedProvider = '';
         let bestMatch = '';
 
-        // Prioritize finding carrier in text
+        // 1. Precise Carrier Search: Look for the carrier name first
         for (const carrier of CARRIERS) {
             if (text.toLowerCase().includes(carrier.name.toLowerCase())) {
                 extractedProvider = carrier.name;
+                console.log(`Found provider: ${extractedProvider}`);
                 break;
             }
         }
 
+        // 2. Extract potential numbers (Alphanumeric, 8-22 chars)
+        // We also allow some common OCR artifacts like spaces or dashes which we'll clean later
+        let cleanedText = text.replace(/[\-|\s]/g, '');
+        const potentialNumbers = cleanedText.match(/[A-Z0-9]{8,22}/g) || [];
+
+        console.log("Potential matches found:", potentialNumbers);
+
         if (potentialNumbers.length > 0) {
-            // Filter and clean numbers (remove extra spaces or noise)
-            const validNumbers = potentialNumbers
-                .map(n => n.replace(/\s/g, ''))
-                .filter(n => /\d{6,}/.test(n)); // Must have at least 6 digits
-
-            if (validNumbers.length > 0) {
-                // If we found a provider, try to find a number matching its pattern if specified
-                // Otherwise, take the most likely candidate (usually the longest one)
-                validNumbers.sort((a, b) => b.length - a.length);
-                bestMatch = validNumbers[0];
-
-                onScanComplete(bestMatch, extractedProvider);
+            // Priority 1: If we have a carrier, try to find a number that matches its specific pattern
+            if (extractedProvider) {
+                const carrier = CARRIERS.find(c => c.name === extractedProvider);
+                if (carrier) {
+                    const match = potentialNumbers.find(n => carrier.pattern.test(n));
+                    if (match) {
+                        bestMatch = match;
+                        console.log(`Matched carrier ${extractedProvider} specific pattern: ${bestMatch}`);
+                    }
+                }
             }
+
+            // Priority 2: Take the most likely candidate (longest one that has digits)
+            if (!bestMatch) {
+                const validNumbers = potentialNumbers
+                    .filter(n => /[0-9]{6,}/.test(n)) // Must have a decent number of digits
+                    .sort((a, b) => b.length - a.length);
+
+                if (validNumbers.length > 0) {
+                    bestMatch = validNumbers[0];
+                    console.log(`Fallback best match: ${bestMatch}`);
+                }
+            }
+        }
+
+        if (bestMatch) {
+            console.log(`Final scan complete: Number=${bestMatch}, Provider=${extractedProvider}`);
+            onScanComplete(bestMatch, extractedProvider);
+        } else {
+            console.warn("No valid tracking number found in text.");
         }
     };
 
