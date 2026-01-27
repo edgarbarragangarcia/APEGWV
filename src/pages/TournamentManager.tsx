@@ -571,34 +571,34 @@ const TournamentManager: React.FC = () => {
 
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                                 {formData.budget_items.map((item) => (
-                                    <div key={item.id} className="glass" style={{ padding: '15px', borderRadius: '15px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                    <div key={item.id} className="glass" style={{ padding: '15px', borderRadius: '15px', border: '1px solid rgba(255,255,255,0.05)', boxSizing: 'border-box', width: '100%' }}>
                                         <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
                                             <input
                                                 value={item.label}
                                                 onChange={e => updateBudgetItem(item.id, 'label', e.target.value)}
                                                 placeholder="Nombre del gasto..."
-                                                style={{ flex: 1, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '10px', padding: '8px 12px', color: 'white', fontSize: '14px' }}
+                                                style={{ flex: 1, minWidth: 0, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '10px', padding: '8px 12px', color: 'white', fontSize: '14px', boxSizing: 'border-box' }}
                                             />
                                             <button
                                                 type="button"
                                                 onClick={() => removeBudgetItem(item.id)}
-                                                style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: 'none', width: '35px', height: '35px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                                style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: 'none', width: '35px', height: '35px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
                                             >
                                                 <Trash2 size={16} />
                                             </button>
                                         </div>
-                                        <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '10px' }}>
+                                        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.2fr) minmax(0, 1fr)', gap: '10px' }}>
                                             <input
                                                 type="number"
                                                 value={item.amount}
                                                 onChange={e => updateBudgetItem(item.id, 'amount', e.target.value)}
                                                 placeholder="Monto"
-                                                style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '10px', padding: '8px 12px', color: 'white', fontSize: '14px' }}
+                                                style={{ width: '100%', minWidth: 0, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '10px', padding: '8px 12px', color: 'white', fontSize: '14px', boxSizing: 'border-box' }}
                                             />
                                             <select
                                                 value={item.type}
                                                 onChange={e => updateBudgetItem(item.id, 'type', e.target.value as 'per_player' | 'fixed')}
-                                                style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '10px', padding: '8px 12px', color: 'white', fontSize: '13px', outline: 'none' }}
+                                                style={{ width: '100%', minWidth: 0, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '10px', padding: '8px 12px', color: 'white', fontSize: '13px', outline: 'none', boxSizing: 'border-box' }}
                                             >
                                                 <option value="fixed" style={{ background: 'var(--primary)', color: 'white' }}>Fijo (Total)</option>
                                                 <option value="per_player" style={{ background: 'var(--primary)', color: 'white' }}>Por Jugador</option>
