@@ -586,18 +586,8 @@ const TournamentManager: React.FC = () => {
                                 />
                             </div>
 
-                            <div style={{ display: 'flex', gap: '15px' }}>
-                                <div style={{ flex: 1, minWidth: 0 }}>
-                                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Fecha</label>
-                                    <input
-                                        required
-                                        type="date"
-                                        value={formData.date}
-                                        onChange={e => setFormData({ ...formData, date: e.target.value })}
-                                        style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '12px', color: 'white', fontSize: '15px', boxSizing: 'border-box' }}
-                                    />
-                                </div>
-                                <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                                <div>
                                     <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Estado</label>
                                     <CustomSelect
                                         value={formData.status}
@@ -607,6 +597,16 @@ const TournamentManager: React.FC = () => {
                                             { value: "Cerrado", label: "Cerrado" },
                                             { value: "Finalizado", label: "Finalizado" }
                                         ]}
+                                    />
+                                </div>
+                                <div>
+                                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Fecha</label>
+                                    <input
+                                        required
+                                        type="date"
+                                        value={formData.date}
+                                        onChange={e => setFormData({ ...formData, date: e.target.value })}
+                                        style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '12px', color: 'white', fontSize: '15px', boxSizing: 'border-box' }}
                                     />
                                 </div>
                             </div>
