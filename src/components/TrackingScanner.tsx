@@ -1,7 +1,9 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import Tesseract from 'tesseract.js';
-import { Camera, Upload, X, Loader2, RefreshCw } from 'lucide-react';
+import { Camera as LucideCamera, Upload, X, Loader2, RefreshCw } from 'lucide-react';
+import { Haptics, ImpactStyle } from '@capacitor/haptics';
+import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 
 interface TrackingScannerProps {
     onScanComplete: (trackingNumber: string, provider?: string) => void;
@@ -42,16 +44,43 @@ const TrackingScanner: React.FC<TrackingScannerProps> = ({ onScanComplete, onClo
     };
 
     const startCamera = async () => {
+        // We still keep the live video for preview, but we'll use Capacitor for better permissions/focus if possible
         setIsCameraOpen(true);
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+            const stream = await navigator.mediaDevices.getUserMedia({
+                video: {
+                    facingMode: 'environment',
+                    width: { ideal: 1920 },
+                    height: { ideal: 1080 }
+                }
+            });
             if (videoRef.current) {
                 videoRef.current.srcObject = stream;
             }
+            // Trigger light haptic on camera start
+            await Haptics.impact({ style: ImpactStyle.Light });
         } catch (err) {
             console.error("Error accessing camera:", err);
             alert("No se pudo acceder a la cámara via web. Intenta subir una foto.");
             setIsCameraOpen(false);
+        }
+    };
+
+    const takeNativePhoto = async () => {
+        try {
+            const image = await Camera.getPhoto({
+                quality: 90,
+                allowEditing: false,
+                resultType: CameraResultType.DataUrl,
+                source: CameraSource.Camera
+            });
+
+            if (image.dataUrl) {
+                setImage(image.dataUrl);
+                processImage(image.dataUrl);
+            }
+        } catch (err) {
+            console.log("User cancelled camera or error:", err);
         }
     };
 
@@ -158,6 +187,15 @@ const TrackingScanner: React.FC<TrackingScannerProps> = ({ onScanComplete, onClo
 
         if (bestMatch) {
             console.log(`Final scan complete: Number=${bestMatch}, Provider=${extractedProvider}`);
+
+            // Native feedback
+            try {
+                Haptics.impact({ style: ImpactStyle.Heavy });
+                Haptics.notification({ type: 'SUCCESS' as any });
+            } catch (e) {
+                console.log("Haptics not supported or failed", e);
+            }
+
             onScanComplete(bestMatch, extractedProvider);
         } else {
             console.warn("No valid tracking number found in text.");
@@ -208,7 +246,7 @@ const TrackingScanner: React.FC<TrackingScannerProps> = ({ onScanComplete, onClo
                 {!image && !isCameraOpen && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', width: '100%', maxWidth: '300px' }}>
                         <button
-                            onClick={startCamera}
+                            onClick={takeNativePhoto}
                             style={{
                                 padding: '20px',
                                 borderRadius: '16px',
@@ -224,8 +262,28 @@ const TrackingScanner: React.FC<TrackingScannerProps> = ({ onScanComplete, onClo
                                 boxShadow: '0 4px 15px rgba(163, 230, 53, 0.3)'
                             }}
                         >
-                            <Camera size={24} />
-                            Usar Cámara
+                            <LucideCamera size={24} />
+                            Usar Cámara Nativa
+                        </button>
+
+                        <button
+                            onClick={startCamera}
+                            style={{
+                                padding: '16px',
+                                borderRadius: '16px',
+                                background: 'rgba(255,255,255,0.05)',
+                                color: 'white',
+                                border: '1px solid rgba(255,255,255,0.1)',
+                                fontWeight: 'bold',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '10px',
+                                fontSize: '14px'
+                            }}
+                        >
+                            <LucideCamera size={20} />
+                            Cámara Web (Live)
                         </button>
 
                         <div style={{ position: 'relative' }}>
