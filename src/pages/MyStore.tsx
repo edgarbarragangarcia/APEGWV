@@ -1297,39 +1297,42 @@ const MyStore: React.FC = () => {
                                             </button>
                                         )}
 
-                                        {order.status === 'Preparando' && (
+                                        {(order.status === 'Preparando' || order.status === 'Pagado') && (
                                             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                                                 <p style={{ fontSize: '11px', fontWeight: '900', color: 'white', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Actualizar Guía de Envío</p>
-                                                <div style={{ display: 'flex', gap: '10px' }}>
+                                                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                                                     <input
                                                         id={`provider-${order.id}`}
-                                                        placeholder="Transportadora"
-                                                        style={{ flex: 1, background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '12px', fontSize: '13px', color: 'white', outline: 'none' }}
+                                                        placeholder="Transportadora (Servientrega, Coordinadora...)"
+                                                        style={{ width: '100%', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '12px', fontSize: '13px', color: 'white', outline: 'none' }}
                                                     />
-                                                    <input
-                                                        id={`tracking-${order.id}`}
-                                                        placeholder="No. Guía"
-                                                        style={{ flex: 1, background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '12px', fontSize: '13px', color: 'white', outline: 'none' }}
-                                                    />
-                                                    <button
-                                                        onClick={() => {
-                                                            setScanningOrderId(order.id);
-                                                            setShowScanner(true);
-                                                        }}
-                                                        style={{
-                                                            background: 'rgba(255,255,255,0.1)',
-                                                            border: '1px solid rgba(255,255,255,0.2)',
-                                                            borderRadius: '12px',
-                                                            width: '46px',
-                                                            display: 'flex',
-                                                            alignItems: 'center',
-                                                            justifyContent: 'center',
-                                                            color: 'white'
-                                                        }}
-                                                        title="Escanear Guía"
-                                                    >
-                                                        <Camera size={20} />
-                                                    </button>
+                                                    <div style={{ display: 'flex', gap: '8px' }}>
+                                                        <input
+                                                            id={`tracking-${order.id}`}
+                                                            placeholder="No. Guía"
+                                                            style={{ flex: 1, background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '12px', fontSize: '13px', color: 'white', outline: 'none' }}
+                                                        />
+                                                        <button
+                                                            onClick={() => {
+                                                                setScanningOrderId(order.id);
+                                                                setShowScanner(true);
+                                                            }}
+                                                            style={{
+                                                                background: 'rgba(255,255,255,0.1)',
+                                                                border: '1px solid rgba(255,255,255,0.2)',
+                                                                borderRadius: '12px',
+                                                                width: '46px',
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                justifyContent: 'center',
+                                                                color: 'white',
+                                                                flexShrink: 0
+                                                            }}
+                                                            title="Escanear Guía"
+                                                        >
+                                                            <Camera size={20} />
+                                                        </button>
+                                                    </div>
                                                 </div>
                                                 <button
                                                     onClick={() => {
