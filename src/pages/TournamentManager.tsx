@@ -296,7 +296,7 @@ const TournamentManager: React.FC = () => {
                         status: formData.status,
                         game_mode: formData.game_mode,
                         address: formData.address,
-                        budget_items: formData.budget_items,
+                        budget_items: formData.budget_items as any,
                         updated_at: new Date().toISOString()
                     })
                     .eq('id', editingId)
@@ -316,7 +316,7 @@ const TournamentManager: React.FC = () => {
                         status: formData.status,
                         game_mode: formData.game_mode,
                         address: formData.address,
-                        budget_items: formData.budget_items,
+                        budget_items: formData.budget_items as any,
                         creator_id: user.id
                     }])
                     .select()

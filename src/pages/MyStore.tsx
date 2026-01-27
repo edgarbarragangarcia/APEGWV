@@ -4,12 +4,10 @@ import { useLocation } from 'react-router-dom';
 import { supabase, optimizeImage } from '../services/SupabaseManager';
 import {
     Plus, Package, Trash2,
-    Camera, Loader2, CheckCircle2,
-    Pencil, TrendingDown,
-    Truck, User, Phone, MapPin,
-    Settings, Landmark, Calendar,
-    Store, Info, Handshake, X
+    Camera, Loader2, CheckCircle2, X, Store, Pencil, Landmark,
+    Truck, TrendingDown, Calendar, User, Phone, MapPin, Handshake, Info, Settings
 } from 'lucide-react';
+import TrackingScanner from '../components/TrackingScanner';
 import Card from '../components/Card';
 import StoreOnboarding from '../components/StoreOnboarding';
 import Skeleton from '../components/Skeleton';
@@ -29,6 +27,8 @@ type Offer = Pick<Database['public']['Tables']['offers']['Row'], 'id' | 'created
 };
 
 
+
+
 const MyStore: React.FC = () => {
     const { user } = useAuth();
     const location = useLocation();
@@ -45,8 +45,10 @@ const MyStore: React.FC = () => {
         productName: ''
     });
     const [orders, setOrders] = useState<Order[]>([]);
+    const [showScanner, setShowScanner] = useState(false);
+    const [scanningOrderId, setScanningOrderId] = useState<string | null>(null);
     const [offers, setOffers] = useState<Offer[]>([]);
-    const [activeTab, setActiveTab] = useState<'products' | 'orders' | 'offers' | 'profile'>('products');
+
     const [updatingOrder, setUpdatingOrder] = useState<string | null>(null);
     const [isEditingProfile, setIsEditingProfile] = useState(false);
     const [profileFormData, setProfileFormData] = useState<any>(null);
@@ -55,6 +57,7 @@ const MyStore: React.FC = () => {
     const [selectedOfferForCounter, setSelectedOfferForCounter] = useState<Offer | null>(null);
     const [counterAmount, setCounterAmount] = useState('');
     const [counterMessage, setCounterMessage] = useState('');
+    const [activeTab, setActiveTab] = useState<'products' | 'orders' | 'offers' | 'profile'>('products');
 
 
     // Form State
@@ -103,6 +106,19 @@ const MyStore: React.FC = () => {
     };
 
     const categories = ['Ropa', 'Accesorios', 'Bolas', 'Zapatos', 'Grips', 'Otros'];
+
+    const handleScanComplete = (trackingNumber: string, provider?: string) => {
+        if (scanningOrderId) {
+            const trackingInput = document.getElementById(`tracking-${scanningOrderId}`) as HTMLInputElement;
+            const providerInput = document.getElementById(`provider-${scanningOrderId}`) as HTMLInputElement;
+
+            if (trackingInput) trackingInput.value = trackingNumber;
+            if (providerInput && provider) providerInput.value = provider;
+
+            setShowScanner(false);
+            setScanningOrderId(null);
+        }
+    };
 
     const fetchOrders = async (userId: string) => {
         console.log('Fetching orders for seller:', userId);
@@ -172,6 +188,8 @@ const MyStore: React.FC = () => {
         }
     };
 
+
+
     const fetchStoreData = async () => {
         if (!user) return;
 
@@ -227,14 +245,14 @@ const MyStore: React.FC = () => {
 
             // Setup Realtime for Orders & Offers
             const channel = supabase
-                .channel(`seller-updates-${user.id}`)
+                .channel(`seller - updates - ${user.id} `)
                 .on(
                     'postgres_changes',
                     {
                         event: '*',
                         schema: 'public',
                         table: 'orders',
-                        filter: `seller_id=eq.${user.id}`
+                        filter: `seller_id = eq.${user.id} `
                     },
                     () => fetchOrders(user.id)
                 )
@@ -244,7 +262,7 @@ const MyStore: React.FC = () => {
                         event: '*',
                         schema: 'public',
                         table: 'offers',
-                        filter: `seller_id=eq.${user.id}`
+                        filter: `seller_id = eq.${user.id} `
                     },
                     () => fetchOffers(user.id)
                 )
@@ -585,6 +603,8 @@ const MyStore: React.FC = () => {
         return <StoreOnboarding onComplete={() => fetchStoreData()} />;
     }
 
+
+
     return (
         <div style={{
             position: 'fixed',
@@ -685,6 +705,7 @@ const MyStore: React.FC = () => {
                     })}
                 </div>
             </div>
+
 
             <div style={{
                 position: 'absolute',
@@ -1290,6 +1311,25 @@ const MyStore: React.FC = () => {
                                                         placeholder="No. Guía"
                                                         style={{ flex: 1, background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '12px', fontSize: '13px', color: 'white', outline: 'none' }}
                                                     />
+                                                    <button
+                                                        onClick={() => {
+                                                            setScanningOrderId(order.id);
+                                                            setShowScanner(true);
+                                                        }}
+                                                        style={{
+                                                            background: 'rgba(255,255,255,0.1)',
+                                                            border: '1px solid rgba(255,255,255,0.2)',
+                                                            borderRadius: '12px',
+                                                            width: '46px',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
+                                                            color: 'white'
+                                                        }}
+                                                        title="Escanear Guía"
+                                                    >
+                                                        <Camera size={20} />
+                                                    </button>
                                                 </div>
                                                 <button
                                                     onClick={() => {
@@ -1544,7 +1584,7 @@ const MyStore: React.FC = () => {
                                             <Store size={36} />
                                         </div>
                                         <div>
-                                            <h3 style={{ fontSize: '24px', fontWeight: '900', letterSpacing: '-0.02em' }}>{sellerProfile.store_name}</h3>
+                                            <h3 style={{ fontSize: '24px', fontWeight: '900', letterSpacing: '-0.02em' }}>{sellerProfile?.store_name}</h3>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
                                                 <span style={{
                                                     background: 'rgba(255,255,255,0.05)',
@@ -1556,7 +1596,7 @@ const MyStore: React.FC = () => {
                                                     borderRadius: '6px',
                                                     letterSpacing: '0.05em'
                                                 }}>
-                                                    {sellerProfile.entity_type === 'natural' ? 'Persona Natural' : 'Persona Jurídica'}
+                                                    {sellerProfile?.entity_type === 'natural' ? 'Persona Natural' : 'Persona Jurídica'}
                                                 </span>
                                             </div>
                                         </div>
@@ -1575,15 +1615,15 @@ const MyStore: React.FC = () => {
                                             <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                                     <span style={{ color: 'var(--text-dim)', fontSize: '14px', fontWeight: '500' }}>
-                                                        {sellerProfile.entity_type === 'natural' ? 'Nombre Completo' : 'Razón Social'}
+                                                        {sellerProfile?.entity_type === 'natural' ? 'Nombre Completo' : 'Razón Social'}
                                                     </span>
-                                                    <span style={{ fontWeight: '700', fontSize: '14px' }}>{sellerProfile.entity_type === 'natural' ? sellerProfile.full_name : sellerProfile.company_name}</span>
+                                                    <span style={{ fontWeight: '700', fontSize: '14px' }}>{sellerProfile?.entity_type === 'natural' ? sellerProfile?.full_name : sellerProfile?.company_name}</span>
                                                 </div>
                                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                                     <span style={{ color: 'var(--text-dim)', fontSize: '14px', fontWeight: '500' }}>
-                                                        {sellerProfile.entity_type === 'natural' ? `Doc. (${sellerProfile.document_type})` : 'NIT'}
+                                                        {sellerProfile?.entity_type === 'natural' ? `Doc. (${sellerProfile?.document_type})` : 'NIT'}
                                                     </span>
-                                                    <span style={{ fontWeight: '700', fontSize: '14px' }}>{sellerProfile.entity_type === 'natural' ? sellerProfile.document_number : sellerProfile.nit}</span>
+                                                    <span style={{ fontWeight: '700', fontSize: '14px' }}>{sellerProfile?.entity_type === 'natural' ? sellerProfile?.document_number : sellerProfile?.nit}</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -1600,16 +1640,16 @@ const MyStore: React.FC = () => {
                                             <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                                     <span style={{ color: 'var(--text-dim)', fontSize: '14px', fontWeight: '500' }}>Banco</span>
-                                                    <span style={{ fontWeight: '700', fontSize: '14px' }}>{sellerProfile.bank_name}</span>
+                                                    <span style={{ fontWeight: '700', fontSize: '14px' }}>{sellerProfile?.bank_name}</span>
                                                 </div>
                                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                                     <span style={{ color: 'var(--text-dim)', fontSize: '14px', fontWeight: '500' }}>Tipo de Cuenta</span>
-                                                    <span style={{ fontWeight: '700', fontSize: '14px', textTransform: 'capitalize' }}>{sellerProfile.account_type}</span>
+                                                    <span style={{ fontWeight: '700', fontSize: '14px', textTransform: 'capitalize' }}>{sellerProfile?.account_type}</span>
                                                 </div>
                                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                                     <span style={{ color: 'var(--text-dim)', fontSize: '14px', fontWeight: '500' }}>Número de Cuenta</span>
                                                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                                        <span style={{ fontWeight: '700', fontSize: '14px' }}>•••• {sellerProfile.account_number.slice(-4)}</span>
+                                                        <span style={{ fontWeight: '700', fontSize: '14px' }}>•••• {sellerProfile?.account_number.slice(-4)}</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -1661,7 +1701,7 @@ const MyStore: React.FC = () => {
                                         <div style={{ padding: '20px', background: 'rgba(255,255,255,0.02)', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)' }}>
                                             <h4 style={{ fontSize: '11px', color: 'var(--text-dim)', fontWeight: '900', marginBottom: '20px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Información de Identidad</h4>
                                             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                                                {sellerProfile.entity_type === 'natural' ? (
+                                                {sellerProfile?.entity_type === 'natural' ? (
                                                     <>
                                                         <div>
                                                             <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Nombre Completo</label>
@@ -1739,7 +1779,7 @@ const MyStore: React.FC = () => {
                                                             account_number: profileFormData.account_number,
                                                             updated_at: new Date().toISOString()
                                                         })
-                                                        .eq('id', sellerProfile.id);
+                                                        .eq('id', sellerProfile?.id);
 
                                                     if (error) throw error;
 
@@ -1776,12 +1816,6 @@ const MyStore: React.FC = () => {
                                 </Card>
                             )}
 
-                            <div className="glass" style={{ padding: '15px', display: 'flex', gap: '12px', alignItems: 'center', background: 'rgba(163, 230, 53, 0.05)' }}>
-                                <Info size={20} color="var(--secondary)" />
-                                <p style={{ fontSize: '12px', color: 'var(--text-dim)', lineHeight: '1.4' }}>
-                                    Mantén tus datos actualizados para asegurar que tus transferencias de ventas lleguen correctamente.
-                                </p>
-                            </div>
                         </div>
                     </div>
                 )}
@@ -1872,141 +1906,154 @@ const MyStore: React.FC = () => {
             }
 
             {/* Modal de Contraoferta */}
-            {showCounterModal && selectedOfferForCounter && (
-                <div style={{
-                    position: 'fixed',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    backgroundColor: 'rgba(0,0,0,0.85)',
-                    backdropFilter: 'blur(10px)',
-                    zIndex: 1000,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    padding: '20px'
-                }}>
-                    <motion.div
-                        initial={{ scale: 0.9, opacity: 0, y: 20 }}
-                        animate={{ scale: 1, opacity: 1, y: 0 }}
-                        style={{
-                            backgroundColor: '#1a1a1a',
-                            borderRadius: '32px',
-                            width: '100%',
-                            maxWidth: '450px',
-                            padding: '32px',
-                            border: '1px solid rgba(255,255,255,0.1)',
-                        }}
-                    >
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-                            <div>
-                                <h3 style={{ fontSize: '24px', fontWeight: '900', color: 'white', marginBottom: '4px' }}>Enviar Contraoferta</h3>
-                                <p style={{ fontSize: '14px', color: 'rgba(255,255,255,0.5)' }}>Para {selectedOfferForCounter.product?.name}</p>
+            {
+                showCounterModal && selectedOfferForCounter && (
+                    <div style={{
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        backgroundColor: 'rgba(0,0,0,0.85)',
+                        backdropFilter: 'blur(10px)',
+                        zIndex: 1000,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        padding: '20px'
+                    }}>
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                            animate={{ scale: 1, opacity: 1, y: 0 }}
+                            style={{
+                                backgroundColor: '#1a1a1a',
+                                borderRadius: '32px',
+                                width: '100%',
+                                maxWidth: '450px',
+                                padding: '32px',
+                                border: '1px solid rgba(255,255,255,0.1)',
+                            }}
+                        >
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+                                <div>
+                                    <h3 style={{ fontSize: '24px', fontWeight: '900', color: 'white', marginBottom: '4px' }}>Enviar Contraoferta</h3>
+                                    <p style={{ fontSize: '14px', color: 'rgba(255,255,255,0.5)' }}>Para {selectedOfferForCounter?.product?.name}</p>
+                                </div>
+                                <button
+                                    onClick={() => setShowCounterModal(false)}
+                                    style={{
+                                        background: 'rgba(255,255,255,0.05)',
+                                        border: 'none',
+                                        padding: '12px',
+                                        borderRadius: '16px',
+                                        color: 'white'
+                                    }}
+                                >
+                                    <X size={24} />
+                                </button>
                             </div>
-                            <button
-                                onClick={() => setShowCounterModal(false)}
-                                style={{
-                                    background: 'rgba(255,255,255,0.05)',
-                                    border: 'none',
-                                    padding: '12px',
-                                    borderRadius: '16px',
-                                    color: 'white'
-                                }}
-                            >
-                                <X size={24} />
-                            </button>
-                        </div>
 
-                        <div style={{ display: 'flex', background: 'rgba(255,255,255,0.03)', padding: '16px', borderRadius: '20px', marginBottom: '24px', gap: '16px', alignItems: 'center' }}>
-                            <div style={{ flex: 1 }}>
-                                <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)', fontWeight: '700', textTransform: 'uppercase' }}>Oferta Actual</span>
-                                <div style={{ fontSize: '20px', fontWeight: '800', color: 'white' }}>${selectedOfferForCounter.offer_amount.toLocaleString()}</div>
+                            <div style={{ display: 'flex', background: 'rgba(255,255,255,0.03)', padding: '16px', borderRadius: '20px', marginBottom: '24px', gap: '16px', alignItems: 'center' }}>
+                                <div style={{ flex: 1 }}>
+                                    <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)', fontWeight: '700', textTransform: 'uppercase' }}>Oferta Actual</span>
+                                    <div style={{ fontSize: '20px', fontWeight: '800', color: 'white' }}>${selectedOfferForCounter?.offer_amount.toLocaleString()}</div>
+                                </div>
+                                <div style={{ width: '1px', height: '30px', background: 'rgba(255,255,255,0.1)' }} />
+                                <div style={{ flex: 1 }}>
+                                    <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)', fontWeight: '700', textTransform: 'uppercase' }}>Precio Orig.</span>
+                                    <div style={{ fontSize: '20px', fontWeight: '800', color: 'rgba(255,255,255,0.6)' }}>${selectedOfferForCounter?.product?.price.toLocaleString()}</div>
+                                </div>
                             </div>
-                            <div style={{ width: '1px', height: '30px', background: 'rgba(255,255,255,0.1)' }} />
-                            <div style={{ flex: 1 }}>
-                                <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)', fontWeight: '700', textTransform: 'uppercase' }}>Precio Orig.</span>
-                                <div style={{ fontSize: '20px', fontWeight: '800', color: 'rgba(255,255,255,0.6)' }}>${selectedOfferForCounter.product?.price.toLocaleString()}</div>
-                            </div>
-                        </div>
 
-                        <div style={{ marginBottom: '24px' }}>
-                            <label style={{ display: 'block', fontSize: '13px', fontWeight: '700', color: 'rgba(255,255,255,0.6)', marginBottom: '10px', marginLeft: '4px' }}>Nuevo Monto</label>
-                            <div style={{ position: 'relative' }}>
-                                <span style={{ position: 'absolute', left: '20px', top: '50%', transform: 'translateY(-50%)', fontSize: '24px', fontWeight: '900', color: 'var(--secondary)' }}>$</span>
-                                <input
-                                    type="number"
-                                    value={counterAmount}
-                                    onChange={(e) => setCounterAmount(e.target.value)}
-                                    placeholder="0"
+                            <div style={{ marginBottom: '24px' }}>
+                                <label style={{ display: 'block', fontSize: '13px', fontWeight: '700', color: 'rgba(255,255,255,0.6)', marginBottom: '10px', marginLeft: '4px' }}>Nuevo Monto</label>
+                                <div style={{ position: 'relative' }}>
+                                    <span style={{ position: 'absolute', left: '20px', top: '50%', transform: 'translateY(-50%)', fontSize: '24px', fontWeight: '900', color: 'var(--secondary)' }}>$</span>
+                                    <input
+                                        type="number"
+                                        value={counterAmount}
+                                        onChange={(e) => setCounterAmount(e.target.value)}
+                                        placeholder="0"
+                                        style={{
+                                            width: '100%',
+                                            background: 'rgba(255,255,255,0.05)',
+                                            border: '2px solid rgba(163, 230, 53, 0.2)',
+                                            borderRadius: '20px',
+                                            padding: '20px 20px 20px 45px',
+                                            fontSize: '28px',
+                                            fontWeight: '900',
+                                            color: 'white',
+                                            outline: 'none'
+                                        }}
+                                    />
+                                </div>
+                            </div>
+
+                            <div style={{ marginBottom: '32px' }}>
+                                <label style={{ display: 'block', fontSize: '13px', fontWeight: '700', color: 'rgba(255,255,255,0.6)', marginBottom: '10px', marginLeft: '4px' }}>Mensaje (Opcional)</label>
+                                <textarea
+                                    value={counterMessage}
+                                    onChange={(e) => setCounterMessage(e.target.value)}
+                                    placeholder="Ej: Podemos cerrar en este precio si lo compras hoy mismo."
                                     style={{
                                         width: '100%',
                                         background: 'rgba(255,255,255,0.05)',
-                                        border: '2px solid rgba(163, 230, 53, 0.2)',
+                                        border: '1px solid rgba(255,255,255,0.1)',
                                         borderRadius: '20px',
-                                        padding: '20px 20px 20px 45px',
-                                        fontSize: '28px',
-                                        fontWeight: '900',
+                                        padding: '16px',
+                                        fontSize: '15px',
                                         color: 'white',
-                                        outline: 'none'
+                                        minHeight: '100px',
+                                        outline: 'none',
+                                        resize: 'none'
                                     }}
                                 />
                             </div>
-                        </div>
 
-                        <div style={{ marginBottom: '32px' }}>
-                            <label style={{ display: 'block', fontSize: '13px', fontWeight: '700', color: 'rgba(255,255,255,0.6)', marginBottom: '10px', marginLeft: '4px' }}>Mensaje (Opcional)</label>
-                            <textarea
-                                value={counterMessage}
-                                onChange={(e) => setCounterMessage(e.target.value)}
-                                placeholder="Ej: Podemos cerrar en este precio si lo compras hoy mismo."
+                            <button
+                                onClick={() => {
+                                    handleOfferAction(selectedOfferForCounter?.id || '', 'countered', {
+                                        counter_amount: parseFloat(counterAmount),
+                                        counter_message: counterMessage
+                                    });
+                                    setShowCounterModal(false);
+                                }}
+                                disabled={!counterAmount || isNaN(parseFloat(counterAmount))}
                                 style={{
                                     width: '100%',
-                                    background: 'rgba(255,255,255,0.05)',
-                                    border: '1px solid rgba(255,255,255,0.1)',
+                                    background: 'var(--secondary)',
+                                    color: 'var(--primary)',
+                                    padding: '20px',
                                     borderRadius: '20px',
-                                    padding: '16px',
-                                    fontSize: '15px',
-                                    color: 'white',
-                                    minHeight: '100px',
-                                    outline: 'none',
-                                    resize: 'none'
+                                    fontWeight: '900',
+                                    fontSize: '16px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '12px',
+                                    boxShadow: '0 12px 24px rgba(163, 230, 53, 0.2)',
+                                    opacity: (!counterAmount || isNaN(parseFloat(counterAmount))) ? 0.5 : 1
                                 }}
-                            />
-                        </div>
+                            >
+                                ENVIAR CONTRAOFERTA
+                            </button>
+                        </motion.div>
+                    </div>
+                )
+            }
 
-                        <button
-                            onClick={() => {
-                                handleOfferAction(selectedOfferForCounter.id, 'countered', {
-                                    counter_amount: parseFloat(counterAmount),
-                                    counter_message: counterMessage
-                                });
-                                setShowCounterModal(false);
-                            }}
-                            disabled={!counterAmount || isNaN(parseFloat(counterAmount))}
-                            style={{
-                                width: '100%',
-                                background: 'var(--secondary)',
-                                color: 'var(--primary)',
-                                padding: '20px',
-                                borderRadius: '20px',
-                                fontWeight: '900',
-                                fontSize: '16px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                gap: '12px',
-                                boxShadow: '0 12px 24px rgba(163, 230, 53, 0.2)',
-                                opacity: (!counterAmount || isNaN(parseFloat(counterAmount))) ? 0.5 : 1
-                            }}
-                        >
-                            ENVIAR CONTRAOFERTA
-                        </button>
-                    </motion.div>
-                </div>
-            )}
-        </div >
-
+            {
+                showScanner && (
+                    <TrackingScanner
+                        onScanComplete={handleScanComplete}
+                        onClose={() => {
+                            setShowScanner(false);
+                            setScanningOrderId(null);
+                        }}
+                    />
+                )
+            }
+        </div>
     );
 };
 
