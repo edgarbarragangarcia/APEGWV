@@ -389,7 +389,7 @@ const Home: React.FC = () => {
                                         <div>
                                             <div style={{ fontWeight: '500', fontSize: '14px' }}>{tournament.name}</div>
                                             <div style={{ fontSize: '12px', color: 'var(--text-dim)' }}>
-                                                {new Date(tournament.date).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })} • {tournament.club || tournament.location}
+                                                {new Date(tournament.date).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })} • {tournament.club}
                                             </div>
                                         </div>
                                     </div>

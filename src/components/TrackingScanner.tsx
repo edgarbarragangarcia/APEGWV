@@ -1,7 +1,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import Tesseract from 'tesseract.js';
-import { Camera, Upload, X, Check, Loader2, RefreshCw } from 'lucide-react';
+import { Camera, Upload, X, Loader2, RefreshCw } from 'lucide-react';
 
 interface TrackingScannerProps {
     onScanComplete: (trackingNumber: string, provider?: string) => void;
