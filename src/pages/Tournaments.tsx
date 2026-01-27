@@ -290,7 +290,7 @@ const Tournaments: React.FC = () => {
             {/* Scrollable Content Area */}
             <div style={{
                 position: 'absolute',
-                top: 'calc(var(--header-offset-top) + 280px)',
+                top: 'calc(var(--header-offset-top) + 210px)',
                 left: '0',
                 right: '0',
                 bottom: 'var(--nav-height)',

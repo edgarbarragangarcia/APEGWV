@@ -22,6 +22,7 @@ interface Tournament {
     budget_per_player: number | null;
     budget_prizes: number | null;
     budget_operational: number | null;
+    budget_items: BudgetItem[] | null;
 }
 
 interface Participant {
@@ -29,6 +30,13 @@ interface Participant {
     full_name: string | null;
     id_photo_url: string | null;
     handicap: number | null;
+}
+
+interface BudgetItem {
+    id: string;
+    label: string;
+    amount: string;
+    type: 'per_player' | 'fixed';
 }
 
 const TournamentManager: React.FC = () => {
@@ -66,17 +74,53 @@ const TournamentManager: React.FC = () => {
         status: 'Abierto',
         game_mode: 'Juego por Golpes',
         address: '',
-        budget_per_player: '',
-        budget_prizes: '',
-        budget_operational: ''
+        budget_items: [
+            { id: '1', label: 'Costo Op. por Jugador', amount: '', type: 'per_player' as const },
+            { id: '2', label: 'Bolsa de Premios', amount: '', type: 'fixed' as const },
+            { id: '3', label: 'Otros Gastos', amount: '', type: 'fixed' as const }
+        ] as BudgetItem[]
     });
 
     const calculateBudget = () => {
         const income = (parseInt(formData.displayPrice.replace(/\D/g, '')) || 0) * (parseInt(formData.participants_limit) || 0);
-        const expenses = ((parseInt(formData.budget_per_player) || 0) * (parseInt(formData.participants_limit) || 0)) +
-            (parseInt(formData.budget_prizes) || 0) +
-            (parseInt(formData.budget_operational) || 0);
+        let expenses = 0;
+
+        formData.budget_items.forEach(item => {
+            const amount = parseInt(item.amount) || 0;
+            if (item.type === 'per_player') {
+                expenses += amount * (parseInt(formData.participants_limit) || 0);
+            } else {
+                expenses += amount;
+            }
+        });
+
         return { income, expenses, profit: income - expenses };
+    };
+
+    const addBudgetItem = () => {
+        setFormData(prev => ({
+            ...prev,
+            budget_items: [
+                ...prev.budget_items,
+                { id: Date.now().toString(), label: '', amount: '', type: 'fixed' }
+            ]
+        }));
+    };
+
+    const removeBudgetItem = (id: string) => {
+        setFormData(prev => ({
+            ...prev,
+            budget_items: prev.budget_items.filter(item => item.id !== id)
+        }));
+    };
+
+    const updateBudgetItem = (id: string, field: keyof BudgetItem, value: string) => {
+        setFormData(prev => ({
+            ...prev,
+            budget_items: prev.budget_items.map(item =>
+                item.id === id ? { ...item, [field]: value } : item
+            )
+        }));
     };
 
     const formatPrice = (val: string) => {
@@ -162,9 +206,7 @@ const TournamentManager: React.FC = () => {
                         status: formData.status,
                         game_mode: formData.game_mode,
                         address: formData.address,
-                        budget_per_player: parseFloat(formData.budget_per_player) || 0,
-                        budget_prizes: parseFloat(formData.budget_prizes) || 0,
-                        budget_operational: parseFloat(formData.budget_operational) || 0,
+                        budget_items: formData.budget_items,
                         updated_at: new Date().toISOString()
                     })
                     .eq('id', editingId)
@@ -184,9 +226,7 @@ const TournamentManager: React.FC = () => {
                         status: formData.status,
                         game_mode: formData.game_mode,
                         address: formData.address,
-                        budget_per_player: parseFloat(formData.budget_per_player) || 0,
-                        budget_prizes: parseFloat(formData.budget_prizes) || 0,
-                        budget_operational: parseFloat(formData.budget_operational) || 0,
+                        budget_items: formData.budget_items,
                         creator_id: user.id
                     }])
                     .select()
@@ -225,9 +265,11 @@ const TournamentManager: React.FC = () => {
             status: 'Abierto',
             game_mode: 'Juego por Golpes',
             address: '',
-            budget_per_player: '',
-            budget_prizes: '',
-            budget_operational: ''
+            budget_items: [
+                { id: '1', label: 'Costo Op. por Jugador', amount: '', type: 'per_player' },
+                { id: '2', label: 'Bolsa de Premios', amount: '', type: 'fixed' },
+                { id: '3', label: 'Otros Gastos', amount: '', type: 'fixed' }
+            ]
         });
         setEditingId(null);
     };
@@ -246,9 +288,13 @@ const TournamentManager: React.FC = () => {
             status: tournament.status || 'Abierto',
             game_mode: tournament.game_mode || 'Juego por Golpes',
             address: tournament.address || '',
-            budget_per_player: (tournament.budget_per_player || '').toString(),
-            budget_prizes: (tournament.budget_prizes || '').toString(),
-            budget_operational: (tournament.budget_operational || '').toString()
+            budget_items: tournament.budget_items && Array.isArray(tournament.budget_items) && tournament.budget_items.length > 0
+                ? (tournament.budget_items as BudgetItem[]).map(item => ({ ...item, amount: item.amount.toString() }))
+                : [
+                    { id: '1', label: 'Costo Op. por Jugador', amount: (tournament.budget_per_player || '').toString(), type: 'per_player' },
+                    { id: '2', label: 'Bolsa de Premios', amount: (tournament.budget_prizes || '').toString(), type: 'fixed' },
+                    { id: '3', label: 'Otros Gastos', amount: (tournament.budget_operational || '').toString(), type: 'fixed' }
+                ]
         });
         setEditingId(tournament.id);
         setShowForm(true);
@@ -501,38 +547,65 @@ const TournamentManager: React.FC = () => {
                             <hr style={{ borderColor: 'rgba(255,255,255,0.1)', margin: '10px 0' }} />
 
                             {/* Budget Section */}
-                            <h3 style={{ fontSize: '16px', fontWeight: '800', color: 'var(--secondary)', marginBottom: '5px' }}>Mini Presupuesto</h3>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
-                                <div>
-                                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Costo Op. por Jugador</label>
-                                    <input
-                                        type="number"
-                                        value={formData.budget_per_player}
-                                        onChange={e => setFormData({ ...formData, budget_per_player: e.target.value })}
-                                        style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '12px', color: 'white', fontSize: '15px' }}
-                                        placeholder="Comida, GreenFee..."
-                                    />
-                                </div>
-                                <div>
-                                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Bolsa de Premios</label>
-                                    <input
-                                        type="number"
-                                        value={formData.budget_prizes}
-                                        onChange={e => setFormData({ ...formData, budget_prizes: e.target.value })}
-                                        style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '12px', color: 'white', fontSize: '15px' }}
-                                        placeholder="Total Premios"
-                                    />
-                                </div>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+                                <h3 style={{ fontSize: '16px', fontWeight: '800', color: 'var(--secondary)', margin: 0 }}>Mini Presupuesto</h3>
+                                <button
+                                    type="button"
+                                    onClick={addBudgetItem}
+                                    style={{
+                                        background: 'rgba(163, 230, 53, 0.1)',
+                                        color: 'var(--secondary)',
+                                        border: 'none',
+                                        padding: '6px 12px',
+                                        borderRadius: '8px',
+                                        fontSize: '12px',
+                                        fontWeight: '700',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '5px'
+                                    }}
+                                >
+                                    <Plus size={14} /> Agregar campo
+                                </button>
                             </div>
-                            <div>
-                                <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Otros Gastos Operativos</label>
-                                <input
-                                    type="number"
-                                    value={formData.budget_operational}
-                                    onChange={e => setFormData({ ...formData, budget_operational: e.target.value })}
-                                    style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '12px', color: 'white', fontSize: '15px' }}
-                                    placeholder="Jueces, trofeos, staff..."
-                                />
+
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                {formData.budget_items.map((item) => (
+                                    <div key={item.id} className="glass" style={{ padding: '15px', borderRadius: '15px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                        <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
+                                            <input
+                                                value={item.label}
+                                                onChange={e => updateBudgetItem(item.id, 'label', e.target.value)}
+                                                placeholder="Nombre del gasto..."
+                                                style={{ flex: 1, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '10px', padding: '8px 12px', color: 'white', fontSize: '14px' }}
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => removeBudgetItem(item.id)}
+                                                style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: 'none', width: '35px', height: '35px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                            >
+                                                <Trash2 size={16} />
+                                            </button>
+                                        </div>
+                                        <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '10px' }}>
+                                            <input
+                                                type="number"
+                                                value={item.amount}
+                                                onChange={e => updateBudgetItem(item.id, 'amount', e.target.value)}
+                                                placeholder="Monto"
+                                                style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '10px', padding: '8px 12px', color: 'white', fontSize: '14px' }}
+                                            />
+                                            <select
+                                                value={item.type}
+                                                onChange={e => updateBudgetItem(item.id, 'type', e.target.value as 'per_player' | 'fixed')}
+                                                style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '10px', padding: '8px 12px', color: 'white', fontSize: '13px', outline: 'none' }}
+                                            >
+                                                <option value="fixed" style={{ background: 'var(--primary)', color: 'white' }}>Fijo (Total)</option>
+                                                <option value="per_player" style={{ background: 'var(--primary)', color: 'white' }}>Por Jugador</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
 
                             {/* Live Budget Summary */}
