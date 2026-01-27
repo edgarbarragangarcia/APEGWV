@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { MapPin, ChevronRight, Star, Filter, LayoutGrid, Ticket } from 'lucide-react';
 import Card from '../components/Card';
+import PageHeader from '../components/PageHeader';
 import MyReservations from './MyReservations';
 
 const courses = [
@@ -93,14 +94,12 @@ const GreenFee: React.FC = () => {
                 paddingRight: '20px',
                 pointerEvents: 'auto'
             }}>
-                <header style={{ marginBottom: '8px' }}>
-                    <h1 style={{ fontSize: '28px', fontWeight: '900', marginBottom: '5px', color: 'white' }}>
-                        Green <span style={{ color: 'var(--secondary)' }}>Fees</span>
-                    </h1>
-                    <p style={{ color: 'var(--text-dim)', fontSize: '14px' }}>
-                        Reserva tu salida en los mejores campos
-                    </p>
-                </header>
+                <PageHeader
+                    noMargin
+                    showBack={false}
+                    title="Green Fees"
+                    subtitle="Reserva tu salida en los mejores campos"
+                />
 
                 {/* Tab Bar */}
                 <div style={{

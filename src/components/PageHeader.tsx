@@ -27,12 +27,12 @@ const PageHeader: React.FC<PageHeaderProps> = ({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            marginTop: noMargin ? '0' : '10px',
-            marginBottom: '25px',
+            marginTop: noMargin ? '0' : '0', // Default to 0 for standardization
+            marginBottom: '15px',
             position: 'relative',
             zIndex: 10
         }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '15px', width: '100%' }}>
                 {showBack && (
                     <button
                         onClick={handleBack}
@@ -55,13 +55,14 @@ const PageHeader: React.FC<PageHeaderProps> = ({
                         <ArrowLeft size={20} />
                     </button>
                 )}
-                <div>
+                <div style={{ flex: 1 }}>
                     <h1 style={{
-                        fontSize: '22px',
+                        fontSize: '28px',
                         fontWeight: '900',
                         margin: 0,
                         lineHeight: '1.2',
-                        textTransform: 'none' // Allow manual capitalization or use specific casing
+                        textTransform: 'none',
+                        letterSpacing: '-0.5px'
                     }}>
                         {(() => {
                             const words = title.split(' ');

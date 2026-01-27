@@ -8,6 +8,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import Card from '../components/Card';
 
+import PageHeader from '../components/PageHeader';
 import { supabase, optimizeImage } from '../services/SupabaseManager';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
@@ -267,39 +268,36 @@ const Shop: React.FC = () => {
                 paddingRight: '20px',
                 pointerEvents: 'auto'
             }}>
-                <div style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'flex-start',
-                    marginBottom: '8px'
-                }}>
-                    <div>
-                        <h1 style={{ fontSize: '28px', fontWeight: '900', marginBottom: '5px', color: 'white' }}>Marketplace</h1>
-                        <p style={{ color: 'var(--text-dim)', fontSize: '14px' }}>Equipamiento premium de la comunidad</p>
-                    </div>
-                    {totalItems > 0 && (
-                        <motion.button
-                            initial={{ scale: 0 }}
-                            animate={{ scale: 1 }}
-                            whileTap={{ scale: 0.9 }}
-                            onClick={() => navigate('/cart')}
-                            style={{
-                                background: 'var(--secondary)',
-                                color: 'var(--primary)',
-                                border: 'none',
-                                padding: '12px',
-                                borderRadius: '16px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '8px',
-                                boxShadow: '0 8px 20px rgba(163, 230, 53, 0.3)'
-                            }}
-                        >
-                            <ShoppingCart size={20} />
-                            <span style={{ fontWeight: '900', fontSize: '14px' }}>{totalItems}</span>
-                        </motion.button>
-                    )}
-                </div>
+                <PageHeader
+                    noMargin
+                    showBack={false}
+                    title="Marketplace"
+                    subtitle="Equipamiento premium de la comunidad"
+                    rightElement={
+                        totalItems > 0 && (
+                            <motion.button
+                                initial={{ scale: 0 }}
+                                animate={{ scale: 1 }}
+                                whileTap={{ scale: 0.9 }}
+                                onClick={() => navigate('/cart')}
+                                style={{
+                                    background: 'var(--secondary)',
+                                    color: 'var(--primary)',
+                                    border: 'none',
+                                    padding: '12px',
+                                    borderRadius: '16px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '8px',
+                                    boxShadow: '0 8px 20px rgba(163, 230, 53, 0.3)'
+                                }}
+                            >
+                                <ShoppingCart size={20} />
+                                <span style={{ fontWeight: '900', fontSize: '14px' }}>{totalItems}</span>
+                            </motion.button>
+                        )
+                    }
+                />
 
                 {/* Tab Bar Principal */}
                 <div style={{

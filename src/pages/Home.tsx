@@ -8,6 +8,7 @@ import type { ActivityType } from '../components/ActivityCard';
 import { useProfile } from '../hooks/useProfile';
 import { useFeaturedProducts, useUpcomingTournaments, useUserRoundCount } from '../hooks/useHomeData';
 import { useQuery } from '@tanstack/react-query';
+import PageHeader from '../components/PageHeader';
 import { useAuth } from '../context/AuthContext';
 
 interface ActivityItem {
@@ -135,12 +136,12 @@ const Home: React.FC = () => {
                 background: 'var(--primary)',
                 paddingBottom: '5px'
             }}>
-                <header style={{ marginBottom: '8px' }}>
-                    <h1 style={{ fontSize: '26px', fontWeight: '900', marginBottom: '2px', color: 'white' }}>
-                        Hola, <span style={{ color: 'var(--secondary)' }}>{profile?.full_name?.split(' ')[0] || 'Golfista'}</span>
-                    </h1>
-                    <p style={{ color: 'var(--text-dim)', fontSize: '13px' }}>Listo para tu próxima victoria en el campo?</p>
-                </header>
+                <PageHeader
+                    noMargin
+                    showBack={false}
+                    title={`Hola, ${profile?.full_name?.split(' ')[0] || 'Golfista'}`}
+                    subtitle="¿Listo para tu próxima victoria en el campo?"
+                />
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
                     <Card style={{

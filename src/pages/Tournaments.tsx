@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Calendar, Users, MapPin, Search, UserPlus, Trophy, X, Gift } from 'lucide-react';
 import Card from '../components/Card';
+import PageHeader from '../components/PageHeader';
 import { supabase } from '../services/SupabaseManager';
 import Skeleton from '../components/Skeleton';
 import { useAuth } from '../context/AuthContext';
@@ -201,10 +202,12 @@ const Tournaments: React.FC = () => {
                 paddingRight: '20px',
                 pointerEvents: 'auto'
             }}>
-                <header style={{ marginBottom: '15px' }}>
-                    <h1 style={{ fontSize: '28px', fontWeight: '900', marginBottom: '5px', color: 'white' }}>Eventos</h1>
-                    <p style={{ color: 'var(--text-dim)', fontSize: '14px' }}>Compite y crece en la comunidad APEG</p>
-                </header>
+                <PageHeader
+                    noMargin
+                    showBack={false}
+                    title="Eventos"
+                    subtitle="Compite y crece en la comunidad APEG"
+                />
 
                 {/* Tab Bar */}
                 <div style={{
@@ -287,7 +290,7 @@ const Tournaments: React.FC = () => {
             {/* Scrollable Content Area */}
             <div style={{
                 position: 'absolute',
-                top: 'calc(var(--header-offset-top) + 263px)',
+                top: 'calc(var(--header-offset-top) + 280px)',
                 left: '0',
                 right: '0',
                 bottom: 'var(--nav-height)',

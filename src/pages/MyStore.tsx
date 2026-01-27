@@ -13,6 +13,7 @@ import {
 import Card from '../components/Card';
 import StoreOnboarding from '../components/StoreOnboarding';
 import Skeleton from '../components/Skeleton';
+import PageHeader from '../components/PageHeader';
 import { useAuth } from '../context/AuthContext';
 import type { Database } from '../types/database.types';
 
@@ -606,56 +607,15 @@ const MyStore: React.FC = () => {
                 width: '100%',
                 zIndex: 900,
                 background: 'linear-gradient(180deg, var(--primary) 0%, var(--primary) 98%, transparent 100%)',
-                padding: '20px 20px 10px 20px',
+                padding: '0 20px 10px 20px',
                 pointerEvents: 'auto'
             }}>
-                {/* Store Title Header */}
-                <div style={{ padding: '20px 0', marginBottom: '10px', textAlign: 'center', position: 'relative' }}>
-                    <div style={{
-                        position: 'absolute',
-                        top: '50%',
-                        left: '50%',
-                        transform: 'translate(-50%, -50%)',
-                        width: '150px',
-                        height: '150px',
-                        background: 'radial-gradient(circle, var(--secondary-light) 0%, transparent 70%)',
-                        opacity: 0.1,
-                        filter: 'blur(30px)',
-                        zIndex: -1
-                    }} />
-                    <span style={{
-                        fontSize: '11px',
-                        fontWeight: '900',
-                        color: 'var(--secondary)',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.2em',
-                        opacity: 0.9,
-                        display: 'block',
-                        marginBottom: '8px'
-                    }}>
-                        Panel de Control
-                    </span>
-                    <h1 style={{
-                        fontSize: '32px',
-                        fontWeight: '900',
-                        color: 'white',
-                        margin: 0,
-                        letterSpacing: '-1px',
-                        textShadow: '0 10px 20px rgba(0,0,0,0.3)'
-                    }}>
-                        {(() => {
-                            const words = sellerProfile.store_name?.split(' ') || [];
-                            if (words.length <= 1) return <span style={{ color: 'white' }}>{sellerProfile.store_name}</span>;
-                            return (
-                                <>
-                                    <span style={{ color: 'white' }}>{words[0]} </span>
-                                    <span style={{ color: 'var(--secondary)' }}>{words[1]}</span>
-                                    {words.length > 2 && <span style={{ color: 'white' }}> {words.slice(2).join(' ')}</span>}
-                                </>
-                            );
-                        })()}
-                    </h1>
-                </div>
+                <PageHeader
+                    noMargin
+                    showBack={false}
+                    title={sellerProfile.store_name || "Mi Tienda"}
+                    subtitle="Panel de Control"
+                />
 
                 {/* Dashboard Navigation */}
                 <div style={{
