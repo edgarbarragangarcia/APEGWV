@@ -130,13 +130,14 @@ const PaymentMethodsPage: React.FC = () => {
 
     return (
         <div className="animate-fade" style={{
-            padding: '20px',
+            padding: '0 20px 20px 20px',
             paddingBottom: 'calc(var(--nav-height) + 40px)',
             maxWidth: 'var(--app-max-width)',
             margin: '0 auto'
         }}>
             {/* Header */}
             <PageHeader
+                noMargin
                 title="Métodos de Pago"
                 onBack={() => showAddForm ? setShowAddForm(false) : navigate(-1)}
             />

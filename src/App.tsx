@@ -30,6 +30,9 @@ import CouponManager from './pages/CouponManager';
 import TournamentManager from './pages/TournamentManager';
 import CheckoutPage from './pages/CheckoutPage';
 import PaymentMethodsPage from './pages/PaymentMethodsPage';
+import { useOnlineStatus } from './hooks/useOnlineStatus';
+import OfflineOverlay from './components/OfflineOverlay';
+import { setupPushNotifications } from './services/PushManager';
 
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { QueryProvider } from './context/QueryProvider';
@@ -37,6 +40,7 @@ import { QueryProvider } from './context/QueryProvider';
 const AppContent: React.FC = () => {
   const { session, loading } = useAuth();
   const location = useLocation();
+  const isOnline = useOnlineStatus();
   const [showOnboarding, setShowOnboarding] = React.useState(false);
 
   React.useEffect(() => {
@@ -71,6 +75,11 @@ const AppContent: React.FC = () => {
         }
       };
       checkOnboarding();
+
+      // Setup Push Notifications
+      setupPushNotifications(session.user.id).catch(err => {
+        console.warn('Push notification setup failed or not supported:', err);
+      });
     } else {
       setShowOnboarding(false);
     }
@@ -81,6 +90,7 @@ const AppContent: React.FC = () => {
   }
 
   const isRoundPage = location.pathname === '/round';
+  const isNotificationsPage = location.pathname === '/notifications';
 
   return (
     <div
@@ -97,8 +107,8 @@ const AppContent: React.FC = () => {
       {session && <Navbar />}
 
       <main
-        className={`${session ? "page-content container" : ""} ${isRoundPage ? 'round-page-content' : ''}`}
-        style={!session ? { flex: 1, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', padding: 0, margin: 0 } : { flex: 1, overflow: isRoundPage ? 'hidden' : 'auto' }}
+        className={`${session ? "page-content container" : ""} ${(isRoundPage || isNotificationsPage) ? 'round-page-content' : ''}`}
+        style={!session ? { flex: 1, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', padding: 0, margin: 0 } : { flex: 1, overflow: (isRoundPage || isNotificationsPage) ? 'hidden' : 'auto' }}
       >
         <Routes>
           {!session ? (
@@ -145,6 +155,8 @@ const AppContent: React.FC = () => {
           onComplete={() => setShowOnboarding(false)}
         />
       )}
+
+      <OfflineOverlay isOnline={isOnline} />
     </div>
   );
 };

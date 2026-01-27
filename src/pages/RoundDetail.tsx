@@ -2,8 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '../services/SupabaseManager';
 import { analyzeRound, type RoundData, type AIAnalysis } from '../services/AIService';
-import { ArrowLeft, Calendar, MapPin, Loader2, Sparkles, TrendingUp, TrendingDown, Target } from 'lucide-react';
+import {
+    Loader2, Sparkles, TrendingUp, TrendingDown, Target
+} from 'lucide-react';
 import Card from '../components/Card';
+import PageHeader from '../components/PageHeader';
 
 interface Round extends Omit<RoundData, 'course_location' | 'status'> {
     id: string;
@@ -121,211 +124,221 @@ const RoundDetail: React.FC = () => {
     const scoreToPar = round.total_score - totalPar;
 
     return (
-        <div className="animate-fade">
-            <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '20px' }}>
-                <button onClick={() => navigate('/rounds')} style={{ background: 'none', border: 'none', color: 'var(--text)' }}>
-                    <ArrowLeft size={24} />
-                </button>
-                <div style={{ flex: 1 }}>
-                    <h1 style={{ fontSize: '20px', margin: 0, fontWeight: '900', color: 'white' }}>
-                        {(() => {
-                            const words = round.course_name.split(' ');
-                            if (words.length <= 1) return <span style={{ color: 'white' }}>{round.course_name}</span>;
-                            return (
-                                <>
-                                    <span style={{ color: 'white' }}>{words[0]} </span>
-                                    <span style={{ color: 'var(--secondary)' }}>{words[1]}</span>
-                                    {words.length > 2 && <span style={{ color: 'white' }}> {words.slice(2).join(' ')}</span>}
-                                </>
-                            );
-                        })()}
-                    </h1>
-                    <div style={{ display: 'flex', gap: '15px', fontSize: '13px', color: 'var(--text-dim)', marginTop: '5px' }}>
-                        {round.course_location && (
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                                <MapPin size={14} />
-                                {round.course_location}
-                            </div>
-                        )}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                            <Calendar size={14} />
-                            {new Date(round.date_played).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}
-                        </div>
-                    </div>
-                </div>
+        <div className="animate-fade" style={{
+            position: 'fixed',
+            inset: 0,
+            width: '100%',
+            maxWidth: 'var(--app-max-width)',
+            margin: '0 auto',
+            overflow: 'hidden',
+            background: 'var(--primary)'
+        }}>
+            {/* Header Fijo */}
+            <div style={{
+                position: 'absolute',
+                top: 'var(--header-offset-top)',
+                left: '0',
+                right: '0',
+                width: '100%',
+                zIndex: 900,
+                background: 'var(--primary)',
+                paddingLeft: '20px',
+                paddingRight: '20px',
+                pointerEvents: 'auto'
+            }}>
+                <PageHeader
+                    noMargin
+                    title={round.course_name}
+                    subtitle={`${round.course_location || ''} • ${new Date(round.date_played).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}`}
+                    onBack={() => navigate('/rounds')}
+                />
             </div>
 
-            {/* Score Summary */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', marginBottom: '20px' }}>
-                <Card style={{ marginBottom: 0, padding: '15px', textAlign: 'center' }}>
-                    <div style={{ fontSize: '10px', color: 'var(--text-dim)', textTransform: 'uppercase', marginBottom: '5px' }}>Score Total</div>
-                    <div style={{ fontSize: '24px', fontWeight: '800', color: 'var(--secondary)' }}>{round.total_score}</div>
-                    {totalPar > 0 && (
-                        <div style={{ fontSize: '11px', color: scoreToPar > 0 ? '#ef4444' : '#10b981' }}>
-                            {scoreToPar > 0 ? '+' : ''}{scoreToPar} vs Par
-                        </div>
+            {/* Área de Scroll */}
+            <div style={{
+                position: 'absolute',
+                top: 'calc(var(--header-offset-top) + 78px)',
+                left: '0',
+                right: '0',
+                bottom: 0,
+                overflowY: 'auto',
+                padding: '0 20px 40px 20px',
+                overflowX: 'hidden'
+            }}>
+
+                {/* Score Summary */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', marginBottom: '20px' }}>
+                    <Card style={{ marginBottom: 0, padding: '15px', textAlign: 'center' }}>
+                        <div style={{ fontSize: '10px', color: 'var(--text-dim)', textTransform: 'uppercase', marginBottom: '5px' }}>Score Total</div>
+                        <div style={{ fontSize: '24px', fontWeight: '800', color: 'var(--secondary)' }}>{round.total_score}</div>
+                        {totalPar > 0 && (
+                            <div style={{ fontSize: '11px', color: scoreToPar > 0 ? '#ef4444' : '#10b981' }}>
+                                {scoreToPar > 0 ? '+' : ''}{scoreToPar} vs Par
+                            </div>
+                        )}
+                    </Card>
+                    {round.first_nine_score && (
+                        <Card style={{ marginBottom: 0, padding: '15px', textAlign: 'center' }}>
+                            <div style={{ fontSize: '10px', color: 'var(--text-dim)', textTransform: 'uppercase', marginBottom: '5px' }}>Front 9</div>
+                            <div style={{ fontSize: '24px', fontWeight: '800' }}>{round.first_nine_score}</div>
+                        </Card>
                     )}
-                </Card>
-                {round.first_nine_score && (
-                    <Card style={{ marginBottom: 0, padding: '15px', textAlign: 'center' }}>
-                        <div style={{ fontSize: '10px', color: 'var(--text-dim)', textTransform: 'uppercase', marginBottom: '5px' }}>Front 9</div>
-                        <div style={{ fontSize: '24px', fontWeight: '800' }}>{round.first_nine_score}</div>
-                    </Card>
-                )}
-                {round.second_nine_score && (
-                    <Card style={{ marginBottom: 0, padding: '15px', textAlign: 'center' }}>
-                        <div style={{ fontSize: '10px', color: 'var(--text-dim)', textTransform: 'uppercase', marginBottom: '5px' }}>Back 9</div>
-                        <div style={{ fontSize: '24px', fontWeight: '800' }}>{round.second_nine_score}</div>
-                    </Card>
-                )}
-            </div>
-
-            {/* Additional Stats */}
-            {(round.total_putts || round.fairways_hit || round.greens_in_regulation) && (
-                <Card style={{ marginBottom: '20px' }}>
-                    <h3 style={{ fontSize: '18px', fontWeight: '900', color: 'white', marginBottom: '15px' }}>Estadísticas</h3>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '15px', textAlign: 'center' }}>
-                        {round.total_putts && (
-                            <div>
-                                <div style={{ fontSize: '20px', fontWeight: '700' }}>{round.total_putts}</div>
-                                <div style={{ fontSize: '11px', color: 'var(--text-dim)' }}>Putts</div>
-                            </div>
-                        )}
-                        {round.fairways_hit !== undefined && (
-                            <div>
-                                <div style={{ fontSize: '20px', fontWeight: '700' }}>{round.fairways_hit}/14</div>
-                                <div style={{ fontSize: '11px', color: 'var(--text-dim)' }}>Fairways</div>
-                            </div>
-                        )}
-                        {round.greens_in_regulation !== undefined && (
-                            <div>
-                                <div style={{ fontSize: '20px', fontWeight: '700' }}>{round.greens_in_regulation}/18</div>
-                                <div style={{ fontSize: '11px', color: 'var(--text-dim)' }}>GIR</div>
-                            </div>
-                        )}
-                    </div>
-                </Card>
-            )}
-
-            {/* Scorecard */}
-            {holes.length > 0 && (
-                <Card style={{ marginBottom: '20px' }}>
-                    <h3 style={{ fontSize: '18px', fontWeight: '900', color: 'white', marginBottom: '15px' }}>Scorecard</h3>
-                    <div style={{ overflowX: 'auto' }}>
-                        <table style={{ width: '100%', fontSize: '12px', borderCollapse: 'collapse' }}>
-                            <thead>
-                                <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-                                    <th style={{ padding: '8px', textAlign: 'left' }}>Hoyo</th>
-                                    <th style={{ padding: '8px', textAlign: 'center' }}>Par</th>
-                                    <th style={{ padding: '8px', textAlign: 'center' }}>Score</th>
-                                    {holes.some(h => h.putts !== undefined) && <th style={{ padding: '8px', textAlign: 'center' }}>Putts</th>}
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {holes.map((hole) => {
-                                    const diff = hole.score - hole.par;
-                                    return (
-                                        <tr key={hole.hole_number} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                                            <td style={{ padding: '8px', fontWeight: '600' }}>{hole.hole_number}</td>
-                                            <td style={{ padding: '8px', textAlign: 'center', color: 'var(--text-dim)' }}>{hole.par}</td>
-                                            <td style={{
-                                                padding: '8px',
-                                                textAlign: 'center',
-                                                fontWeight: '700',
-                                                color: diff === 0 ? 'var(--secondary)' : diff < 0 ? '#10b981' : '#ef4444'
-                                            }}>
-                                                {hole.score}
-                                            </td>
-                                            {holes.some(h => h.putts !== undefined) && (
-                                                <td style={{ padding: '8px', textAlign: 'center' }}>{hole.putts || '-'}</td>
-                                            )}
-                                        </tr>
-                                    );
-                                })}
-                            </tbody>
-                        </table>
-                    </div>
-                </Card>
-            )}
-
-            {/* AI Analysis */}
-            <Card>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-                    <h3 style={{ fontSize: '16px', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <Sparkles size={18} color="var(--secondary)" />
-                        Análisis <span style={{ color: 'var(--secondary)' }}>IA</span>
-                    </h3>
-                    {!analysis && (
-                        <button
-                            onClick={handleGenerateAnalysis}
-                            disabled={analyzing}
-                            className="primary-button"
-                            style={{ padding: '8px 16px', fontSize: '13px' }}
-                        >
-                            {analyzing ? <Loader2 className="animate-spin" size={16} /> : 'Generar'}
-                        </button>
+                    {round.second_nine_score && (
+                        <Card style={{ marginBottom: 0, padding: '15px', textAlign: 'center' }}>
+                            <div style={{ fontSize: '10px', color: 'var(--text-dim)', textTransform: 'uppercase', marginBottom: '5px' }}>Back 9</div>
+                            <div style={{ fontSize: '24px', fontWeight: '800' }}>{round.second_nine_score}</div>
+                        </Card>
                     )}
                 </div>
 
-                {analysis ? (
-                    <div>
-                        <p style={{ marginBottom: '20px', lineHeight: '1.6' }}>{analysis.summary}</p>
-
-                        <div style={{ display: 'grid', gap: '15px' }}>
-                            <div>
-                                <h4 style={{ fontSize: '14px', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                    <TrendingUp size={16} color="#10b981" />
-                                    Fortalezas
-                                </h4>
-                                <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '13px', lineHeight: '1.8' }}>
-                                    {analysis.strengths.map((s, i) => <li key={i}>{s}</li>)}
-                                </ul>
-                            </div>
-
-                            <div>
-                                <h4 style={{ fontSize: '14px', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                    <TrendingDown size={16} color="#ef4444" />
-                                    Áreas de Mejora
-                                </h4>
-                                <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '13px', lineHeight: '1.8' }}>
-                                    {analysis.weaknesses.map((w, i) => <li key={i}>{w}</li>)}
-                                </ul>
-                            </div>
-
-                            <div>
-                                <h4 style={{ fontSize: '14px', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                    <Target size={16} color="var(--secondary)" />
-                                    Recomendaciones
-                                </h4>
-                                <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '13px', lineHeight: '1.8' }}>
-                                    {analysis.recommendations.map((r, i) => <li key={i}>{r}</li>)}
-                                </ul>
-                            </div>
+                {/* Additional Stats */}
+                {(round.total_putts || round.fairways_hit || round.greens_in_regulation) && (
+                    <Card style={{ marginBottom: '20px' }}>
+                        <h3 style={{ fontSize: '18px', fontWeight: '900', color: 'white', marginBottom: '15px' }}>Estadísticas</h3>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '15px', textAlign: 'center' }}>
+                            {round.total_putts && (
+                                <div>
+                                    <div style={{ fontSize: '20px', fontWeight: '700' }}>{round.total_putts}</div>
+                                    <div style={{ fontSize: '11px', color: 'var(--text-dim)' }}>Putts</div>
+                                </div>
+                            )}
+                            {round.fairways_hit !== undefined && (
+                                <div>
+                                    <div style={{ fontSize: '20px', fontWeight: '700' }}>{round.fairways_hit}/14</div>
+                                    <div style={{ fontSize: '11px', color: 'var(--text-dim)' }}>Fairways</div>
+                                </div>
+                            )}
+                            {round.greens_in_regulation !== undefined && (
+                                <div>
+                                    <div style={{ fontSize: '20px', fontWeight: '700' }}>{round.greens_in_regulation}/18</div>
+                                    <div style={{ fontSize: '11px', color: 'var(--text-dim)' }}>GIR</div>
+                                </div>
+                            )}
                         </div>
-
-                        <button
-                            onClick={handleGenerateAnalysis}
-                            disabled={analyzing}
-                            style={{
-                                marginTop: '20px',
-                                padding: '8px 16px',
-                                fontSize: '12px',
-                                background: 'rgba(255,255,255,0.05)',
-                                border: '1px solid rgba(255,255,255,0.1)',
-                                borderRadius: '8px',
-                                color: 'var(--text-dim)',
-                                cursor: 'pointer'
-                            }}
-                        >
-                            {analyzing ? 'Regenerando...' : 'Regenerar Análisis'}
-                        </button>
-                    </div>
-                ) : (
-                    <p style={{ color: 'var(--text-dim)', textAlign: 'center', padding: '20px' }}>
-                        Genera un análisis personalizado con IA para obtener insights sobre tu desempeño
-                    </p>
+                    </Card>
                 )}
-            </Card>
+
+                {/* Scorecard */}
+                {holes.length > 0 && (
+                    <Card style={{ marginBottom: '20px' }}>
+                        <h3 style={{ fontSize: '18px', fontWeight: '900', color: 'white', marginBottom: '15px' }}>Scorecard</h3>
+                        <div style={{ overflowX: 'auto' }}>
+                            <table style={{ width: '100%', fontSize: '12px', borderCollapse: 'collapse' }}>
+                                <thead>
+                                    <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                                        <th style={{ padding: '8px', textAlign: 'left' }}>Hoyo</th>
+                                        <th style={{ padding: '8px', textAlign: 'center' }}>Par</th>
+                                        <th style={{ padding: '8px', textAlign: 'center' }}>Score</th>
+                                        {holes.some(h => h.putts !== undefined) && <th style={{ padding: '8px', textAlign: 'center' }}>Putts</th>}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {holes.map((hole) => {
+                                        const diff = hole.score - hole.par;
+                                        return (
+                                            <tr key={hole.hole_number} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                                                <td style={{ padding: '8px', fontWeight: '600' }}>{hole.hole_number}</td>
+                                                <td style={{ padding: '8px', textAlign: 'center', color: 'var(--text-dim)' }}>{hole.par}</td>
+                                                <td style={{
+                                                    padding: '8px',
+                                                    textAlign: 'center',
+                                                    fontWeight: '700',
+                                                    color: diff === 0 ? 'var(--secondary)' : diff < 0 ? '#10b981' : '#ef4444'
+                                                }}>
+                                                    {hole.score}
+                                                </td>
+                                                {holes.some(h => h.putts !== undefined) && (
+                                                    <td style={{ padding: '8px', textAlign: 'center' }}>{hole.putts || '-'}</td>
+                                                )}
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                        </div>
+                    </Card>
+                )}
+
+                {/* AI Analysis */}
+                <Card>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+                        <h3 style={{ fontSize: '16px', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <Sparkles size={18} color="var(--secondary)" />
+                            Análisis <span style={{ color: 'var(--secondary)' }}>IA</span>
+                        </h3>
+                        {!analysis && (
+                            <button
+                                onClick={handleGenerateAnalysis}
+                                disabled={analyzing}
+                                className="primary-button"
+                                style={{ padding: '8px 16px', fontSize: '13px' }}
+                            >
+                                {analyzing ? <Loader2 className="animate-spin" size={16} /> : 'Generar'}
+                            </button>
+                        )}
+                    </div>
+
+                    {analysis ? (
+                        <div>
+                            <p style={{ marginBottom: '20px', lineHeight: '1.6' }}>{analysis.summary}</p>
+
+                            <div style={{ display: 'grid', gap: '15px' }}>
+                                <div>
+                                    <h4 style={{ fontSize: '14px', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                        <TrendingUp size={16} color="#10b981" />
+                                        Fortalezas
+                                    </h4>
+                                    <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '13px', lineHeight: '1.8' }}>
+                                        {analysis.strengths.map((s, i) => <li key={i}>{s}</li>)}
+                                    </ul>
+                                </div>
+
+                                <div>
+                                    <h4 style={{ fontSize: '14px', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                        <TrendingDown size={16} color="#ef4444" />
+                                        Áreas de Mejora
+                                    </h4>
+                                    <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '13px', lineHeight: '1.8' }}>
+                                        {analysis.weaknesses.map((w, i) => <li key={i}>{w}</li>)}
+                                    </ul>
+                                </div>
+
+                                <div>
+                                    <h4 style={{ fontSize: '14px', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                        <Target size={16} color="var(--secondary)" />
+                                        Recomendaciones
+                                    </h4>
+                                    <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '13px', lineHeight: '1.8' }}>
+                                        {analysis.recommendations.map((r, i) => <li key={i}>{r}</li>)}
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <button
+                                onClick={handleGenerateAnalysis}
+                                disabled={analyzing}
+                                style={{
+                                    marginTop: '20px',
+                                    padding: '8px 16px',
+                                    fontSize: '12px',
+                                    background: 'rgba(255,255,255,0.05)',
+                                    border: '1px solid rgba(255,255,255,0.1)',
+                                    borderRadius: '8px',
+                                    color: 'var(--text-dim)',
+                                    cursor: 'pointer'
+                                }}
+                            >
+                                {analyzing ? 'Regenerando...' : 'Regenerar Análisis'}
+                            </button>
+                        </div>
+                    ) : (
+                        <p style={{ color: 'var(--text-dim)', textAlign: 'center', padding: '20px' }}>
+                            Genera un análisis personalizado con IA para obtener insights sobre tu desempeño
+                        </p>
+                    )}
+                </Card>
+                {/* Final del Área de Scroll */}
+            </div>
         </div>
     );
 };

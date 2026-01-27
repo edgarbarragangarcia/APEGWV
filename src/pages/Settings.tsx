@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronLeft, Navigation, Smartphone, CheckCircle2, AlertCircle, ShieldCheck, Camera as CameraIcon } from 'lucide-react';
+import { Navigation, Smartphone, CheckCircle2, AlertCircle, ShieldCheck, Camera as CameraIcon } from 'lucide-react';
+import PageHeader from '../components/PageHeader';
 
 const Settings: React.FC = () => {
     const navigate = useNavigate();
@@ -158,157 +159,182 @@ const Settings: React.FC = () => {
     };
 
     return (
-        <div className="animate-fade" style={{ paddingBottom: '40px' }}>
-            <header style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '30px' }}>
-                <button
-                    onClick={() => navigate(-1)}
-                    className="glass"
-                    style={{ padding: '10px', borderRadius: '12px', display: 'flex', alignItems: 'center' }}
-                >
-                    <ChevronLeft size={20} />
-                </button>
-                <h1 style={{ fontSize: '24px', fontWeight: '900', color: 'white' }}>Configuración</h1>
-            </header>
+        <div className="animate-fade" style={{
+            position: 'fixed',
+            inset: 0,
+            width: '100%',
+            maxWidth: 'var(--app-max-width)',
+            margin: '0 auto',
+            overflow: 'hidden',
+            background: 'var(--primary)'
+        }}>
+            {/* Header Fijo */}
+            <div style={{
+                position: 'absolute',
+                top: 'var(--header-offset-top)',
+                left: '0',
+                right: '0',
+                width: '100%',
+                zIndex: 900,
+                background: 'var(--primary)',
+                paddingLeft: '20px',
+                paddingRight: '20px',
+                pointerEvents: 'auto'
+            }}>
+                <PageHeader
+                    noMargin
+                    title="Configuración"
+                    onBack={() => navigate(-1)}
+                />
+            </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                <section>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px', paddingLeft: '5px' }}>
-                        <ShieldCheck size={20} color="var(--secondary)" />
-                        <h2 style={{ fontSize: '16px', fontWeight: '900', color: 'white' }}>
-                            PERMISOS <span style={{ color: 'var(--secondary)' }}>DEL</span> SISTEMA
-                        </h2>
-                    </div>
+            {/* Área de Scroll */}
+            <div style={{
+                position: 'absolute',
+                top: 'calc(var(--header-offset-top) + 58px)',
+                left: '0',
+                right: '0',
+                bottom: 0,
+                overflowY: 'auto',
+                padding: '0 20px 40px 20px',
+                overflowX: 'hidden'
+            }}>
 
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                        {/* GPS Setting */}
-                        <div className="glass" style={{ padding: '20px' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '15px' }}>
-                                <div style={{ display: 'flex', gap: '15px' }}>
-                                    <div style={{ background: 'rgba(163, 230, 53, 0.1)', padding: '10px', borderRadius: '12px' }}>
-                                        <Navigation size={24} color="var(--secondary)" />
-                                    </div>
-                                    <div>
-                                        <h3 style={{ fontSize: '16px', marginBottom: '2px' }}>Ubicación (GPS)</h3>
-                                        <p style={{ fontSize: '12px', color: 'var(--text-dim)', maxWidth: '200px' }}>
-                                            Necesario para medir distancias al green y ordenar campos.
-                                        </p>
-                                    </div>
-                                </div>
-                                <StatusBadge status={gpsStatus} />
-                            </div>
-
-                            <button
-                                onClick={handleRequestGps}
-                                disabled={isRequesting === 'gps' || gpsStatus === 'granted'}
-                                className="glass"
-                                style={{
-                                    width: '100%',
-                                    padding: '12px',
-                                    background: gpsStatus === 'granted' ? 'rgba(163, 230, 53, 0.1)' : 'var(--secondary)',
-                                    color: gpsStatus === 'granted' ? 'var(--secondary)' : 'var(--primary)',
-                                    fontWeight: '700',
-                                    borderRadius: '12px',
-                                    opacity: (isRequesting === 'gps' || gpsStatus === 'granted') ? 0.7 : 1
-                                }}
-                            >
-                                {isRequesting === 'gps' ? 'SOLICITANDO...' : gpsStatus === 'granted' ? 'PERMISO CONCEDIDO' : 'SOLICITAR PERMISO'}
-                            </button>
-
-                            {gpsStatus === 'denied' && (
-                                <p style={{ fontSize: '11px', color: '#ef4444', marginTop: '10px', textAlign: 'center' }}>
-                                    ⚠️ Permiso bloqueado. Ve a Ajustes del Celular &gt; Safari/Chrome &gt; Ubicación y actívalo.
-                                </p>
-                            )}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                    <section>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px', paddingLeft: '5px' }}>
+                            <ShieldCheck size={20} color="var(--secondary)" />
+                            <h2 style={{ fontSize: '16px', fontWeight: '900', color: 'white' }}>
+                                PERMISOS <span style={{ color: 'var(--secondary)' }}>DEL</span> SISTEMA
+                            </h2>
                         </div>
 
-                        {/* Camera Setting */}
-                        <div className="glass" style={{ padding: '20px' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '15px' }}>
-                                <div style={{ display: 'flex', gap: '15px' }}>
-                                    <div style={{ background: 'rgba(163, 230, 53, 0.1)', padding: '10px', borderRadius: '12px' }}>
-                                        <CameraIcon size={24} color="var(--secondary)" />
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                            {/* GPS Setting */}
+                            <div className="glass" style={{ padding: '20px' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '15px' }}>
+                                    <div style={{ display: 'flex', gap: '15px' }}>
+                                        <div style={{ background: 'rgba(163, 230, 53, 0.1)', padding: '10px', borderRadius: '12px' }}>
+                                            <Navigation size={24} color="var(--secondary)" />
+                                        </div>
+                                        <div>
+                                            <h3 style={{ fontSize: '16px', marginBottom: '2px' }}>Ubicación (GPS)</h3>
+                                            <p style={{ fontSize: '12px', color: 'var(--text-dim)', maxWidth: '200px' }}>
+                                                Necesario para medir distancias al green y ordenar campos.
+                                            </p>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <h3 style={{ fontSize: '16px', marginBottom: '2px' }}>Cámara</h3>
-                                        <p style={{ fontSize: '12px', color: 'var(--text-dim)', maxWidth: '200px' }}>
-                                            Usado para cambiar tu foto de perfil y subir productos a tu Marketplace.
-                                        </p>
-                                    </div>
+                                    <StatusBadge status={gpsStatus} />
                                 </div>
-                                <StatusBadge status={cameraStatus} />
+
+                                <button
+                                    onClick={handleRequestGps}
+                                    disabled={isRequesting === 'gps' || gpsStatus === 'granted'}
+                                    className="glass"
+                                    style={{
+                                        width: '100%',
+                                        padding: '12px',
+                                        background: gpsStatus === 'granted' ? 'rgba(163, 230, 53, 0.1)' : 'var(--secondary)',
+                                        color: gpsStatus === 'granted' ? 'var(--secondary)' : 'var(--primary)',
+                                        fontWeight: '700',
+                                        borderRadius: '12px',
+                                        opacity: (isRequesting === 'gps' || gpsStatus === 'granted') ? 0.7 : 1
+                                    }}
+                                >
+                                    {isRequesting === 'gps' ? 'SOLICITANDO...' : gpsStatus === 'granted' ? 'PERMISO CONCEDIDO' : 'SOLICITAR PERMISO'}
+                                </button>
+
+                                {gpsStatus === 'denied' && (
+                                    <p style={{ fontSize: '11px', color: '#ef4444', marginTop: '10px', textAlign: 'center' }}>
+                                        ⚠️ Permiso bloqueado. Ve a Ajustes del Celular &gt; Safari/Chrome &gt; Ubicación y actívalo.
+                                    </p>
+                                )}
                             </div>
 
-                            <button
-                                onClick={handleRequestCamera}
-                                disabled={isRequesting === 'camera' || cameraStatus === 'granted'}
-                                className="glass"
-                                style={{
-                                    width: '100%',
-                                    padding: '12px',
-                                    background: cameraStatus === 'granted' ? 'rgba(163, 230, 53, 0.1)' : 'var(--secondary)',
-                                    color: cameraStatus === 'granted' ? 'var(--secondary)' : 'var(--primary)',
-                                    fontWeight: '700',
-                                    borderRadius: '12px',
-                                    opacity: (isRequesting === 'camera' || cameraStatus === 'granted') ? 0.7 : 1
-                                }}
-                            >
-                                {isRequesting === 'camera' ? 'SOLICITANDO...' : cameraStatus === 'granted' ? 'PERMISO CONCEDIDO' : 'SOLICITAR PERMISO'}
-                            </button>
-
-                            {cameraStatus === 'denied' && (
-                                <p style={{ fontSize: '11px', color: '#ef4444', marginTop: '10px', textAlign: 'center' }}>
-                                    ⚠️ No hay acceso a cámara. Ve a Ajustes &gt; Safari/Chrome &gt; Cámara y selecciona "Permitir".
-                                </p>
-                            )}
-                        </div>
-
-                        {/* Sensors Setting */}
-                        <div className="glass" style={{ padding: '20px' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '15px' }}>
-                                <div style={{ display: 'flex', gap: '15px' }}>
-                                    <div style={{ background: 'rgba(163, 230, 53, 0.1)', padding: '10px', borderRadius: '12px' }}>
-                                        <Smartphone size={24} color="var(--secondary)" />
+                            {/* Camera Setting */}
+                            <div className="glass" style={{ padding: '20px' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '15px' }}>
+                                    <div style={{ display: 'flex', gap: '15px' }}>
+                                        <div style={{ background: 'rgba(163, 230, 53, 0.1)', padding: '10px', borderRadius: '12px' }}>
+                                            <CameraIcon size={24} color="var(--secondary)" />
+                                        </div>
+                                        <div>
+                                            <h3 style={{ fontSize: '16px', marginBottom: '2px' }}>Cámara</h3>
+                                            <p style={{ fontSize: '12px', color: 'var(--text-dim)', maxWidth: '200px' }}>
+                                                Usado para cambiar tu foto de perfil y subir productos a tu Marketplace.
+                                            </p>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <h3 style={{ fontSize: '16px', marginBottom: '2px' }}>Sensores de Movimiento</h3>
-                                        <p style={{ fontSize: '12px', color: 'var(--text-dim)', maxWidth: '200px' }}>
-                                            Usado para el Green Reader y lectura de caída.
-                                        </p>
-                                    </div>
+                                    <StatusBadge status={cameraStatus} />
                                 </div>
-                                <StatusBadge status={sensorsStatus} />
+
+                                <button
+                                    onClick={handleRequestCamera}
+                                    disabled={isRequesting === 'camera' || cameraStatus === 'granted'}
+                                    className="glass"
+                                    style={{
+                                        width: '100%',
+                                        padding: '12px',
+                                        background: cameraStatus === 'granted' ? 'rgba(163, 230, 53, 0.1)' : 'var(--secondary)',
+                                        color: cameraStatus === 'granted' ? 'var(--secondary)' : 'var(--primary)',
+                                        fontWeight: '700',
+                                        borderRadius: '12px',
+                                        opacity: (isRequesting === 'camera' || cameraStatus === 'granted') ? 0.7 : 1
+                                    }}
+                                >
+                                    {isRequesting === 'camera' ? 'SOLICITANDO...' : cameraStatus === 'granted' ? 'PERMISO CONCEDIDO' : 'SOLICITAR PERMISO'}
+                                </button>
+
+                                {cameraStatus === 'denied' && (
+                                    <p style={{ fontSize: '11px', color: '#ef4444', marginTop: '10px', textAlign: 'center' }}>
+                                        ⚠️ No hay acceso a cámara. Ve a Ajustes &gt; Safari/Chrome &gt; Cámara y selecciona "Permitir".
+                                    </p>
+                                )}
                             </div>
 
-                            <button
-                                onClick={handleRequestSensors}
-                                disabled={isRequesting === 'sensors' || sensorsStatus === 'granted'}
-                                className="glass"
-                                style={{
-                                    width: '100%',
-                                    padding: '12px',
-                                    background: sensorsStatus === 'granted' ? 'rgba(163, 230, 53, 0.1)' : 'var(--secondary)',
-                                    color: sensorsStatus === 'granted' ? 'var(--secondary)' : 'var(--primary)',
-                                    fontWeight: '700',
-                                    borderRadius: '12px',
-                                    opacity: (isRequesting === 'sensors' || sensorsStatus === 'granted') ? 0.7 : 1
-                                }}
-                            >
-                                {isRequesting === 'sensors' ? 'SOLICITANDO...' : sensorsStatus === 'granted' ? 'PERMISO CONCEDIDO' : 'SOLICITAR PERMISO'}
-                            </button>
+                            {/* Sensors Setting */}
+                            <div className="glass" style={{ padding: '20px' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '15px' }}>
+                                    <div style={{ display: 'flex', gap: '15px' }}>
+                                        <div style={{ background: 'rgba(163, 230, 53, 0.1)', padding: '10px', borderRadius: '12px' }}>
+                                            <Smartphone size={24} color="var(--secondary)" />
+                                        </div>
+                                        <div>
+                                            <h3 style={{ fontSize: '16px', marginBottom: '2px' }}>Sensores de Movimiento</h3>
+                                            <p style={{ fontSize: '12px', color: 'var(--text-dim)', maxWidth: '200px' }}>
+                                                Usado para el Green Reader y lectura de caída.
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <StatusBadge status={sensorsStatus} />
+                                </div>
 
-                            {sensorsStatus === 'denied' && (
-                                <p style={{ fontSize: '11px', color: '#ef4444', marginTop: '10px', textAlign: 'center' }}>
-                                    ⚠️ iOS requiere permiso. Si lo denegaste, debes recargar la página o habilitar "Acceso a movimiento y orientación" en Ajustes &gt; Safari.
-                                </p>
-                            )}
+                                <button
+                                    onClick={handleRequestSensors}
+                                    disabled={isRequesting === 'sensors' || sensorsStatus === 'granted'}
+                                    className="glass"
+                                    style={{
+                                        width: '100%',
+                                        padding: '12px',
+                                        background: sensorsStatus === 'granted' ? 'rgba(163, 230, 53, 0.1)' : 'var(--secondary)',
+                                        color: sensorsStatus === 'granted' ? 'var(--secondary)' : 'var(--primary)',
+                                        fontWeight: '700',
+                                        borderRadius: '12px',
+                                        opacity: (isRequesting === 'sensors' || sensorsStatus === 'granted') ? 0.7 : 1
+                                    }}
+                                >
+                                    {isRequesting === 'sensors' ? 'SOLICITANDO...' : sensorsStatus === 'granted' ? 'PERMISO CONCEDIDO' : 'SOLICITAR PERMISO'}
+                                </button>
+
+                                {sensorsStatus === 'denied' && (
+                                    <p style={{ fontSize: '11px', color: '#ef4444', marginTop: '10px', textAlign: 'center' }}>
+                                        ⚠️ iOS requiere permiso. Si lo denegaste, debes recargar la página o habilitar "Acceso a movimiento y orientación" en Ajustes &gt; Safari.
+                                    </p>
+                                )}
+                            </div>
                         </div>
-                    </div>
-                </section>
+                    </section>
 
-                <div className="glass" style={{ padding: '15px', background: 'rgba(255, 255, 255, 0.02)', textAlign: 'center' }}>
-                    <p style={{ fontSize: '11px', color: 'var(--text-dim)', lineHeight: '1.4' }}>
-                        Nota: Si un permiso aparece como "DENEGADO", deberás habilitarlo manualmente en los ajustes de tu navegador o sistema operativo para esta App.
-                    </p>
                 </div>
             </div>
         </div>

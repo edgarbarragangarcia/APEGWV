@@ -82,13 +82,12 @@ const GreenFee: React.FC = () => {
             {/* Header Fijo - Green Fees */}
             <div style={{
                 position: 'absolute',
-                top: 'calc(env(safe-area-inset-top) + 82px)',
+                top: 'var(--header-offset-top)',
                 left: '0',
                 right: '0',
                 width: '100%',
                 zIndex: 900,
                 background: 'var(--primary)',
-                paddingTop: '5px',
                 paddingBottom: '4px',
                 paddingLeft: '20px',
                 paddingRight: '20px',
@@ -203,7 +202,7 @@ const GreenFee: React.FC = () => {
             {/* Área de Scroll */}
             <div style={{
                 position: 'absolute',
-                top: activeTab === 'courses' ? 'calc(env(safe-area-inset-top) + 275px)' : 'calc(env(safe-area-inset-top) + 225px)',
+                top: activeTab === 'courses' ? 'calc(var(--header-offset-top) + 193px)' : 'calc(var(--header-offset-top) + 143px)',
                 left: '0',
                 right: '0',
                 bottom: 'calc(var(--nav-height))',

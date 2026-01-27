@@ -351,6 +351,7 @@ const CheckoutPage: React.FC = () => {
             )}
 
             <PageHeader
+                noMargin
                 title="Finalizar Compra"
                 onBack={() => step === 1 ? navigate(-1) : setStep(1)}
             />

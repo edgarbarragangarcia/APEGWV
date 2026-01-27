@@ -128,7 +128,7 @@ const Home: React.FC = () => {
             {/* Header y Stats Fijos */}
             <div style={{
                 position: 'absolute',
-                top: 'calc(env(safe-area-inset-top) + 82px)',
+                top: 'var(--header-offset-top)',
                 left: '20px',
                 right: '20px',
                 zIndex: 900,
@@ -191,7 +191,7 @@ const Home: React.FC = () => {
             {/* Area de Scroll para el resto del contenido */}
             <div style={{
                 position: 'absolute',
-                top: 'calc(env(safe-area-inset-top) + 260px)',
+                top: 'calc(var(--header-offset-top) + 178px)',
                 left: '0',
                 right: '0',
                 bottom: 'calc(var(--nav-height) + 5px)',

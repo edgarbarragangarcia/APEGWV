@@ -49,7 +49,7 @@ const CartPage: React.FC = () => {
             {/* Header Fijo */}
             <div style={{
                 position: 'absolute',
-                top: 'calc(env(safe-area-inset-top) + 82px)',
+                top: 'calc(env(safe-area-inset-top) + 87px)',
                 left: '0',
                 right: '0',
                 width: '100%',
@@ -59,13 +59,13 @@ const CartPage: React.FC = () => {
                 paddingRight: '20px',
                 pointerEvents: 'auto'
             }}>
-                <PageHeader title="Mi Carrito" />
+                <PageHeader noMargin title="Mi Carrito" />
             </div>
 
             {/* Área de Scroll */}
             <div style={{
                 position: 'absolute',
-                top: 'calc(env(safe-area-inset-top) + 160px)',
+                top: 'calc(env(safe-area-inset-top) + 165px)',
                 left: '0',
                 right: '0',
                 bottom: 'calc(var(--nav-height))',

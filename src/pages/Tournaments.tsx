@@ -179,94 +179,122 @@ const Tournaments: React.FC = () => {
 
     return (
         <div className="animate-fade" style={{
-            paddingBottom: 'calc(var(--nav-height) + 20px)',
+            position: 'fixed',
+            inset: 0,
             width: '100%',
-            overflowX: 'hidden',
-            position: 'relative'
+            maxWidth: 'var(--app-max-width)',
+            margin: '0 auto',
+            overflow: 'hidden',
+            background: 'var(--primary)'
         }}>
-            <header style={{ marginBottom: '25px' }}>
-                <h1 style={{ fontSize: '28px', fontWeight: '900', marginBottom: '5px', color: 'white' }}>Eventos</h1>
-                <p style={{ color: 'var(--text-dim)', fontSize: '14px' }}>Compite y crece en la comunidad APEG</p>
-            </header>
-
-            {/* Tab Bar */}
+            {/* Header Fijo - Eventos */}
             <div style={{
-                display: 'flex',
-                background: 'rgba(255,255,255,0.05)',
-                padding: '4px',
-                borderRadius: '16px',
-                marginBottom: '20px'
+                position: 'absolute',
+                top: 'var(--header-offset-top)',
+                left: '0',
+                right: '0',
+                width: '100%',
+                zIndex: 900,
+                background: 'var(--primary)',
+                paddingBottom: '20px',
+                paddingLeft: '20px',
+                paddingRight: '20px',
+                pointerEvents: 'auto'
             }}>
-                <button
-                    onClick={() => setActiveTab('all')}
-                    style={{
-                        flex: 1,
-                        padding: '12px',
-                        borderRadius: '12px',
-                        border: 'none',
-                        background: activeTab === 'all' ? 'var(--secondary)' : 'transparent',
-                        color: activeTab === 'all' ? 'var(--primary)' : 'var(--text-dim)',
-                        fontWeight: '700',
-                        fontSize: '14px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '8px',
-                        cursor: 'pointer',
-                        transition: 'all 0.3s ease'
-                    }}
-                >
-                    <Trophy size={18} /> Todos
-                </button>
-                <button
-                    onClick={() => setActiveTab('my')}
-                    style={{
-                        flex: 1,
-                        padding: '12px',
-                        borderRadius: '12px',
-                        border: 'none',
-                        background: activeTab === 'my' ? 'var(--secondary)' : 'transparent',
-                        color: activeTab === 'my' ? 'var(--primary)' : 'var(--text-dim)',
-                        fontWeight: '700',
-                        fontSize: '14px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '8px',
-                        cursor: 'pointer',
-                        transition: 'all 0.3s ease'
-                    }}
-                >
-                    <Users size={18} /> Mis Inscripciones
-                </button>
+                <header style={{ marginBottom: '15px' }}>
+                    <h1 style={{ fontSize: '28px', fontWeight: '900', marginBottom: '5px', color: 'white' }}>Eventos</h1>
+                    <p style={{ color: 'var(--text-dim)', fontSize: '14px' }}>Compite y crece en la comunidad APEG</p>
+                </header>
+
+                {/* Tab Bar */}
+                <div style={{
+                    display: 'flex',
+                    background: 'rgba(255,255,255,0.05)',
+                    padding: '4px',
+                    borderRadius: '16px',
+                    marginBottom: '15px'
+                }}>
+                    <button
+                        onClick={() => setActiveTab('all')}
+                        style={{
+                            flex: 1,
+                            padding: '12px',
+                            borderRadius: '12px',
+                            border: 'none',
+                            background: activeTab === 'all' ? 'var(--secondary)' : 'transparent',
+                            color: activeTab === 'all' ? 'var(--primary)' : 'var(--text-dim)',
+                            fontWeight: '700',
+                            fontSize: '14px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '8px',
+                            cursor: 'pointer',
+                            transition: 'all 0.3s ease'
+                        }}
+                    >
+                        <Trophy size={18} /> Todos
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('my')}
+                        style={{
+                            flex: 1,
+                            padding: '12px',
+                            borderRadius: '12px',
+                            border: 'none',
+                            background: activeTab === 'my' ? 'var(--secondary)' : 'transparent',
+                            color: activeTab === 'my' ? 'var(--primary)' : 'var(--text-dim)',
+                            fontWeight: '700',
+                            fontSize: '14px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '8px',
+                            cursor: 'pointer',
+                            transition: 'all 0.3s ease'
+                        }}
+                    >
+                        <Users size={18} /> Mis Inscripciones
+                    </button>
+                </div>
+
+                {/* Search Bar */}
+                <div className="glass" style={{
+                    margin: '0',
+                    padding: '12px 20px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '15px'
+                }}>
+                    <Search size={20} color="var(--text-dim)" />
+                    <input
+                        type="text"
+                        placeholder="Buscar torneos, clubes o fechas..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        style={{
+                            background: 'none',
+                            border: 'none',
+                            color: 'white',
+                            width: '100%',
+                            outline: 'none',
+                            fontSize: '15px'
+                        }}
+                    />
+                </div>
             </div>
 
-            {/* Search Bar */}
-            <div className="glass" style={{
-                margin: '0 0 25px 0',
-                padding: '12px 20px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '15px'
+            {/* Scrollable Content Area */}
+            <div style={{
+                position: 'absolute',
+                top: 'calc(var(--header-offset-top) + 263px)',
+                left: '0',
+                right: '0',
+                bottom: 'var(--nav-height)',
+                overflowY: 'auto',
+                padding: '0 20px 40px 20px',
+                zIndex: 800
             }}>
-                <Search size={20} color="var(--text-dim)" />
-                <input
-                    type="text"
-                    placeholder="Buscar torneos, clubes o fechas..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    style={{
-                        background: 'none',
-                        border: 'none',
-                        color: 'white',
-                        width: '100%',
-                        outline: 'none',
-                        fontSize: '15px'
-                    }}
-                />
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                 {filteredTournaments.length === 0 ? (activeTab === 'my' ? (
                     <div className="glass" style={{ textAlign: 'center', padding: '80px 20px', borderRadius: '30px' }}>
                         <div style={{

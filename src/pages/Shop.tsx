@@ -254,7 +254,7 @@ const Shop: React.FC = () => {
             {/* Header Fijo - Marketplace */}
             <div style={{
                 position: 'fixed',
-                top: 'calc(env(safe-area-inset-top) + 82px)',
+                top: 'var(--header-offset-top)',
                 left: '0',
                 right: '0',
                 width: '100%',
@@ -262,7 +262,6 @@ const Shop: React.FC = () => {
                 margin: '0 auto',
                 zIndex: 900,
                 background: 'var(--primary)',
-                paddingTop: '5px',
                 paddingBottom: '20px',
                 paddingLeft: '20px',
                 paddingRight: '20px',
@@ -422,7 +421,7 @@ const Shop: React.FC = () => {
             {/* Área de Scroll */}
             <div style={{
                 position: 'absolute',
-                top: viewTab === 'marketplace' ? 'calc(env(safe-area-inset-top) + 307px)' : 'calc(env(safe-area-inset-top) + 217px)',
+                top: viewTab === 'marketplace' ? 'calc(var(--header-offset-top) + 225px)' : 'calc(var(--header-offset-top) + 135px)',
                 left: '0',
                 right: '0',
                 bottom: 'calc(var(--nav-height))',

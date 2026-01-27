@@ -78,12 +78,12 @@ const Profile: React.FC = () => {
             flexDirection: 'column',
             overflow: 'hidden',
             zIndex: 900,
-            paddingTop: '80px', // Push content below the global header
+            paddingTop: 'var(--header-offset-top)', // Push content below the global header
             paddingBottom: 'var(--nav-height)' // Respect bottom nav
         }}>
             {/* Standardized Page Header */}
             <div style={{ flexShrink: 0, zIndex: 10, background: 'var(--primary)', padding: '0 20px' }}>
-                <PageHeader title="Mi Perfil" onBack={() => navigate('/')} />
+                <PageHeader noMargin title="Mi Perfil" onBack={() => navigate('/')} />
             </div>
 
             <div style={{

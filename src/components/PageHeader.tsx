@@ -8,6 +8,7 @@ interface PageHeaderProps {
     onBack?: () => void;
     rightElement?: React.ReactNode;
     showBack?: boolean;
+    noMargin?: boolean;
 }
 
 const PageHeader: React.FC<PageHeaderProps> = ({
@@ -15,7 +16,8 @@ const PageHeader: React.FC<PageHeaderProps> = ({
     subtitle,
     onBack,
     rightElement,
-    showBack = true
+    showBack = true,
+    noMargin = false
 }) => {
     const navigate = useNavigate();
     const handleBack = onBack || (() => navigate(-1));
@@ -25,7 +27,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            marginTop: '10px',
+            marginTop: noMargin ? '0' : '10px',
             marginBottom: '25px',
             position: 'relative',
             zIndex: 10

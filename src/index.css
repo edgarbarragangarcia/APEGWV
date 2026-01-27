@@ -17,6 +17,10 @@
   --safe-top: env(safe-area-inset-top);
   --safe-bottom: env(safe-area-inset-bottom);
   --app-max-width: 600px;
+
+  /* Standardized Header Offsets */
+  --header-offset-base: 87px;
+  --header-offset-top: calc(env(safe-area-inset-top) + var(--header-offset-base));
 }
 
 * {
@@ -209,13 +213,13 @@ button {
 }
 
 .page-content {
-  padding-top: calc(env(safe-area-inset-top) + 82px);
+  padding-top: var(--header-offset-top);
   padding-bottom: calc(var(--nav-height) + 40px);
   flex: 1;
 }
 
 .round-page-content {
-  padding-top: calc(env(safe-area-inset-top) + 70px) !important;
+  padding-top: var(--header-offset-top) !important;
   padding-bottom: var(--nav-height) !important;
   height: 100dvh;
   overflow: hidden;

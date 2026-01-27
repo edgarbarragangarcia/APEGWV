@@ -77,284 +77,319 @@ const NotificationsPage: React.FC = () => {
 
     return (
         <div className="animate-fade" style={{
-            padding: '20px',
-            paddingBottom: 'calc(var(--nav-height) + 40px)',
+            position: 'fixed',
+            inset: 0,
+            width: '100%',
             maxWidth: 'var(--app-max-width)',
             margin: '0 auto',
-            minHeight: '100vh'
+            overflow: 'hidden',
+            background: 'var(--primary)'
         }}>
-            <PageHeader
-                title="Notifica ciones"
-                subtitle={unreadCount > 0 ? `${unreadCount} nuevas` : undefined}
-            />
+            {/* Header Fijo */}
+            <div style={{
+                position: 'absolute',
+                top: 'var(--header-offset-top)',
+                left: '0',
+                right: '0',
+                width: '100%',
+                zIndex: 900,
+                background: 'var(--primary)',
+                paddingLeft: '20px',
+                paddingRight: '20px',
+                pointerEvents: 'auto'
+            }}>
+                <PageHeader
+                    noMargin
+                    title="Notificaciones"
+                    subtitle={unreadCount > 0 ? `${unreadCount} nuevas` : undefined}
+                />
 
-            {notifications.length > 0 && (
-                <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    style={{
-                        display: 'flex',
-                        gap: '10px',
-                        marginBottom: '25px',
-                        marginTop: '-10px'
-                    }}
-                >
-                    <motion.button
-                        whileTap={{ scale: 0.95 }}
-                        onClick={() => markAllAsRead()}
+                {notifications.length > 0 && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
                         style={{
-                            background: 'rgba(163, 230, 53, 0.1)',
-                            border: '1px solid rgba(163, 230, 53, 0.2)',
-                            color: 'var(--secondary)',
-                            padding: '10px 18px',
-                            borderRadius: '16px',
-                            fontSize: '13px',
-                            fontWeight: '800',
                             display: 'flex',
-                            alignItems: 'center',
-                            gap: '8px',
-                            cursor: 'pointer'
+                            gap: '10px',
+                            marginTop: '5px'
                         }}
                     >
-                        <CheckCircle2 size={16} />
-                        Limpiar leídos
-                    </motion.button>
-                    <motion.button
-                        whileTap={{ scale: 0.95 }}
-                        onClick={() => setIsDeleteModalOpen(true)}
+                        <motion.button
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => markAllAsRead()}
+                            style={{
+                                flex: 1,
+                                background: 'rgba(163, 230, 53, 0.1)',
+                                border: '1px solid rgba(163, 230, 53, 0.2)',
+                                color: 'var(--secondary)',
+                                padding: '12px',
+                                borderRadius: '16px',
+                                fontSize: '13px',
+                                fontWeight: '800',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '8px',
+                                cursor: 'pointer'
+                            }}
+                        >
+                            <CheckCircle2 size={16} />
+                            Leídos
+                        </motion.button>
+                        <motion.button
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => setIsDeleteModalOpen(true)}
+                            style={{
+                                flex: 1,
+                                background: 'rgba(239, 68, 68, 0.1)',
+                                border: '1px solid rgba(239, 68, 68, 0.2)',
+                                color: '#ff6b6b',
+                                padding: '12px',
+                                borderRadius: '16px',
+                                fontSize: '13px',
+                                fontWeight: '800',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '8px',
+                                cursor: 'pointer'
+                            }}
+                        >
+                            <Trash2 size={16} />
+                            Borrar
+                        </motion.button>
+                    </motion.div>
+                )}
+            </div>
+
+            {/* Area de Scroll */}
+            <div style={{
+                position: 'absolute',
+                top: notifications.length > 0 ? 'calc(var(--header-offset-top) + 108px)' : 'calc(var(--header-offset-top) + 58px)',
+                left: '0',
+                right: '0',
+                bottom: 'calc(var(--nav-height))',
+                overflowY: 'auto',
+                overflowX: 'hidden',
+                padding: '0 20px 40px 20px',
+                transition: 'top 0.3s ease'
+            }}>
+
+                <ConfirmationModal
+                    isOpen={isDeleteModalOpen}
+                    onClose={() => setIsDeleteModalOpen(false)}
+                    onConfirm={deleteAllNotifications}
+                    title="¿Eliminar todo?"
+                    message="Esta acción borrará permanentemente todas tus notificaciones. ¿Deseas continuar?"
+                    confirmText="Sí, eliminar todo"
+                    cancelText="Cancelar"
+                    type="danger"
+                />
+
+                {notifications.length === 0 ? (
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
                         style={{
-                            background: 'rgba(239, 68, 68, 0.1)',
-                            border: '1px solid rgba(239, 68, 68, 0.2)',
-                            color: '#ff6b6b',
-                            padding: '10px 18px',
-                            borderRadius: '16px',
-                            fontSize: '13px',
-                            fontWeight: '800',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            padding: '120px 20px',
+                            textAlign: 'center',
+                            background: 'rgba(255,255,255,0.02)',
+                            borderRadius: '30px',
+                            border: '1px dashed rgba(255,255,255,0.05)',
+                            marginTop: '20px'
+                        }}>
+                        <div style={{
+                            width: '80px',
+                            height: '80px',
+                            borderRadius: '25px',
+                            background: 'rgba(255,255,255,0.03)',
                             display: 'flex',
                             alignItems: 'center',
-                            gap: '8px',
-                            cursor: 'pointer'
-                        }}
-                    >
-                        <Trash2 size={16} />
-                        Eliminar todo
-                    </motion.button>
-                </motion.div>
-            )}
-
-            <ConfirmationModal
-                isOpen={isDeleteModalOpen}
-                onClose={() => setIsDeleteModalOpen(false)}
-                onConfirm={deleteAllNotifications}
-                title="¿Eliminar todo?"
-                message="Esta acción borrará permanentemente todas tus notificaciones. ¿Deseas continuar?"
-                confirmText="Sí, eliminar todo"
-                cancelText="Cancelar"
-                type="danger"
-            />
-
-            {notifications.length === 0 ? (
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    style={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        padding: '120px 20px',
-                        textAlign: 'center',
-                        background: 'rgba(255,255,255,0.02)',
-                        borderRadius: '30px',
-                        border: '1px dashed rgba(255,255,255,0.05)',
-                        marginTop: '20px'
-                    }}>
-                    <div style={{
-                        width: '80px',
-                        height: '80px',
-                        borderRadius: '25px',
-                        background: 'rgba(255,255,255,0.03)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        marginBottom: '20px',
-                        color: 'var(--text-dim)'
-                    }}>
-                        <Bell size={40} strokeWidth={1.5} />
-                    </div>
-                    <h3 style={{ fontSize: '18px', fontWeight: '900', color: 'white' }}>Todo al día</h3>
-                    <p style={{ fontSize: '14px', color: 'var(--text-dim)', marginTop: '8px', maxWidth: '240px', lineHeight: '1.5' }}>
-                        Te avisaremos aquí cuando tengas nuevas ofertas o noticias importantes.
-                    </p>
-                </motion.div>
-            ) : (
-                <motion.div
-                    variants={containerVariants}
-                    initial="hidden"
-                    animate="visible"
-                    style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '10px' }}>
-                    <AnimatePresence mode="popLayout">
-                        {notifications.map((notif) => {
-                            const iconStyle = getIcon(notif.type);
-                            return (
-                                <motion.div
-                                    key={notif.id}
-                                    variants={itemVariants}
-                                    layout
-                                    exit={{ opacity: 0, x: 50, scale: 0.9 }}
-                                    onClick={() => {
-                                        markAsRead(notif.id);
-                                        if (notif.link) navigate(notif.link);
-                                    }}
-                                    style={{
-                                        position: 'relative',
-                                        cursor: 'pointer'
-                                    }}
-                                >
-                                    {/* Glassmorphism Card */}
-                                    <div style={{
-                                        padding: '20px',
-                                        background: 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%)',
-                                        backdropFilter: 'blur(10px)',
-                                        WebkitBackdropFilter: 'blur(10px)',
-                                        border: '1px solid rgba(255,255,255,0.08)',
-                                        borderRadius: '24px',
-                                        display: 'flex',
-                                        gap: '18px',
-                                        overflow: 'hidden',
-                                        position: 'relative',
-                                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                                        boxShadow: notif.read ? 'none' : '0 10px 30px rgba(0,0,0,0.2)'
-                                    }}>
-                                        {/* Unread Indicator Bar */}
-                                        {!notif.read && (
-                                            <div style={{
-                                                position: 'absolute',
-                                                left: 0,
-                                                top: 0,
-                                                bottom: 0,
-                                                width: '4px',
-                                                background: 'var(--secondary)',
-                                                boxShadow: '0 0 15px var(--secondary)'
-                                            }} />
-                                        )}
-
-                                        {/* Icon Container */}
+                            justifyContent: 'center',
+                            marginBottom: '20px',
+                            color: 'var(--text-dim)'
+                        }}>
+                            <Bell size={40} strokeWidth={1.5} />
+                        </div>
+                        <h3 style={{ fontSize: '18px', fontWeight: '900', color: 'white' }}>Todo al día</h3>
+                        <p style={{ fontSize: '14px', color: 'var(--text-dim)', marginTop: '8px', maxWidth: '240px', lineHeight: '1.5' }}>
+                            Te avisaremos aquí cuando tengas nuevas ofertas o noticias importantes.
+                        </p>
+                    </motion.div>
+                ) : (
+                    <motion.div
+                        variants={containerVariants}
+                        initial="hidden"
+                        animate="visible"
+                        style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '10px' }}>
+                        <AnimatePresence mode="popLayout">
+                            {notifications.map((notif) => {
+                                const iconStyle = getIcon(notif.type);
+                                return (
+                                    <motion.div
+                                        key={notif.id}
+                                        variants={itemVariants}
+                                        layout
+                                        exit={{ opacity: 0, x: 50, scale: 0.9 }}
+                                        onClick={() => {
+                                            markAsRead(notif.id);
+                                            if (notif.link) navigate(notif.link);
+                                        }}
+                                        style={{
+                                            position: 'relative',
+                                            cursor: 'pointer'
+                                        }}
+                                    >
+                                        {/* Glassmorphism Card */}
                                         <div style={{
-                                            width: '54px',
-                                            height: '54px',
-                                            borderRadius: '18px',
-                                            background: iconStyle.bg,
+                                            padding: '20px',
+                                            background: 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%)',
+                                            backdropFilter: 'blur(10px)',
+                                            WebkitBackdropFilter: 'blur(10px)',
+                                            border: '1px solid rgba(255,255,255,0.08)',
+                                            borderRadius: '24px',
                                             display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            flexShrink: 0,
-                                            boxShadow: `0 8px 20px ${iconStyle.glow}`,
-                                            border: '1px solid rgba(255,255,255,0.05)'
+                                            gap: '18px',
+                                            overflow: 'hidden',
+                                            position: 'relative',
+                                            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                                            boxShadow: notif.read ? 'none' : '0 10px 30px rgba(0,0,0,0.2)'
                                         }}>
-                                            {iconStyle.icon}
-                                        </div>
+                                            {/* Unread Indicator Bar */}
+                                            {!notif.read && (
+                                                <div style={{
+                                                    position: 'absolute',
+                                                    left: 0,
+                                                    top: 0,
+                                                    bottom: 0,
+                                                    width: '4px',
+                                                    background: 'var(--secondary)',
+                                                    boxShadow: '0 0 15px var(--secondary)'
+                                                }} />
+                                            )}
 
-                                        {/* Content */}
-                                        <div style={{ flex: 1 }}>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '6px' }}>
-                                                <h4 style={{
-                                                    fontSize: '16px',
-                                                    fontWeight: '900',
-                                                    color: 'white',
-                                                    letterSpacing: '-0.3px',
-                                                    lineHeight: '1.2'
-                                                }}>
-                                                    {notif.title}
-                                                </h4>
-                                                <motion.button
-                                                    whileHover={{ scale: 1.1, color: '#ff6b6b' }}
-                                                    whileTap={{ scale: 0.9 }}
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        deleteNotification(notif.id);
-                                                    }}
-                                                    style={{
-                                                        background: 'rgba(255,255,255,0.03)',
-                                                        border: 'none',
-                                                        color: 'rgba(255,255,255,0.2)',
-                                                        width: '32px',
-                                                        height: '32px',
-                                                        borderRadius: '10px',
-                                                        cursor: 'pointer',
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        justifyContent: 'center',
-                                                        marginLeft: '10px'
-                                                    }}
-                                                >
-                                                    <Trash2 size={16} />
-                                                </motion.button>
-                                            </div>
-                                            <p style={{
-                                                fontSize: '14px',
-                                                color: 'var(--text-dim)',
-                                                lineHeight: '1.5',
-                                                marginBottom: '12px'
+                                            {/* Icon Container */}
+                                            <div style={{
+                                                width: '54px',
+                                                height: '54px',
+                                                borderRadius: '18px',
+                                                background: iconStyle.bg,
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                flexShrink: 0,
+                                                boxShadow: `0 8px 20px ${iconStyle.glow}`,
+                                                border: '1px solid rgba(255,255,255,0.05)'
                                             }}>
-                                                {notif.message}
-                                            </p>
+                                                {iconStyle.icon}
+                                            </div>
 
-                                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontWeight: '600' }}>
-                                                    <Clock size={12} />
-                                                    {formatDate(notif.created_at)}
-                                                </div>
-
-                                                {notif.link && (
-                                                    <div style={{
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        gap: '4px',
-                                                        color: 'var(--secondary)',
-                                                        fontSize: '12px',
+                                            {/* Content */}
+                                            <div style={{ flex: 1 }}>
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '6px' }}>
+                                                    <h4 style={{
+                                                        fontSize: '16px',
                                                         fontWeight: '900',
-                                                        textTransform: 'uppercase',
-                                                        letterSpacing: '0.5px'
+                                                        color: 'white',
+                                                        letterSpacing: '-0.3px',
+                                                        lineHeight: '1.2'
                                                     }}>
-                                                        Detalles <ChevronRight size={14} />
+                                                        {notif.title}
+                                                    </h4>
+                                                    <motion.button
+                                                        whileHover={{ scale: 1.1, color: '#ff6b6b' }}
+                                                        whileTap={{ scale: 0.9 }}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            deleteNotification(notif.id);
+                                                        }}
+                                                        style={{
+                                                            background: 'rgba(255,255,255,0.03)',
+                                                            border: 'none',
+                                                            color: 'rgba(255,255,255,0.2)',
+                                                            width: '32px',
+                                                            height: '32px',
+                                                            borderRadius: '10px',
+                                                            cursor: 'pointer',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
+                                                            marginLeft: '10px'
+                                                        }}
+                                                    >
+                                                        <Trash2 size={16} />
+                                                    </motion.button>
+                                                </div>
+                                                <p style={{
+                                                    fontSize: '14px',
+                                                    color: 'var(--text-dim)',
+                                                    lineHeight: '1.5',
+                                                    marginBottom: '12px'
+                                                }}>
+                                                    {notif.message}
+                                                </p>
+
+                                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontWeight: '600' }}>
+                                                        <Clock size={12} />
+                                                        {formatDate(notif.created_at)}
                                                     </div>
-                                                )}
+
+                                                    {notif.link && (
+                                                        <div style={{
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            gap: '4px',
+                                                            color: 'var(--secondary)',
+                                                            fontSize: '12px',
+                                                            fontWeight: '900',
+                                                            textTransform: 'uppercase',
+                                                            letterSpacing: '0.5px'
+                                                        }}>
+                                                            Detalles <ChevronRight size={14} />
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                </motion.div>
-                            );
-                        })}
-                    </AnimatePresence>
-                </motion.div>
-            )}
+                                    </motion.div>
+                                );
+                            })}
+                        </AnimatePresence>
+                    </motion.div>
+                )}
 
-            {/* Background Glows for Depth */}
-            <div style={{
-                position: 'fixed',
-                top: '20%',
-                right: '-20%',
-                width: '400px',
-                height: '400px',
-                background: 'var(--secondary)',
-                filter: 'blur(150px)',
-                opacity: 0.05,
-                zIndex: -1,
-                pointerEvents: 'none'
-            }} />
-            <div style={{
-                position: 'fixed',
-                bottom: '10%',
-                left: '-20%',
-                width: '300px',
-                height: '300px',
-                background: '#3b82f6',
-                filter: 'blur(150px)',
-                opacity: 0.03,
-                zIndex: -1,
-                pointerEvents: 'none'
-            }} />
+                {/* Background Glows for Depth */}
+                <div style={{
+                    position: 'fixed',
+                    top: '20%',
+                    right: '-20%',
+                    width: '400px',
+                    height: '400px',
+                    background: 'var(--secondary)',
+                    filter: 'blur(150px)',
+                    opacity: 0.05,
+                    zIndex: -1,
+                    pointerEvents: 'none'
+                }} />
+                <div style={{
+                    position: 'fixed',
+                    bottom: '10%',
+                    left: '-20%',
+                    width: '300px',
+                    height: '300px',
+                    background: '#3b82f6',
+                    filter: 'blur(150px)',
+                    opacity: 0.03,
+                    zIndex: -1,
+                    pointerEvents: 'none'
+                }} />
+                {/* Final del Área de Scroll */}
+            </div>
         </div>
     );
 };

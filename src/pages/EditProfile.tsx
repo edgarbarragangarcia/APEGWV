@@ -147,10 +147,10 @@ const EditProfile: React.FC = () => {
             flexDirection: 'column',
             overflow: 'hidden',
             zIndex: 900,
-            paddingTop: '80px'
+            paddingTop: 'var(--header-offset-top)'
         }}>
             <div style={{ flexShrink: 0, zIndex: 10, background: 'var(--primary)', padding: '0 20px' }}>
-                <PageHeader title="Editar Perfil" onBack={() => navigate('/profile')} />
+                <PageHeader noMargin title="Editar Perfil" onBack={() => navigate('/profile')} />
             </div>
 
             <div style={{
