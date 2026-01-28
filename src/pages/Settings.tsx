@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Navigation, CheckCircle2, AlertCircle, ShieldCheck, Camera as CameraIcon } from 'lucide-react';
 import { Geolocation } from '@capacitor/geolocation';
 import { Camera } from '@capacitor/camera';
+import { App } from '@capacitor/app';
 import PageHeader from '../components/PageHeader';
 
 const Settings: React.FC = () => {
@@ -17,6 +18,18 @@ const Settings: React.FC = () => {
 
     useEffect(() => {
         checkPermissions();
+
+        // Listen for when the app comes back to foreground (e.g., user returns from Settings)
+        const appStateListener = App.addListener('appStateChange', ({ isActive }) => {
+            if (isActive) {
+                console.log('App resumed, re-checking permissions...');
+                checkPermissions();
+            }
+        });
+
+        return () => {
+            appStateListener.then(listener => listener.remove());
+        };
     }, []);
 
     const checkPermissions = async () => {
@@ -58,6 +71,18 @@ const Settings: React.FC = () => {
     const handleRequestGps = async () => {
         setIsRequesting('gps');
         try {
+            // First check current status
+            const currentPermission = await Geolocation.checkPermissions();
+
+            // If already denied, show message and wait for user to manually enable
+            if (currentPermission.location === 'denied') {
+                console.log('GPS permission is denied. User must enable in system settings.');
+                setGpsStatus('denied');
+                setIsRequesting(null);
+                return;
+            }
+
+            // Otherwise, request permission
             const permission = await Geolocation.requestPermissions();
             console.log('GPS Permission Requested:', permission);
 
@@ -79,6 +104,18 @@ const Settings: React.FC = () => {
     const handleRequestCamera = async () => {
         setIsRequesting('camera');
         try {
+            // First check current status
+            const currentPermission = await Camera.checkPermissions();
+
+            // If already denied, show message and wait for user to manually enable
+            if (currentPermission.camera === 'denied') {
+                console.log('Camera permission is denied. User must enable in system settings.');
+                setCameraStatus('denied');
+                setIsRequesting(null);
+                return;
+            }
+
+            // Otherwise, request permission
             const permission = await Camera.requestPermissions();
             console.log('Camera Permission Requested:', permission);
 
@@ -187,8 +224,10 @@ const Settings: React.FC = () => {
                                     {isRequesting === 'gps' ? 'SOLICITANDO...' : gpsStatus === 'granted' ? 'PERMISO CONCEDIDO' : 'SOLICITAR PERMISO'}
                                 </button>
                                 {gpsStatus === 'denied' && (
-                                    <p style={{ fontSize: '11px', color: '#ef4444', marginTop: '10px', textAlign: 'center' }}>
-                                        ⚠️ Permiso bloqueado. Ve a Ajustes del Celular &gt; Safari/Chrome &gt; Ubicación.
+                                    <p style={{ fontSize: '11px', color: '#ef4444', marginTop: '10px', textAlign: 'center', lineHeight: '1.4' }}>
+                                        ⚠️ Permiso bloqueado.<br />
+                                        Ve a <strong>Ajustes</strong> → <strong>APEG</strong> → <strong>Ubicación</strong> → Activa el permiso.<br />
+                                        <span style={{ fontSize: '10px', opacity: 0.9 }}>La app detectará automáticamente cuando vuelvas.</span>
                                     </p>
                                 )}
                             </div>
@@ -222,6 +261,13 @@ const Settings: React.FC = () => {
                                 >
                                     {isRequesting === 'camera' ? 'SOLICITANDO...' : cameraStatus === 'granted' ? 'PERMISO CONCEDIDO' : 'SOLICITAR PERMISO'}
                                 </button>
+                                {cameraStatus === 'denied' && (
+                                    <p style={{ fontSize: '11px', color: '#ef4444', marginTop: '10px', textAlign: 'center', lineHeight: '1.4' }}>
+                                        ⚠️ Permiso bloqueado.<br />
+                                        Ve a <strong>Ajustes</strong> → <strong>APEG</strong> → <strong>Cámara</strong> → Activa el permiso.<br />
+                                        <span style={{ fontSize: '10px', opacity: 0.9 }}>La app detectará automáticamente cuando vuelvas.</span>
+                                    </p>
+                                )}
                             </div>
                         </div>
                     </section>
