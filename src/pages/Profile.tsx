@@ -241,7 +241,7 @@ const Profile: React.FC = () => {
                         }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                             <Settings size={18} color="var(--secondary)" />
-                            <span style={{ fontWeight: '600', fontSize: '13px' }}>Configuración del Sistema</span>
+                            <span style={{ fontWeight: '700', fontSize: '15px', color: 'white' }}>Configuración del Sistema</span>
                         </div>
                         <ChevronRight size={16} color="var(--text-dim)" />
                     </button>
@@ -260,7 +260,7 @@ const Profile: React.FC = () => {
                         }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                             <Store size={18} color="var(--secondary)" />
-                            <span style={{ fontWeight: '600', fontSize: '13px' }}>Mi Marketplace APEG</span>
+                            <span style={{ fontWeight: '700', fontSize: '15px', color: 'white' }}>Mi Marketplace APEG</span>
                         </div>
                         <ChevronRight size={16} color="var(--text-dim)" />
                     </button>
@@ -279,7 +279,7 @@ const Profile: React.FC = () => {
                         }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                             <Trophy size={18} color="var(--secondary)" />
-                            <span style={{ fontWeight: '600', fontSize: '13px' }}>Mis Eventos Organizados</span>
+                            <span style={{ fontWeight: '700', fontSize: '15px', color: 'white' }}>Mis Eventos Organizados</span>
                         </div>
                         <ChevronRight size={16} color="var(--text-dim)" />
                     </button>
@@ -298,7 +298,7 @@ const Profile: React.FC = () => {
                         }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                             <Ticket size={18} color="var(--secondary)" />
-                            <span style={{ fontWeight: '600', fontSize: '13px' }}>Mis Cupones</span>
+                            <span style={{ fontWeight: '700', fontSize: '15px', color: 'white' }}>Mis Cupones</span>
                         </div>
                         <ChevronRight size={16} color="var(--text-dim)" />
                     </button>
@@ -317,7 +317,7 @@ const Profile: React.FC = () => {
                         }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                             <CreditCard size={18} color="var(--secondary)" />
-                            <span style={{ fontWeight: '600', fontSize: '13px' }}>Métodos de Pago</span>
+                            <span style={{ fontWeight: '700', fontSize: '15px', color: 'white' }}>Métodos de Pago</span>
                         </div>
                         <ChevronRight size={16} color="var(--text-dim)" />
                     </button>

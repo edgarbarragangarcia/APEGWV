@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Navigation, CheckCircle2, AlertCircle, ShieldCheck, Camera as CameraIcon } from 'lucide-react';
+import { Geolocation } from '@capacitor/geolocation';
+import { Camera } from '@capacitor/camera';
 import PageHeader from '../components/PageHeader';
 
 const Settings: React.FC = () => {
     const navigate = useNavigate();
-    const [gpsStatus, setGpsStatus] = useState<'granted' | 'denied' | 'prompt' | 'unknown'>(
-        (localStorage.getItem('perm_gps') as any) || 'unknown'
+    const [gpsStatus, setGpsStatus] = useState<'granted' | 'denied' | 'prompt'>(
+        'prompt'
     );
-    const [cameraStatus, setCameraStatus] = useState<'granted' | 'denied' | 'prompt' | 'unknown'>(
-        (localStorage.getItem('perm_camera') as any) || 'unknown'
+    const [cameraStatus, setCameraStatus] = useState<'granted' | 'denied' | 'prompt'>(
+        'prompt'
     );
     const [isRequesting, setIsRequesting] = useState<string | null>(null);
 
@@ -18,83 +20,89 @@ const Settings: React.FC = () => {
     }, []);
 
     const checkPermissions = async () => {
-        const updateStickyStatus = (key: string, newStatus: any, setter: any) => {
-            const local = localStorage.getItem(key);
-            if (local === 'granted' && (newStatus === 'prompt' || newStatus === 'unknown')) {
-                return;
-            }
-            setter(newStatus);
-            localStorage.setItem(key, newStatus);
-        };
-
-        // Check GPS
-        if ('permissions' in navigator) {
-            try {
-                const status = await navigator.permissions.query({ name: 'geolocation' as any });
-                updateStickyStatus('perm_gps', status.state, setGpsStatus);
-                status.onchange = () => updateStickyStatus('perm_gps', status.state, setGpsStatus);
-            } catch (e) {
-                console.error('Error checking GPS permission:', e);
-            }
-        }
-
-        // Check Camera
-        if ('permissions' in navigator) {
-            try {
-                const status = await navigator.permissions.query({ name: 'camera' as any });
-                updateStickyStatus('perm_camera', status.state, setCameraStatus);
-                status.onchange = () => updateStickyStatus('perm_camera', status.state, setCameraStatus);
-            } catch (e) {
-                console.warn('Camera permission query not supported');
-            }
-        }
-    };
-
-    const handleRequestGps = () => {
-        setIsRequesting('gps');
-        navigator.geolocation.getCurrentPosition(
-            () => {
-                setGpsStatus('granted');
-                localStorage.setItem('perm_gps', 'granted');
-                setIsRequesting(null);
-            },
-            (err) => {
-                console.error(err);
-                if (err.code === err.TIMEOUT) {
-                    setGpsStatus('prompt');
-                } else {
-                    setGpsStatus('denied');
-                    localStorage.setItem('perm_gps', 'denied');
-                }
-                setIsRequesting(null);
-            },
-            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-        );
-    };
-
-    const handleRequestCamera = async () => {
-        setIsRequesting('camera');
+        // Check GPS permission
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-            setCameraStatus('granted');
-            localStorage.setItem('perm_camera', 'granted');
-            stream.getTracks().forEach(track => track.stop());
+            const gpsPermission = await Geolocation.checkPermissions();
+            console.log('GPS Permission:', gpsPermission);
+
+            if (gpsPermission.location === 'granted' || gpsPermission.coarseLocation === 'granted') {
+                setGpsStatus('granted');
+            } else if (gpsPermission.location === 'denied') {
+                setGpsStatus('denied');
+            } else {
+                setGpsStatus('prompt');
+            }
+        } catch (e) {
+            console.error('Error checking GPS permission:', e);
+            setGpsStatus('prompt');
+        }
+
+        // Check Camera permission
+        try {
+            const cameraPermission = await Camera.checkPermissions();
+            console.log('Camera Permission:', cameraPermission);
+
+            if (cameraPermission.camera === 'granted') {
+                setCameraStatus('granted');
+            } else if (cameraPermission.camera === 'denied') {
+                setCameraStatus('denied');
+            } else {
+                setCameraStatus('prompt');
+            }
+        } catch (e) {
+            console.error('Error checking camera permission:', e);
+            setCameraStatus('prompt');
+        }
+    };
+
+    const handleRequestGps = async () => {
+        setIsRequesting('gps');
+        try {
+            const permission = await Geolocation.requestPermissions();
+            console.log('GPS Permission Requested:', permission);
+
+            if (permission.location === 'granted' || permission.coarseLocation === 'granted') {
+                setGpsStatus('granted');
+            } else if (permission.location === 'denied') {
+                setGpsStatus('denied');
+            } else {
+                setGpsStatus('prompt');
+            }
         } catch (err) {
-            console.error(err);
-            setCameraStatus('denied');
-            localStorage.setItem('perm_camera', 'denied');
+            console.error('Error requesting GPS permission:', err);
+            setGpsStatus('denied');
         } finally {
             setIsRequesting(null);
         }
     };
 
-    const StatusBadge = ({ status }: { status: 'granted' | 'denied' | 'prompt' | 'unknown' }) => {
+    const handleRequestCamera = async () => {
+        setIsRequesting('camera');
+        try {
+            const permission = await Camera.requestPermissions();
+            console.log('Camera Permission Requested:', permission);
+
+            if (permission.camera === 'granted') {
+                setCameraStatus('granted');
+            } else if (permission.camera === 'denied') {
+                setCameraStatus('denied');
+            } else {
+                setCameraStatus('prompt');
+            }
+        } catch (err) {
+            console.error('Error requesting camera permission:', err);
+            setCameraStatus('denied');
+        } finally {
+            setIsRequesting(null);
+        }
+    };
+
+    const StatusBadge = ({ status }: { status: 'granted' | 'denied' | 'prompt' }) => {
         const config = {
             granted: { color: '#A3E635', text: 'ACTIVADO', icon: CheckCircle2 },
             denied: { color: '#ef4444', text: 'DENEGADO', icon: AlertCircle },
             prompt: { color: '#fbbf24', text: 'PENDIENTE', icon: AlertCircle },
-            unknown: { color: 'var(--text-dim)', text: 'DESCONOCIDO', icon: AlertCircle },
-        }[status || 'unknown'];
+        }[status];
 
         return (
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: '800', color: config.color }}>
