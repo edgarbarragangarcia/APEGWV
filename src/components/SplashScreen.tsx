@@ -13,143 +13,213 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ isVisible }) => {
                     initial={{ opacity: 1 }}
                     exit={{
                         opacity: 0,
-                        transition: { duration: 0.8, ease: "easeInOut" }
+                        transition: { duration: 1, ease: [0.43, 0.13, 0.23, 0.96] }
                     }}
                     style={{
                         position: 'fixed',
                         inset: 0,
                         zIndex: 9999,
                         display: 'flex',
-                        flexDirection: 'column',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        background: 'linear-gradient(135deg, #0e2f1f 0%, #051a11 100%)',
-                        color: '#A3E635'
+                        background: '#04150d', // Fondo ultra oscuro
+                        overflow: 'hidden'
                     }}
                 >
+                    {/* Elementos Dinámicos de Fondo (Blobs) */}
                     <motion.div
-                        initial={{ scale: 0.8, opacity: 0 }}
                         animate={{
-                            scale: [0.8, 1.1, 1],
-                            opacity: 1
+                            x: [0, 50, 0],
+                            y: [0, -30, 0],
+                            scale: [1, 1.2, 1],
                         }}
-                        transition={{
-                            duration: 1.2,
-                            ease: "easeOut",
-                            times: [0, 0.6, 1]
+                        transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+                        style={{
+                            position: 'absolute',
+                            top: '-10%',
+                            right: '-10%',
+                            width: '400px',
+                            height: '400px',
+                            background: 'radial-gradient(circle, rgba(163, 230, 53, 0.1) 0%, transparent 70%)',
+                            filter: 'blur(60px)',
+                            borderRadius: '50%'
                         }}
+                    />
+                    <motion.div
+                        animate={{
+                            x: [0, -40, 0],
+                            y: [0, 60, 0],
+                            scale: [1, 1.3, 1],
+                        }}
+                        transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
+                        style={{
+                            position: 'absolute',
+                            bottom: '-15%',
+                            left: '-10%',
+                            width: '500px',
+                            height: '500px',
+                            background: 'radial-gradient(circle, rgba(163, 230, 53, 0.08) 0%, transparent 70%)',
+                            filter: 'blur(80px)',
+                            borderRadius: '50%'
+                        }}
+                    />
+
+                    {/* Contenedor Principal con Glassmorphism */}
+                    <motion.div
+                        initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                        animate={{ scale: 1, opacity: 1, y: 0 }}
+                        transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
                         style={{
                             display: 'flex',
                             flexDirection: 'column',
                             alignItems: 'center',
-                            gap: '20px'
+                            gap: '30px',
+                            padding: '60px',
+                            borderRadius: '40px',
+                            background: 'rgba(255, 255, 255, 0.03)',
+                            backdropFilter: 'blur(20px)',
+                            border: '1px solid rgba(255, 255, 255, 0.05)',
+                            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
+                            zIndex: 10
                         }}
                     >
+                        {/* Logo con Animación de Giro y Pulso */}
+                        <div style={{ position: 'relative' }}>
+                            <motion.div
+                                animate={{ rotate: 360 }}
+                                transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
+                                style={{
+                                    position: 'absolute',
+                                    inset: '-10px',
+                                    border: '2px dashed rgba(163, 230, 53, 0.3)',
+                                    borderRadius: '50%',
+                                }}
+                            />
+                            <motion.div
+                                whileHover={{ scale: 1.05 }}
+                                style={{
+                                    width: '140px',
+                                    height: '140px',
+                                    background: 'linear-gradient(135deg, rgba(163, 230, 53, 0.2) 0%, rgba(26, 77, 53, 0.4) 100%)',
+                                    borderRadius: '50%',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    border: '1px solid rgba(163, 230, 53, 0.4)',
+                                    boxShadow: '0 0 30px rgba(163, 230, 53, 0.15)',
+                                    overflow: 'hidden'
+                                }}
+                            >
+                                <motion.img
+                                    src="/images/briceno18.png"
+                                    alt="Logo"
+                                    initial={{ scale: 0.5, opacity: 0 }}
+                                    animate={{ scale: 1, opacity: 1 }}
+                                    transition={{ delay: 0.3, duration: 1, type: "spring", stiffness: 100 }}
+                                    style={{
+                                        width: '90px',
+                                        height: '90px',
+                                        objectFit: 'contain'
+                                    }}
+                                    onError={(e) => {
+                                        (e.target as HTMLImageElement).style.display = 'none';
+                                    }}
+                                />
+                            </motion.div>
+                        </div>
+
+                        {/* Texto con Efecto de Revelado Moderno */}
+                        <div style={{ textAlign: 'center' }}>
+                            <motion.div
+                                initial={{ clipPath: 'inset(0 100% 0 0)' }}
+                                animate={{ clipPath: 'inset(0 0% 0 0)' }}
+                                transition={{ delay: 0.8, duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
+                            >
+                                <h1 style={{
+                                    fontSize: '42px',
+                                    fontWeight: '900',
+                                    letterSpacing: '8px',
+                                    margin: 0,
+                                    background: 'linear-gradient(to bottom, #fff 0%, #A3E635 100%)',
+                                    WebkitBackgroundClip: 'text',
+                                    WebkitTextFillColor: 'transparent',
+                                    textTransform: 'uppercase'
+                                }}>
+                                    APEG<span style={{ opacity: 0.8 }}>WEB</span>
+                                </h1>
+                            </motion.div>
+
+                            <motion.div
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 1.5, duration: 1 }}
+                                style={{
+                                    marginTop: '12px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '10px'
+                                }}
+                            >
+                                <div style={{ height: '1px', width: '20px', background: 'rgba(163, 230, 53, 0.3)' }} />
+                                <span style={{
+                                    fontSize: '11px',
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '4px',
+                                    color: 'rgba(163, 230, 53, 0.8)',
+                                    fontWeight: '500'
+                                }}>
+                                    The Golf Standard
+                                </span>
+                                <div style={{ height: '1px', width: '20px', background: 'rgba(163, 230, 53, 0.3)' }} />
+                            </motion.div>
+                        </div>
+                    </motion.div>
+
+                    {/* Indicador de Carga Minimalista y Elegante */}
+                    <div style={{
+                        position: 'absolute',
+                        bottom: '60px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: '15px'
+                    }}>
                         <div style={{
-                            width: '120px',
-                            height: '120px',
-                            background: 'rgba(163, 230, 53, 0.1)',
-                            borderRadius: '30px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            boxShadow: '0 20px 40px rgba(0,0,0,0.3)',
-                            border: '1px solid rgba(163, 230, 53, 0.2)',
-                            position: 'relative',
+                            width: '200px',
+                            height: '2px',
+                            background: 'rgba(255, 255, 255, 0.05)',
+                            borderRadius: '10px',
                             overflow: 'hidden'
                         }}>
                             <motion.div
-                                animate={{
-                                    rotate: [0, 360],
-                                }}
+                                initial={{ x: '-100%' }}
+                                animate={{ x: '100%' }}
                                 transition={{
-                                    duration: 20,
+                                    duration: 2,
                                     repeat: Infinity,
-                                    ease: "linear"
+                                    ease: "easeInOut"
                                 }}
                                 style={{
-                                    position: 'absolute',
-                                    width: '200%',
-                                    height: '200%',
-                                    background: 'conic-gradient(from 0deg, transparent, rgba(163, 230, 53, 0.1), transparent)',
-                                }}
-                            />
-                            <img
-                                src="/images/briceno18.png"
-                                alt="Logo"
-                                style={{
-                                    width: '80px',
-                                    height: '80px',
-                                    objectFit: 'contain',
-                                    zIndex: 1
-                                }}
-                                onError={(e) => {
-                                    // Fallback if image fails
-                                    (e.target as HTMLImageElement).style.display = 'none';
+                                    width: '100%',
+                                    height: '100%',
+                                    background: 'linear-gradient(90deg, transparent, #A3E635, transparent)'
                                 }}
                             />
                         </div>
-
-                        <div style={{ textAlign: 'center' }}>
-                            <motion.h1
-                                initial={{ y: 20, opacity: 0 }}
-                                animate={{ y: 0, opacity: 1 }}
-                                transition={{ delay: 0.5, duration: 0.8 }}
-                                style={{
-                                    fontSize: '32px',
-                                    fontWeight: '800',
-                                    letterSpacing: '4px',
-                                    margin: 0,
-                                    textShadow: '0 4px 10px rgba(0,0,0,0.5)',
-                                    color: '#fff'
-                                }}
-                            >
-                                APEG<span style={{ color: '#A3E635' }}>WEB</span>
-                            </motion.h1>
-                            <motion.p
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 0.6 }}
-                                transition={{ delay: 1, duration: 1 }}
-                                style={{
-                                    fontSize: '12px',
-                                    textTransform: 'uppercase',
-                                    letterSpacing: '2px',
-                                    marginTop: '8px',
-                                    color: '#A3E635'
-                                }}
-                            >
-                                Premium Golf Experience
-                            </motion.p>
-                        </div>
-                    </motion.div>
-
-                    <motion.div
-                        style={{
-                            position: 'absolute',
-                            bottom: '50px',
-                            width: '40px',
-                            height: '4px',
-                            background: 'rgba(163, 230, 53, 0.2)',
-                            borderRadius: '2px',
-                            overflow: 'hidden'
-                        }}
-                    >
-                        <motion.div
-                            animate={{
-                                x: [-40, 40]
-                            }}
-                            transition={{
-                                duration: 1.5,
-                                repeat: Infinity,
-                                ease: "easeInOut"
-                            }}
+                        <motion.span
+                            animate={{ opacity: [0.3, 0.6, 0.3] }}
+                            transition={{ duration: 2, repeat: Infinity }}
                             style={{
-                                width: '100%',
-                                height: '100%',
-                                background: '#A3E635'
+                                fontSize: '10px',
+                                color: 'rgba(255, 255, 255, 0.3)',
+                                letterSpacing: '2px',
+                                textTransform: 'uppercase'
                             }}
-                        />
-                    </motion.div>
+                        >
+                            Syncing Experience...
+                        </motion.span>
+                    </div>
                 </motion.div>
             )}
         </AnimatePresence>
