@@ -11,7 +11,9 @@ interface Coordinates {
 export const useGeoLocation = () => {
     const [location, setLocation] = useState<Coordinates | null>(null);
     const [error, setError] = useState<string | null>(null);
-    const [permissionStatus, setPermissionStatus] = useState<'granted' | 'denied' | 'prompt'>('prompt');
+    const [permissionStatus, setPermissionStatus] = useState<'granted' | 'denied' | 'prompt'>(
+        (localStorage.getItem('gps_permission_granted') === 'true') ? 'granted' : 'prompt'
+    );
     const [isRequesting, setIsRequesting] = useState(false);
     const watcherRef = useRef<string | null>(null);
     const locationRef = useRef<Coordinates | null>(null);
@@ -42,6 +44,7 @@ export const useGeoLocation = () => {
                         locationRef.current = newLocation;
                         setError(null);
                         setPermissionStatus('granted');
+                        localStorage.setItem('gps_permission_granted', 'true');
                         setIsRequesting(false);
                     }
                 }
@@ -69,6 +72,7 @@ export const useGeoLocation = () => {
             setLocation(newLocation);
             locationRef.current = newLocation;
             setPermissionStatus('granted');
+            localStorage.setItem('gps_permission_granted', 'true');
             setError(null);
             await startWatching();
         } catch (err: any) {
@@ -91,19 +95,29 @@ export const useGeoLocation = () => {
 
     useEffect(() => {
         const checkPermissionsAndGetLocation = async () => {
+            const wasGranted = localStorage.getItem('gps_permission_granted') === 'true';
+
             try {
                 const permission = await Geolocation.checkPermissions();
 
-                if (permission.location === 'granted' || permission.coarseLocation === 'granted') {
+                if (permission.location === 'granted' || permission.coarseLocation === 'granted' || (Capacitor.getPlatform() === 'web' && wasGranted)) {
                     setPermissionStatus('granted');
                     getInitialLocation();
                 } else if (permission.location === 'denied') {
                     setPermissionStatus('denied');
+                    localStorage.removeItem('gps_permission_granted');
                 } else {
-                    setPermissionStatus('prompt');
+                    // Si en localStorage decíamos que sí pero el sistema dice prompt, 
+                    // en WEB intentamos arrancar igual para disparar el flujo automático
+                    if (Capacitor.getPlatform() === 'web' && wasGranted) {
+                        getInitialLocation();
+                    } else {
+                        setPermissionStatus('prompt');
+                    }
                 }
             } catch (err) {
-                setPermissionStatus('prompt');
+                if (wasGranted) getInitialLocation();
+                else setPermissionStatus('prompt');
             }
         };
 
@@ -164,6 +178,7 @@ export const useGeoLocation = () => {
                 setLocation(newLocation);
                 locationRef.current = newLocation;
                 setPermissionStatus('granted');
+                localStorage.setItem('gps_permission_granted', 'true');
                 setIsRequesting(false);
                 await startWatching();
                 return;

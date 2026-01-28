@@ -16,10 +16,10 @@ import PageHeader from '../components/PageHeader';
 const Settings: React.FC = () => {
     const navigate = useNavigate();
     const [gpsStatus, setGpsStatus] = useState<'granted' | 'denied' | 'prompt'>(
-        'prompt'
+        (localStorage.getItem('gps_permission_granted') === 'true') ? 'granted' : 'prompt'
     );
     const [cameraStatus, setCameraStatus] = useState<'granted' | 'denied' | 'prompt'>(
-        'prompt'
+        (localStorage.getItem('camera_permission_granted') === 'true') ? 'granted' : 'prompt'
     );
     const [isRequesting, setIsRequesting] = useState<string | null>(null);
 
@@ -49,10 +49,15 @@ const Settings: React.FC = () => {
 
             if (gpsPermission.location === 'granted' || gpsPermission.coarseLocation === 'granted') {
                 setGpsStatus('granted');
+                localStorage.setItem('gps_permission_granted', 'true');
             } else if (gpsPermission.location === 'denied') {
                 setGpsStatus('denied');
+                localStorage.removeItem('gps_permission_granted');
             } else {
-                setGpsStatus('prompt');
+                // Mantener el cache si estamos en web para evitar el flicker
+                if (Capacitor.getPlatform() !== 'web') {
+                    setGpsStatus('prompt');
+                }
             }
         } catch (e) {
             console.error('Error checking GPS permission:', e);
@@ -69,10 +74,14 @@ const Settings: React.FC = () => {
 
             if (cameraPermission.camera === 'granted') {
                 setCameraStatus('granted');
+                localStorage.setItem('camera_permission_granted', 'true');
             } else if (cameraPermission.camera === 'denied') {
                 setCameraStatus('denied');
+                localStorage.removeItem('camera_permission_granted');
             } else {
-                setCameraStatus('prompt');
+                if (Capacitor.getPlatform() !== 'web') {
+                    setCameraStatus('prompt');
+                }
             }
         } catch (e) {
             console.error('Error checking camera permission:', e);
@@ -96,6 +105,7 @@ const Settings: React.FC = () => {
                 }
             }
             setGpsStatus('granted');
+            localStorage.setItem('gps_permission_granted', 'true');
             await checkPermissions();
         } catch (err: any) {
             console.error('Error requesting GPS permission:', err);
@@ -120,6 +130,7 @@ const Settings: React.FC = () => {
                 }
             }
             setCameraStatus('granted');
+            localStorage.setItem('camera_permission_granted', 'true');
             await checkPermissions();
         } catch (err: any) {
             console.error('Error requesting camera permission:', err);
