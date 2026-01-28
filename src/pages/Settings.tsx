@@ -1,9 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Navigation, CheckCircle2, AlertCircle, ShieldCheck, Camera as CameraIcon } from 'lucide-react';
 import { Geolocation } from '@capacitor/geolocation';
 import { Camera } from '@capacitor/camera';
 import { App } from '@capacitor/app';
+import { Capacitor } from '@capacitor/core';
+import {
+    ShieldCheck,
+    CheckCircle2,
+    AlertCircle,
+    LocateFixed,
+    Camera as CameraIcon
+} from 'lucide-react';
 import PageHeader from '../components/PageHeader';
 
 const Settings: React.FC = () => {
@@ -79,24 +86,23 @@ const Settings: React.FC = () => {
     const handleRequestGps = async () => {
         setIsRequesting('gps');
         console.log('Requesting GPS Permission...');
+        // window.alert('Iniciando solicitud de GPS...');
+
         try {
-            // First request permission directly, don't block even if we think it's denied
-            // On iOS, if it's already granted in settings, this often returns the correct state immediately.
             const permission = await Geolocation.requestPermissions();
             console.log('GPS Permission Request Result:', JSON.stringify(permission));
+            // window.alert('Resultado GPS: ' + JSON.stringify(permission));
 
             if (permission.location === 'granted' || permission.coarseLocation === 'granted') {
                 setGpsStatus('granted');
             } else if (permission.location === 'denied') {
                 setGpsStatus('denied');
-                // Only if it's REALLY denied and not just a state mismatch, we could open settings
-                // But typically if the user just enabled it, requestPermissions should now return granted.
             } else {
                 setGpsStatus('prompt');
             }
-        } catch (err) {
+        } catch (err: any) {
             console.error('Error requesting GPS permission:', err);
-            // Fallback to checkPermissions to see if we can get a cleaner state
+            window.alert('Error GPS: ' + (err.message || JSON.stringify(err)));
             await checkPermissions();
         } finally {
             setIsRequesting(null);
@@ -106,9 +112,12 @@ const Settings: React.FC = () => {
     const handleRequestCamera = async () => {
         setIsRequesting('camera');
         console.log('Requesting Camera Permission...');
+        // window.alert('Iniciando solicitud de Cámara...');
+
         try {
             const permission = await Camera.requestPermissions();
             console.log('Camera Permission Request Result:', JSON.stringify(permission));
+            // window.alert('Resultado Cámara: ' + JSON.stringify(permission));
 
             if (permission.camera === 'granted') {
                 setCameraStatus('granted');
@@ -117,8 +126,9 @@ const Settings: React.FC = () => {
             } else {
                 setCameraStatus('prompt');
             }
-        } catch (err) {
+        } catch (err: any) {
             console.error('Error requesting camera permission:', err);
+            window.alert('Error Cámara: ' + (err.message || JSON.stringify(err)));
             await checkPermissions();
         } finally {
             setIsRequesting(null);
@@ -176,21 +186,35 @@ const Settings: React.FC = () => {
                 overflowX: 'hidden'
             }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                    <button
+                        onClick={checkPermissions}
+                        className="glass"
+                        style={{
+                            padding: '10px',
+                            fontSize: '12px',
+                            color: 'var(--secondary)',
+                            border: '1px solid var(--secondary)',
+                            marginBottom: '10px'
+                        }}
+                    >
+                        🔄 REFRESCAR ESTADO DEL SISTEMA
+                    </button>
+
                     <section>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px', paddingLeft: '5px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
                             <ShieldCheck size={20} color="var(--secondary)" />
-                            <h2 style={{ fontSize: '16px', fontWeight: '900', color: 'white' }}>
-                                PERMISOS <span style={{ color: 'var(--secondary)' }}>DEL</span> SISTEMA
+                            <h2 style={{ fontSize: '18px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                                Permisos <span style={{ color: 'var(--secondary)' }}>del Sistema</span>
                             </h2>
                         </div>
 
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                             {/* GPS */}
                             <div className="glass" style={{ padding: '20px' }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '15px' }}>
                                     <div style={{ display: 'flex', gap: '15px' }}>
                                         <div style={{ background: 'rgba(163, 230, 53, 0.1)', padding: '10px', borderRadius: '12px' }}>
-                                            <Navigation size={24} color="var(--secondary)" />
+                                            <LocateFixed size={24} color="var(--secondary)" />
                                         </div>
                                         <div>
                                             <h3 style={{ fontSize: '16px', marginBottom: '2px' }}>Ubicación (GPS)</h3>
@@ -203,36 +227,21 @@ const Settings: React.FC = () => {
                                 </div>
                                 <button
                                     onClick={handleRequestGps}
-                                    disabled={isRequesting === 'gps' || gpsStatus === 'granted'}
                                     className="glass"
                                     style={{
                                         width: '100%', padding: '12px',
                                         background: gpsStatus === 'granted' ? 'rgba(163, 230, 53, 0.1)' : 'var(--secondary)',
                                         color: gpsStatus === 'granted' ? 'var(--secondary)' : 'var(--primary)',
-                                        fontWeight: '700', borderRadius: '12px', opacity: (isRequesting === 'gps' || gpsStatus === 'granted') ? 0.7 : 1
+                                        fontWeight: '700', borderRadius: '12px', opacity: (isRequesting === 'gps') ? 0.7 : 1
                                     }}
                                 >
                                     {isRequesting === 'gps' ? 'SOLICITANDO...' : gpsStatus === 'granted' ? 'PERMISO CONCEDIDO' : 'SOLICITAR PERMISO'}
                                 </button>
-                                {gpsStatus === 'denied' && (
+                                {gpsStatus !== 'granted' && (
                                     <div style={{ marginTop: '10px', textAlign: 'center' }}>
-                                        <p style={{ fontSize: '11px', color: '#ef4444', marginBottom: '8px', lineHeight: '1.4' }}>
-                                            ⚠️ Sincronización fallida.<br />
-                                            Si ya activaste el permiso en Ajustes, toca el botón de abajo para sincronizar.
+                                        <p style={{ fontSize: '11px', color: '#fbbf24', marginBottom: '8px', lineHeight: '1.4' }}>
+                                            ⚠️ Si ya lo activaste en Ajustes y sigue aquí como PENDIENTE, toca el botón de arriba nuevamente para forzar la lectura.
                                         </p>
-                                        <button
-                                            onClick={handleRequestGps}
-                                            style={{
-                                                fontSize: '10px',
-                                                color: 'var(--secondary)',
-                                                background: 'rgba(163, 230, 53, 0.1)',
-                                                border: '1px solid var(--secondary)',
-                                                padding: '4px 10px',
-                                                borderRadius: '6px'
-                                            }}
-                                        >
-                                            REINTENTAR SINCRONIZACIÓN
-                                        </button>
                                     </div>
                                 )}
                             </div>
@@ -255,7 +264,6 @@ const Settings: React.FC = () => {
                                 </div>
                                 <button
                                     onClick={handleRequestCamera}
-                                    disabled={isRequesting === 'camera'}
                                     className="glass"
                                     style={{
                                         width: '100%', padding: '12px',
@@ -266,47 +274,34 @@ const Settings: React.FC = () => {
                                 >
                                     {isRequesting === 'camera' ? 'SOLICITANDO...' : cameraStatus === 'granted' ? 'PERMISO CONCEDIDO' : 'SOLICITAR PERMISO'}
                                 </button>
-                                {cameraStatus === 'denied' && (
+                                {cameraStatus !== 'granted' && (
                                     <div style={{ marginTop: '10px', textAlign: 'center' }}>
-                                        <p style={{ fontSize: '11px', color: '#ef4444', marginBottom: '8px', lineHeight: '1.4' }}>
-                                            ⚠️ Sincronización fallida.<br />
-                                            Toca abajo para reintentar si ya lo activaste en ajustes.
+                                        <p style={{ fontSize: '11px', color: '#fbbf24', marginBottom: '8px', lineHeight: '1.4' }}>
+                                            ⚠️ Si ya activaste la cámara en ajustes, intenta tocar el botón de arriba.
                                         </p>
-                                        <button
-                                            onClick={handleRequestCamera}
-                                            style={{
-                                                fontSize: '10px',
-                                                color: 'var(--secondary)',
-                                                background: 'rgba(163, 230, 53, 0.1)',
-                                                border: '1px solid var(--secondary)',
-                                                padding: '4px 10px',
-                                                borderRadius: '6px'
-                                            }}
-                                        >
-                                            REINTENTAR SINCRONIZACIÓN
-                                        </button>
                                     </div>
                                 )}
                             </div>
                         </div>
                     </section>
 
-                    {/* Debug Info (Only if there is any) */}
-                    {debugInfo && (
-                        <div style={{
-                            marginTop: '20px',
-                            padding: '10px',
-                            background: 'rgba(0,0,0,0.3)',
-                            borderRadius: '8px',
-                            fontSize: '9px',
-                            fontFamily: 'monospace',
-                            color: 'var(--text-dim)',
-                            whiteSpace: 'pre-wrap'
-                        }}>
-                            <p style={{ fontWeight: 'bold', marginBottom: '4px' }}>DEBUG INFO:</p>
-                            {debugInfo}
+                    {/* Debug Info expanded */}
+                    <div style={{
+                        marginTop: '20px',
+                        padding: '15px',
+                        background: 'rgba(0,0,0,0.5)',
+                        borderRadius: '12px',
+                        border: '1px solid rgba(255,255,255,0.1)'
+                    }}>
+                        <p style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--secondary)', marginBottom: '8px' }}>DIAGNÓSTICO TÉCNICO:</p>
+                        <div style={{ fontSize: '10px', fontFamily: 'monospace', color: '#fff', opacity: 0.8, whiteSpace: 'pre-wrap' }}>
+                            {debugInfo || 'No hay datos de diagnóstico aún.'}
                         </div>
-                    )}
+                        <p style={{ fontSize: '9px', marginTop: '10px', color: 'var(--text-dim)' }}>
+                            ID Plataforma: {Capacitor.getPlatform()}<br />
+                            Nativo: {Capacitor.isNativePlatform() ? 'SÍ' : 'NO'}
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>
