@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Navigation, Smartphone, CheckCircle2, AlertCircle, ShieldCheck, Camera as CameraIcon } from 'lucide-react';
+import { Navigation, CheckCircle2, AlertCircle, ShieldCheck, Camera as CameraIcon } from 'lucide-react';
 import PageHeader from '../components/PageHeader';
 
 const Settings: React.FC = () => {
@@ -10,9 +10,6 @@ const Settings: React.FC = () => {
     );
     const [cameraStatus, setCameraStatus] = useState<'granted' | 'denied' | 'prompt' | 'unknown'>(
         (localStorage.getItem('perm_camera') as any) || 'unknown'
-    );
-    const [sensorsStatus, setSensorsStatus] = useState<'granted' | 'denied' | 'prompt' | 'unknown'>(
-        (localStorage.getItem('perm_sensors') as any) || 'unknown'
     );
     const [isRequesting, setIsRequesting] = useState<string | null>(null);
 
@@ -51,23 +48,6 @@ const Settings: React.FC = () => {
                 console.warn('Camera permission query not supported');
             }
         }
-
-        // Check Sensors
-        const needsMotion = typeof (DeviceOrientationEvent as any).requestPermission === 'function' ||
-            typeof (DeviceMotionEvent as any).requestPermission === 'function';
-
-        if (needsMotion) {
-            const local = localStorage.getItem('perm_sensors');
-            if (!local || local === 'unknown' || local === 'prompt') {
-                setSensorsStatus('prompt');
-                localStorage.setItem('perm_sensors', 'prompt');
-            } else if (local === 'granted') {
-                setSensorsStatus('granted');
-            }
-        } else {
-            setSensorsStatus('granted');
-            localStorage.setItem('perm_sensors', 'granted');
-        }
     };
 
     const handleRequestGps = () => {
@@ -103,45 +83,6 @@ const Settings: React.FC = () => {
             console.error(err);
             setCameraStatus('denied');
             localStorage.setItem('perm_camera', 'denied');
-        } finally {
-            setIsRequesting(null);
-        }
-    };
-
-    const handleRequestSensors = async () => {
-        setIsRequesting('sensors');
-        try {
-            const needsPermission = typeof (DeviceOrientationEvent as any).requestPermission === 'function' ||
-                typeof (DeviceMotionEvent as any).requestPermission === 'function';
-
-            if (needsPermission) {
-                let motionGranted = true;
-                let orientationGranted = true;
-
-                if (typeof (DeviceMotionEvent as any).requestPermission === 'function') {
-                    const res = await (DeviceMotionEvent as any).requestPermission();
-                    motionGranted = res === 'granted';
-                }
-
-                if (typeof (DeviceOrientationEvent as any).requestPermission === 'function') {
-                    const res = await (DeviceOrientationEvent as any).requestPermission();
-                    orientationGranted = res === 'granted';
-                }
-
-                if (motionGranted && orientationGranted) {
-                    setSensorsStatus('granted');
-                    localStorage.setItem('perm_sensors', 'granted');
-                } else {
-                    setSensorsStatus('denied');
-                    localStorage.setItem('perm_sensors', 'denied');
-                }
-            } else {
-                setSensorsStatus('granted');
-                localStorage.setItem('perm_sensors', 'granted');
-            }
-        } catch (error) {
-            console.error(error);
-            setSensorsStatus('denied');
         } finally {
             setIsRequesting(null);
         }
@@ -273,42 +214,6 @@ const Settings: React.FC = () => {
                                 >
                                     {isRequesting === 'camera' ? 'SOLICITANDO...' : cameraStatus === 'granted' ? 'PERMISO CONCEDIDO' : 'SOLICITAR PERMISO'}
                                 </button>
-                            </div>
-
-                            {/* Sensors */}
-                            <div className="glass" style={{ padding: '20px' }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '15px' }}>
-                                    <div style={{ display: 'flex', gap: '15px' }}>
-                                        <div style={{ background: 'rgba(163, 230, 53, 0.1)', padding: '10px', borderRadius: '12px' }}>
-                                            <Smartphone size={24} color="var(--secondary)" />
-                                        </div>
-                                        <div>
-                                            <h3 style={{ fontSize: '16px', marginBottom: '2px' }}>Sensores de Movimiento</h3>
-                                            <p style={{ fontSize: '12px', color: 'var(--text-dim)', maxWidth: '200px' }}>
-                                                Esencial para el Green Reader y lectura de caída.
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <StatusBadge status={sensorsStatus} />
-                                </div>
-                                <button
-                                    onClick={handleRequestSensors}
-                                    disabled={isRequesting === 'sensors' || sensorsStatus === 'granted'}
-                                    className="glass"
-                                    style={{
-                                        width: '100%', padding: '12px',
-                                        background: sensorsStatus === 'granted' ? 'rgba(163, 230, 53, 0.1)' : 'var(--secondary)',
-                                        color: sensorsStatus === 'granted' ? 'var(--secondary)' : 'var(--primary)',
-                                        fontWeight: '700', borderRadius: '12px', opacity: (isRequesting === 'sensors' || sensorsStatus === 'granted') ? 0.7 : 1
-                                    }}
-                                >
-                                    {isRequesting === 'sensors' ? 'SOLICITANDO...' : sensorsStatus === 'granted' ? 'PERMISO CONCEDIDO' : 'SOLICITAR PERMISO'}
-                                </button>
-                                {sensorsStatus === 'denied' && (
-                                    <p style={{ fontSize: '11px', color: '#ef4444', marginTop: '10px', textAlign: 'center' }}>
-                                        ⚠️ iOS requiere habilitar "Acceso a movimiento y orientación" en Ajustes &gt; Safari.
-                                    </p>
-                                )}
                             </div>
                         </div>
                     </section>
