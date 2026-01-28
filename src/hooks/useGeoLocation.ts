@@ -39,9 +39,9 @@ export const useGeoLocation = () => {
         };
 
         watcherRef.current = navigator.geolocation.watchPosition(handleSuccess, handleError, {
-            enableHighAccuracy: true,
-            timeout: 20000,
-            maximumAge: 5000 // Aceptamos hasta 5 segundos de antigüedad para rapidez
+            enableHighAccuracy: false, // Cambiado a false para mayor rapidez y menor consumo
+            timeout: 10000,
+            maximumAge: 30000 // Permitir caché de hasta 30s
         });
     };
 
@@ -64,7 +64,11 @@ export const useGeoLocation = () => {
                     localStorage.setItem('perm_gps', 'denied');
                 }
             },
-            { enableHighAccuracy: true, timeout: 10000 }
+            {
+                enableHighAccuracy: false,
+                timeout: 5000,
+                maximumAge: Infinity // Intentar obtener ubicación cacheada instantáneamente
+            }
         );
     };
 
@@ -154,7 +158,7 @@ export const useGeoLocation = () => {
                     localStorage.setItem('perm_gps', 'denied');
                 }
             },
-            { enableHighAccuracy: true, timeout: 15000 }
+            { enableHighAccuracy: false, timeout: 8000 }
         );
     };
 

@@ -93,12 +93,7 @@ const CourseSelection: React.FC = () => {
                     </div>
                 </div>
 
-                {/* Status Indicator */}
-                {!location && permissionStatus === 'granted' && (
-                    <div style={{ marginBottom: '15px', padding: '10px', background: 'rgba(59, 130, 246, 0.1)', borderRadius: '10px', fontSize: '12px', color: '#60a5fa', textAlign: 'center' }}>
-                        Obteniendo ubicación precisa...
-                    </div>
-                )}
+
 
                 {/* Search */}
                 <div className="glass" style={{
