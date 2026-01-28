@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Geolocation } from '@capacitor/geolocation';
+import { App } from '@capacitor/app';
 
 interface Coordinates {
     latitude: number;
@@ -54,17 +55,17 @@ export const useGeoLocation = () => {
     };
 
     const getInitialLocation = async (useHighAccuracy = true, retryCount = 0) => {
-        const timeout = useHighAccuracy ? 8000 : 5000;
-        console.log(`Attempting location fetch (high accuracy: ${useHighAccuracy}, attempt: ${retryCount + 1})`);
+        const timeout = useHighAccuracy ? 10000 : 7000;
+        console.log(`[useGeoLocation] Attempting fetch: highAccuracy=${useHighAccuracy}, attempt=${retryCount + 1}`);
 
         try {
             const position = await Geolocation.getCurrentPosition({
                 enableHighAccuracy: useHighAccuracy,
                 timeout,
-                maximumAge: 0
+                maximumAge: retryCount > 0 ? 30000 : 0
             });
 
-            console.log(`✅ Got location: ${position.coords.latitude.toFixed(5)}, ${position.coords.longitude.toFixed(5)} (accuracy: ${position.coords.accuracy}m)`);
+            console.log(`[useGeoLocation] ✅ Location obtained: ${position.coords.latitude}, ${position.coords.longitude}`);
             const newLocation = {
                 latitude: position.coords.latitude,
                 longitude: position.coords.longitude
@@ -72,23 +73,27 @@ export const useGeoLocation = () => {
             setLocation(newLocation);
             locationRef.current = newLocation;
             setPermissionStatus('granted');
+            setError(null);
             await startWatching();
         } catch (err: any) {
-            console.error(`❌ GPS fetch failed:`, err);
+            console.warn(`[useGeoLocation] ❌ Fetch failed (attempt ${retryCount + 1}):`, err.message);
 
-            if (err.message?.includes('denied') || err.message?.includes('permission')) {
+            if (err.message?.toLowerCase().includes('denied') || err.code === 1) {
                 setPermissionStatus('denied');
-            } else if (useHighAccuracy && retryCount === 0) {
-                // Fallback: intentar con baja precisión si alta precisión falla
-                console.log('🔄 Falling back to low accuracy mode...');
-                setTimeout(() => getInitialLocation(false, 0), 500);
-            } else if (retryCount < 1) {
-                // Un último intento
-                console.log('🔄 Final retry...');
-                setTimeout(() => getInitialLocation(false, retryCount + 1), 2000);
+                setError('Permiso denegado por el usuario');
+                return;
+            }
+
+            // Fallback strategy
+            if (useHighAccuracy && retryCount === 0) {
+                console.log('[useGeoLocation] 🔄 Retrying with low accuracy...');
+                setTimeout(() => getInitialLocation(false, 0), 1000);
+            } else if (retryCount < 2) {
+                console.log(`[useGeoLocation] 🔄 Retrying in 3s... (Attempt ${retryCount + 2})`);
+                setTimeout(() => getInitialLocation(false, retryCount + 1), 3000);
             } else {
-                console.error('⚠️ All location attempts failed');
-                setError('No se pudo obtener ubicación precisa');
+                console.error('[useGeoLocation] ⚠️ All attempts failed');
+                setError('No se pudo obtener una ubicación estable. Verifica que el GPS esté activo.');
             }
         }
     };
@@ -115,10 +120,19 @@ export const useGeoLocation = () => {
 
         checkPermissionsAndGetLocation();
 
+        // Listen for app resume to re-check permissions automatically
+        const appStateListener = App.addListener('appStateChange', ({ isActive }) => {
+            if (isActive) {
+                console.log('[useGeoLocation] App resumed, re-checking permissions...');
+                checkPermissionsAndGetLocation();
+            }
+        });
+
         return () => {
             if (watcherRef.current !== null) {
                 Geolocation.clearWatch({ id: watcherRef.current });
             }
+            appStateListener.then(l => l.remove());
         };
     }, []);
 

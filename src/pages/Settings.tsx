@@ -40,14 +40,21 @@ const Settings: React.FC = () => {
         };
     }, []);
 
-    const checkPermissions = async () => {
+    const checkPermissions = async (forceRequest = false) => {
         console.log('--- Checking Permissions ---');
-        let debug = '';
+        let debug = `Timestamp: ${new Date().toLocaleTimeString()}\n`;
+
         // Check GPS permission
         try {
-            const gpsPermission = await Geolocation.checkPermissions();
-            console.log('GPS Permission Result:', JSON.stringify(gpsPermission));
-            debug += `GPS: ${JSON.stringify(gpsPermission)}\n`;
+            let gpsPermission = await Geolocation.checkPermissions();
+            debug += `GPS (init): ${JSON.stringify(gpsPermission)}\n`;
+
+            // Si el estado es 'prompt' y el usuario forzó la actualización, 
+            // intentamos un requestPermissions que suele sincronizar el estado nativo
+            if (forceRequest && (gpsPermission.location === 'prompt' || gpsPermission.coarseLocation === 'prompt')) {
+                gpsPermission = await Geolocation.requestPermissions();
+                debug += `GPS (after sync): ${JSON.stringify(gpsPermission)}\n`;
+            }
 
             if (gpsPermission.location === 'granted' || gpsPermission.coarseLocation === 'granted') {
                 setGpsStatus('granted');
@@ -64,9 +71,13 @@ const Settings: React.FC = () => {
 
         // Check Camera permission
         try {
-            const cameraPermission = await Camera.checkPermissions();
-            console.log('Camera Permission Result:', JSON.stringify(cameraPermission));
-            debug += `Cam: ${JSON.stringify(cameraPermission)}`;
+            let cameraPermission = await Camera.checkPermissions();
+            debug += `Cam (init): ${JSON.stringify(cameraPermission)}\n`;
+
+            if (forceRequest && cameraPermission.camera === 'prompt') {
+                cameraPermission = await Camera.requestPermissions();
+                debug += `Cam (after sync): ${JSON.stringify(cameraPermission)}\n`;
+            }
 
             if (cameraPermission.camera === 'granted') {
                 setCameraStatus('granted');
@@ -78,31 +89,26 @@ const Settings: React.FC = () => {
         } catch (e) {
             console.error('Error checking camera permission:', e);
             setCameraStatus('prompt');
-            debug += `Cam Err: ${e}`;
+            debug += `Cam Err: ${e}\n`;
         }
+
         setDebugInfo(debug);
     };
 
     const handleRequestGps = async () => {
+        if (gpsStatus === 'granted') return;
         setIsRequesting('gps');
-        console.log('Requesting GPS Permission...');
-        // window.alert('Iniciando solicitud de GPS...');
 
         try {
             const permission = await Geolocation.requestPermissions();
-            console.log('GPS Permission Request Result:', JSON.stringify(permission));
-            // window.alert('Resultado GPS: ' + JSON.stringify(permission));
-
             if (permission.location === 'granted' || permission.coarseLocation === 'granted') {
                 setGpsStatus('granted');
-            } else if (permission.location === 'denied') {
-                setGpsStatus('denied');
             } else {
-                setGpsStatus('prompt');
+                setGpsStatus(permission.location === 'denied' ? 'denied' : 'prompt');
             }
+            await checkPermissions();
         } catch (err: any) {
             console.error('Error requesting GPS permission:', err);
-            window.alert('Error GPS: ' + (err.message || JSON.stringify(err)));
             await checkPermissions();
         } finally {
             setIsRequesting(null);
@@ -110,25 +116,19 @@ const Settings: React.FC = () => {
     };
 
     const handleRequestCamera = async () => {
+        if (cameraStatus === 'granted') return;
         setIsRequesting('camera');
-        console.log('Requesting Camera Permission...');
-        // window.alert('Iniciando solicitud de Cámara...');
 
         try {
             const permission = await Camera.requestPermissions();
-            console.log('Camera Permission Request Result:', JSON.stringify(permission));
-            // window.alert('Resultado Cámara: ' + JSON.stringify(permission));
-
             if (permission.camera === 'granted') {
                 setCameraStatus('granted');
-            } else if (permission.camera === 'denied') {
-                setCameraStatus('denied');
             } else {
-                setCameraStatus('prompt');
+                setCameraStatus(permission.camera === 'denied' ? 'denied' : 'prompt');
             }
+            await checkPermissions();
         } catch (err: any) {
             console.error('Error requesting camera permission:', err);
-            window.alert('Error Cámara: ' + (err.message || JSON.stringify(err)));
             await checkPermissions();
         } finally {
             setIsRequesting(null);
@@ -187,17 +187,18 @@ const Settings: React.FC = () => {
             }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                     <button
-                        onClick={checkPermissions}
+                        onClick={() => checkPermissions(true)}
                         className="glass"
                         style={{
                             padding: '10px',
                             fontSize: '12px',
                             color: 'var(--secondary)',
                             border: '1px solid var(--secondary)',
-                            marginBottom: '10px'
+                            marginBottom: '10px',
+                            fontWeight: 'bold'
                         }}
                     >
-                        🔄 REFRESCAR ESTADO DEL SISTEMA
+                        🔄 FORZAR SINCRONIZACIÓN CON EL SISTEMA
                     </button>
 
                     <section>
