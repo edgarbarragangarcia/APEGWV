@@ -13,16 +13,19 @@ export const useGeoLocation = () => {
     );
     const [isRequesting, setIsRequesting] = useState(false);
     const watcherRef = useRef<number | null>(null);
+    const locationRef = useRef<Coordinates | null>(null);
 
     const startWatching = () => {
         if (!navigator.geolocation || watcherRef.current !== null) return;
 
         const handleSuccess = (position: GeolocationPosition) => {
             console.log('GPS Updated:', position.coords.latitude, position.coords.longitude);
-            setLocation({
+            const newLocation = {
                 latitude: position.coords.latitude,
                 longitude: position.coords.longitude
-            });
+            };
+            setLocation(newLocation);
+            locationRef.current = newLocation;
             setError(null);
             setPermissionStatus('granted');
             setIsRequesting(false);
@@ -54,10 +57,12 @@ export const useGeoLocation = () => {
         navigator.geolocation.getCurrentPosition(
             (pos) => {
                 console.log(`✅ Got location: ${pos.coords.latitude.toFixed(5)}, ${pos.coords.longitude.toFixed(5)} (accuracy: ${pos.coords.accuracy}m)`);
-                setLocation({
+                const newLocation = {
                     latitude: pos.coords.latitude,
                     longitude: pos.coords.longitude
-                });
+                };
+                setLocation(newLocation);
+                locationRef.current = newLocation;
                 setPermissionStatus('granted');
                 startWatching();
             },
@@ -109,7 +114,10 @@ export const useGeoLocation = () => {
                     }
                     result.onchange = () => {
                         updateStickyStatus(result.state);
-                        if (result.state === 'granted') getInitialLocation();
+                        // Solo intentar obtener ubicación si no la tenemos aún
+                        if (result.state === 'granted' && !locationRef.current) {
+                            getInitialLocation();
+                        }
                     };
                 })
                 .catch(() => {
@@ -157,10 +165,12 @@ export const useGeoLocation = () => {
         // Intentar primero con alta precisión, luego con baja
         navigator.geolocation.getCurrentPosition(
             (pos) => {
-                setLocation({
+                const newLocation = {
                     latitude: pos.coords.latitude,
                     longitude: pos.coords.longitude
-                });
+                };
+                setLocation(newLocation);
+                locationRef.current = newLocation;
                 setPermissionStatus('granted');
                 setIsRequesting(false);
                 startWatching();
@@ -170,10 +180,12 @@ export const useGeoLocation = () => {
                 // Fallback a baja precisión
                 navigator.geolocation.getCurrentPosition(
                     (pos) => {
-                        setLocation({
+                        const newLocation = {
                             latitude: pos.coords.latitude,
                             longitude: pos.coords.longitude
-                        });
+                        };
+                        setLocation(newLocation);
+                        locationRef.current = newLocation;
                         setPermissionStatus('granted');
                         setIsRequesting(false);
                         startWatching();

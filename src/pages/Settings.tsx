@@ -36,10 +36,6 @@ const Settings: React.FC = () => {
                 const status = await navigator.permissions.query({ name: 'geolocation' as any });
                 updateStickyStatus('perm_gps', status.state, setGpsStatus);
                 status.onchange = () => updateStickyStatus('perm_gps', status.state, setGpsStatus);
-                // If it's already granted, trigger a fetch to confirm it's working
-                if (status.state === 'granted') {
-                    navigator.geolocation.getCurrentPosition(() => { }, () => { });
-                }
             } catch (e) {
                 console.error('Error checking GPS permission:', e);
             }
