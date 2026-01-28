@@ -248,6 +248,16 @@ button {
   }
 }
 
+.spinner-small {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-bottom-color: var(--secondary);
+  border-radius: 50%;
+  display: inline-block;
+  animation: rotation 1s linear infinite;
+}
+
 @keyframes shimmer {
   0% {
     background-position: -200% 0;

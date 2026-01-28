@@ -156,6 +156,14 @@ const CourseSelection: React.FC = () => {
             }}>
                 {/* Course List */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                    {permissionStatus === 'granted' && !location && (
+                        <div className="glass animate-pulse" style={{ padding: '15px', textAlign: 'center', background: 'rgba(163, 230, 53, 0.05)', border: '1px solid rgba(163, 230, 53, 0.2)' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', color: 'var(--secondary)' }}>
+                                <div className="spinner-small"></div>
+                                <span style={{ fontSize: '12px', fontWeight: '700' }}>OBTENIENDO UBICACIÓN PRECISA...</span>
+                            </div>
+                        </div>
+                    )}
                     {filteredCourses.map((course) => (
                         <div key={course.id} className="glass" style={{ overflow: 'hidden' }}>
                             <div style={{ padding: '20px' }}>

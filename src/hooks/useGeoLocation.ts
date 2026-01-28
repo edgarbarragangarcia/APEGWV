@@ -39,17 +39,18 @@ export const useGeoLocation = () => {
         };
 
         watcherRef.current = navigator.geolocation.watchPosition(handleSuccess, handleError, {
-            enableHighAccuracy: false, // Cambiado a false para mayor rapidez y menor consumo
-            timeout: 10000,
-            maximumAge: 30000 // Permitir caché de hasta 30s
+            enableHighAccuracy: true, // Cambiado a true para mayor precisión en el campo
+            timeout: 15000,
+            maximumAge: 10000 // Cache de 10s máximo
         });
     };
 
-    const getInitialLocation = () => {
+    const getInitialLocation = (retryCount = 0) => {
         if (!navigator.geolocation) return;
 
         navigator.geolocation.getCurrentPosition(
             (pos) => {
+                console.log('Got Initial Location:', pos.coords.latitude, pos.coords.longitude);
                 setLocation({
                     latitude: pos.coords.latitude,
                     longitude: pos.coords.longitude
@@ -62,12 +63,16 @@ export const useGeoLocation = () => {
                 if (err.code === err.PERMISSION_DENIED) {
                     setPermissionStatus('denied');
                     localStorage.setItem('perm_gps', 'denied');
+                } else if (retryCount < 2) {
+                    // Reintentar si es error de timeout o posición no disponible
+                    console.log('Retrying GPS fetch...');
+                    setTimeout(() => getInitialLocation(retryCount + 1), 2000);
                 }
             },
             {
-                enableHighAccuracy: false,
-                timeout: 5000,
-                maximumAge: Infinity // Intentar obtener ubicación cacheada instantáneamente
+                enableHighAccuracy: true,
+                timeout: 15000,
+                maximumAge: 0
             }
         );
     };
@@ -158,7 +163,7 @@ export const useGeoLocation = () => {
                     localStorage.setItem('perm_gps', 'denied');
                 }
             },
-            { enableHighAccuracy: false, timeout: 8000 }
+            { enableHighAccuracy: true, timeout: 10000 }
         );
     };
 
