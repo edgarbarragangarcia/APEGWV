@@ -21,16 +21,25 @@ const Settings: React.FC = () => {
     }, []);
 
     const checkPermissions = async () => {
+        // Helper to update status only if it's a meaningful change (granted/denied)
+        // or if we don't have a status yet. This avoids 'prompt' overwriting 'granted'.
+        const updateStickyStatus = (key: string, newStatus: any, setter: any) => {
+            const local = localStorage.getItem(key);
+            if (local === 'granted' && (newStatus === 'prompt' || newStatus === 'unknown')) {
+                // If we previously had it granted, don't revert to prompt just because
+                // the permissions API is in a fresh/uncertain state.
+                return;
+            }
+            setter(newStatus);
+            localStorage.setItem(key, newStatus);
+        };
+
         // Check GPS
         if ('permissions' in navigator) {
             try {
                 const status = await navigator.permissions.query({ name: 'geolocation' as any });
-                setGpsStatus(status.state);
-                localStorage.setItem('perm_gps', status.state);
-                status.onchange = () => {
-                    setGpsStatus(status.state);
-                    localStorage.setItem('perm_gps', status.state);
-                };
+                updateStickyStatus('perm_gps', status.state, setGpsStatus);
+                status.onchange = () => updateStickyStatus('perm_gps', status.state, setGpsStatus);
             } catch (e) {
                 console.error('Error checking GPS permission:', e);
             }
@@ -39,30 +48,28 @@ const Settings: React.FC = () => {
         // Check Camera
         if ('permissions' in navigator) {
             try {
-                // Not all browsers support querying camera permission
                 const status = await navigator.permissions.query({ name: 'camera' as any });
-                setCameraStatus(status.state);
-                localStorage.setItem('perm_camera', status.state);
-                status.onchange = () => {
-                    setCameraStatus(status.state);
-                    localStorage.setItem('perm_camera', status.state);
-                };
+                updateStickyStatus('perm_camera', status.state, setCameraStatus);
+                status.onchange = () => updateStickyStatus('perm_camera', status.state, setCameraStatus);
             } catch (e) {
                 console.warn('Camera permission query not supported, using current state');
             }
         }
 
-        // Check Sensors (iOS 13+ requires explicit permission for both motion and orientation)
+        // Check Sensors
         const needsMotionPermission = typeof (DeviceMotionEvent as any).requestPermission === 'function';
         const needsOrientationPermission = typeof (DeviceOrientationEvent as any).requestPermission === 'function';
 
         if (needsMotionPermission || needsOrientationPermission) {
-            // iOS requires explicit request, we can't easily "query" it like GPS
-            // Set to prompt initially, will update after user requests
-            setSensorsStatus('prompt');
+            // iOS requires explicit request. Only set to prompt if we haven't granted it before.
+            const local = localStorage.getItem('perm_sensors');
+            if (!local || local === 'unknown' || local === 'prompt') {
+                setSensorsStatus('prompt');
+                localStorage.setItem('perm_sensors', 'prompt');
+            }
         } else {
-            // Android/Desktop usually don't require explicit permission or it's implicitly granted
             setSensorsStatus('granted');
+            localStorage.setItem('perm_sensors', 'granted');
         }
     };
 

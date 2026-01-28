@@ -12,11 +12,11 @@ export const setupPushNotifications = async (userId: string) => {
     let permStatus = await PushNotifications.checkPermissions();
 
     if (permStatus.receive === 'prompt') {
-        const hasAskedThisSession = sessionStorage.getItem('pushed_asked');
-        if (hasAskedThisSession) return;
+        const hasAskedBefore = localStorage.getItem('pushed_asked');
+        if (hasAskedBefore) return;
 
         permStatus = await PushNotifications.requestPermissions();
-        sessionStorage.setItem('pushed_asked', 'true');
+        localStorage.setItem('pushed_asked', 'true');
     }
 
     if (permStatus.receive !== 'granted') {

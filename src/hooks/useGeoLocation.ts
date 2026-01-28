@@ -69,17 +69,26 @@ export const useGeoLocation = () => {
     };
 
     useEffect(() => {
+        // Helper to handle sticky status
+        const updateStickyStatus = (newStatus: PermissionState) => {
+            const local = localStorage.getItem('perm_gps');
+            if (local === 'granted' && (newStatus === 'prompt' || (newStatus as any) === 'unknown')) {
+                return;
+            }
+            setPermissionStatus(newStatus);
+            localStorage.setItem('perm_gps', newStatus);
+        };
+
         // Intento directo de obtener ubicación y permisos
         if (navigator.permissions && navigator.permissions.query) {
             navigator.permissions.query({ name: 'geolocation' as any })
                 .then((result) => {
-                    setPermissionStatus(result.state);
+                    updateStickyStatus(result.state);
                     if (result.state === 'granted') {
                         getInitialLocation();
                     }
                     result.onchange = () => {
-                        setPermissionStatus(result.state);
-                        localStorage.setItem('perm_gps', result.state);
+                        updateStickyStatus(result.state);
                         if (result.state === 'granted') getInitialLocation();
                     };
                 })
