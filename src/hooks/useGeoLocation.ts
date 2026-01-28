@@ -39,18 +39,21 @@ export const useGeoLocation = () => {
         };
 
         watcherRef.current = navigator.geolocation.watchPosition(handleSuccess, handleError, {
-            enableHighAccuracy: true, // Cambiado a true para mayor precisión en el campo
-            timeout: 15000,
-            maximumAge: 10000 // Cache de 10s máximo
+            enableHighAccuracy: false, // Usar baja precisión para actualizaciones continuas
+            timeout: 10000,
+            maximumAge: 30000 // Cache de 30s para reducir consumo
         });
     };
 
-    const getInitialLocation = (retryCount = 0) => {
+    const getInitialLocation = (useHighAccuracy = true, retryCount = 0) => {
         if (!navigator.geolocation) return;
+
+        const timeout = useHighAccuracy ? 8000 : 5000;
+        console.log(`Attempting location fetch (high accuracy: ${useHighAccuracy}, attempt: ${retryCount + 1})`);
 
         navigator.geolocation.getCurrentPosition(
             (pos) => {
-                console.log('Got Initial Location:', pos.coords.latitude, pos.coords.longitude);
+                console.log(`✅ Got location: ${pos.coords.latitude.toFixed(5)}, ${pos.coords.longitude.toFixed(5)} (accuracy: ${pos.coords.accuracy}m)`);
                 setLocation({
                     latitude: pos.coords.latitude,
                     longitude: pos.coords.longitude
@@ -59,19 +62,27 @@ export const useGeoLocation = () => {
                 startWatching();
             },
             (err) => {
-                console.error('Initial GPS fetch failed:', err);
+                console.error(`❌ GPS fetch failed (code ${err.code}):`, err.message);
+
                 if (err.code === err.PERMISSION_DENIED) {
                     setPermissionStatus('denied');
                     localStorage.setItem('perm_gps', 'denied');
-                } else if (retryCount < 2) {
-                    // Reintentar si es error de timeout o posición no disponible
-                    console.log('Retrying GPS fetch...');
-                    setTimeout(() => getInitialLocation(retryCount + 1), 2000);
+                } else if (useHighAccuracy && retryCount === 0) {
+                    // Fallback: intentar con baja precisión si alta precisión falla
+                    console.log('🔄 Falling back to low accuracy mode...');
+                    setTimeout(() => getInitialLocation(false, 0), 500);
+                } else if (retryCount < 1) {
+                    // Un último intento
+                    console.log('🔄 Final retry...');
+                    setTimeout(() => getInitialLocation(false, retryCount + 1), 2000);
+                } else {
+                    console.error('⚠️ All location attempts failed');
+                    setError('No se pudo obtener ubicación precisa');
                 }
             },
             {
-                enableHighAccuracy: true,
-                timeout: 15000,
+                enableHighAccuracy: useHighAccuracy,
+                timeout,
                 maximumAge: 0
             }
         );
@@ -140,10 +151,10 @@ export const useGeoLocation = () => {
             setError('Geolocation not supported');
             return;
         }
-
         setIsRequesting(true);
         setError(null);
 
+        // Intentar primero con alta precisión, luego con baja
         navigator.geolocation.getCurrentPosition(
             (pos) => {
                 setLocation({
@@ -155,15 +166,31 @@ export const useGeoLocation = () => {
                 startWatching();
             },
             (err) => {
-                console.error('Manual request failed:', err);
-                setError(err.message);
-                setIsRequesting(false);
-                if (err.code === err.PERMISSION_DENIED) {
-                    setPermissionStatus('denied');
-                    localStorage.setItem('perm_gps', 'denied');
-                }
+                console.error('High accuracy refresh failed, trying low accuracy:', err);
+                // Fallback a baja precisión
+                navigator.geolocation.getCurrentPosition(
+                    (pos) => {
+                        setLocation({
+                            latitude: pos.coords.latitude,
+                            longitude: pos.coords.longitude
+                        });
+                        setPermissionStatus('granted');
+                        setIsRequesting(false);
+                        startWatching();
+                    },
+                    (err2) => {
+                        console.error('Manual request failed completely:', err2);
+                        setError(err2.message);
+                        setIsRequesting(false);
+                        if (err2.code === err2.PERMISSION_DENIED) {
+                            setPermissionStatus('denied');
+                            localStorage.setItem('perm_gps', 'denied');
+                        }
+                    },
+                    { enableHighAccuracy: false, timeout: 5000 }
+                );
             },
-            { enableHighAccuracy: true, timeout: 10000 }
+            { enableHighAccuracy: true, timeout: 8000 }
         );
     };
 

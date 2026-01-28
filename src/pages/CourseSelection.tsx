@@ -16,6 +16,17 @@ const CourseSelection: React.FC = () => {
     const zones = ['Todas', 'Bogotá', 'Antioquia', 'Valle', 'Costa', 'Santanderes', 'Eje Cafetero', 'Centro'];
 
     const { calculateDistance, location, refreshLocation, permissionStatus } = useGeoLocation();
+    const [showLocationLoading, setShowLocationLoading] = useState(true);
+
+    // Timeout para el mensaje de carga de ubicación
+    useEffect(() => {
+        if (permissionStatus === 'granted' && !location) {
+            const timer = setTimeout(() => {
+                setShowLocationLoading(false);
+            }, 12000); // Ocultar después de 12 segundos si aún no hay ubicación
+            return () => clearTimeout(timer);
+        }
+    }, [permissionStatus, location]);
 
     const sortedCourses = [...COLOMBIAN_COURSES].map(course => ({
         ...course,
@@ -156,7 +167,7 @@ const CourseSelection: React.FC = () => {
             }}>
                 {/* Course List */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                    {permissionStatus === 'granted' && !location && (
+                    {permissionStatus === 'granted' && !location && showLocationLoading && (
                         <div className="glass animate-pulse" style={{ padding: '15px', textAlign: 'center', background: 'rgba(163, 230, 53, 0.05)', border: '1px solid rgba(163, 230, 53, 0.2)' }}>
                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', color: 'var(--secondary)' }}>
                                 <div className="spinner-small"></div>
