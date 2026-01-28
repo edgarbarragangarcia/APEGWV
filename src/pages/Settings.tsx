@@ -11,7 +11,6 @@ import {
     LocateFixed,
     Camera as CameraIcon
 } from 'lucide-react';
-import { useToast } from '../context/ToastContext';
 import PageHeader from '../components/PageHeader';
 
 const Settings: React.FC = () => {
@@ -22,9 +21,7 @@ const Settings: React.FC = () => {
     const [cameraStatus, setCameraStatus] = useState<'granted' | 'denied' | 'prompt'>(
         'prompt'
     );
-    const { success, error, info } = useToast();
     const [isRequesting, setIsRequesting] = useState<string | null>(null);
-    const [debugInfo, setDebugInfo] = useState<string>('');
 
     useEffect(() => {
         checkPermissions();
@@ -32,7 +29,6 @@ const Settings: React.FC = () => {
         // Listen for when the app comes back to foreground (e.g., user returns from Settings)
         const appStateListener = App.addListener('appStateChange', ({ isActive }) => {
             if (isActive) {
-                console.log('App resumed, re-checking permissions...');
                 checkPermissions();
             }
         });
@@ -43,19 +39,12 @@ const Settings: React.FC = () => {
     }, []);
 
     const checkPermissions = async (forceRequest = false) => {
-        console.log('--- Checking Permissions ---');
-        let debug = `Timestamp: ${new Date().toLocaleTimeString()}\n`;
-
         // Check GPS permission
         try {
             let gpsPermission = await Geolocation.checkPermissions();
-            debug += `GPS (init): ${JSON.stringify(gpsPermission)}\n`;
 
-            // Si el estado es 'prompt' y el usuario forzó la actualización, 
-            // intentamos un requestPermissions que suele sincronizar el estado nativo
             if (forceRequest && (gpsPermission.location === 'prompt' || gpsPermission.coarseLocation === 'prompt')) {
                 gpsPermission = await Geolocation.requestPermissions();
-                debug += `GPS (after sync): ${JSON.stringify(gpsPermission)}\n`;
             }
 
             if (gpsPermission.location === 'granted' || gpsPermission.coarseLocation === 'granted') {
@@ -68,17 +57,14 @@ const Settings: React.FC = () => {
         } catch (e) {
             console.error('Error checking GPS permission:', e);
             setGpsStatus('prompt');
-            debug += `GPS Err: ${e}\n`;
         }
 
         // Check Camera permission
         try {
             let cameraPermission = await Camera.checkPermissions();
-            debug += `Cam (init): ${JSON.stringify(cameraPermission)}\n`;
 
             if (forceRequest && cameraPermission.camera === 'prompt') {
                 cameraPermission = await Camera.requestPermissions();
-                debug += `Cam (after sync): ${JSON.stringify(cameraPermission)}\n`;
             }
 
             if (cameraPermission.camera === 'granted') {
@@ -91,10 +77,7 @@ const Settings: React.FC = () => {
         } catch (e) {
             console.error('Error checking camera permission:', e);
             setCameraStatus('prompt');
-            debug += `Cam Err: ${e}\n`;
         }
-
-        setDebugInfo(debug);
     };
 
     const handleRequestGps = async () => {
@@ -102,10 +85,7 @@ const Settings: React.FC = () => {
         setIsRequesting('gps');
 
         try {
-            // En WEB, requestPermissions no dispara el popup del navegador.
-            // Necesitamos forzar una lectura real para que el navegador pregunte.
             if (Capacitor.getPlatform() === 'web') {
-                info('Solicitando ubicación... Por favor, pulsa "Permitir" en el mensaje del navegador.');
                 await new Promise((resolve, reject) => {
                     navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 10000 });
                 });
@@ -116,11 +96,9 @@ const Settings: React.FC = () => {
                 }
             }
             setGpsStatus('granted');
-            success('¡Ubicación activada correctamente!');
             await checkPermissions();
         } catch (err: any) {
             console.error('Error requesting GPS permission:', err);
-            error('No se pudo activar el GPS. Verifica los ajustes de tu iPhone.');
             await checkPermissions();
         } finally {
             setIsRequesting(null);
@@ -133,9 +111,7 @@ const Settings: React.FC = () => {
 
         try {
             if (Capacitor.getPlatform() === 'web') {
-                info('Solicitando acceso a la cámara...');
                 const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-                // Detener el stream inmediatamente, solo queríamos el permiso
                 stream.getTracks().forEach(track => track.stop());
             } else {
                 const permission = await Camera.requestPermissions();
@@ -144,11 +120,9 @@ const Settings: React.FC = () => {
                 }
             }
             setCameraStatus('granted');
-            success('¡Cámara activada correctamente!');
             await checkPermissions();
         } catch (err: any) {
             console.error('Error requesting camera permission:', err);
-            error('Error al activar la cámara.');
             await checkPermissions();
         } finally {
             setIsRequesting(null);
@@ -206,24 +180,6 @@ const Settings: React.FC = () => {
                 overflowX: 'hidden'
             }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                    <button
-                        onClick={async () => {
-                            await checkPermissions(true);
-                            success('Estado actualizado');
-                        }}
-                        className="glass"
-                        style={{
-                            padding: '10px',
-                            fontSize: '12px',
-                            color: 'var(--secondary)',
-                            border: '1px solid var(--secondary)',
-                            marginBottom: '10px',
-                            fontWeight: 'bold'
-                        }}
-                    >
-                        🔄 FORZAR SINCRONIZACIÓN CON EL SISTEMA
-                    </button>
-
                     <section>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
                             <ShieldCheck size={20} color="var(--secondary)" />
@@ -261,13 +217,6 @@ const Settings: React.FC = () => {
                                 >
                                     {isRequesting === 'gps' ? 'SOLICITANDO...' : gpsStatus === 'granted' ? 'PERMISO CONCEDIDO' : 'SOLICITAR PERMISO'}
                                 </button>
-                                {gpsStatus !== 'granted' && (
-                                    <div style={{ marginTop: '10px', textAlign: 'center' }}>
-                                        <p style={{ fontSize: '11px', color: '#fbbf24', marginBottom: '8px', lineHeight: '1.4' }}>
-                                            ⚠️ Si ya lo activaste en Ajustes y sigue aquí como PENDIENTE, toca el botón de arriba nuevamente para forzar la lectura.
-                                        </p>
-                                    </div>
-                                )}
                             </div>
 
                             {/* Camera */}
@@ -298,39 +247,9 @@ const Settings: React.FC = () => {
                                 >
                                     {isRequesting === 'camera' ? 'SOLICITANDO...' : cameraStatus === 'granted' ? 'PERMISO CONCEDIDO' : 'SOLICITAR PERMISO'}
                                 </button>
-                                {cameraStatus !== 'granted' && (
-                                    <div style={{ marginTop: '10px', textAlign: 'center' }}>
-                                        <p style={{ fontSize: '11px', color: '#fbbf24', marginBottom: '8px', lineHeight: '1.4' }}>
-                                            ⚠️ Si ya activaste la cámara en ajustes, intenta tocar el botón de arriba.
-                                        </p>
-                                    </div>
-                                )}
                             </div>
                         </div>
                     </section>
-
-                    {/* Debug Info expanded */}
-                    <div style={{
-                        marginTop: '20px',
-                        padding: '15px',
-                        background: 'rgba(0,0,0,0.5)',
-                        borderRadius: '12px',
-                        border: '1px solid rgba(255,255,255,0.1)'
-                    }}>
-                        <p style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--secondary)', marginBottom: '8px' }}>DIAGNÓSTICO TÉCNICO:</p>
-                        <div style={{ fontSize: '10px', fontFamily: 'monospace', color: '#fff', opacity: 0.8, whiteSpace: 'pre-wrap' }}>
-                            {debugInfo || 'No hay datos de diagnóstico aún.'}
-                        </div>
-                        <p style={{ fontSize: '9px', marginTop: '10px', color: 'var(--text-dim)', lineHeight: '1.4' }}>
-                            ID Plataforma: <span style={{ color: Capacitor.isNativePlatform() ? 'var(--secondary)' : '#fbbf24' }}>{Capacitor.getPlatform()}</span><br />
-                            Nativo: {Capacitor.isNativePlatform() ? 'SÍ ✅' : 'NO ❌ (Estás en navegador/PWA)'}<br />
-                            <br />
-                            <span style={{ color: '#fbbf24' }}>
-                                ⚠️ NOTA: Si ves "web" arriba, los permisos de iOS Settings no se aplican.
-                                Debes dar permiso en el navegador (Safari) cuando aparezca el diálogo.
-                            </span>
-                        </p>
-                    </div>
                 </div>
             </div>
         </div>

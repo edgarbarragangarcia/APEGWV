@@ -22,20 +22,18 @@ export const useGeoLocation = () => {
         try {
             const watchId = await Geolocation.watchPosition(
                 {
-                    enableHighAccuracy: false, // Usar baja precisión para actualizaciones continuas
+                    enableHighAccuracy: false,
                     timeout: 10000,
-                    maximumAge: 30000 // Cache de 30s para reducir consumo
+                    maximumAge: 30000
                 },
                 (position, err) => {
                     if (err) {
-                        console.error('GPS Watch Error:', err);
                         setError(err.message);
                         setIsRequesting(false);
                         return;
                     }
 
                     if (position) {
-                        console.log('GPS Updated:', position.coords.latitude, position.coords.longitude);
                         const newLocation = {
                             latitude: position.coords.latitude,
                             longitude: position.coords.longitude
@@ -50,14 +48,12 @@ export const useGeoLocation = () => {
             );
             watcherRef.current = watchId;
         } catch (err: any) {
-            console.error('Failed to start watching position:', err);
             setError(err.message);
         }
     };
 
     const getInitialLocation = async (useHighAccuracy = true, retryCount = 0) => {
         const timeout = useHighAccuracy ? 10000 : 7000;
-        console.log(`[useGeoLocation] Attempting fetch: highAccuracy=${useHighAccuracy}, attempt=${retryCount + 1}`);
 
         try {
             const position = await Geolocation.getCurrentPosition({
@@ -66,7 +62,6 @@ export const useGeoLocation = () => {
                 maximumAge: retryCount > 0 ? 30000 : 0
             });
 
-            console.log(`[useGeoLocation] ✅ Location obtained: ${position.coords.latitude}, ${position.coords.longitude}`);
             const newLocation = {
                 latitude: position.coords.latitude,
                 longitude: position.coords.longitude
@@ -77,8 +72,6 @@ export const useGeoLocation = () => {
             setError(null);
             await startWatching();
         } catch (err: any) {
-            console.warn(`[useGeoLocation] ❌ Fetch failed (attempt ${retryCount + 1}):`, err.message);
-
             if (err.message?.toLowerCase().includes('denied') || err.code === 1) {
                 setPermissionStatus('denied');
                 setError('Permiso denegado por el usuario');
@@ -87,13 +80,10 @@ export const useGeoLocation = () => {
 
             // Fallback strategy
             if (useHighAccuracy && retryCount === 0) {
-                console.log('[useGeoLocation] 🔄 Retrying with low accuracy...');
                 setTimeout(() => getInitialLocation(false, 0), 1000);
             } else if (retryCount < 2) {
-                console.log(`[useGeoLocation] 🔄 Retrying in 3s... (Attempt ${retryCount + 2})`);
                 setTimeout(() => getInitialLocation(false, retryCount + 1), 3000);
             } else {
-                console.error('[useGeoLocation] ⚠️ All attempts failed');
                 setError('No se pudo obtener una ubicación estable. Verifica que el GPS esté activo.');
             }
         }
@@ -103,7 +93,6 @@ export const useGeoLocation = () => {
         const checkPermissionsAndGetLocation = async () => {
             try {
                 const permission = await Geolocation.checkPermissions();
-                console.log('Initial permission check:', permission);
 
                 if (permission.location === 'granted' || permission.coarseLocation === 'granted') {
                     setPermissionStatus('granted');
@@ -114,17 +103,14 @@ export const useGeoLocation = () => {
                     setPermissionStatus('prompt');
                 }
             } catch (err) {
-                console.error('Error checking permissions:', err);
                 setPermissionStatus('prompt');
             }
         };
 
         checkPermissionsAndGetLocation();
 
-        // Listen for app resume to re-check permissions automatically
         const appStateListener = App.addListener('appStateChange', ({ isActive }) => {
             if (isActive) {
-                console.log('[useGeoLocation] App resumed, re-checking permissions...');
                 checkPermissionsAndGetLocation();
             }
         });
@@ -137,11 +123,10 @@ export const useGeoLocation = () => {
         };
     }, []);
 
-    // Fórmula de Haversine para calcular distancia en metros
     const calculateDistance = (targetLat: number, targetLon: number): number | null => {
         if (!location) return null;
 
-        const R = 6371e3; // Radio de la tierra en metros
+        const R = 6371e3;
         const φ1 = location.latitude * Math.PI / 180;
         const φ2 = targetLat * Math.PI / 180;
         const Δφ = (targetLat - location.latitude) * Math.PI / 180;
@@ -156,13 +141,16 @@ export const useGeoLocation = () => {
     };
 
     const requestPermission = async () => {
+        if (permissionStatus === 'granted') {
+            await getInitialLocation();
+            return;
+        }
+
         setIsRequesting(true);
         setError(null);
 
         try {
-            // Soporte para modo WEB (navegador/WebView PWA)
             if (Capacitor.getPlatform() === 'web') {
-                console.log('[useGeoLocation] Requesting location via browser API...');
                 const position = await new Promise<GeolocationPosition>((resolve, reject) => {
                     navigator.geolocation.getCurrentPosition(resolve, reject, {
                         enableHighAccuracy: true,
@@ -181,63 +169,20 @@ export const useGeoLocation = () => {
                 return;
             }
 
-            // Modo NATIVO
             const permission = await Geolocation.requestPermissions();
-            console.log('Permission requested:', permission);
-
             if (permission.location === 'granted' || permission.coarseLocation === 'granted') {
                 setPermissionStatus('granted');
-
-                // Intentar primero con alta precisión, luego con baja
-                try {
-                    const position = await Geolocation.getCurrentPosition({
-                        enableHighAccuracy: true,
-                        timeout: 8000
-                    });
-
-                    const newLocation = {
-                        latitude: position.coords.latitude,
-                        longitude: position.coords.longitude
-                    };
-                    setLocation(newLocation);
-                    locationRef.current = newLocation;
-                    setIsRequesting(false);
-                    await startWatching();
-                } catch (err: any) {
-                    console.error('High accuracy refresh failed, trying low accuracy:', err);
-
-                    // Fallback a baja precisión
-                    try {
-                        const position = await Geolocation.getCurrentPosition({
-                            enableHighAccuracy: false,
-                            timeout: 5000
-                        });
-
-                        const newLocation = {
-                            latitude: position.coords.latitude,
-                            longitude: position.coords.longitude
-                        };
-                        setLocation(newLocation);
-                        locationRef.current = newLocation;
-                        setIsRequesting(false);
-                        await startWatching();
-                    } catch (err2: any) {
-                        console.error('Manual request failed completely:', err2);
-                        setError(err2.message);
-                        setIsRequesting(false);
-                    }
-                }
+                await getInitialLocation();
             } else {
                 setPermissionStatus('denied');
-                setIsRequesting(false);
             }
         } catch (err: any) {
-            console.error('Permission request failed:', err);
             setError(err.message);
-            setIsRequesting(false);
             if (err.message?.includes('denied')) {
                 setPermissionStatus('denied');
             }
+        } finally {
+            setIsRequesting(false);
         }
     };
 
@@ -247,7 +192,7 @@ export const useGeoLocation = () => {
         calculateDistance,
         permissionStatus,
         requestPermission,
-        refreshLocation: requestPermission, // Alias para claridad
+        refreshLocation: requestPermission,
         isRequesting
     };
 };
