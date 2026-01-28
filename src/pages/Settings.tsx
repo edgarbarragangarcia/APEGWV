@@ -15,6 +15,7 @@ const Settings: React.FC = () => {
         'prompt'
     );
     const [isRequesting, setIsRequesting] = useState<string | null>(null);
+    const [debugInfo, setDebugInfo] = useState<string>('');
 
     useEffect(() => {
         checkPermissions();
@@ -33,10 +34,13 @@ const Settings: React.FC = () => {
     }, []);
 
     const checkPermissions = async () => {
+        console.log('--- Checking Permissions ---');
+        let debug = '';
         // Check GPS permission
         try {
             const gpsPermission = await Geolocation.checkPermissions();
-            console.log('GPS Permission:', gpsPermission);
+            console.log('GPS Permission Result:', JSON.stringify(gpsPermission));
+            debug += `GPS: ${JSON.stringify(gpsPermission)}\n`;
 
             if (gpsPermission.location === 'granted' || gpsPermission.coarseLocation === 'granted') {
                 setGpsStatus('granted');
@@ -48,12 +52,14 @@ const Settings: React.FC = () => {
         } catch (e) {
             console.error('Error checking GPS permission:', e);
             setGpsStatus('prompt');
+            debug += `GPS Err: ${e}\n`;
         }
 
         // Check Camera permission
         try {
             const cameraPermission = await Camera.checkPermissions();
-            console.log('Camera Permission:', cameraPermission);
+            console.log('Camera Permission Result:', JSON.stringify(cameraPermission));
+            debug += `Cam: ${JSON.stringify(cameraPermission)}`;
 
             if (cameraPermission.camera === 'granted') {
                 setCameraStatus('granted');
@@ -65,37 +71,33 @@ const Settings: React.FC = () => {
         } catch (e) {
             console.error('Error checking camera permission:', e);
             setCameraStatus('prompt');
+            debug += `Cam Err: ${e}`;
         }
+        setDebugInfo(debug);
     };
 
     const handleRequestGps = async () => {
         setIsRequesting('gps');
+        console.log('Requesting GPS Permission...');
         try {
-            // First check current status
-            const currentPermission = await Geolocation.checkPermissions();
-
-            // If already denied, show message and wait for user to manually enable
-            if (currentPermission.location === 'denied') {
-                console.log('GPS permission is denied. User must enable in system settings.');
-                setGpsStatus('denied');
-                setIsRequesting(null);
-                return;
-            }
-
-            // Otherwise, request permission
+            // First request permission directly, don't block even if we think it's denied
+            // On iOS, if it's already granted in settings, this often returns the correct state immediately.
             const permission = await Geolocation.requestPermissions();
-            console.log('GPS Permission Requested:', permission);
+            console.log('GPS Permission Request Result:', JSON.stringify(permission));
 
             if (permission.location === 'granted' || permission.coarseLocation === 'granted') {
                 setGpsStatus('granted');
             } else if (permission.location === 'denied') {
                 setGpsStatus('denied');
+                // Only if it's REALLY denied and not just a state mismatch, we could open settings
+                // But typically if the user just enabled it, requestPermissions should now return granted.
             } else {
                 setGpsStatus('prompt');
             }
         } catch (err) {
             console.error('Error requesting GPS permission:', err);
-            setGpsStatus('denied');
+            // Fallback to checkPermissions to see if we can get a cleaner state
+            await checkPermissions();
         } finally {
             setIsRequesting(null);
         }
@@ -103,21 +105,10 @@ const Settings: React.FC = () => {
 
     const handleRequestCamera = async () => {
         setIsRequesting('camera');
+        console.log('Requesting Camera Permission...');
         try {
-            // First check current status
-            const currentPermission = await Camera.checkPermissions();
-
-            // If already denied, show message and wait for user to manually enable
-            if (currentPermission.camera === 'denied') {
-                console.log('Camera permission is denied. User must enable in system settings.');
-                setCameraStatus('denied');
-                setIsRequesting(null);
-                return;
-            }
-
-            // Otherwise, request permission
             const permission = await Camera.requestPermissions();
-            console.log('Camera Permission Requested:', permission);
+            console.log('Camera Permission Request Result:', JSON.stringify(permission));
 
             if (permission.camera === 'granted') {
                 setCameraStatus('granted');
@@ -128,7 +119,7 @@ const Settings: React.FC = () => {
             }
         } catch (err) {
             console.error('Error requesting camera permission:', err);
-            setCameraStatus('denied');
+            await checkPermissions();
         } finally {
             setIsRequesting(null);
         }
@@ -224,11 +215,25 @@ const Settings: React.FC = () => {
                                     {isRequesting === 'gps' ? 'SOLICITANDO...' : gpsStatus === 'granted' ? 'PERMISO CONCEDIDO' : 'SOLICITAR PERMISO'}
                                 </button>
                                 {gpsStatus === 'denied' && (
-                                    <p style={{ fontSize: '11px', color: '#ef4444', marginTop: '10px', textAlign: 'center', lineHeight: '1.4' }}>
-                                        ⚠️ Permiso bloqueado.<br />
-                                        Ve a <strong>Ajustes</strong> → <strong>APEG</strong> → <strong>Ubicación</strong> → Activa el permiso.<br />
-                                        <span style={{ fontSize: '10px', opacity: 0.9 }}>La app detectará automáticamente cuando vuelvas.</span>
-                                    </p>
+                                    <div style={{ marginTop: '10px', textAlign: 'center' }}>
+                                        <p style={{ fontSize: '11px', color: '#ef4444', marginBottom: '8px', lineHeight: '1.4' }}>
+                                            ⚠️ Sincronización fallida.<br />
+                                            Si ya activaste el permiso en Ajustes, toca el botón de abajo para sincronizar.
+                                        </p>
+                                        <button
+                                            onClick={handleRequestGps}
+                                            style={{
+                                                fontSize: '10px',
+                                                color: 'var(--secondary)',
+                                                background: 'rgba(163, 230, 53, 0.1)',
+                                                border: '1px solid var(--secondary)',
+                                                padding: '4px 10px',
+                                                borderRadius: '6px'
+                                            }}
+                                        >
+                                            REINTENTAR SINCRONIZACIÓN
+                                        </button>
+                                    </div>
                                 )}
                             </div>
 
@@ -250,27 +255,58 @@ const Settings: React.FC = () => {
                                 </div>
                                 <button
                                     onClick={handleRequestCamera}
-                                    disabled={isRequesting === 'camera' || cameraStatus === 'granted'}
+                                    disabled={isRequesting === 'camera'}
                                     className="glass"
                                     style={{
                                         width: '100%', padding: '12px',
                                         background: cameraStatus === 'granted' ? 'rgba(163, 230, 53, 0.1)' : 'var(--secondary)',
                                         color: cameraStatus === 'granted' ? 'var(--secondary)' : 'var(--primary)',
-                                        fontWeight: '700', borderRadius: '12px', opacity: (isRequesting === 'camera' || cameraStatus === 'granted') ? 0.7 : 1
+                                        fontWeight: '700', borderRadius: '12px', opacity: (isRequesting === 'camera') ? 0.7 : 1
                                     }}
                                 >
                                     {isRequesting === 'camera' ? 'SOLICITANDO...' : cameraStatus === 'granted' ? 'PERMISO CONCEDIDO' : 'SOLICITAR PERMISO'}
                                 </button>
                                 {cameraStatus === 'denied' && (
-                                    <p style={{ fontSize: '11px', color: '#ef4444', marginTop: '10px', textAlign: 'center', lineHeight: '1.4' }}>
-                                        ⚠️ Permiso bloqueado.<br />
-                                        Ve a <strong>Ajustes</strong> → <strong>APEG</strong> → <strong>Cámara</strong> → Activa el permiso.<br />
-                                        <span style={{ fontSize: '10px', opacity: 0.9 }}>La app detectará automáticamente cuando vuelvas.</span>
-                                    </p>
+                                    <div style={{ marginTop: '10px', textAlign: 'center' }}>
+                                        <p style={{ fontSize: '11px', color: '#ef4444', marginBottom: '8px', lineHeight: '1.4' }}>
+                                            ⚠️ Sincronización fallida.<br />
+                                            Toca abajo para reintentar si ya lo activaste en ajustes.
+                                        </p>
+                                        <button
+                                            onClick={handleRequestCamera}
+                                            style={{
+                                                fontSize: '10px',
+                                                color: 'var(--secondary)',
+                                                background: 'rgba(163, 230, 53, 0.1)',
+                                                border: '1px solid var(--secondary)',
+                                                padding: '4px 10px',
+                                                borderRadius: '6px'
+                                            }}
+                                        >
+                                            REINTENTAR SINCRONIZACIÓN
+                                        </button>
+                                    </div>
                                 )}
                             </div>
                         </div>
                     </section>
+
+                    {/* Debug Info (Only if there is any) */}
+                    {debugInfo && (
+                        <div style={{
+                            marginTop: '20px',
+                            padding: '10px',
+                            background: 'rgba(0,0,0,0.3)',
+                            borderRadius: '8px',
+                            fontSize: '9px',
+                            fontFamily: 'monospace',
+                            color: 'var(--text-dim)',
+                            whiteSpace: 'pre-wrap'
+                        }}>
+                            <p style={{ fontWeight: 'bold', marginBottom: '4px' }}>DEBUG INFO:</p>
+                            {debugInfo}
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
