@@ -8,7 +8,9 @@ interface Coordinates {
 export const useGeoLocation = () => {
     const [location, setLocation] = useState<Coordinates | null>(null);
     const [error, setError] = useState<string | null>(null);
-    const [permissionStatus, setPermissionStatus] = useState<PermissionState | 'unknown'>('unknown');
+    const [permissionStatus, setPermissionStatus] = useState<PermissionState | 'unknown'>(
+        (localStorage.getItem('perm_gps') as any) || 'unknown'
+    );
     const [isRequesting, setIsRequesting] = useState(false);
     const watcherRef = useRef<number | null>(null);
 
@@ -32,6 +34,7 @@ export const useGeoLocation = () => {
             setIsRequesting(false);
             if (error.code === error.PERMISSION_DENIED) {
                 setPermissionStatus('denied');
+                localStorage.setItem('perm_gps', 'denied');
             }
         };
 
@@ -58,6 +61,7 @@ export const useGeoLocation = () => {
                 console.error('Initial GPS fetch failed:', err);
                 if (err.code === err.PERMISSION_DENIED) {
                     setPermissionStatus('denied');
+                    localStorage.setItem('perm_gps', 'denied');
                 }
             },
             { enableHighAccuracy: true, timeout: 10000 }
@@ -75,6 +79,7 @@ export const useGeoLocation = () => {
                     }
                     result.onchange = () => {
                         setPermissionStatus(result.state);
+                        localStorage.setItem('perm_gps', result.state);
                         if (result.state === 'granted') getInitialLocation();
                     };
                 })
@@ -137,6 +142,7 @@ export const useGeoLocation = () => {
                 setIsRequesting(false);
                 if (err.code === err.PERMISSION_DENIED) {
                     setPermissionStatus('denied');
+                    localStorage.setItem('perm_gps', 'denied');
                 }
             },
             { enableHighAccuracy: true, timeout: 15000 }

@@ -5,9 +5,15 @@ import PageHeader from '../components/PageHeader';
 
 const Settings: React.FC = () => {
     const navigate = useNavigate();
-    const [gpsStatus, setGpsStatus] = useState<'granted' | 'denied' | 'prompt' | 'unknown'>('unknown');
-    const [sensorsStatus, setSensorsStatus] = useState<'granted' | 'denied' | 'prompt' | 'unknown'>('unknown');
-    const [cameraStatus, setCameraStatus] = useState<'granted' | 'denied' | 'prompt' | 'unknown'>('unknown');
+    const [gpsStatus, setGpsStatus] = useState<'granted' | 'denied' | 'prompt' | 'unknown'>(
+        (localStorage.getItem('perm_gps') as any) || 'unknown'
+    );
+    const [sensorsStatus, setSensorsStatus] = useState<'granted' | 'denied' | 'prompt' | 'unknown'>(
+        (localStorage.getItem('perm_sensors') as any) || 'unknown'
+    );
+    const [cameraStatus, setCameraStatus] = useState<'granted' | 'denied' | 'prompt' | 'unknown'>(
+        (localStorage.getItem('perm_camera') as any) || 'unknown'
+    );
     const [isRequesting, setIsRequesting] = useState<string | null>(null);
 
     useEffect(() => {
@@ -20,7 +26,11 @@ const Settings: React.FC = () => {
             try {
                 const status = await navigator.permissions.query({ name: 'geolocation' as any });
                 setGpsStatus(status.state);
-                status.onchange = () => setGpsStatus(status.state);
+                localStorage.setItem('perm_gps', status.state);
+                status.onchange = () => {
+                    setGpsStatus(status.state);
+                    localStorage.setItem('perm_gps', status.state);
+                };
             } catch (e) {
                 console.error('Error checking GPS permission:', e);
             }
@@ -29,11 +39,16 @@ const Settings: React.FC = () => {
         // Check Camera
         if ('permissions' in navigator) {
             try {
+                // Not all browsers support querying camera permission
                 const status = await navigator.permissions.query({ name: 'camera' as any });
                 setCameraStatus(status.state);
-                status.onchange = () => setCameraStatus(status.state);
+                localStorage.setItem('perm_camera', status.state);
+                status.onchange = () => {
+                    setCameraStatus(status.state);
+                    localStorage.setItem('perm_camera', status.state);
+                };
             } catch (e) {
-                console.error('Error checking Camera permission:', e);
+                console.warn('Camera permission query not supported, using current state');
             }
         }
 
@@ -56,6 +71,7 @@ const Settings: React.FC = () => {
         navigator.geolocation.getCurrentPosition(
             () => {
                 setGpsStatus('granted');
+                localStorage.setItem('perm_gps', 'granted');
                 setIsRequesting(null);
             },
             (err) => {
@@ -65,6 +81,7 @@ const Settings: React.FC = () => {
                     setGpsStatus('prompt');
                 } else {
                     setGpsStatus('denied');
+                    localStorage.setItem('perm_gps', 'denied');
                 }
                 setIsRequesting(null);
             },
@@ -77,11 +94,13 @@ const Settings: React.FC = () => {
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ video: true });
             setCameraStatus('granted');
+            localStorage.setItem('perm_camera', 'granted');
             // Close stream immediately after success
             stream.getTracks().forEach(track => track.stop());
         } catch (err) {
             console.error(err);
             setCameraStatus('denied');
+            localStorage.setItem('perm_camera', 'denied');
         } finally {
             setIsRequesting(null);
         }
@@ -126,12 +145,15 @@ const Settings: React.FC = () => {
                 // Both permissions must be granted for full sensor access
                 if (motionGranted && orientationGranted) {
                     setSensorsStatus('granted');
+                    localStorage.setItem('perm_sensors', 'granted');
                 } else {
                     setSensorsStatus('denied');
+                    localStorage.setItem('perm_sensors', 'denied');
                 }
             } else {
                 // Android/Desktop - no explicit permission needed
                 setSensorsStatus('granted');
+                localStorage.setItem('perm_sensors', 'granted');
             }
         } catch (error) {
             console.error('Unexpected error requesting sensor permissions:', error);

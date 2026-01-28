@@ -9,11 +9,14 @@ export const setupPushNotifications = async (userId: string) => {
     }
 
     // Request permission to use push notifications
-    // iOS will prompt a user the first time this is called.
     let permStatus = await PushNotifications.checkPermissions();
 
     if (permStatus.receive === 'prompt') {
+        const hasAskedThisSession = sessionStorage.getItem('pushed_asked');
+        if (hasAskedThisSession) return;
+
         permStatus = await PushNotifications.requestPermissions();
+        sessionStorage.setItem('pushed_asked', 'true');
     }
 
     if (permStatus.receive !== 'granted') {
