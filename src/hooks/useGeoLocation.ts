@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Geolocation } from '@capacitor/geolocation';
 import { App } from '@capacitor/app';
+import { Capacitor } from '@capacitor/core';
 
 interface Coordinates {
     latitude: number;
@@ -159,7 +160,28 @@ export const useGeoLocation = () => {
         setError(null);
 
         try {
-            // Primero solicitar permisos
+            // Soporte para modo WEB (navegador/WebView PWA)
+            if (Capacitor.getPlatform() === 'web') {
+                console.log('[useGeoLocation] Requesting location via browser API...');
+                const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+                    navigator.geolocation.getCurrentPosition(resolve, reject, {
+                        enableHighAccuracy: true,
+                        timeout: 10000
+                    });
+                });
+                const newLocation = {
+                    latitude: position.coords.latitude,
+                    longitude: position.coords.longitude
+                };
+                setLocation(newLocation);
+                locationRef.current = newLocation;
+                setPermissionStatus('granted');
+                setIsRequesting(false);
+                await startWatching();
+                return;
+            }
+
+            // Modo NATIVO
             const permission = await Geolocation.requestPermissions();
             console.log('Permission requested:', permission);
 

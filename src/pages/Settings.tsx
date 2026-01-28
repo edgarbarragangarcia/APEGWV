@@ -11,6 +11,7 @@ import {
     LocateFixed,
     Camera as CameraIcon
 } from 'lucide-react';
+import { useToast } from '../context/ToastContext';
 import PageHeader from '../components/PageHeader';
 
 const Settings: React.FC = () => {
@@ -21,6 +22,7 @@ const Settings: React.FC = () => {
     const [cameraStatus, setCameraStatus] = useState<'granted' | 'denied' | 'prompt'>(
         'prompt'
     );
+    const { success, error, info } = useToast();
     const [isRequesting, setIsRequesting] = useState<string | null>(null);
     const [debugInfo, setDebugInfo] = useState<string>('');
 
@@ -100,15 +102,25 @@ const Settings: React.FC = () => {
         setIsRequesting('gps');
 
         try {
-            const permission = await Geolocation.requestPermissions();
-            if (permission.location === 'granted' || permission.coarseLocation === 'granted') {
-                setGpsStatus('granted');
+            // En WEB, requestPermissions no dispara el popup del navegador.
+            // Necesitamos forzar una lectura real para que el navegador pregunte.
+            if (Capacitor.getPlatform() === 'web') {
+                info('Solicitando ubicación... Por favor, pulsa "Permitir" en el mensaje del navegador.');
+                await new Promise((resolve, reject) => {
+                    navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 10000 });
+                });
             } else {
-                setGpsStatus(permission.location === 'denied' ? 'denied' : 'prompt');
+                const permission = await Geolocation.requestPermissions();
+                if (permission.location !== 'granted' && permission.coarseLocation !== 'granted') {
+                    throw new Error('Permiso no concedido');
+                }
             }
+            setGpsStatus('granted');
+            success('¡Ubicación activada correctamente!');
             await checkPermissions();
         } catch (err: any) {
             console.error('Error requesting GPS permission:', err);
+            error('No se pudo activar el GPS. Verifica los ajustes de tu iPhone.');
             await checkPermissions();
         } finally {
             setIsRequesting(null);
@@ -120,15 +132,23 @@ const Settings: React.FC = () => {
         setIsRequesting('camera');
 
         try {
-            const permission = await Camera.requestPermissions();
-            if (permission.camera === 'granted') {
-                setCameraStatus('granted');
+            if (Capacitor.getPlatform() === 'web') {
+                info('Solicitando acceso a la cámara...');
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                // Detener el stream inmediatamente, solo queríamos el permiso
+                stream.getTracks().forEach(track => track.stop());
             } else {
-                setCameraStatus(permission.camera === 'denied' ? 'denied' : 'prompt');
+                const permission = await Camera.requestPermissions();
+                if (permission.camera !== 'granted') {
+                    throw new Error('Permiso no concedido');
+                }
             }
+            setCameraStatus('granted');
+            success('¡Cámara activada correctamente!');
             await checkPermissions();
         } catch (err: any) {
             console.error('Error requesting camera permission:', err);
+            error('Error al activar la cámara.');
             await checkPermissions();
         } finally {
             setIsRequesting(null);
@@ -187,7 +207,10 @@ const Settings: React.FC = () => {
             }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                     <button
-                        onClick={() => checkPermissions(true)}
+                        onClick={async () => {
+                            await checkPermissions(true);
+                            success('Estado actualizado');
+                        }}
                         className="glass"
                         style={{
                             padding: '10px',
@@ -298,9 +321,14 @@ const Settings: React.FC = () => {
                         <div style={{ fontSize: '10px', fontFamily: 'monospace', color: '#fff', opacity: 0.8, whiteSpace: 'pre-wrap' }}>
                             {debugInfo || 'No hay datos de diagnóstico aún.'}
                         </div>
-                        <p style={{ fontSize: '9px', marginTop: '10px', color: 'var(--text-dim)' }}>
-                            ID Plataforma: {Capacitor.getPlatform()}<br />
-                            Nativo: {Capacitor.isNativePlatform() ? 'SÍ' : 'NO'}
+                        <p style={{ fontSize: '9px', marginTop: '10px', color: 'var(--text-dim)', lineHeight: '1.4' }}>
+                            ID Plataforma: <span style={{ color: Capacitor.isNativePlatform() ? 'var(--secondary)' : '#fbbf24' }}>{Capacitor.getPlatform()}</span><br />
+                            Nativo: {Capacitor.isNativePlatform() ? 'SÍ ✅' : 'NO ❌ (Estás en navegador/PWA)'}<br />
+                            <br />
+                            <span style={{ color: '#fbbf24' }}>
+                                ⚠️ NOTA: Si ves "web" arriba, los permisos de iOS Settings no se aplican.
+                                Debes dar permiso en el navegador (Safari) cuando aparezca el diálogo.
+                            </span>
                         </p>
                     </div>
                 </div>
