@@ -34,7 +34,6 @@ import PaymentMethodsPage from './pages/PaymentMethodsPage';
 import { useOnlineStatus } from './hooks/useOnlineStatus';
 import OfflineOverlay from './components/OfflineOverlay';
 import { setupPushNotifications } from './services/PushManager';
-import SplashScreen from './components/SplashScreen';
 
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { QueryProvider } from './context/QueryProvider';
@@ -44,14 +43,6 @@ const AppContent: React.FC = () => {
   const location = useLocation();
   const isOnline = useOnlineStatus();
   const [showOnboarding, setShowOnboarding] = React.useState(false);
-  const [showSplash, setShowSplash] = React.useState(true);
-
-  React.useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowSplash(false);
-    }, 2500);
-    return () => clearTimeout(timer);
-  }, []);
 
   React.useEffect(() => {
     // Intentar bloquear la orientación
@@ -168,7 +159,6 @@ const AppContent: React.FC = () => {
       )}
 
       <OfflineOverlay isOnline={isOnline} />
-      <SplashScreen isVisible={showSplash} />
     </div>
   );
 };
