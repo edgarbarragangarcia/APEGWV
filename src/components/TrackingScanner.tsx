@@ -1,9 +1,9 @@
-
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import Tesseract from 'tesseract.js';
 import { Camera as LucideCamera, Upload, X, Loader2, RefreshCw } from 'lucide-react';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
+import { analyzeOCRText } from '../utils/scannerHelpers';
 
 interface TrackingScannerProps {
     onScanComplete: (trackingNumber: string, provider?: string) => void;
@@ -14,37 +14,24 @@ const TrackingScanner: React.FC<TrackingScannerProps> = ({ onScanComplete, onClo
     const [image, setImage] = useState<string | null>(null);
     const [scanning, setScanning] = useState(false);
     const [progress, setProgress] = useState(0);
-    const [extractedText, extractedTextSet] = useState<string>('');
-    const fileInputRef = useRef<HTMLInputElement>(null);
-    const videoRef = useRef<HTMLVideoElement>(null);
+    const [extractedText, setExtractedText] = useState<string>('');
     const [isCameraOpen, setIsCameraOpen] = useState(false);
 
-    const CARRIERS = [
-        { name: 'Servientrega', pattern: /(servientrega|[0-9]{10,13})/i },
-        { name: 'Coordinadora', pattern: /(coordinadora|[0-9]{11,15})/i },
-        { name: 'Interrapidisimo', pattern: /(interrapidisimo|[0-9]{10,12})/i },
-        { name: 'Envia', pattern: /(envia|[0-9]{9,12})/i },
-        { name: 'TCC', pattern: /(tcc|[0-9]{10,12})/i },
-        { name: 'FedEx', pattern: /(fedex|[0-9]{12,15})/i },
-        { name: 'DHL', pattern: /(dhl|[0-9]{10})/i }
-    ];
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const videoRef = useRef<HTMLVideoElement>(null);
 
-    const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                if (event.target?.result) {
-                    setImage(event.target.result as string);
-                    processImage(event.target.result as string);
-                }
-            };
-            reader.readAsDataURL(file);
+    // --- Media Helpers ---
+
+    const stopCamera = useCallback(() => {
+        if (videoRef.current && videoRef.current.srcObject) {
+            const stream = videoRef.current.srcObject as MediaStream;
+            stream.getTracks().forEach(track => track.stop());
+            videoRef.current.srcObject = null;
         }
-    };
+        setIsCameraOpen(false);
+    }, []);
 
-    const startCamera = async () => {
-        // We still keep the live video for preview, but we'll use Capacitor for better permissions/focus if possible
+    const startWebCamera = async () => {
         setIsCameraOpen(true);
         try {
             const stream = await navigator.mediaDevices.getUserMedia({
@@ -57,7 +44,6 @@ const TrackingScanner: React.FC<TrackingScannerProps> = ({ onScanComplete, onClo
             if (videoRef.current) {
                 videoRef.current.srcObject = stream;
             }
-            // Trigger light haptic on camera start
             await Haptics.impact({ style: ImpactStyle.Light });
         } catch (err) {
             console.error("Error accessing camera:", err);
@@ -84,7 +70,52 @@ const TrackingScanner: React.FC<TrackingScannerProps> = ({ onScanComplete, onClo
         }
     };
 
-    const capturePhoto = () => {
+    // --- Processing Logic ---
+
+    const processImage = async (imgData: string) => {
+        setScanning(true);
+        setProgress(0);
+        setExtractedText('');
+
+        try {
+            const result = await Tesseract.recognize(
+                imgData,
+                'eng+spa',
+                {
+                    logger: m => {
+                        if (m.status === 'recognizing text') {
+                            setProgress(Math.round(m.progress * 100));
+                        }
+                    }
+                }
+            );
+
+            const text = result.data.text;
+            setExtractedText(text);
+
+            const { bestMatch, extractedProvider } = analyzeOCRText(text);
+
+            if (bestMatch) {
+                try {
+                    await Haptics.impact({ style: ImpactStyle.Heavy });
+                    await Haptics.notification({ type: 'SUCCESS' as any });
+                } catch (e) {
+                    // Ignore haptics error on web
+                }
+                onScanComplete(bestMatch, extractedProvider);
+            } else {
+                console.warn("No valid tracking number found.");
+            }
+
+        } catch (err) {
+            console.error("OCR Error:", err);
+            alert("Error al procesar la imagen.");
+        } finally {
+            setScanning(false);
+        }
+    };
+
+    const captureWebPhoto = () => {
         if (videoRef.current) {
             const canvas = document.createElement('canvas');
             canvas.width = videoRef.current.videoWidth;
@@ -98,107 +129,18 @@ const TrackingScanner: React.FC<TrackingScannerProps> = ({ onScanComplete, onClo
         }
     };
 
-    const stopCamera = () => {
-        if (videoRef.current && videoRef.current.srcObject) {
-            const stream = videoRef.current.srcObject as MediaStream;
-            stream.getTracks().forEach(track => track.stop());
-            videoRef.current.srcObject = null;
-        }
-        setIsCameraOpen(false);
-    };
-
-    const processImage = async (imgData: string) => {
-        setScanning(true);
-        setProgress(0);
-        extractedTextSet('');
-
-        try {
-            const result = await Tesseract.recognize(
-                imgData,
-                'eng+spa', // Use both for better results in Colombia
-                {
-                    logger: m => {
-                        if (m.status === 'recognizing text') {
-                            setProgress(Math.round(m.progress * 100));
-                        }
-                    }
+    const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                if (event.target?.result) {
+                    const result = event.target.result as string;
+                    setImage(result);
+                    processImage(result);
                 }
-            );
-
-            const text = result.data.text;
-            extractedTextSet(text);
-            analyzeText(text);
-
-        } catch (err) {
-            console.error("OCR Error:", err);
-            alert("Error al procesar la imagen.");
-        } finally {
-            setScanning(false);
-        }
-    };
-
-    const analyzeText = (text: string) => {
-        console.log("Analyzing text for tracking number/provider:", text);
-
-        let extractedProvider = '';
-        let bestMatch = '';
-
-        // 1. Precise Carrier Search: Look for the carrier name first
-        for (const carrier of CARRIERS) {
-            if (text.toLowerCase().includes(carrier.name.toLowerCase())) {
-                extractedProvider = carrier.name;
-                console.log(`Found provider: ${extractedProvider}`);
-                break;
-            }
-        }
-
-        // 2. Extract potential numbers (Alphanumeric, 8-22 chars)
-        // We also allow some common OCR artifacts like spaces or dashes which we'll clean later
-        let cleanedText = text.replace(/[\-|\s]/g, '');
-        const potentialNumbers = cleanedText.match(/[A-Z0-9]{8,22}/g) || [];
-
-        console.log("Potential matches found:", potentialNumbers);
-
-        if (potentialNumbers.length > 0) {
-            // Priority 1: If we have a carrier, try to find a number that matches its specific pattern
-            if (extractedProvider) {
-                const carrier = CARRIERS.find(c => c.name === extractedProvider);
-                if (carrier) {
-                    const match = potentialNumbers.find(n => carrier.pattern.test(n));
-                    if (match) {
-                        bestMatch = match;
-                        console.log(`Matched carrier ${extractedProvider} specific pattern: ${bestMatch}`);
-                    }
-                }
-            }
-
-            // Priority 2: Take the most likely candidate (longest one that has digits)
-            if (!bestMatch) {
-                const validNumbers = potentialNumbers
-                    .filter(n => /[0-9]{6,}/.test(n)) // Must have a decent number of digits
-                    .sort((a, b) => b.length - a.length);
-
-                if (validNumbers.length > 0) {
-                    bestMatch = validNumbers[0];
-                    console.log(`Fallback best match: ${bestMatch}`);
-                }
-            }
-        }
-
-        if (bestMatch) {
-            console.log(`Final scan complete: Number=${bestMatch}, Provider=${extractedProvider}`);
-
-            // Native feedback
-            try {
-                Haptics.impact({ style: ImpactStyle.Heavy });
-                Haptics.notification({ type: 'SUCCESS' as any });
-            } catch (e) {
-                console.log("Haptics not supported or failed", e);
-            }
-
-            onScanComplete(bestMatch, extractedProvider);
-        } else {
-            console.warn("No valid tracking number found in text.");
+            };
+            reader.readAsDataURL(file);
         }
     };
 
@@ -206,59 +148,49 @@ const TrackingScanner: React.FC<TrackingScannerProps> = ({ onScanComplete, onClo
         return () => {
             stopCamera();
         };
-    }, []);
+    }, [stopCamera]);
+
+    // --- Styles ---
+    // Moved complex inline object styles to constants for readability
+    const overlayStyle: React.CSSProperties = {
+        position: 'fixed', inset: 0, zIndex: 2000,
+        background: '#062216', display: 'flex', flexDirection: 'column'
+    };
+
+    const headerStyle: React.CSSProperties = {
+        padding: '20px', display: 'flex', justifyContent: 'space-between',
+        alignItems: 'center', background: 'var(--primary)', color: 'white'
+    };
+
+    const actionButtonStyle: React.CSSProperties = {
+        padding: '20px', borderRadius: '16px', border: 'none',
+        fontWeight: 'bold', display: 'flex', alignItems: 'center',
+        justifyContent: 'center', gap: '10px', fontSize: '16px',
+        width: '100%', cursor: 'pointer'
+    };
 
     return (
-        <div style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            zIndex: 2000,
-            background: '#062216', // Solid dark green from theme
-            display: 'flex',
-            flexDirection: 'column'
-        }} className="animate-fade-in">
-            <div style={{
-                padding: '20px',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                background: 'var(--primary)',
-                color: 'white'
-            }}>
+        <div style={overlayStyle} className="animate-fade-in">
+            <div style={headerStyle}>
                 <h3 style={{ fontWeight: 'bold' }}>Escanear Guía</h3>
-                <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'white' }}>
+                <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer' }}>
                     <X size={24} />
                 </button>
             </div>
 
             <div style={{
-                flex: 1,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                flexDirection: 'column',
-                padding: '20px',
-                overflowY: 'auto'
+                flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                flexDirection: 'column', padding: '20px', overflowY: 'auto'
             }}>
+                {/* Initial View: Choose Source */}
                 {!image && !isCameraOpen && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', width: '100%', maxWidth: '300px' }}>
                         <button
                             onClick={takeNativePhoto}
                             style={{
-                                padding: '20px',
-                                borderRadius: '16px',
+                                ...actionButtonStyle,
                                 background: 'var(--secondary)',
                                 color: 'var(--primary)',
-                                border: 'none',
-                                fontWeight: 'bold',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                gap: '10px',
-                                fontSize: '16px',
                                 boxShadow: '0 4px 15px rgba(163, 230, 53, 0.3)'
                             }}
                         >
@@ -267,18 +199,12 @@ const TrackingScanner: React.FC<TrackingScannerProps> = ({ onScanComplete, onClo
                         </button>
 
                         <button
-                            onClick={startCamera}
+                            onClick={startWebCamera}
                             style={{
-                                padding: '16px',
-                                borderRadius: '16px',
+                                ...actionButtonStyle,
                                 background: 'rgba(255,255,255,0.05)',
                                 color: 'white',
                                 border: '1px solid rgba(255,255,255,0.1)',
-                                fontWeight: 'bold',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                gap: '10px',
                                 fontSize: '14px'
                             }}
                         >
@@ -293,29 +219,14 @@ const TrackingScanner: React.FC<TrackingScannerProps> = ({ onScanComplete, onClo
                                 onChange={handleFileUpload}
                                 ref={fileInputRef}
                                 style={{
-                                    position: 'absolute',
-                                    top: 0,
-                                    left: 0,
-                                    width: '100%',
-                                    height: '100%',
-                                    opacity: 0,
-                                    cursor: 'pointer'
+                                    position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer'
                                 }}
                             />
                             <button
                                 style={{
-                                    width: '100%',
-                                    padding: '20px',
-                                    borderRadius: '16px',
-                                    background: '#1a332a', // Solid lighter green
-                                    color: 'white',
-                                    border: '1px solid rgba(255,255,255,0.1)',
-                                    fontWeight: 'bold',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    gap: '10px',
-                                    fontSize: '16px'
+                                    ...actionButtonStyle,
+                                    background: '#1a332a', color: 'white',
+                                    border: '1px solid rgba(255,255,255,0.1)'
                                 }}
                             >
                                 <Upload size={24} />
@@ -325,25 +236,24 @@ const TrackingScanner: React.FC<TrackingScannerProps> = ({ onScanComplete, onClo
                     </div>
                 )}
 
+                {/* Web Camera View */}
                 {isCameraOpen && (
                     <div style={{ position: 'relative', width: '100%', height: '100%', background: 'black', display: 'flex', flexDirection: 'column' }}>
                         <video ref={videoRef} autoPlay playsInline style={{ width: '100%', flex: 1, objectFit: 'cover' }} />
                         <div style={{ padding: '20px', display: 'flex', justifyContent: 'center', background: 'rgba(0,0,0,0.5)', position: 'absolute', bottom: 0, left: 0, right: 0 }}>
                             <button
-                                onClick={capturePhoto}
+                                onClick={captureWebPhoto}
                                 style={{
-                                    width: '60px',
-                                    height: '60px',
-                                    borderRadius: '50%',
-                                    background: 'white',
-                                    border: '4px solid rgba(0,0,0,0.2)',
-                                    boxShadow: '0 0 0 4px white'
+                                    width: '60px', height: '60px', borderRadius: '50%',
+                                    background: 'white', border: '4px solid rgba(0,0,0,0.2)',
+                                    boxShadow: '0 0 0 4px white', cursor: 'pointer'
                                 }}
                             />
                         </div>
                     </div>
                 )}
 
+                {/* Result View */}
                 {image && (
                     <div style={{ width: '100%', maxWidth: '400px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
                         <img src={image} alt="Scanned" style={{ width: '100%', borderRadius: '12px', maxHeight: '300px', objectFit: 'contain' }} />
@@ -360,18 +270,12 @@ const TrackingScanner: React.FC<TrackingScannerProps> = ({ onScanComplete, onClo
                         ) : (
                             <div style={{ display: 'flex', gap: '10px' }}>
                                 <button
-                                    onClick={() => { setImage(null); setIsCameraOpen(false); extractedTextSet('') }}
+                                    onClick={() => { setImage(null); setIsCameraOpen(false); setExtractedText('') }}
                                     style={{
-                                        flex: 1,
-                                        padding: '12px',
-                                        background: 'rgba(255,255,255,0.1)',
-                                        color: 'white',
-                                        border: 'none',
-                                        borderRadius: '12px',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        gap: '8px'
+                                        flex: 1, padding: '12px', background: 'rgba(255,255,255,0.1)',
+                                        color: 'white', border: 'none', borderRadius: '12px',
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                        gap: '8px', cursor: 'pointer'
                                     }}
                                 >
                                     <RefreshCw size={18} />
@@ -382,14 +286,9 @@ const TrackingScanner: React.FC<TrackingScannerProps> = ({ onScanComplete, onClo
 
                         {extractedText && !scanning && (
                             <div style={{
-                                padding: '15px',
-                                background: '#051d13', // Deep solid green
-                                borderRadius: '12px',
-                                maxHeight: '200px',
-                                overflowY: 'auto',
-                                fontSize: '13px',
-                                color: 'white', // Bright white for readability
-                                border: '2px solid var(--secondary)', // Border highlight
+                                padding: '15px', background: '#051d13', borderRadius: '12px',
+                                maxHeight: '200px', overflowY: 'auto', fontSize: '13px',
+                                color: 'white', border: '2px solid var(--secondary)',
                                 boxShadow: '0 4px 20px rgba(0,0,0,0.5)'
                             }}>
                                 <p style={{ fontWeight: 'bold', marginBottom: '8px', color: 'var(--secondary)', fontSize: '14px' }}>Texto Detectado:</p>
