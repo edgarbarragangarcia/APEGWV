@@ -70,9 +70,7 @@ const PaymentMethodsPage: React.FC = () => {
                 .from('payment_methods')
                 .insert([{
                     user_id: user.id,
-                    card_holder: cardData.name,
-                    last_four: lastFour,
-                    expiry: cardData.expiry,
+                    card_last4: lastFour,
                     card_type: cardType,
                     is_default: methods.length === 0 // First card is default
                 }])

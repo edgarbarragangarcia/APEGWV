@@ -47,11 +47,11 @@ const CourseReservation: React.FC = () => {
                 const { error } = await supabase.from('reservations').insert({
                     user_id: session.user.id,
                     course_id: 'briceno-18', // Hardcoded for now based on context
-                    course_name: 'Briceño 18',
                     date: selectedDate?.toString() || '',
                     time: selectedTime || '',
-                    status: 'confirmed',
-                    payment_status: 'paid'
+                    players_count: 1,
+                    price: 0,
+                    status: 'confirmed'
                 });
 
                 if (error) throw error;

@@ -52,9 +52,17 @@ const Round: React.FC = () => {
         groupId: stateGroupId
     } = (location.state as { course?: GolfCourse; recorrido?: string; groupId?: string }) || {};
 
-    const [course, setCourse] = React.useState<GolfCourse | undefined>(stateCourse);
-    const [recorrido] = React.useState<string | undefined>(stateRecorrido);
-    const groupId = stateGroupId || urlGroupId;
+    const [course, setCourse] = React.useState<GolfCourse | undefined>(() => {
+        if (stateCourse) return stateCourse;
+        const saved = localStorage.getItem('round_course');
+        return saved ? JSON.parse(saved) : undefined;
+    });
+    const [recorrido] = React.useState<string | undefined>(() => {
+        if (stateRecorrido) return stateRecorrido;
+        const saved = localStorage.getItem('round_recorrido');
+        return saved || undefined;
+    });
+    const groupId = stateGroupId || urlGroupId || localStorage.getItem('round_group_id') || undefined;
 
     const clubName = course?.club || 'Cargando campo...';
     const fieldName = recorrido ? `${course?.name} - ${recorrido}` : (course?.name || 'Localizando...');
@@ -69,16 +77,47 @@ const Round: React.FC = () => {
     const distanceToHole = calculateDistance(targetLat, targetLon);
 
     // Restauramos estados
-    const [currentHole, setCurrentHole] = React.useState(1);
+    const [currentHole, setCurrentHole] = React.useState(() => {
+        const saved = localStorage.getItem('round_current_hole');
+        return saved ? parseInt(saved) : 1;
+    });
     const [weather, setWeather] = React.useState<WeatherData | null>(null);
-    const [strokes, setStrokes] = React.useState<Record<number, number>>({});
+    const [strokes, setStrokes] = React.useState<Record<number, number>>(() => {
+        const saved = localStorage.getItem('round_strokes');
+        return saved ? JSON.parse(saved) : {};
+    });
     const [isSaving, setIsSaving] = React.useState(false);
     const { location: userPos } = useGeoLocation();
-    const [roundId, setRoundId] = React.useState<string | null>(null);
+    const [roundId, setRoundId] = React.useState<string | null>(() => {
+        const saved = localStorage.getItem('round_id');
+        return saved || null;
+    });
     const [groupMembers, setGroupMembers] = React.useState<any[]>([]);
     const [groupScores, setGroupScores] = React.useState<Record<string, number>>({});
     const [isLeaderboardOpen, setIsLeaderboardOpen] = React.useState(false);
     const [currentUserId, setCurrentUserId] = React.useState<string | null>(null);
+
+    // Guardar estado en localStorage cuando cambie
+    React.useEffect(() => {
+        if (roundId) {
+            localStorage.setItem('round_current_hole', currentHole.toString());
+            localStorage.setItem('round_strokes', JSON.stringify(strokes));
+            localStorage.setItem('round_id', roundId);
+            localStorage.setItem('round_course', JSON.stringify(course));
+            localStorage.setItem('round_recorrido', recorrido || '');
+            localStorage.setItem('round_group_id', groupId || '');
+        }
+    }, [currentHole, strokes, roundId, course, recorrido, groupId]);
+
+    // Limpiar localStorage al finalizar la ronda
+    const clearRoundState = () => {
+        localStorage.removeItem('round_current_hole');
+        localStorage.removeItem('round_strokes');
+        localStorage.removeItem('round_id');
+        localStorage.removeItem('round_course');
+        localStorage.removeItem('round_recorrido');
+        localStorage.removeItem('round_group_id');
+    };
 
     React.useEffect(() => {
         supabase.auth.getUser().then(({ data }) => {
@@ -414,6 +453,7 @@ const Round: React.FC = () => {
             }
 
             if (navigator.vibrate) navigator.vibrate([10, 30, 10]);
+            clearRoundState();
             navigate('/rounds');
         } catch (error) {
             console.error('Error al finalizar ronda:', error);
