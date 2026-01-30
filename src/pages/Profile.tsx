@@ -82,7 +82,7 @@ const Profile: React.FC = () => {
                             onClick={() => navigate('/profile/edit')}
                             style={styles.editButton}
                         >
-                            <Edit2 size={12} />
+                            <Edit2 size={14} />
                         </button>
                     </div>
 
@@ -231,10 +231,12 @@ const styles = {
         width: '100%', height: '100%', objectFit: 'cover' as 'cover'
     },
     editButton: {
-        position: 'absolute' as 'absolute', top: '-5px', right: '-15px',
-        padding: '6px', color: 'var(--secondary)',
-        background: 'rgba(163, 230, 53, 0.1)', borderRadius: '8px',
-        border: '1px solid rgba(163, 230, 53, 0.2)', cursor: 'pointer'
+        position: 'absolute' as 'absolute', top: '-5px', right: '-10px',
+        padding: '8px', color: 'var(--primary)',
+        background: 'var(--secondary)', borderRadius: '50%',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+        border: '2px solid var(--primary)', cursor: 'pointer',
+        zIndex: 5, display: 'flex', alignItems: 'center', justifyContent: 'center'
     },
     nameText: {
         fontSize: '20px', fontWeight: '900', marginBottom: '0',
