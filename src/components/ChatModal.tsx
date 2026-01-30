@@ -62,7 +62,7 @@ const ChatModal: React.FC<ChatModalProps> = ({
                 .eq('buyer_id', buyerId)
                 .eq('seller_id', sellerId)
                 .eq('product_id', productId)
-                .single();
+                .maybeSingle();
 
             if (error && error.code !== 'PGRST116') { // PGRST116 is "no rows found"
                 console.error('Error fetching chat:', error);
@@ -164,7 +164,7 @@ const ChatModal: React.FC<ChatModalProps> = ({
             left: 0,
             right: 0,
             bottom: 0,
-            zIndex: 2000,
+            zIndex: 10000,
             display: 'flex',
             flexDirection: 'column',
             backgroundColor: 'var(--primary)',
