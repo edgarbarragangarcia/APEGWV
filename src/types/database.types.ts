@@ -302,7 +302,7 @@ export type Database = {
                     id: string
                     product_id: string | null
                     status: string | null
-                    user_id: string | null
+                    buyer_id: string | null
                     message: string | null
                     counter_amount: number | null
                     counter_message: string | null
@@ -314,7 +314,7 @@ export type Database = {
                     id?: string
                     product_id?: string | null
                     status?: string | null
-                    user_id?: string | null
+                    buyer_id?: string | null
                     message?: string | null
                     counter_amount?: number | null
                     counter_message?: string | null
@@ -326,7 +326,7 @@ export type Database = {
                     id?: string
                     product_id?: string | null
                     status?: string | null
-                    user_id?: string | null
+                    buyer_id?: string | null
                     message?: string | null
                     counter_amount?: number | null
                     counter_message?: string | null

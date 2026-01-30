@@ -29,8 +29,7 @@ type Order = Pick<Database['public']['Tables']['orders']['Row'], 'id' | 'created
 };
 type Offer = Pick<Database['public']['Tables']['offers']['Row'], 'id' | 'created_at' | 'status' | 'amount'> & {
     message?: string;
-    user_id: string; // This is the buyer_id in code usage
-    buyer_id: string; // for compatibility with code usage
+    buyer_id: string;
     counter_amount?: number;
     counter_message?: string;
     product: { id: string; title: string; image_url: string | null; price: number } | null;
@@ -186,7 +185,7 @@ const MyStore: React.FC = () => {
         try {
             const { data: userOffers, error: offersError } = await supabase
                 .from('offers')
-                .select('id, created_at, status, amount, user_id, product:products(id, title, image_url, price)')
+                .select('id, created_at, status, amount, buyer_id, product:products(id, title, image_url, price)')
 
                 .eq('seller_id', userId)
                 .order('created_at', { ascending: false });
@@ -208,9 +207,9 @@ const MyStore: React.FC = () => {
 
                 const enrichedOffers: Offer[] = userOffers.map((offer: any) => ({
                     ...offer,
-                    buyer_id: offer.user_id, // Map DB user_id to code buyer_id
+                    buyer_id: offer.buyer_id,
                     product: Array.isArray(offer.product) ? offer.product[0] : offer.product,
-                    buyer: buyersMap.get(offer.user_id) || null
+                    buyer: buyersMap.get(offer.buyer_id) || null
                 }));
 
                 setOffers(enrichedOffers);
@@ -247,9 +246,9 @@ const MyStore: React.FC = () => {
                 .eq('user_id', user.id)
                 .single();
 
-            setSellerProfile(profile);
+            setSellerProfile(profile as any);
             if (profile) {
-                setProfileFormData({ ...profile });
+                setProfileFormData(profile as any);
 
                 // Fetch User Products
                 const { data: userProducts, error } = await supabase
@@ -2025,7 +2024,7 @@ const MyStore: React.FC = () => {
                                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                                     <span style={{ color: 'var(--text-dim)', fontSize: '14px', fontWeight: '500' }}>Número de Cuenta</span>
                                                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                                        <span style={{ fontWeight: '700', fontSize: '14px' }}>•••• {sellerProfile?.account_number.slice(-4)}</span>
+                                                        <span style={{ fontWeight: '700', fontSize: '14px' }}>•••• {sellerProfile?.account_number?.slice(-4) || '****'}</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -2065,8 +2064,8 @@ const MyStore: React.FC = () => {
                                             <label style={{ display: 'block', marginBottom: '10px', fontSize: '11px', fontWeight: '900', color: 'var(--secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Nombre del Marketplace</label>
                                             <div style={{ position: 'relative' }}>
                                                 <input
-                                                    value={profileFormData.store_name}
-                                                    onChange={e => setProfileFormData({ ...profileFormData, store_name: e.target.value })}
+                                                    value={profileFormData?.store_name || ''}
+                                                    onChange={e => setProfileFormData(prev => prev ? { ...prev, store_name: e.target.value } : null)}
                                                     style={{ width: '100%', padding: '16px 16px 16px 45px', borderRadius: '16px', background: 'rgba(255,255,255,0.05)', color: 'white', border: '1px solid rgba(255,255,255,0.1)', fontSize: '15px' }}
                                                     placeholder="Ej: Mi Tienda Pro"
                                                 />
@@ -2082,16 +2081,16 @@ const MyStore: React.FC = () => {
                                                         <div>
                                                             <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Nombre Completo</label>
                                                             <input
-                                                                value={profileFormData.full_name || ''}
-                                                                onChange={e => setProfileFormData({ ...profileFormData, full_name: e.target.value })}
+                                                                value={profileFormData?.full_name || ''}
+                                                                onChange={e => setProfileFormData(prev => prev ? { ...prev, full_name: e.target.value } : null)}
                                                                 style={{ width: '100%', padding: '14px', borderRadius: '12px', background: 'rgba(0,0,0,0.2)', color: 'white', border: '1px solid rgba(255,255,255,0.05)', fontSize: '14px' }}
                                                             />
                                                         </div>
                                                         <div>
                                                             <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Número de Documento</label>
                                                             <input
-                                                                value={profileFormData.document_number || ''}
-                                                                onChange={e => setProfileFormData({ ...profileFormData, document_number: e.target.value })}
+                                                                value={profileFormData?.document_number || ''}
+                                                                onChange={e => setProfileFormData(prev => prev ? { ...prev, document_number: e.target.value } : null)}
                                                                 style={{ width: '100%', padding: '14px', borderRadius: '12px', background: 'rgba(0,0,0,0.2)', color: 'white', border: '1px solid rgba(255,255,255,0.05)', fontSize: '14px' }}
                                                             />
                                                         </div>
@@ -2101,16 +2100,16 @@ const MyStore: React.FC = () => {
                                                         <div>
                                                             <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Razón Social</label>
                                                             <input
-                                                                value={profileFormData.company_name || ''}
-                                                                onChange={e => setProfileFormData({ ...profileFormData, company_name: e.target.value })}
+                                                                value={profileFormData?.company_name || ''}
+                                                                onChange={e => setProfileFormData(prev => prev ? { ...prev, company_name: e.target.value } : null)}
                                                                 style={{ width: '100%', padding: '14px', borderRadius: '12px', background: 'rgba(0,0,0,0.2)', color: 'white', border: '1px solid rgba(255,255,255,0.05)', fontSize: '14px' }}
                                                             />
                                                         </div>
                                                         <div>
                                                             <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>NIT</label>
                                                             <input
-                                                                value={profileFormData.nit || ''}
-                                                                onChange={e => setProfileFormData({ ...profileFormData, nit: e.target.value })}
+                                                                value={profileFormData?.nit || ''}
+                                                                onChange={e => setProfileFormData(prev => prev ? { ...prev, nit: e.target.value } : null)}
                                                                 style={{ width: '100%', padding: '14px', borderRadius: '12px', background: 'rgba(0,0,0,0.2)', color: 'white', border: '1px solid rgba(255,255,255,0.05)', fontSize: '14px' }}
                                                             />
                                                         </div>
@@ -2125,8 +2124,8 @@ const MyStore: React.FC = () => {
                                                 <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Número de Cuenta</label>
                                                 <div style={{ position: 'relative' }}>
                                                     <input
-                                                        value={profileFormData.account_number || ''}
-                                                        onChange={e => setProfileFormData({ ...profileFormData, account_number: e.target.value })}
+                                                        value={profileFormData?.account_number || ''}
+                                                        onChange={e => setProfileFormData(prev => prev ? { ...prev, account_number: e.target.value } : null)}
                                                         style={{ width: '100%', padding: '14px 14px 14px 40px', borderRadius: '12px', background: 'rgba(0,0,0,0.2)', color: 'white', border: '1px solid rgba(255,255,255,0.05)', fontSize: '14px' }}
                                                         placeholder="Número de cuenta bancaria"
                                                     />
@@ -2141,7 +2140,7 @@ const MyStore: React.FC = () => {
 
                                         <button
                                             onClick={async () => {
-                                                if (saving) return;
+                                                if (saving || !profileFormData) return;
                                                 setSaving(true);
                                                 try {
                                                     const { error } = await supabase
@@ -2154,7 +2153,7 @@ const MyStore: React.FC = () => {
                                                             nit: profileFormData.nit,
                                                             account_number: profileFormData.account_number,
                                                             updated_at: new Date().toISOString()
-                                                        })
+                                                        } as any)
                                                         .eq('id', sellerProfile?.id);
 
                                                     if (error) throw error;

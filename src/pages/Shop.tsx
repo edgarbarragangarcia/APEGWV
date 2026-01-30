@@ -93,7 +93,7 @@ const Shop: React.FC = () => {
             const { data, error } = await supabase
                 .from('offers')
                 .select('*, product:products(*)')
-                .eq('user_id', userId)
+                .eq('buyer_id', userId)
                 .order('created_at', { ascending: false });
 
             if (error) throw error;
@@ -117,7 +117,7 @@ const Shop: React.FC = () => {
             const { data, error } = await supabase
                 .from('orders')
                 .select('*, product:products!product_id(*), seller:profiles!seller_id(*)')
-                .eq('user_id', userId)
+                .eq('buyer_id', userId)
                 .order('created_at', { ascending: false });
 
             console.log('Orders fetch result:', { data, error });
@@ -238,13 +238,13 @@ const Shop: React.FC = () => {
     };
 
     const filteredProducts = products.filter(product => {
-        const normalize = (val: string) => val.toLowerCase().trim();
-        const prodCategoryNorm = normalize(product.category || '');
+        const normalize = (val: string | null | undefined) => (val || '').toLowerCase().trim();
+        const prodCategoryNorm = normalize(product.category);
 
         const matchesCategory = activeTab === 'Todo' ||
-            prodCategoryNorm === normalize(categoryMapping[activeTab] || '');
+            prodCategoryNorm === normalize(categoryMapping[activeTab]);
 
-        const matchesSearch = product.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        const matchesSearch = normalize(product.title).includes(searchQuery.toLowerCase()) ||
             prodCategoryNorm.includes(searchQuery.toLowerCase());
 
         return matchesCategory && matchesSearch;
@@ -819,30 +819,7 @@ const Shop: React.FC = () => {
                                     background: 'linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, transparent 30%, transparent 70%, var(--primary) 100%)'
                                 }} />
 
-                                {/* Back to Marketplace Button */}
-                                <button
-                                    onClick={() => setSelectedProduct(null)}
-                                    style={{
-                                        position: 'absolute',
-                                        top: 'calc(env(safe-area-inset-top) + 15px)',
-                                        left: '20px',
-                                        background: 'rgba(0,0,0,0.5)',
-                                        backdropFilter: 'blur(10px)',
-                                        border: '1px solid rgba(255,255,255,0.2)',
-                                        width: '45px',
-                                        height: '45px',
-                                        borderRadius: '14px',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        color: 'white',
-                                        zIndex: 9999,
-                                        cursor: 'pointer',
-                                        boxShadow: '0 4px 15px rgba(0,0,0,0.3)'
-                                    }}
-                                >
-                                    <ArrowLeft size={26} strokeWidth={3} />
-                                </button>
+
                             </div>
 
                             {/* Compact Info Sheet */}
@@ -890,6 +867,30 @@ const Shop: React.FC = () => {
                                         </div>
                                     </div>
                                 )}
+
+                                {/* Back Button */}
+                                <button
+                                    onClick={() => setSelectedProduct(null)}
+                                    style={{
+                                        background: 'rgba(255,255,255,0.08)',
+                                        backdropFilter: 'blur(10px)',
+                                        border: '1px solid rgba(255,255,255,0.1)',
+                                        width: '32px',
+                                        height: '32px',
+                                        borderRadius: '50%',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        color: 'white',
+                                        cursor: 'pointer',
+                                        marginBottom: '10px',
+                                        marginLeft: 'auto',
+                                        marginRight: 'auto',
+                                        transition: 'all 0.2s ease'
+                                    }}
+                                >
+                                    <ArrowLeft size={18} strokeWidth={2.5} />
+                                </button>
 
                                 {/* Compact Product Header */}
                                 <div style={{ marginBottom: '10px' }}>
@@ -1255,7 +1256,7 @@ const Shop: React.FC = () => {
                                                         .from('offers')
                                                         .insert([{
                                                             product_id: selectedProduct.id,
-                                                            user_id: user.id,
+                                                            buyer_id: user.id,
                                                             seller_id: selectedProduct.seller_id,
                                                             amount: parseFloat(offerAmount),
                                                             message: offerMessage,

@@ -13,11 +13,10 @@ import CardInput from '../components/CardInput';
 
 interface PaymentMethod {
     id: string;
-    card_holder: string;
-    last_four: string;
-    expiry: string;
+    card_last4: string;
     card_type: string;
     is_default: boolean | null;
+    user_id: string | null;
 }
 
 const CheckoutPage: React.FC = () => {
@@ -129,57 +128,69 @@ const CheckoutPage: React.FC = () => {
                 ordersBySeller[sellerId].push(item);
             });
 
-            // Create orders
-            for (const item of cartItems) {
-                const sellerId = item.seller_id || 'admin';
-                // Address logic: If city is present (legacy or manually added), append it. Otherwise use address as is.
+            // Create orders by seller
+            for (const [sellerId, items] of Object.entries(ordersBySeller)) {
+                const sellerTotal = items.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+
+                // Address logic
                 const fullAddress = shipping.city && !shipping.address.toLowerCase().includes(shipping.city.toLowerCase())
                     ? `${shipping.address}, ${shipping.city}`
                     : shipping.address;
 
-                const { error: orderError } = await supabase.from('orders').insert({
-                    user_id: user.id,
+                const { data: orderData, error: orderError } = await supabase.from('orders').insert({
                     buyer_id: user.id,
                     seller_id: sellerId === 'admin' ? null : sellerId,
-                    product_id: item.id,
-                    total_amount: item.price * item.quantity,
-                    // commission_amount and seller_net_amount are calculated automatically by database trigger
+                    total_amount: sellerTotal,
                     status: 'Pagado',
                     shipping_address: fullAddress,
                     buyer_name: shipping.name,
                     buyer_phone: shipping.phone,
-                    items: JSON.stringify([item])
-                });
+                    seller_net_amount: sellerTotal // Database trigger will override, but providing for typing
+                } as any).select().single();
 
                 if (orderError) throw orderError;
+                if (!orderData) throw new Error('Failed to create order');
 
-                // Update product status to sold/inactive
-                await supabase
-                    .from('products')
-                    .update({
-                        status: 'sold',
-                        negotiating_buyer_id: null,
-                        negotiation_expires_at: null
-                    })
-                    .eq('id', item.id);
+                const newOrderId = (orderData as any).id;
 
-                // Mark active offer as completed if exists
-                await supabase
-                    .from('offers')
-                    .update({ status: 'completed' })
-                    .eq('product_id', item.id)
-                    .eq('buyer_id', user.id)
-                    .in('status', ['accepted', 'countered']);
+                // Create order items
+                for (const item of items) {
+                    const { error: itemError } = await supabase.from('order_items').insert({
+                        order_id: newOrderId,
+                        product_id: item.id,
+                        quantity: item.quantity,
+                        price: item.price
+                    });
+                    if (itemError) throw itemError;
+
+                    // Update product status
+                    await supabase
+                        .from('products')
+                        .update({
+                            status: 'sold',
+                            negotiating_buyer_id: null,
+                            negotiation_expires_at: null
+                        } as any)
+                        .eq('id', item.id);
+
+                    // Mark active offer as completed
+                    await supabase
+                        .from('offers')
+                        .update({ status: 'completed' } as any)
+                        .eq('product_id', item.id)
+                        .eq('buyer_id', user.id) // DB column is buyer_id
+                        .in('status', ['accepted', 'countered']);
+                }
 
                 // Notify seller
                 if (sellerId !== 'admin') {
                     await supabase.from('notifications').insert([{
                         user_id: sellerId,
                         title: '¡Venta realizada!',
-                        message: `Has vendido ${item.name} por $${new Intl.NumberFormat('es-CO').format(item.price * item.quantity)}. Prepáralo para el envío.`,
+                        message: `Has vendido productos por $${new Intl.NumberFormat('es-CO').format(sellerTotal)}. Prepáralos para el envío.`,
                         type: 'order_new',
                         link: '/my-store?tab=orders'
-                    }]);
+                    } as any]);
                 }
             }
 
@@ -544,8 +555,8 @@ const CheckoutPage: React.FC = () => {
                                             {method.card_type.toUpperCase()}
                                         </div>
                                         <div style={{ flex: 1 }}>
-                                            <p style={{ fontWeight: '700', fontSize: '14px' }}>•••• {method.last_four}</p>
-                                            <p style={{ fontSize: '11px', color: 'var(--text-dim)' }}>Exp: {method.expiry}</p>
+                                            <p style={{ fontWeight: '700', fontSize: '14px' }}>•••• {method.card_last4}</p>
+                                            <p style={{ fontSize: '11px', color: 'var(--text-dim)' }}>{method.card_type}</p>
                                         </div>
                                         <div style={{
                                             width: '20px',
