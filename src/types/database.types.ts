@@ -7,7 +7,6 @@ export type Json =
     | Json[]
 
 export type Database = {
-
     public: {
         Tables: {
             cart_items: {
@@ -72,60 +71,15 @@ export type Database = {
                         referencedRelation: "products"
                         referencedColumns: ["id"]
                     },
-                ]
-            }
-            coupons: {
-                Row: {
-                    code: string
-                    created_at: string | null
-                    description: string | null
-                    discount_type: string
-                    discount_value: number
-                    end_date: string | null
-                    id: string
-                    is_active: boolean | null
-                    min_purchase_amount: number | null
-                    product_id: string | null
-                    seller_id: string
-                    start_date: string | null
-                    usage_count: number | null
-                    usage_limit: number | null
-                }
-                Insert: {
-                    code: string
-                    created_at?: string | null
-                    description?: string | null
-                    discount_type: string
-                    discount_value: number
-                    end_date?: string | null
-                    id?: string
-                    is_active?: boolean | null
-                    min_purchase_amount?: number | null
-                    product_id?: string | null
-                    seller_id: string
-                    start_date?: string | null
-                    usage_count?: number | null
-                    usage_limit?: number | null
-                }
-                Update: {
-                    code?: string
-                    created_at?: string | null
-                    description?: string | null
-                    discount_type?: string
-                    discount_value?: number
-                    end_date?: string | null
-                    id?: string
-                    is_active?: boolean | null
-                    min_purchase_amount?: number | null
-                    product_id?: string | null
-                    seller_id?: string
-                    start_date?: string | null
-                    usage_count?: number | null
-                    usage_limit?: number | null
-                }
-                Relationships: [
                     {
-                        foreignKeyName: "coupons_seller_id_fkey"
+                        foreignKeyName: "orders_buyer_id_fkey"
+                        columns: ["buyer_id"]
+                        isOneToOne: false
+                        referencedRelation: "profiles"
+                        referencedColumns: ["id"]
+                    },
+                    {
+                        foreignKeyName: "orders_seller_id_fkey"
                         columns: ["seller_id"]
                         isOneToOne: false
                         referencedRelation: "profiles"
@@ -133,35 +87,136 @@ export type Database = {
                     },
                 ]
             }
+            coupons: {
+                Row: {
+                    code: string
+                    created_at: string
+                    discount_amount: number
+                    id: string
+                    is_active: boolean | null
+                    product_id: string | null
+                    seller_id: string
+                }
+                Insert: {
+                    code: string
+                    created_at?: string
+                    discount_amount: number
+                    id?: string
+                    is_active?: boolean | null
+                    product_id?: string | null
+                    seller_id: string
+                }
+                Update: {
+                    code?: string
+                    created_at?: string
+                    discount_amount?: number
+                    id?: string
+                    is_active?: boolean | null
+                    product_id?: string | null
+                    seller_id?: string
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "coupons_product_id_fkey"
+                        columns: ["product_id"]
+                        isOneToOne: false
+                        referencedRelation: "products"
+                        referencedColumns: ["id"]
+                    },
+                ]
+            }
             course_holes: {
                 Row: {
                     course_id: string
-                    created_at: string | null
                     handicap: number | null
-                    hole_number: number
                     id: string
+                    lat: number | null
+                    lon: number | null
+                    number: number
                     par: number
-                    recorrido: string | null
                 }
                 Insert: {
                     course_id: string
-                    created_at?: string | null
                     handicap?: number | null
-                    hole_number: number
                     id?: string
+                    lat?: number | null
+                    lon?: number | null
+                    number: number
                     par: number
-                    recorrido?: string | null
                 }
                 Update: {
                     course_id?: string
-                    created_at?: string | null
                     handicap?: number | null
-                    hole_number?: number
                     id?: string
+                    lat?: number | null
+                    lon?: number | null
+                    number?: number
                     par?: number
-                    recorrido?: string | null
                 }
                 Relationships: []
+            }
+            game_groups: {
+                Row: {
+                    course_id: string | null
+                    created_at: string
+                    created_by: string | null
+                    id: string
+                    status: string | null
+                }
+                Insert: {
+                    course_id?: string | null
+                    created_at?: string
+                    created_by?: string | null
+                    id?: string
+                    status?: string | null
+                }
+                Update: {
+                    course_id?: string | null
+                    created_at?: string
+                    created_by?: string | null
+                    id?: string
+                    status?: string | null
+                }
+                Relationships: []
+            }
+            group_members: {
+                Row: {
+                    created_at: string
+                    group_id: string | null
+                    id: string
+                    status: string | null
+                    user_id: string | null
+                }
+                Insert: {
+                    created_at?: string
+                    group_id?: string | null
+                    id?: string
+                    status?: string | null
+                    user_id?: string | null
+                }
+                Update: {
+                    created_at?: string
+                    group_id?: string | null
+                    id?: string
+                    status?: string | null
+                    user_id?: string | null
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "group_members_group_id_fkey"
+                        columns: ["group_id"]
+                        isOneToOne: false
+                        referencedRelation: "game_groups"
+                        referencedColumns: ["id"]
+                    },
+                    {
+                        foreignKeyName: "group_members_user_id_profiles_fkey"
+                        columns: ["user_id"]
+                        isOneToOne: false
+                        referencedRelation: "profiles"
+                        referencedColumns: ["id"]
+                    },
+                ]
             }
             messages: {
                 Row: {
@@ -199,74 +254,56 @@ export type Database = {
                 Row: {
                     created_at: string | null
                     id: string
-                    link: string | null
+                    is_read: boolean | null
                     message: string
-                    read: boolean | null
                     title: string
-                    type: string | null
+                    type: string
                     user_id: string | null
                 }
                 Insert: {
                     created_at?: string | null
                     id?: string
-                    link?: string | null
+                    is_read?: boolean | null
                     message: string
-                    read?: boolean | null
                     title: string
-                    type?: string | null
+                    type: string
                     user_id?: string | null
                 }
                 Update: {
                     created_at?: string | null
                     id?: string
-                    link?: string | null
+                    is_read?: boolean | null
                     message?: string
-                    read?: boolean | null
                     title?: string
-                    type?: string | null
+                    type?: string
                     user_id?: string | null
                 }
                 Relationships: []
             }
             offers: {
                 Row: {
-                    buyer_id: string
-                    counter_amount: number | null
-                    counter_message: string | null
+                    amount: number
                     created_at: string | null
                     id: string
-                    message: string | null
-                    offer_amount: number
-                    product_id: string
-                    seller_id: string
+                    product_id: string | null
                     status: string | null
-                    updated_at: string | null
+                    user_id: string | null
                 }
                 Insert: {
-                    buyer_id: string
-                    counter_amount?: number | null
-                    counter_message?: string | null
+                    amount: number
                     created_at?: string | null
                     id?: string
-                    message?: string | null
-                    offer_amount: number
-                    product_id: string
-                    seller_id: string
+                    product_id?: string | null
                     status?: string | null
-                    updated_at?: string | null
+                    user_id?: string | null
                 }
                 Update: {
-                    buyer_id?: string
-                    counter_amount?: number | null
-                    counter_message?: string | null
+                    amount?: number
                     created_at?: string | null
                     id?: string
-                    message?: string | null
-                    offer_amount?: number
-                    product_id?: string
-                    seller_id?: string
+                    product_id?: string | null
                     status?: string | null
-                    updated_at?: string | null
+                    user_id?: string | null
                 }
                 Relationships: [
                     {
@@ -280,27 +317,24 @@ export type Database = {
             }
             order_items: {
                 Row: {
-                    created_at: string
                     id: string
                     order_id: string
-                    price_at_purchase: number
-                    product_id: string | null
+                    price: number
+                    product_id: string
                     quantity: number
                 }
                 Insert: {
-                    created_at?: string
                     id?: string
                     order_id: string
-                    price_at_purchase: number
-                    product_id?: string | null
+                    price: number
+                    product_id: string
                     quantity: number
                 }
                 Update: {
-                    created_at?: string
                     id?: string
                     order_id?: string
-                    price_at_purchase?: number
-                    product_id?: string | null
+                    price?: number
+                    product_id?: string
                     quantity?: number
                 }
                 Relationships: [
@@ -322,61 +356,34 @@ export type Database = {
             }
             orders: {
                 Row: {
-                    buyer_id: string | null
-                    buyer_name: string | null
-                    buyer_phone: string | null
-                    commission_amount: number
-                    created_at: string | null
+                    buyer_id: string
+                    created_at: string
                     id: string
-                    items: Json | null
-                    product_id: string | null
-                    seller_id: string | null
-                    seller_net_amount: number
-                    shipping_address: string
-                    shipping_provider: string | null
-                    status: string | null
+                    seller_id: string
+                    status: string
                     total_amount: number
                     tracking_number: string | null
-                    updated_at: string | null
-                    user_id: string | null
+                    tracking_provider: string | null
                 }
                 Insert: {
-                    buyer_id?: string | null
-                    buyer_name?: string | null
-                    buyer_phone?: string | null
-                    commission_amount?: number
-                    created_at?: string | null
+                    buyer_id: string
+                    created_at?: string
                     id?: string
-                    items?: Json | null
-                    product_id?: string | null
-                    seller_id?: string | null
-                    seller_net_amount?: number
-                    shipping_address: string
-                    shipping_provider?: string | null
-                    status?: string | null
+                    seller_id: string
+                    status?: string
                     total_amount: number
                     tracking_number?: string | null
-                    updated_at?: string | null
-                    user_id?: string | null
+                    tracking_provider?: string | null
                 }
                 Update: {
-                    buyer_id?: string | null
-                    buyer_name?: string | null
-                    buyer_phone?: string | null
-                    commission_amount?: number
-                    created_at?: string | null
+                    buyer_id?: string
+                    created_at?: string
                     id?: string
-                    items?: Json | null
-                    product_id?: string | null
-                    seller_id?: string | null
-                    seller_net_amount?: number
-                    shipping_address?: string
-                    shipping_provider?: string | null
-                    status?: string | null
+                    seller_id?: string
+                    status?: string
                     total_amount?: number
                     tracking_number?: string | null
-                    updated_at?: string | null
-                    user_id?: string | null
+                    tracking_provider?: string | null
                 }
                 Relationships: [
                     {
@@ -384,13 +391,6 @@ export type Database = {
                         columns: ["buyer_id"]
                         isOneToOne: false
                         referencedRelation: "profiles"
-                        referencedColumns: ["id"]
-                    },
-                    {
-                        foreignKeyName: "orders_product_id_fkey"
-                        columns: ["product_id"]
-                        isOneToOne: false
-                        referencedRelation: "products"
                         referencedColumns: ["id"]
                     },
                     {
@@ -404,112 +404,67 @@ export type Database = {
             }
             payment_methods: {
                 Row: {
-                    card_holder: string
+                    card_last4: string
                     card_type: string
                     created_at: string | null
-                    expiry: string
                     id: string
                     is_default: boolean | null
-                    last_four: string
                     user_id: string | null
                 }
                 Insert: {
-                    card_holder: string
+                    card_last4: string
                     card_type: string
                     created_at?: string | null
-                    expiry: string
                     id?: string
                     is_default?: boolean | null
-                    last_four: string
                     user_id?: string | null
                 }
                 Update: {
-                    card_holder?: string
+                    card_last4?: string
                     card_type?: string
                     created_at?: string | null
-                    expiry?: string
                     id?: string
                     is_default?: boolean | null
-                    last_four?: string
                     user_id?: string | null
                 }
                 Relationships: []
             }
             products: {
                 Row: {
-                    brand: string | null
-                    category: string | null
-                    clothing_type: string | null
+                    category: string
+                    condition: string
                     created_at: string | null
-                    description: string | null
+                    description: string
                     id: string
-                    image_url: string | null
-                    images: string[] | null
-                    is_negotiable: boolean | null
-                    name: string
-                    negotiating_buyer_id: string | null
-                    negotiation_expires_at: string | null
+                    image_url: string
                     price: number
-                    seller_id: string
-                    size: string | null
-                    size_clothing: string | null
-                    size_shoes_cm: string | null
-                    size_shoes_col: string | null
-                    size_shoes_eu: string | null
-                    size_shoes_us: string | null
+                    seller_id: string | null
                     status: string | null
-                    stock_quantity: number | null
-                    updated_at: string | null
+                    title: string
                 }
                 Insert: {
-                    brand?: string | null
-                    category?: string | null
-                    clothing_type?: string | null
+                    category: string
+                    condition: string
                     created_at?: string | null
-                    description?: string | null
+                    description: string
                     id?: string
-                    image_url?: string | null
-                    images?: string[] | null
-                    is_negotiable?: boolean | null
-                    name: string
-                    negotiating_buyer_id?: string | null
-                    negotiation_expires_at?: string | null
+                    image_url: string
                     price: number
-                    seller_id: string
-                    size?: string | null
-                    size_clothing?: string | null
-                    size_shoes_cm?: string | null
-                    size_shoes_col?: string | null
-                    size_shoes_eu?: string | null
-                    size_shoes_us?: string | null
+                    seller_id?: string | null
                     status?: string | null
-                    stock_quantity?: number | null
-                    updated_at?: string | null
+                    title: string
                 }
                 Update: {
-                    brand?: string | null
-                    category?: string | null
-                    clothing_type?: string | null
+                    category?: string
+                    condition?: string
                     created_at?: string | null
-                    description?: string | null
+                    description?: string
                     id?: string
-                    image_url?: string | null
-                    images?: string[] | null
-                    is_negotiable?: boolean | null
-                    name?: string
-                    negotiating_buyer_id?: string | null
-                    negotiation_expires_at?: string | null
+                    image_url?: string
                     price?: number
-                    seller_id?: string
-                    size?: string | null
-                    size_clothing?: string | null
-                    size_shoes_cm?: string | null
-                    size_shoes_col?: string | null
-                    size_shoes_eu?: string | null
-                    size_shoes_us?: string | null
+                    seller_id?: string | null
                     status?: string | null
-                    stock_quantity?: number | null
-                    updated_at?: string | null
+                    title?: string
                 }
                 Relationships: []
             }
@@ -572,157 +527,68 @@ export type Database = {
             }
             reservations: {
                 Row: {
-                    club_id: string | null
+                    course_id: string
                     created_at: string | null
                     date: string
                     id: string
+                    players_count: number
+                    price: number
                     status: string | null
                     time: string
                     user_id: string | null
                 }
                 Insert: {
-                    club_id?: string | null
+                    course_id: string
                     created_at?: string | null
                     date: string
                     id?: string
+                    players_count: number
+                    price: number
                     status?: string | null
                     time: string
                     user_id?: string | null
                 }
                 Update: {
-                    club_id?: string | null
+                    course_id?: string
                     created_at?: string | null
                     date?: string
                     id?: string
+                    players_count?: number
+                    price?: number
                     status?: string | null
                     time?: string
                     user_id?: string | null
                 }
                 Relationships: []
             }
-            reviews: {
-                Row: {
-                    comment: string | null
-                    created_at: string | null
-                    id: string
-                    product_id: string | null
-                    rating: number
-                    reviewer_id: string | null
-                }
-                Insert: {
-                    comment?: string | null
-                    created_at?: string | null
-                    id?: string
-                    product_id?: string | null
-                    rating: number
-                    reviewer_id?: string | null
-                }
-                Update: {
-                    comment?: string | null
-                    created_at?: string | null
-                    id?: string
-                    product_id?: string | null
-                    rating?: number
-                    reviewer_id?: string | null
-                }
-                Relationships: [
-                    {
-                        foreignKeyName: "reviews_product_id_fkey"
-                        columns: ["product_id"]
-                        isOneToOne: false
-                        referencedRelation: "products"
-                        referencedColumns: ["id"]
-                    },
-                    {
-                        foreignKeyName: "reviews_reviewer_id_fkey"
-                        columns: ["reviewer_id"]
-                        isOneToOne: false
-                        referencedRelation: "profiles"
-                        referencedColumns: ["id"]
-                    },
-                ]
-            }
             round_holes: {
                 Row: {
-                    created_at: string | null
-                    fairway_hit: boolean | null
-                    gir: boolean | null
+                    created_at: string
                     hole_number: number
                     id: string
                     par: number
-                    putts: number | null
                     round_id: string
                     score: number
                 }
                 Insert: {
-                    created_at?: string | null
-                    fairway_hit?: boolean | null
-                    gir?: boolean | null
+                    created_at?: string
                     hole_number: number
                     id?: string
                     par: number
-                    putts?: number | null
                     round_id: string
                     score: number
                 }
                 Update: {
-                    created_at?: string | null
-                    fairway_hit?: boolean | null
-                    gir?: boolean | null
+                    created_at?: string
                     hole_number?: number
                     id?: string
                     par?: number
-                    putts?: number | null
                     round_id?: string
                     score?: number
                 }
                 Relationships: [
                     {
                         foreignKeyName: "round_holes_round_id_fkey"
-                        columns: ["round_id"]
-                        isOneToOne: false
-                        referencedRelation: "rounds"
-                        referencedColumns: ["id"]
-                    },
-                ]
-            }
-            round_scores: {
-                Row: {
-                    created_at: string
-                    fairways_hit: boolean | null
-                    gir: boolean | null
-                    hole_number: number
-                    id: string
-                    par: number
-                    putts: number | null
-                    round_id: string
-                    score: number
-                }
-                Insert: {
-                    created_at?: string
-                    fairways_hit?: boolean | null
-                    gir?: boolean | null
-                    hole_number: number
-                    id?: string
-                    par: number
-                    putts?: number | null
-                    round_id: string
-                    score: number
-                }
-                Update: {
-                    created_at?: string
-                    fairways_hit?: boolean | null
-                    gir?: boolean | null
-                    hole_number?: number
-                    id?: string
-                    par?: number
-                    putts?: number | null
-                    round_id?: string
-                    score?: number
-                }
-                Relationships: [
-                    {
-                        foreignKeyName: "round_scores_round_id_fkey"
                         columns: ["round_id"]
                         isOneToOne: false
                         referencedRelation: "rounds"
@@ -740,6 +606,7 @@ export type Database = {
                     fairways_hit: number | null
                     first_nine_score: number | null
                     greens_in_regulation: number | null
+                    group_id: string | null
                     id: string
                     notes: string | null
                     second_nine_score: number | null
@@ -759,6 +626,7 @@ export type Database = {
                     fairways_hit?: number | null
                     first_nine_score?: number | null
                     greens_in_regulation?: number | null
+                    group_id?: string | null
                     id?: string
                     notes?: string | null
                     second_nine_score?: number | null
@@ -778,6 +646,7 @@ export type Database = {
                     fairways_hit?: number | null
                     first_nine_score?: number | null
                     greens_in_regulation?: number | null
+                    group_id?: string | null
                     id?: string
                     notes?: string | null
                     second_nine_score?: number | null
@@ -790,157 +659,35 @@ export type Database = {
                 }
                 Relationships: [
                     {
-                        foreignKeyName: "rounds_user_id_fkey"
-                        columns: ["user_id"]
+                        foreignKeyName: "rounds_group_id_fkey"
+                        columns: ["group_id"]
                         isOneToOne: false
-                        referencedRelation: "profiles"
+                        referencedRelation: "game_groups"
                         referencedColumns: ["id"]
                     },
                 ]
             }
-            seller_profiles: {
-                Row: {
-                    account_holder_document: string
-                    account_holder_name: string
-                    account_number: string
-                    account_type: string
-                    bank_name: string
-                    company_name: string | null
-                    created_at: string | null
-                    document_number: string | null
-                    document_type: string | null
-                    entity_type: string
-                    full_name: string | null
-                    id: string
-                    legal_representative: string | null
-                    nit: string | null
-                    status: string | null
-                    store_name: string
-                    updated_at: string | null
-                    user_id: string
-                }
-                Insert: {
-                    account_holder_document: string
-                    account_holder_name: string
-                    account_number: string
-                    account_type: string
-                    bank_name: string
-                    company_name?: string | null
-                    created_at?: string | null
-                    document_number?: string | null
-                    document_type?: string | null
-                    entity_type: string
-                    full_name?: string | null
-                    id?: string
-                    legal_representative?: string | null
-                    nit?: string | null
-                    status?: string | null
-                    store_name: string
-                    updated_at?: string | null
-                    user_id: string
-                }
-                Update: {
-                    account_holder_document?: string
-                    account_holder_name?: string
-                    account_number?: string
-                    account_type?: string
-                    bank_name?: string
-                    company_name?: string | null
-                    created_at?: string | null
-                    document_number?: string | null
-                    document_type?: string | null
-                    entity_type?: string
-                    full_name?: string | null
-                    id?: string
-                    legal_representative?: string | null
-                    nit?: string | null
-                    status?: string | null
-                    store_name?: string
-                    updated_at?: string | null
-                    user_id?: string
-                }
-                Relationships: []
-            }
-            tournaments: {
-                Row: {
-                    id: string
-                    name: string
-                    description: string | null
-                    date: string
-                    club: string
-                    price: number
-                    participants_limit: number | null
-                    status: string | null
-                    image_url: string | null
-                    game_mode: string | null
-                    address: string | null
-                    budget_items: Json | null
-                    creator_id: string
-                    created_at: string
-                }
-                Insert: {
-                    id?: string
-                    name: string
-                    description?: string | null
-                    date: string
-                    club: string
-                    price: number
-                    participants_limit?: number | null
-                    status?: string | null
-                    image_url?: string | null
-                    game_mode?: string | null
-                    address?: string | null
-                    budget_items?: Json | null
-                    creator_id: string
-                    created_at?: string
-                }
-                Update: {
-                    id?: string
-                    name?: string
-                    description?: string | null
-                    date?: string
-                    club?: string
-                    price?: number
-                    participants_limit?: number | null
-                    status?: string | null
-                    image_url?: string | null
-                    game_mode?: string | null
-                    address?: string | null
-                    budget_items?: Json | null
-                    creator_id?: string
-                    created_at?: string
-                }
-                Relationships: [
-                    {
-                        foreignKeyName: "tournaments_creator_id_fkey"
-                        columns: ["creator_id"]
-                        isOneToOne: false
-                        referencedRelation: "profiles"
-                        referencedColumns: ["id"]
-                    }
-                ]
-            }
             tournament_registrations: {
                 Row: {
+                    created_at: string | null
                     id: string
-                    tournament_id: string
-                    user_id: string
-                    created_at: string
                     status: string | null
+                    tournament_id: string | null
+                    user_id: string | null
                 }
                 Insert: {
+                    created_at?: string | null
                     id?: string
-                    tournament_id: string
-                    user_id: string
-                    created_at?: string
                     status?: string | null
+                    tournament_id?: string | null
+                    user_id?: string | null
                 }
                 Update: {
+                    created_at?: string | null
                     id?: string
-                    tournament_id?: string
-                    user_id?: string
-                    created_at?: string
                     status?: string | null
+                    tournament_id?: string | null
+                    user_id?: string | null
                 }
                 Relationships: [
                     {
@@ -950,21 +697,55 @@ export type Database = {
                         referencedRelation: "tournaments"
                         referencedColumns: ["id"]
                     },
-                    {
-                        foreignKeyName: "tournament_registrations_user_id_fkey"
-                        columns: ["user_id"]
-                        isOneToOne: false
-                        referencedRelation: "profiles"
-                        referencedColumns: ["id"]
-                    }
                 ]
+            }
+            tournaments: {
+                Row: {
+                    course_id: string | null
+                    created_at: string | null
+                    date: string
+                    description: string
+                    id: string
+                    image_url: string | null
+                    price: number
+                    status: string | null
+                    title: string
+                }
+                Insert: {
+                    course_id?: string | null
+                    created_at?: string | null
+                    date: string
+                    description: string
+                    id?: string
+                    image_url?: string | null
+                    price: number
+                    status?: string | null
+                    title: string
+                }
+                Update: {
+                    course_id?: string | null
+                    created_at?: string | null
+                    date?: string
+                    description?: string
+                    id?: string
+                    image_url?: string | null
+                    price?: number
+                    status?: string | null
+                    title?: string
+                }
+                Relationships: []
             }
         }
         Views: {
             [_ in never]: never
         }
         Functions: {
-            [_ in never]: never
+            is_group_member: {
+                Args: {
+                    gid: string
+                }
+                Returns: boolean
+            }
         }
         Enums: {
             [_ in never]: never
@@ -974,100 +755,3 @@ export type Database = {
         }
     }
 }
-
-type PublicSchema = Database[Extract<keyof Database, "public">]
-
-export type Tables<
-    PublicTableNameOrOptions extends
-    | keyof (PublicSchema["Tables"] & PublicSchema["Views"])
-    | { schema: keyof Database },
-    TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
-    ? keyof (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
-        Database[PublicTableNameOrOptions["schema"]]["Views"])
-    : never = never,
-> = PublicTableNameOrOptions extends { schema: keyof Database }
-    ? (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
-        Database[PublicTableNameOrOptions["schema"]]["Views"])[TableName] extends {
-            Row: infer R
-        }
-    ? R
-    : never
-    : PublicTableNameOrOptions extends keyof (PublicSchema["Tables"] &
-        PublicSchema["Views"])
-    ? (PublicSchema["Tables"] &
-        PublicSchema["Views"])[PublicTableNameOrOptions] extends {
-            Row: infer R
-        }
-    ? R
-    : never
-    : never
-
-export type TablesInsert<
-    PublicTableNameOrOptions extends
-    | keyof PublicSchema["Tables"]
-    | { schema: keyof Database },
-    TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
-    ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
-> = PublicTableNameOrOptions extends { schema: keyof Database }
-    ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-        Insert: infer I
-    }
-    ? I
-    : never
-    : PublicTableNameOrOptions extends keyof PublicSchema["Tables"]
-    ? PublicSchema["Tables"][PublicTableNameOrOptions] extends {
-        Insert: infer I
-    }
-    ? I
-    : never
-    : never
-
-export type TablesUpdate<
-    PublicTableNameOrOptions extends
-    | keyof PublicSchema["Tables"]
-    | { schema: keyof Database },
-    TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
-    ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
-> = PublicTableNameOrOptions extends { schema: keyof Database }
-    ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-        Update: infer U
-    }
-    ? U
-    : never
-    : PublicTableNameOrOptions extends keyof PublicSchema["Tables"]
-    ? PublicSchema["Tables"][PublicTableNameOrOptions] extends {
-        Update: infer U
-    }
-    ? U
-    : never
-    : never
-
-export type Enums<
-    PublicEnumNameOrOptions extends
-    | keyof PublicSchema["Enums"]
-    | { schema: keyof Database },
-    EnumName extends PublicEnumNameOrOptions extends { schema: keyof Database }
-    ? keyof Database[PublicEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
-> = PublicEnumNameOrOptions extends { schema: keyof Database }
-    ? Database[PublicEnumNameOrOptions["schema"]]["Enums"][EnumName]
-    : PublicEnumNameOrOptions extends keyof PublicSchema["Enums"]
-    ? PublicSchema["Enums"][PublicEnumNameOrOptions]
-    : never
-
-export type CompositeTypes<
-    PublicCompositeTypeNameOrOptions extends
-    | keyof PublicSchema["CompositeTypes"]
-    | { schema: keyof Database },
-    CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
-        schema: keyof Database
-    }
-    ? keyof Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
-> = PublicCompositeTypeNameOrOptions extends { schema: keyof Database }
-    ? Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
-    : PublicCompositeTypeNameOrOptions extends keyof PublicSchema["CompositeTypes"]
-    ? PublicSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
-    : never

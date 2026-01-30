@@ -6,7 +6,7 @@ import type { GolfCourse } from '../data/courses';
 import { supabase } from '../services/SupabaseManager';
 import { useGeoLocation } from '../hooks/useGeoLocation';
 import { fetchWeather, type WeatherData } from '../services/WeatherService';
-import { Wind, Navigation } from 'lucide-react';
+import { Wind, Navigation, Trophy } from 'lucide-react';
 import { motion } from 'framer-motion';
 const getWindDirection = (degrees?: number) => {
     if (degrees === undefined) return 'Variable';
@@ -43,7 +43,7 @@ const getClubRecommendation = (distance: number | null, windSpeed: number = 0, w
 const Round: React.FC = () => {
     const location = useLocation();
     const navigate = useNavigate();
-    const { course, recorrido } = (location.state as { course?: GolfCourse; recorrido?: string }) || {};
+    const { course, recorrido, groupId } = (location.state as { course?: GolfCourse; recorrido?: string; groupId?: string }) || {};
 
     const clubName = course?.club || 'Club de Golf';
     const fieldName = recorrido ? `${course?.name} - ${recorrido}` : (course?.name || 'Recorrido Principal');
@@ -63,6 +63,16 @@ const Round: React.FC = () => {
     const [isSaving, setIsSaving] = React.useState(false);
     const [weather, setWeather] = React.useState<WeatherData | null>(null);
     const [roundId, setRoundId] = React.useState<string | null>(null);
+    const [groupMembers, setGroupMembers] = React.useState<any[]>([]);
+    const [groupScores, setGroupScores] = React.useState<Record<string, number>>({});
+    const [isLeaderboardOpen, setIsLeaderboardOpen] = React.useState(false);
+    const [currentUserId, setCurrentUserId] = React.useState<string | null>(null);
+
+    React.useEffect(() => {
+        supabase.auth.getUser().then(({ data }) => {
+            setCurrentUserId(data.user?.id || null);
+        });
+    }, []);
 
     const getDynamicCaddieMessage = () => {
         if (!distanceToHole) return "Localizando tu posición para darte el mejor consejo...";
@@ -145,6 +155,87 @@ const Round: React.FC = () => {
         loadWeather();
     }, [course]);
 
+    // Live Leaderboard Fetching & Subscription
+    React.useEffect(() => {
+        if (!groupId) return;
+
+        const fetchGroupData = async () => {
+            try {
+                // 1. Fetch group members with their profiles
+                const { data: members, error: mErr } = await supabase
+                    .from('group_members')
+                    .select('user_id, profiles(full_name, id_photo_url)')
+                    .eq('group_id', groupId);
+
+                if (mErr) throw mErr;
+                setGroupMembers(members || []);
+
+                // 2. Initial fetch of scores for all members in this group
+                const { data: rounds, error: rErr } = await supabase
+                    .from('rounds')
+                    .select('id, user_id, round_holes(score)')
+                    .eq('group_id', groupId);
+
+                if (rErr) throw rErr;
+
+                const scores: Record<string, number> = {};
+                rounds?.forEach(r => {
+                    const total = r.round_holes?.reduce((acc: number, h: any) => acc + (h.score || 0), 0) || 0;
+                    scores[r.user_id] = total;
+                });
+                setGroupScores(scores);
+            } catch (err) {
+                console.error('Error fetching group leaderboard:', err);
+            }
+        };
+
+        fetchGroupData();
+
+        // 3. Realtime subscription for score updates
+        const channel = supabase
+            .channel(`group-scores-${groupId}`)
+            .on(
+                'postgres_changes',
+                {
+                    event: '*',
+                    schema: 'public',
+                    table: 'round_holes'
+                },
+                async (payload) => {
+                    // When any hole score changes, we re-sum the scores for that user
+                    // For efficiency, we can find which round this hole belongs to
+                    const newHole = payload.new as any;
+                    if (!newHole) return;
+
+                    // Fetch the round to see if it belongs to our group
+                    const { data: round } = await supabase
+                        .from('rounds')
+                        .select('user_id, group_id')
+                        .eq('id', newHole.round_id)
+                        .single();
+
+                    if (round?.group_id === groupId) {
+                        // Re-fetch total for this specific round/user
+                        const { data: allHoles } = await supabase
+                            .from('round_holes')
+                            .select('score')
+                            .eq('round_id', newHole.round_id);
+
+                        const newTotal = allHoles?.reduce((acc: number, h: any) => acc + (h.score || 0), 0) || 0;
+                        setGroupScores(prev => ({
+                            ...prev,
+                            [round.user_id]: newTotal
+                        }));
+                    }
+                }
+            )
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }, [groupId]);
+
     const handleStrokeChange = (change: number) => {
         const newScore = Math.max(0, (strokes[currentHole] || 0) + change);
         setStrokes(prev => ({
@@ -193,7 +284,8 @@ const Round: React.FC = () => {
                         course_name: clubName,
                         course_location: course?.city || '',
                         status: 'in_progress',
-                        date_played: new Date().toISOString()
+                        date_played: new Date().toISOString(),
+                        group_id: groupId
                     }])
                     .select()
                     .single();
@@ -340,6 +432,104 @@ const Round: React.FC = () => {
                 </div>
                 <button onClick={() => setShowFinishModal(true)} style={{ color: 'var(--secondary)' }}>Finalizar</button>
             </header>
+=======
+            {/* Leaderboard Toggle & Content */}
+            {groupId && (
+                <div style={{ marginBottom: '8px', zIndex: 10 }}>
+                    <button
+                        onClick={() => setIsLeaderboardOpen(!isLeaderboardOpen)}
+                        style={{
+                            width: '100%',
+                            padding: '12px 15px',
+                            background: 'rgba(163, 230, 53, 0.1)',
+                            border: '1px solid rgba(163, 230, 53, 0.2)',
+                            borderRadius: '15px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            color: 'white',
+                            cursor: 'pointer'
+                        }}
+                    >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <Trophy size={18} color="var(--secondary)" />
+                            <span style={{ fontWeight: '800', fontSize: '14px', textTransform: 'uppercase' }}>Marcador en Vivo</span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <div style={{ display: 'flex', marginLeft: '-5px' }}>
+                                {groupMembers.slice(0, 3).map((m, i) => (
+                                    <div key={i} style={{
+                                        width: '24px',
+                                        height: '24px',
+                                        borderRadius: '50%',
+                                        border: '2px solid var(--primary)',
+                                        marginLeft: i > 0 ? '-8px' : 0,
+                                        overflow: 'hidden',
+                                        background: 'var(--secondary)'
+                                    }}>
+                                        {m.profiles?.id_photo_url ? (
+                                            <img src={m.profiles.id_photo_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                        ) : (
+                                            <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', color: 'var(--primary)', fontWeight: 'bold' }}>
+                                                {m.profiles?.full_name?.charAt(0) || '?'}
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                            <ChevronRight size={18} style={{ transform: isLeaderboardOpen ? 'rotate(90deg)' : 'none', transition: 'transform 0.3s ease' }} />
+                        </div>
+                    </button>
+
+                    {isLeaderboardOpen && (
+                        <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: 'auto', opacity: 1 }}
+                            style={{
+                                background: 'rgba(255, 255, 255, 0.03)',
+                                border: '1px solid rgba(255, 255, 255, 0.08)',
+                                borderTop: 'none',
+                                borderBottomLeftRadius: '15px',
+                                borderBottomRightRadius: '15px',
+                                padding: '15px',
+                                overflow: 'hidden'
+                            }}
+                        >
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                {groupMembers.map((member) => {
+                                    const score = groupScores[member.user_id] || 0;
+                                    return (
+                                        <div key={member.user_id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                <div style={{ width: '32px', height: '32px', borderRadius: '10px', overflow: 'hidden', background: 'rgba(255,255,255,0.1)' }}>
+                                                    {member.profiles?.id_photo_url ? (
+                                                        <img src={member.profiles.id_photo_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                    ) : (
+                                                        <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 'bold' }}>
+                                                            {member.profiles?.full_name?.charAt(0)}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <span style={{ color: 'white', fontWeight: '600', fontSize: '14px' }}>
+                                                    {member.profiles?.full_name?.split(' ')[0]} {member.user_id === currentUserId ? '(Tú)' : ''}
+                                                </span>
+                                            </div>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                                                <div style={{ textAlign: 'right' }}>
+                                                    <span style={{ fontSize: '18px', fontWeight: '900', color: score === 0 ? 'var(--text-dim)' : 'var(--secondary)' }}>
+                                                        {score || '--'}
+                                                    </span>
+                                                    <span style={{ fontSize: '10px', color: 'var(--text-dim)', marginLeft: '4px' }}>golpes</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </motion.div>
+                    )}
+                </div>
+            )}
 
             <div className="glass" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 25px', marginBottom: '8px', flexShrink: 0 }}>
                 <button onClick={() => handleHoleChange('prev')} disabled={currentHole === 1} style={{ opacity: currentHole === 1 ? 0.3 : 1 }}><ChevronLeft /></button>
