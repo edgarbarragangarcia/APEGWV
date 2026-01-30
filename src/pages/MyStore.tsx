@@ -99,7 +99,9 @@ const MyStore: React.FC = () => {
         size_shoes_eu: '',
         size_shoes_col: '',
         size_shoes_cm: '',
-        is_negotiable: false
+        size_shoes_cm: '',
+        is_negotiable: false,
+        selectedCouponId: ''
     });
 
     const convertShoeSizes = (colVal: string) => {
@@ -469,7 +471,8 @@ const MyStore: React.FC = () => {
             size_shoes_eu: '',
             size_shoes_col: '',
             size_shoes_cm: '',
-            is_negotiable: false
+            is_negotiable: false,
+            selectedCouponId: ''
         });
         setEditingId(null);
     };
@@ -489,7 +492,8 @@ const MyStore: React.FC = () => {
             size_shoes_eu: (product as any).size_shoes_eu || '',
             size_shoes_col: (product as any).size_shoes_col || '',
             size_shoes_cm: (product as any).size_shoes_cm || '',
-            is_negotiable: (product as any).is_negotiable || false
+            is_negotiable: (product as any).is_negotiable || false,
+            selectedCouponId: coupons.find(c => c.product_id === product.id)?.id || ''
         });
         setEditingId(product.id);
         setShowForm(true);
@@ -1092,42 +1096,76 @@ const MyStore: React.FC = () => {
                                             }} />
                                         </div>
                                     </div>
+                                </div>
 
-                                    {/* Commission Calculation */}
-                                    {formData.price && (
-                                        <div className="glass" style={{ padding: '15px', background: 'rgba(163, 230, 53, 0.05)', borderRadius: '15px', border: '1px solid rgba(163, 230, 53, 0.1)' }}>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '13px' }}>
-                                                <span style={{ color: 'var(--text-dim)' }}>Comisión APEG (5%)</span>
-                                                <span style={{ color: '#ef4444', fontWeight: '600' }}>- {formatPrice((parseFloat(formData.price) * 0.05).toString())}</span>
-                                            </div>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '15px', fontWeight: '800', paddingTop: '8px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-                                                <span>Recibes en tu cuenta</span>
-                                                <span style={{ color: 'var(--secondary)' }}>$ {formatPrice((parseFloat(formData.price) * 0.95).toString())}</span>
-                                            </div>
+                                {/* Coupon Selection */}
+                                <div style={{ background: 'rgba(255,255,255,0.03)', padding: '15px', borderRadius: '15px', border: '1px solid var(--glass-border)' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
+                                        <div style={{ background: 'rgba(163, 230, 53, 0.1)', padding: '6px', borderRadius: '8px' }}>
+                                            <Ticket size={14} color="var(--secondary)" />
                                         </div>
-                                    )}
-
-                                    <button
-                                        type="submit"
-                                        disabled={saving || !formData.image_url}
+                                        <label style={{ fontSize: '13px', fontWeight: '800', color: 'white' }}>Asignar Cupón (Opcional)</label>
+                                    </div>
+                                    <p style={{ fontSize: '11px', color: 'var(--text-dim)', marginBottom: '10px' }}>
+                                        Selecciona un cupón para activarlo exclusivamente en este producto.
+                                    </p>
+                                    <select
+                                        value={formData.selectedCouponId}
+                                        onChange={e => setFormData({ ...formData, selectedCouponId: e.target.value })}
                                         style={{
                                             width: '100%',
-                                            background: (saving || !formData.image_url) ? 'rgba(163, 230, 53, 0.3)' : 'var(--secondary)',
-                                            color: 'var(--primary)',
-                                            padding: '15px',
-                                            borderRadius: '15px',
-                                            fontWeight: '800',
-                                            marginTop: '10px',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            gap: '10px'
+                                            background: 'rgba(0,0,0,0.2)',
+                                            border: '1px solid rgba(255,255,255,0.1)',
+                                            borderRadius: '12px',
+                                            padding: '12px',
+                                            color: 'white',
+                                            fontSize: '14px'
                                         }}
                                     >
-                                        {saving ? <Loader2 className="animate-spin" size={20} /> : <CheckCircle2 size={20} />}
-                                        {saving ? 'GUARDANDO...' : 'PUBLICAR PRODUCTO'}
-                                    </button>
+                                        <option value="">Ningún cupón seleccionado</option>
+                                        {coupons.map(coupon => (
+                                            <option key={coupon.id} value={coupon.id}>
+                                                {coupon.code} - {coupon.discount_type === 'percentage' ? `${coupon.discount_value}% OFF` : `$${coupon.discount_value.toLocaleString()} OFF`}
+                                                {coupon.product_id && coupon.product_id !== editingId ? ' (Asignado a otro producto)' : ''}
+                                            </option>
+                                        ))}
+                                    </select>
                                 </div>
+
+                                {/* Commission Calculation */}
+                                {formData.price && (
+                                    <div className="glass" style={{ padding: '15px', background: 'rgba(163, 230, 53, 0.05)', borderRadius: '15px', border: '1px solid rgba(163, 230, 53, 0.1)' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '13px' }}>
+                                            <span style={{ color: 'var(--text-dim)' }}>Comisión APEG (5%)</span>
+                                            <span style={{ color: '#ef4444', fontWeight: '600' }}>- {formatPrice((parseFloat(formData.price) * 0.05).toString())}</span>
+                                        </div>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '15px', fontWeight: '800', paddingTop: '8px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                                            <span>Recibes en tu cuenta</span>
+                                            <span style={{ color: 'var(--secondary)' }}>$ {formatPrice((parseFloat(formData.price) * 0.95).toString())}</span>
+                                        </div>
+                                    </div>
+                                )}
+
+                                <button
+                                    type="submit"
+                                    disabled={saving || !formData.image_url}
+                                    style={{
+                                        width: '100%',
+                                        background: (saving || !formData.image_url) ? 'rgba(163, 230, 53, 0.3)' : 'var(--secondary)',
+                                        color: 'var(--primary)',
+                                        padding: '15px',
+                                        borderRadius: '15px',
+                                        fontWeight: '800',
+                                        marginTop: '10px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        gap: '10px'
+                                    }}
+                                >
+                                    {saving ? <Loader2 className="animate-spin" size={20} /> : <CheckCircle2 size={20} />}
+                                    {saving ? 'GUARDANDO...' : 'PUBLICAR PRODUCTO'}
+                                </button>
                             </form>
                         ) : (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>

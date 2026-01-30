@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Send, Loader2, User } from 'lucide-react';
 import { supabase, optimizeImage } from '../services/SupabaseManager';
-import { Database } from '../types/database.types';
+import type { Database } from '../types/database.types';
 
 type Message = Database['public']['Tables']['messages']['Row'];
 
