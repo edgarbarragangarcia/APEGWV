@@ -168,10 +168,13 @@ const ChatModal: React.FC<ChatModalProps> = ({
             display: 'flex',
             flexDirection: 'column',
             backgroundColor: 'var(--primary)',
+            maxWidth: 'var(--app-max-width)',
+            margin: '0 auto'
         }}>
             {/* Header */}
             <div className="glass" style={{
                 padding: '15px 20px',
+                paddingTop: 'calc(15px + env(safe-area-inset-top))',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '15px',
@@ -209,6 +212,7 @@ const ChatModal: React.FC<ChatModalProps> = ({
                 flex: 1,
                 overflowY: 'auto',
                 padding: '20px',
+                paddingBottom: '100px',
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '15px',
@@ -266,9 +270,15 @@ const ChatModal: React.FC<ChatModalProps> = ({
 
             {/* Input Area */}
             <div className="glass" style={{
+                position: 'absolute',
+                bottom: 0,
+                left: 0,
+                right: 0,
                 padding: '15px 20px',
                 borderTop: '1px solid rgba(255,255,255,0.05)',
-                paddingBottom: 'calc(15px + var(--nav-height))'
+                paddingBottom: 'calc(15px + env(safe-area-inset-bottom))',
+                background: 'linear-gradient(135deg, rgba(14, 47, 31, 0.98) 0%, rgba(20, 64, 42, 0.98) 100%)',
+                backdropFilter: 'blur(15px)'
             }}>
                 <form onSubmit={handleSendMessage} style={{ display: 'flex', gap: '10px' }}>
                     <input
