@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     ShoppingBag, Trash2,
-    Package, ShieldCheck
+    Package, ShieldCheck, Ticket, CheckCircle2, XCircle
 } from 'lucide-react';
 import PageHeader from '../components/PageHeader';
 import { motion } from 'framer-motion';
@@ -14,6 +14,40 @@ const CartPage: React.FC = () => {
     const navigate = useNavigate();
     const { cartItems, removeFromCart, updateQuantity, totalAmount, totalItems } = useCart();
     const { user } = useAuth();
+
+    // Coupon State
+    const [couponCode, setCouponCode] = React.useState('');
+    const [appliedDiscount, setAppliedDiscount] = React.useState(0);
+    const [isApplyingCoupon, setIsApplyingCoupon] = React.useState(false);
+    const [couponError, setCouponError] = React.useState<string | null>(null);
+    const [couponSuccess, setCouponSuccess] = React.useState<string | null>(null);
+
+    const handleApplyCoupon = () => {
+        setIsApplyingCoupon(true);
+        setCouponError(null);
+        setCouponSuccess(null);
+
+        // Simulate API delay
+        setTimeout(() => {
+            const code = couponCode.toUpperCase().trim();
+            if (code === 'APEG10') {
+                setAppliedDiscount(10);
+                setCouponSuccess('¡Cupón APEG10 aplicado con éxito! (10% de descuento)');
+                setCouponCode('');
+            } else if (code === 'BIENVENIDO') {
+                setAppliedDiscount(15);
+                setCouponSuccess('¡Cupón BIENVENIDO aplicado con éxito! (15% de descuento)');
+                setCouponCode('');
+            } else {
+                setCouponError('El cupón ingresado no es válido o ha expirado.');
+                setAppliedDiscount(0);
+            }
+            setIsApplyingCoupon(false);
+        }, 800);
+    };
+
+    const discountAmount = (totalAmount * appliedDiscount) / 100;
+    const finalTotal = totalAmount - discountAmount;
 
     const handleCheckout = () => {
         if (!user) {
@@ -63,6 +97,15 @@ const CartPage: React.FC = () => {
                     <OrderSummary
                         totalItems={totalItems}
                         totalAmount={totalAmount}
+                        discountAmount={discountAmount}
+                        appliedDiscount={appliedDiscount}
+                        finalTotal={finalTotal}
+                        couponCode={couponCode}
+                        setCouponCode={setCouponCode}
+                        onApplyCoupon={handleApplyCoupon}
+                        isApplyingCoupon={isApplyingCoupon}
+                        couponError={couponError}
+                        couponSuccess={couponSuccess}
                         onCheckout={handleCheckout}
                     />
 
@@ -151,7 +194,33 @@ const CartItem = ({ item, onUpdateQuantity, onRemove }: { item: any, onUpdateQua
     </motion.div>
 );
 
-const OrderSummary = ({ totalItems, totalAmount, onCheckout }: { totalItems: number, totalAmount: number, onCheckout: () => void }) => (
+const OrderSummary = ({
+    totalItems,
+    totalAmount,
+    discountAmount,
+    appliedDiscount,
+    finalTotal,
+    couponCode,
+    setCouponCode,
+    onApplyCoupon,
+    isApplyingCoupon,
+    couponError,
+    couponSuccess,
+    onCheckout
+}: {
+    totalItems: number,
+    totalAmount: number,
+    discountAmount: number,
+    appliedDiscount: number,
+    finalTotal: number,
+    couponCode: string,
+    setCouponCode: (c: string) => void,
+    onApplyCoupon: () => void,
+    isApplyingCoupon: boolean,
+    couponError: string | null,
+    couponSuccess: string | null,
+    onCheckout: () => void
+}) => (
     <Card style={{ padding: '25px', marginTop: '20px', background: 'rgba(255,255,255,0.02)' }}>
         <h3 style={{ fontSize: '16px', fontWeight: '800', marginBottom: '20px' }}>Resumen del canje</h3>
 
@@ -160,14 +229,84 @@ const OrderSummary = ({ totalItems, totalAmount, onCheckout }: { totalItems: num
                 <span>Productos ({totalItems})</span>
                 <span style={{ color: 'white' }}>$ {new Intl.NumberFormat('es-CO').format(totalAmount)}</span>
             </div>
+
+            {appliedDiscount > 0 && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', color: 'var(--secondary)', fontWeight: '700' }}>
+                    <span>Descuento ({appliedDiscount}%)</span>
+                    <span>- $ {new Intl.NumberFormat('es-CO').format(discountAmount)}</span>
+                </div>
+            )}
+
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', color: 'var(--text-dim)' }}>
                 <span>Gastos de envío</span>
                 <span style={{ color: 'var(--secondary)', fontWeight: '700' }}>GRATIS</span>
             </div>
+
+            {/* Coupon Input Section */}
+            <div style={{ marginTop: '5px', marginBottom: '10px' }}>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                    <div style={{
+                        flex: 1,
+                        background: 'rgba(255,255,255,0.05)',
+                        borderRadius: '12px',
+                        padding: '0 15px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px',
+                        border: couponError ? '1px solid #ef4444' : (couponSuccess ? '1px solid var(--secondary)' : '1px solid rgba(255,255,255,0.1)')
+                    }}>
+                        <Ticket size={16} color="var(--text-dim)" />
+                        <input
+                            type="text"
+                            placeholder="Código de cupón"
+                            value={couponCode}
+                            onChange={(e) => setCouponCode(e.target.value)}
+                            style={{
+                                background: 'none',
+                                border: 'none',
+                                color: 'white',
+                                width: '100%',
+                                padding: '12px 0',
+                                outline: 'none',
+                                fontSize: '13px'
+                            }}
+                        />
+                    </div>
+                    <button
+                        onClick={onApplyCoupon}
+                        disabled={!couponCode || isApplyingCoupon}
+                        style={{
+                            padding: '0 20px',
+                            borderRadius: '12px',
+                            background: isApplyingCoupon ? 'rgba(163, 230, 53, 0.2)' : 'var(--secondary)',
+                            color: 'var(--primary)',
+                            fontWeight: '800',
+                            fontSize: '13px',
+                            border: 'none',
+                            cursor: 'pointer',
+                            opacity: (!couponCode || isApplyingCoupon) ? 0.5 : 1
+                        }}
+                    >
+                        {isApplyingCoupon ? '...' : 'Aplicar'}
+                    </button>
+                </div>
+
+                {couponError && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginTop: '8px', color: '#ef4444', fontSize: '11px' }}>
+                        <XCircle size={12} /> {couponError}
+                    </div>
+                )}
+                {couponSuccess && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginTop: '8px', color: 'var(--secondary)', fontSize: '11px' }}>
+                        <CheckCircle2 size={12} /> {couponSuccess}
+                    </div>
+                )}
+            </div>
+
             <div style={{ height: '1px', background: 'rgba(255,255,255,0.05)', margin: '5px 0' }} />
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '19px', fontWeight: '900' }}>
                 <span>Total a pagar</span>
-                <span style={{ color: 'var(--secondary)' }}>$ {new Intl.NumberFormat('es-CO').format(totalAmount)}</span>
+                <span style={{ color: 'var(--secondary)' }}>$ {new Intl.NumberFormat('es-CO').format(finalTotal)}</span>
             </div>
         </div>
 
