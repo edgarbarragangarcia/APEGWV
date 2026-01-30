@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../services/SupabaseManager';
-import { Mail, Lock, User, Loader2, ArrowRight, Phone, Award, Hash } from 'lucide-react';
+import { Mail, Lock, User, Loader2, ArrowRight, Phone, Award, Hash, Trophy, Activity, Zap, Users } from 'lucide-react';
 
 
 const Auth: React.FC = () => {
@@ -16,6 +16,13 @@ const Auth: React.FC = () => {
         federationCode: '',
         phone: ''
     });
+
+    const features = [
+        { icon: Trophy, label: 'Torneos' },
+        { icon: Activity, label: 'Hándicap' },
+        { icon: Zap, label: 'Resultados' },
+        { icon: Users, label: 'Comunidad' }
+    ];
 
     const handleAuth = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -128,18 +135,27 @@ const Auth: React.FC = () => {
                             flexWrap: 'wrap',
                             marginBottom: '4px'
                         }}>
-                            {['🏆 Torneos', '📊 Hándicap', '⚡ Resultados', '🤝 Comunidad'].map((feature, i) => (
-                                <span key={i} style={{
-                                    fontSize: '10px',
-                                    fontWeight: '600',
-                                    padding: '4px 10px',
-                                    background: 'rgba(163, 230, 53, 0.1)',
-                                    border: '1px solid rgba(163, 230, 53, 0.2)',
-                                    borderRadius: '20px',
-                                    color: '#A3E635'
+                            {features.map((item, i) => (
+                                <div key={i} style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '6px',
+                                    padding: '6px 12px',
+                                    background: 'rgba(163, 230, 53, 0.08)',
+                                    border: '1px solid rgba(163, 230, 53, 0.15)',
+                                    borderRadius: '16px',
+                                    transition: 'all 0.2s ease'
                                 }}>
-                                    {feature}
-                                </span>
+                                    <item.icon size={12} color="#A3E635" strokeWidth={2.5} />
+                                    <span style={{
+                                        fontSize: '11px',
+                                        fontWeight: '600',
+                                        color: '#A3E635',
+                                        letterSpacing: '0.3px'
+                                    }}>
+                                        {item.label}
+                                    </span>
+                                </div>
                             ))}
                         </div>
                     </div>
