@@ -99,7 +99,6 @@ const MyStore: React.FC = () => {
         size_shoes_eu: '',
         size_shoes_col: '',
         size_shoes_cm: '',
-        size_shoes_cm: '',
         is_negotiable: false,
         selectedCouponId: ''
     });
