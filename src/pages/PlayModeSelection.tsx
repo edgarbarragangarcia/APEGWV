@@ -48,9 +48,10 @@ const PlayModeSelection: React.FC = () => {
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '20px',
-                marginTop: '20px',
+                marginTop: '10px',
                 flex: 1,
-                justifyContent: 'center'
+                justifyContent: 'flex-start',
+                paddingTop: '20px'
             }}>
                 {modes.map((mode, index) => (
                     <motion.div
