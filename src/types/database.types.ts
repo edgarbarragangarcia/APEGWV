@@ -85,6 +85,7 @@ export type Database = {
                     id: string
                     is_active: boolean | null
                     min_purchase_amount: number | null
+                    product_id: string | null
                     seller_id: string
                     start_date: string | null
                     usage_count: number | null
@@ -100,6 +101,7 @@ export type Database = {
                     id?: string
                     is_active?: boolean | null
                     min_purchase_amount?: number | null
+                    product_id?: string | null
                     seller_id: string
                     start_date?: string | null
                     usage_count?: number | null
