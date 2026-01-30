@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../services/SupabaseManager';
 import { Mail, Lock, User, Loader2, ArrowRight, Phone, Award, Hash } from 'lucide-react';
-import logoApeg from '../assets/apeg_logo_v2.png';
+
 
 const Auth: React.FC = () => {
     const [isLogin, setIsLogin] = useState(true);
@@ -66,45 +66,12 @@ const Auth: React.FC = () => {
             overflow: 'hidden'
         }}>
             {/* Cinematic Video Background */}
-            <div style={{
-                position: 'absolute',
-                inset: 0,
-                zIndex: -2,
-                overflow: 'hidden'
-            }}>
-                <video
-                    autoPlay
-                    loop
-                    muted
-                    playsInline
-                    style={{
-                        position: 'absolute',
-                        top: '50%',
-                        left: '50%',
-                        minWidth: '100%',
-                        minHeight: '100%',
-                        width: 'auto',
-                        height: 'auto',
-                        transform: 'translate(-50%, -50%)',
-                        objectFit: 'cover',
-                        filter: 'brightness(0.6) contrast(1.1)'
-                    }}
-                >
-                    <source src="https://drqyvhwgnuvrcmwthwwn.supabase.co/storage/v1/object/public/video/watermarked-4f9c0c88-80ff-4880-9dd5-4ccce3509025.MP4" type="video/mp4" />
-                </video>
-                {/* Advanced Overlay for Video */}
-                <div style={{
-                    position: 'absolute',
-                    inset: 0,
-                    background: 'linear-gradient(to bottom, rgba(11, 46, 30, 0.4), rgba(6, 26, 17, 0.95))',
-                    zIndex: 1
-                }} />
-                <div style={{
-                    position: 'absolute',
-                    inset: 0,
-                    background: 'radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.4) 100%)',
-                    zIndex: 2
-                }} />
+            {/* Modern Animated Background */}
+            <div className="modern-auth-bg">
+                <div className="grid-overlay" />
+                <div className="auth-orb orb-1" />
+                <div className="auth-orb orb-2" />
+                <div className="auth-orb orb-3" />
             </div>
 
             <motion.div
@@ -130,41 +97,52 @@ const Auth: React.FC = () => {
                     width: '100%',
                     boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
                 }}>
-                    {/* Logo Section */}
-                    <div style={{
-                        display: 'flex',
-                        justifyContent: 'center',
-                        marginBottom: '10px'
-                    }}>
-                        <div style={{
-                            width: '80px',
-                            height: '80px',
-                            background: 'white',
-                            borderRadius: '50%',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            boxShadow: '0 0 20px rgba(163, 230, 53, 0.2)',
-                            overflow: 'hidden',
-                            position: 'relative'
+
+                    {/* App Description */}
+                    <div style={{ textAlign: 'center', marginBottom: '24px', marginTop: '10px' }}>
+                        <h2 style={{
+                            fontSize: '22px',
+                            fontWeight: '800',
+                            background: 'linear-gradient(135deg, #fff 0%, #ccc 100%)',
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent',
+                            marginBottom: '8px',
+                            letterSpacing: '0.5px'
+                        }}>APEG GOLF</h2>
+
+                        <p style={{
+                            fontSize: '13px',
+                            color: 'rgba(255,255,255,0.8)',
+                            maxWidth: '280px',
+                            margin: '0 auto 16px auto',
+                            lineHeight: '1.5',
+                            fontWeight: '400'
                         }}>
-                            <img
-                                src={logoApeg}
-                                alt="APEG Logo"
-                                style={{
-                                    width: '140%', // Increased zoom
-                                    height: '140%', // Increased zoom
-                                    objectFit: 'contain',
-                                    position: 'absolute',
-                                    top: '50%',
-                                    left: '50%',
-                                    transform: 'translate(-50%, -50%)' // Force perfect center
-                                }}
-                            />
+                            La plataforma definitiva para gestionar tu vida como golfista profesional y amateur.
+                        </p>
+
+                        <div style={{
+                            display: 'flex',
+                            justifyContent: 'center',
+                            gap: '8px',
+                            flexWrap: 'wrap',
+                            marginBottom: '4px'
+                        }}>
+                            {['🏆 Torneos', '📊 Hándicap', '⚡ Resultados', '🤝 Comunidad'].map((feature, i) => (
+                                <span key={i} style={{
+                                    fontSize: '10px',
+                                    fontWeight: '600',
+                                    padding: '4px 10px',
+                                    background: 'rgba(163, 230, 53, 0.1)',
+                                    border: '1px solid rgba(163, 230, 53, 0.2)',
+                                    borderRadius: '20px',
+                                    color: '#A3E635'
+                                }}>
+                                    {feature}
+                                </span>
+                            ))}
                         </div>
                     </div>
-
-                    {/* Title */}
                     <div style={{ textAlign: 'center', marginBottom: '15px' }}>
                         <h1 style={{
                             color: 'white',

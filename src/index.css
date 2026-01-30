@@ -298,3 +298,88 @@ button {
     /* Sidebar width on desktop */
   }
 }
+
+/* Modern Auth Background */
+.modern-auth-bg {
+  position: fixed;
+  inset: 0;
+  background: #050505;
+  z-index: -2;
+  overflow: hidden;
+}
+
+.modern-auth-bg::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 15% 50%, rgba(14, 47, 31, 0.4) 0%, transparent 50%),
+    radial-gradient(circle at 85% 30%, rgba(26, 77, 53, 0.2) 0%, transparent 50%),
+    radial-gradient(circle at 50% 80%, rgba(163, 230, 53, 0.05) 0%, transparent 50%);
+  filter: blur(60px);
+  z-index: -1;
+}
+
+.auth-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  opacity: 0.4;
+  animation: float-orb 15s infinite ease-in-out;
+}
+
+.orb-1 {
+  top: -10%;
+  right: -10%;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, var(--primary-light) 0%, transparent 70%);
+  animation-delay: 0s;
+}
+
+.orb-2 {
+  bottom: -10%;
+  left: -10%;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(14, 47, 31, 0.8) 0%, transparent 70%);
+  animation-delay: -5s;
+}
+
+.orb-3 {
+  top: 40%;
+  left: 40%;
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(163, 230, 53, 0.15) 0%, transparent 70%);
+  animation-delay: -10s;
+}
+
+@keyframes float-orb {
+
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+
+  33% {
+    transform: translate(30px, -50px) scale(1.1);
+  }
+
+  66% {
+    transform: translate(-20px, 20px) scale(0.9);
+  }
+}
+
+.grid-overlay {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 50px 50px;
+  mask-image: radial-gradient(circle at center, black 40%, transparent 100%);
+  -webkit-mask-image: radial-gradient(circle at center, black 40%, transparent 100%);
+  opacity: 0.5;
+  z-index: 0;
+}
