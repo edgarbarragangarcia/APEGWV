@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { X, Send, Loader2, User } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Send, Loader2, ArrowLeft } from 'lucide-react';
 import { supabase, optimizeImage } from '../services/SupabaseManager';
 import type { Database } from '../types/database.types';
 
@@ -28,7 +28,6 @@ const ChatModal: React.FC<ChatModalProps> = ({
     productName,
     productImage,
     buyerName,
-    buyerPhoto,
     currentUserId
 }) => {
     const [messages, setMessages] = useState<Message[]>([]);
@@ -82,9 +81,10 @@ const ChatModal: React.FC<ChatModalProps> = ({
                         product_id: productId
                     })
                     .select()
-                    .single();
+                    .maybeSingle();
 
                 if (createError) throw createError;
+                if (!newChat) throw new Error('Failed to create chat');
                 currentChatId = newChat.id;
             }
 
@@ -179,7 +179,7 @@ const ChatModal: React.FC<ChatModalProps> = ({
                 zIndex: 10
             }}>
                 <button onClick={onClose} style={{ color: 'white' }}>
-                    <X size={24} />
+                    <ArrowLeft size={24} />
                 </button>
                 <div style={{ flex: 1 }}>
                     <h3 style={{ fontSize: '16px', fontWeight: '800', color: 'white' }}>{buyerName}</h3>

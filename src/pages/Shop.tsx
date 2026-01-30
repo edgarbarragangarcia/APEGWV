@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import {
     Search, ShoppingBag,
     ArrowLeft, ShoppingCart, Plus, CheckCircle2,
-    Loader2, AlertCircle, Clock, Lock, Handshake, Heart
+    Loader2, AlertCircle, Clock, Lock, Handshake, Heart, Ticket
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Card from '../components/Card';
@@ -48,6 +48,7 @@ const Shop: React.FC = () => {
     const [ordersError, setOrdersError] = useState<string | null>(null);
     const [productsLoading, setProductsLoading] = useState(true);
     const [likedProducts, setLikedProducts] = useState<Set<string>>(new Set());
+    const [coupon, setCoupon] = useState<any>(null);
     const location = useLocation();
 
     // Auto-reset expired negotiations
@@ -180,6 +181,37 @@ const Shop: React.FC = () => {
             window.removeEventListener('negotiations-reset', handleNegotiationsReset);
         };
     }, [user]);
+
+    useEffect(() => {
+        if (selectedProduct) {
+            const fetchCoupon = async () => {
+                const { data } = await supabase
+                    .from('coupons')
+                    .select('*')
+                    .eq('product_id', selectedProduct.id)
+                    .eq('is_active', true)
+                    .gt('end_date', new Date().toISOString())
+                    .maybeSingle();
+
+                if (data) {
+                    setCoupon(data);
+                } else {
+                    setCoupon(null);
+                }
+            };
+            fetchCoupon();
+        } else {
+            setCoupon(null);
+        }
+    }, [selectedProduct]);
+
+    const calculateDiscountedPrice = (price: number, coupon: any) => {
+        if (!coupon) return price;
+        if (coupon.discount_type === 'percentage') {
+            return price * (1 - coupon.discount_value / 100);
+        }
+        return Math.max(0, price - coupon.discount_value);
+    };
 
     const categories = ['Todo', 'Bolas', 'Ropa', 'Accesorios', 'Zapatos', 'Otros'];
 
@@ -877,11 +909,58 @@ const Shop: React.FC = () => {
                                         fontWeight: '900',
                                         color: 'var(--secondary)',
                                         margin: 0,
-                                        letterSpacing: '-0.01em'
+                                        letterSpacing: '-0.01em',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '10px'
                                     }}>
-                                        $ {new Intl.NumberFormat('es-CO').format(selectedProduct.price)}
+                                        {coupon ? (
+                                            <>
+                                                <span style={{ textDecoration: 'line-through', color: 'rgba(255,255,255,0.4)', fontSize: '20px' }}>
+                                                    $ {new Intl.NumberFormat('es-CO').format(selectedProduct.price)}
+                                                </span>
+                                                <span style={{ color: '#a3e635' }}>
+                                                    $ {new Intl.NumberFormat('es-CO').format(calculateDiscountedPrice(selectedProduct.price, coupon))}
+                                                </span>
+                                            </>
+                                        ) : (
+                                            `$ ${new Intl.NumberFormat('es-CO').format(selectedProduct.price)}`
+                                        )}
                                     </p>
                                 </div>
+
+                                {/* Coupon Banner */}
+                                {coupon && (
+                                    <div className="glass" style={{
+                                        background: 'rgba(163, 230, 53, 0.15)',
+                                        border: '1px dashed var(--secondary)',
+                                        borderRadius: '16px',
+                                        padding: '12px 16px',
+                                        marginBottom: '20px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '12px'
+                                    }}>
+                                        <div style={{
+                                            background: 'var(--secondary)',
+                                            padding: '8px',
+                                            borderRadius: '10px',
+                                            color: 'var(--primary)'
+                                        }}>
+                                            <Ticket size={20} />
+                                        </div>
+                                        <div>
+                                            <p style={{ fontSize: '14px', fontWeight: '800', color: 'white', margin: 0 }}>
+                                                ¡Cupón Disponible!
+                                            </p>
+                                            <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.8)', margin: 0 }}>
+                                                {coupon.discount_type === 'percentage'
+                                                    ? `Obtén ${coupon.discount_value}% de descuento`
+                                                    : `Ahorra $${coupon.discount_value.toLocaleString()}`}
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
 
                                 {/* Description - Compact 3 lines max */}
                                 {selectedProduct.description && (
@@ -943,7 +1022,8 @@ const Shop: React.FC = () => {
                                         whileTap={{ scale: 0.95 }}
                                         onClick={async () => {
                                             setAddingToCart(selectedProduct.id);
-                                            await addToCart(selectedProduct as any);
+                                            const finalPrice = calculateDiscountedPrice(selectedProduct.price, coupon);
+                                            await addToCart({ ...selectedProduct, price: finalPrice } as any);
                                             setTimeout(() => setAddingToCart(null), 1500);
                                             if (navigator.vibrate) navigator.vibrate(50);
                                         }}
@@ -974,9 +1054,13 @@ const Shop: React.FC = () => {
                                             setBuying(true);
                                             try {
                                                 const activeOffer = myOffers.find(o => o.product_id === selectedProduct.id && (o.status === 'accepted' || o.status === 'countered'));
-                                                const finalPrice = activeOffer
-                                                    ? (activeOffer.status === 'countered' ? (activeOffer.counter_amount || selectedProduct.price) : activeOffer.offer_amount)
-                                                    : selectedProduct.price;
+                                                let finalPrice: number;
+
+                                                if (activeOffer) {
+                                                    finalPrice = activeOffer.status === 'countered' ? (activeOffer.counter_amount || selectedProduct.price) : activeOffer.offer_amount;
+                                                } else {
+                                                    finalPrice = calculateDiscountedPrice(selectedProduct.price, coupon);
+                                                }
 
                                                 await addToCart({ ...selectedProduct, price: finalPrice } as any);
                                                 setSelectedProduct(null);

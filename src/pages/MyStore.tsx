@@ -5,7 +5,7 @@ import { supabase, optimizeImage } from '../services/SupabaseManager';
 import {
     Plus, Package, Trash2,
     Camera, Loader2, CheckCircle2, X, Store, Pencil, Landmark,
-    Truck, TrendingDown, Calendar, User, Phone, MapPin, Handshake, Info, Settings, Ticket, Percent, MessageCircle
+    Truck, TrendingDown, Calendar, User, Phone, MapPin, Handshake, Info, Settings, Ticket, Percent, MessageCircle, ArrowLeft
 } from 'lucide-react';
 
 import TrackingScanner from '../components/TrackingScanner';
@@ -768,7 +768,7 @@ const MyStore: React.FC = () => {
             }}>
                 <PageHeader
                     noMargin
-                    showBack={false}
+                    showBack={true}
                     title={sellerProfile.store_name || "Mi Tienda"}
                     subtitle="Panel de Control"
                 />
@@ -883,9 +883,26 @@ const MyStore: React.FC = () => {
 
                         {showForm ? (
                             <form onSubmit={handleSubmit} className="glass" style={{ padding: '25px', marginBottom: '30px' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
-                                    <h2 style={{ fontSize: '18px', fontWeight: '700' }}>{editingId ? 'Editar Producto' : 'Nuevo Producto'}</h2>
-                                    <button type="button" onClick={() => { setShowForm(false); resetForm(); }} style={{ color: 'var(--text-dim)', fontSize: '14px' }}>Cancelar</button>
+                                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '20px', gap: '15px' }}>
+                                    <button
+                                        type="button"
+                                        onClick={() => { setShowForm(false); resetForm(); }}
+                                        style={{
+                                            background: 'rgba(255,255,255,0.05)',
+                                            border: '1px solid rgba(255,255,255,0.1)',
+                                            width: '40px',
+                                            height: '40px',
+                                            borderRadius: '12px',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            color: 'white',
+                                            cursor: 'pointer'
+                                        }}
+                                    >
+                                        <ArrowLeft size={20} />
+                                    </button>
+                                    <h2 style={{ fontSize: '18px', fontWeight: '700', margin: 0 }}>{editingId ? 'Editar Producto' : 'Nuevo Producto'}</h2>
                                 </div>
 
                                 {/* Image Upload Area */}
