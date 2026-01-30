@@ -1,24 +1,26 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Search, MapPin, Wind, Droplets, Thermometer, ChevronRight, Navigation, Users, Plus } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { Search, MapPin, Wind, Droplets, Thermometer, ChevronRight, Navigation, ArrowLeft } from 'lucide-react';
 import { COLOMBIAN_COURSES } from '../data/courses';
 import type { GolfCourse } from '../data/courses';
 import { fetchWeather } from '../services/WeatherService';
 import type { WeatherData } from '../services/WeatherService';
 import { useGeoLocation } from '../hooks/useGeoLocation';
-import UserSearch from '../components/UserSearch';
 import { supabase } from '../services/SupabaseManager';
 import { useAuth } from '../context/AuthContext';
 
 const CourseSelection: React.FC = () => {
     const navigate = useNavigate();
+    const locationState = useLocation();
     const { user } = useAuth();
+
+    // Friends passed from FriendSelection page
+    const selectedFriends = (locationState.state as any)?.selectedFriends || [];
+
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedZone, setSelectedZone] = useState<string>('Todas');
     const [weatherData, setWeatherData] = useState<Record<string, WeatherData>>({});
-    const [selectedFriends, setSelectedFriends] = useState<any[]>([]);
     const [isCreatingGroup, setIsCreatingGroup] = useState(false);
-    const [showGroupCreator, setShowGroupCreator] = useState(false);
 
     const zones = ['Todas', 'Bogotá', 'Antioquia', 'Valle', 'Costa', 'Santanderes', 'Eje Cafetero', 'Centro'];
 
@@ -87,7 +89,7 @@ const CourseSelection: React.FC = () => {
 
                 const members = [
                     { group_id: groupData.id, user_id: user?.id, status: 'accepted' },
-                    ...selectedFriends.map(f => ({ group_id: groupData.id, user_id: f.id, status: 'invited' }))
+                    ...selectedFriends.map((f: any) => ({ group_id: groupData.id, user_id: f.id, status: 'invited' }))
                 ];
 
                 const { error: memberError } = await supabase
@@ -136,7 +138,25 @@ const CourseSelection: React.FC = () => {
                 paddingRight: '20px',
                 pointerEvents: 'auto'
             }}>
-                <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div style={{ marginBottom: '20px', display: 'flex', gap: '15px', alignItems: 'flex-start' }}>
+                    <button
+                        onClick={() => navigate(-1)}
+                        style={{
+                            background: 'rgba(255,255,255,0.05)',
+                            border: '1px solid rgba(255,255,255,0.1)',
+                            width: '40px',
+                            height: '40px',
+                            borderRadius: '12px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: 'white',
+                            cursor: 'pointer',
+                            flexShrink: 0
+                        }}
+                    >
+                        <ArrowLeft size={20} />
+                    </button>
                     <div>
                         <h1 style={{ fontSize: '28px', fontWeight: '900', marginBottom: '5px', color: 'white' }}>
                             Selecciona <span style={{ color: 'var(--secondary)' }}>tu</span> Campo
@@ -191,59 +211,17 @@ const CourseSelection: React.FC = () => {
                 </div>
             </div>
 
-            {/* Group Creator Toggle - Relative to safe area */}
-            <div style={{
-                position: 'absolute',
-                top: 'calc(env(safe-area-inset-top) + 260px)',
-                left: '0',
-                right: '0',
-                zIndex: 899,
-                padding: '0 20px',
-                pointerEvents: 'auto'
-            }}>
-                <button
-                    onClick={() => setShowGroupCreator(!showGroupCreator)}
-                    style={{
-                        width: '100%',
-                        padding: '12px 20px',
-                        borderRadius: '15px',
-                        background: showGroupCreator ? 'rgba(163, 230, 53, 0.1)' : 'rgba(255,255,255,0.05)',
-                        border: `1px solid ${showGroupCreator ? 'rgba(163, 230, 53, 0.3)' : 'rgba(255,255,255,0.1)'}`,
-                        color: showGroupCreator ? 'var(--secondary)' : 'white',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        cursor: 'pointer',
-                        fontSize: '14px',
-                        fontWeight: '700'
-                    }}
-                >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <Users size={18} />
-                        {selectedFriends.length > 0
-                            ? `${selectedFriends.length} amigo(s) seleccionado(s)`
-                            : '¿Juegas con amigos?'}
-                    </div>
-                    {showGroupCreator ? <ChevronRight size={18} style={{ transform: 'rotate(90deg)' }} /> : <Plus size={18} />}
-                </button>
-
-                {showGroupCreator && (
-                    <div style={{ marginTop: '15px', animation: 'fadeIn 0.3s ease' }}>
-                        <UserSearch onUsersSelected={(users) => setSelectedFriends(users)} />
-                    </div>
-                )}
-            </div>
 
             {/* Main Content Scroll Area */}
             <div style={{
                 position: 'absolute',
-                top: 'calc(env(safe-area-inset-top) + 297px)',
+                top: 'calc(env(safe-area-inset-top) + 275px)',
                 left: '0',
                 right: '0',
                 bottom: 'calc(var(--nav-height))',
                 overflowY: 'auto',
                 overflowX: 'hidden',
-                padding: '20px'
+                padding: '0 20px 20px 20px'
             }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                     {permissionStatus === 'granted' && !location && showLocationLoading && (

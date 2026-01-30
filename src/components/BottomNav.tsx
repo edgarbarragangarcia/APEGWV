@@ -5,7 +5,7 @@ import { Home, ShoppingBag, Calendar, Ticket, PlayCircle } from 'lucide-react';
 const BottomNav: React.FC = () => {
     const navItems = [
         { path: '/', icon: Home, label: 'Inicio' },
-        { path: '/select-course', icon: PlayCircle, label: 'Jugar' },
+        { path: '/play-mode', icon: PlayCircle, label: 'Jugar' },
         { path: '/green-fee', icon: Ticket, label: 'Green Fee' },
         { path: '/shop', icon: ShoppingBag, label: 'Marketplace' },
         { path: '/tournaments', icon: Calendar, label: 'Eventos' },

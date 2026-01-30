@@ -14,6 +14,8 @@ import Tournaments from './pages/Tournaments';
 import Profile from './pages/Profile';
 import Auth from './pages/Auth';
 import CourseSelection from './pages/CourseSelection';
+import PlayModeSelection from './pages/PlayModeSelection';
+import FriendSelection from './pages/FriendSelection';
 import EditProfile from './pages/EditProfile';
 import EditStats from './pages/EditStats';
 import RoundHistory from './pages/RoundHistory';
@@ -121,6 +123,8 @@ const AppContent: React.FC = () => {
             <>
               <Route path="/" element={<Home />} />
               <Route path="/round" element={<Round />} />
+              <Route path="/play-mode" element={<PlayModeSelection />} />
+              <Route path="/friend-selection" element={<FriendSelection />} />
               <Route path="/select-course" element={<CourseSelection />} />
               <Route path="/green-fee" element={<GreenFee />} />
               <Route path="/green-fee/:courseId" element={<CourseReservation />} />
