@@ -2,8 +2,11 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     Bell, CheckCircle2, ShoppingBag,
-    ChevronRight, Sparkles, MessageCircle, Trash2, Clock
+    ChevronRight, Sparkles, MessageCircle, Trash2, Clock,
+    Check, X, Users
 } from 'lucide-react';
+import { supabase } from '../services/SupabaseManager';
+import { useAuth } from '../context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNotifications } from '../context/NotificationContext';
 import PageHeader from '../components/PageHeader';
@@ -11,6 +14,7 @@ import ConfirmationModal from '../components/ConfirmationModal';
 
 const NotificationsPage: React.FC = () => {
     const navigate = useNavigate();
+    const { user } = useAuth();
     const { notifications, markAsRead, markAllAsRead, unreadCount, deleteNotification, deleteAllNotifications } = useNotifications();
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
@@ -36,6 +40,12 @@ const NotificationsPage: React.FC = () => {
                     icon: <MessageCircle size={iconSize} color="#3b82f6" />,
                     bg: 'rgba(59, 130, 246, 0.1)',
                     glow: 'rgba(59, 130, 246, 0.3)'
+                };
+            case 'game_invitation':
+                return {
+                    icon: <Users size={iconSize} color="var(--secondary)" />,
+                    bg: 'rgba(163, 230, 53, 0.1)',
+                    glow: 'rgba(163, 230, 53, 0.4)'
                 };
             default:
                 return {
@@ -72,6 +82,29 @@ const NotificationsPage: React.FC = () => {
             y: 0,
             scale: 1,
             transition: { type: 'spring' as const, damping: 15, stiffness: 100 }
+        }
+    };
+
+    const handleInviteAction = async (notifId: string, groupId: string, action: 'accepted' | 'declined') => {
+        try {
+            const { error } = await supabase
+                .from('group_members' as any)
+                .update({ status: action, joined_at: new Date().toISOString() })
+                .eq('group_id', groupId)
+                .eq('user_id', user?.id);
+
+            if (error) throw error;
+
+            // Mark notification as read and delete it
+            await markAsRead(notifId);
+            await deleteNotification(notifId);
+
+            if (action === 'accepted') {
+                navigate(`/round?group_id=${groupId}`);
+            }
+        } catch (err) {
+            console.error('Error handling invitation:', err);
+            alert('No se pudo procesar la invitación.');
         }
     };
 
@@ -227,7 +260,8 @@ const NotificationsPage: React.FC = () => {
                         animate="visible"
                         style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '10px' }}>
                         <AnimatePresence mode="popLayout">
-                            {notifications.map((notif) => {
+                            {notifications.map((n) => {
+                                const notif = n as any;
                                 const iconStyle = getIcon(notif.type);
                                 return (
                                     <motion.div
@@ -339,7 +373,58 @@ const NotificationsPage: React.FC = () => {
                                                         {formatDate(notif.created_at)}
                                                     </div>
 
-                                                    {notif.link && (
+                                                    {notif.type === 'game_invitation' && !notif.read && (
+                                                        <div style={{ display: 'flex', gap: '10px', marginTop: '15px' }}>
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    const groupId = notif.link?.split('group_id=')[1];
+                                                                    if (groupId) handleInviteAction(notif.id, groupId, 'accepted');
+                                                                }}
+                                                                style={{
+                                                                    flex: 1,
+                                                                    background: 'var(--secondary)',
+                                                                    color: 'var(--primary)',
+                                                                    border: 'none',
+                                                                    padding: '10px',
+                                                                    borderRadius: '12px',
+                                                                    fontSize: '13px',
+                                                                    fontWeight: '800',
+                                                                    display: 'flex',
+                                                                    alignItems: 'center',
+                                                                    justifyContent: 'center',
+                                                                    gap: '6px'
+                                                                }}
+                                                            >
+                                                                <Check size={16} /> Aceptar
+                                                            </button>
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    const groupId = notif.link?.split('group_id=')[1];
+                                                                    if (groupId) handleInviteAction(notif.id, groupId, 'declined');
+                                                                }}
+                                                                style={{
+                                                                    flex: 1,
+                                                                    background: 'rgba(255,255,255,0.05)',
+                                                                    color: 'white',
+                                                                    border: '1px solid rgba(255,255,255,0.1)',
+                                                                    padding: '10px',
+                                                                    borderRadius: '12px',
+                                                                    fontSize: '13px',
+                                                                    fontWeight: '800',
+                                                                    display: 'flex',
+                                                                    alignItems: 'center',
+                                                                    justifyContent: 'center',
+                                                                    gap: '6px'
+                                                                }}
+                                                            >
+                                                                <X size={16} /> Rechazar
+                                                            </button>
+                                                        </div>
+                                                    )}
+
+                                                    {notif.link && notif.type !== 'game_invitation' && (
                                                         <div style={{
                                                             display: 'flex',
                                                             alignItems: 'center',

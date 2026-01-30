@@ -1,17 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, MapPin, Wind, Droplets, Thermometer, ChevronRight, Navigation } from 'lucide-react';
+import { Search, MapPin, Wind, Droplets, Thermometer, ChevronRight, Navigation, Users, Plus } from 'lucide-react';
 import { COLOMBIAN_COURSES } from '../data/courses';
 import type { GolfCourse } from '../data/courses';
 import { fetchWeather } from '../services/WeatherService';
 import type { WeatherData } from '../services/WeatherService';
 import { useGeoLocation } from '../hooks/useGeoLocation';
+import UserSearch from '../components/UserSearch';
+import { supabase } from '../services/SupabaseManager';
+import { useAuth } from '../context/AuthContext';
 
 const CourseSelection: React.FC = () => {
     const navigate = useNavigate();
+    const { user } = useAuth();
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedZone, setSelectedZone] = useState<string>('Todas');
     const [weatherData, setWeatherData] = useState<Record<string, WeatherData>>({});
+    const [selectedFriends, setSelectedFriends] = useState<any[]>([]);
+    const [isCreatingGroup, setIsCreatingGroup] = useState(false);
+    const [showGroupCreator, setShowGroupCreator] = useState(false);
 
     const zones = ['Todas', 'Bogotá', 'Antioquia', 'Valle', 'Costa', 'Santanderes', 'Eje Cafetero', 'Centro'];
 
@@ -32,7 +39,6 @@ const CourseSelection: React.FC = () => {
         ...course,
         distance: calculateDistance(course.lat, course.lon)
     })).sort((a, b) => {
-        // Si no hay distancia (location no cargada), mantenemos orden original (alfabético por club)
         if (a.distance === null && b.distance === null) return a.club.localeCompare(b.club);
         if (a.distance === null) return 1;
         if (b.distance === null) return -1;
@@ -47,10 +53,8 @@ const CourseSelection: React.FC = () => {
     });
 
     useEffect(() => {
-        // Cargar clima para los primeros cursos visibles
         const loadWeather = async () => {
             const weatherMap: Record<string, WeatherData> = {};
-            // Usamos COLOMBIAN_COURSES directamente para evitar re-triggers en el loop de clima
             for (const course of COLOMBIAN_COURSES.slice(0, 10)) {
                 try {
                     const data = await fetchWeather(course.lat, course.lon);
@@ -64,8 +68,45 @@ const CourseSelection: React.FC = () => {
         loadWeather();
     }, []);
 
-    const handleSelectCourse = (course: GolfCourse, recorrido?: string) => {
-        navigate('/round', { state: { course, recorrido } });
+    const handleSelectCourse = async (course: GolfCourse, recorrido?: string) => {
+        if (selectedFriends.length > 0) {
+            setIsCreatingGroup(true);
+            try {
+                const { data: group, error: groupError } = await supabase
+                    .from('game_groups' as any)
+                    .insert([{
+                        created_by: user?.id,
+                        course_id: course.id,
+                        status: 'pending'
+                    }])
+                    .select()
+                    .single();
+
+                if (groupError) throw groupError;
+                const groupData = group as any;
+
+                const members = [
+                    { group_id: groupData.id, user_id: user?.id, status: 'accepted' },
+                    ...selectedFriends.map(f => ({ group_id: groupData.id, user_id: f.id, status: 'invited' }))
+                ];
+
+                const { error: memberError } = await supabase
+                    .from('group_members' as any)
+                    .insert(members);
+
+                if (memberError) throw memberError;
+
+                navigate('/round', { state: { course, recorrido, groupId: groupData.id } });
+            } catch (err) {
+                console.error('Error creating group:', err);
+                alert('No se pudo crear el grupo. ¿Ya ejecutaste el SQL en Supabase?');
+                navigate('/round', { state: { course, recorrido } });
+            } finally {
+                setIsCreatingGroup(false);
+            }
+        } else {
+            navigate('/round', { state: { course, recorrido } });
+        }
     };
 
     return (
@@ -80,7 +121,7 @@ const CourseSelection: React.FC = () => {
             margin: '0 auto',
             overflow: 'hidden'
         }} className="animate-fade">
-            {/* Header Fijo - Selecciona tu Campo */}
+            {/* Header Fijo */}
             <div style={{
                 position: 'absolute',
                 top: 'calc(env(safe-area-inset-top) + 87px)',
@@ -89,7 +130,7 @@ const CourseSelection: React.FC = () => {
                 width: '100%',
                 zIndex: 900,
                 background: 'linear-gradient(180deg, var(--primary) 0%, var(--primary) 90%, transparent 100%)',
-                paddingTop: '10px', // Reducido de 20px a 10px
+                paddingTop: '10px',
                 paddingBottom: '20px',
                 paddingLeft: '20px',
                 paddingRight: '20px',
@@ -104,9 +145,6 @@ const CourseSelection: React.FC = () => {
                     </div>
                 </div>
 
-
-
-                {/* Search */}
                 <div className="glass" style={{
                     padding: '12px 20px',
                     display: 'flex',
@@ -131,7 +169,6 @@ const CourseSelection: React.FC = () => {
                     />
                 </div>
 
-                {/* Filters */}
                 <div style={{ display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '5px' }}>
                     {zones.map(zone => (
                         <button
@@ -154,7 +191,50 @@ const CourseSelection: React.FC = () => {
                 </div>
             </div>
 
-            {/* Área de Scroll - SOLO PARA LA LISTA DE CAMPOS */}
+            {/* Group Creator Toggle - Relative to safe area */}
+            <div style={{
+                position: 'absolute',
+                top: 'calc(env(safe-area-inset-top) + 260px)',
+                left: '0',
+                right: '0',
+                zIndex: 899,
+                padding: '0 20px',
+                pointerEvents: 'auto'
+            }}>
+                <button
+                    onClick={() => setShowGroupCreator(!showGroupCreator)}
+                    style={{
+                        width: '100%',
+                        padding: '12px 20px',
+                        borderRadius: '15px',
+                        background: showGroupCreator ? 'rgba(163, 230, 53, 0.1)' : 'rgba(255,255,255,0.05)',
+                        border: `1px solid ${showGroupCreator ? 'rgba(163, 230, 53, 0.3)' : 'rgba(255,255,255,0.1)'}`,
+                        color: showGroupCreator ? 'var(--secondary)' : 'white',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        cursor: 'pointer',
+                        fontSize: '14px',
+                        fontWeight: '700'
+                    }}
+                >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <Users size={18} />
+                        {selectedFriends.length > 0
+                            ? `${selectedFriends.length} amigo(s) seleccionado(s)`
+                            : '¿Juegas con amigos?'}
+                    </div>
+                    {showGroupCreator ? <ChevronRight size={18} style={{ transform: 'rotate(90deg)' }} /> : <Plus size={18} />}
+                </button>
+
+                {showGroupCreator && (
+                    <div style={{ marginTop: '15px', animation: 'fadeIn 0.3s ease' }}>
+                        <UserSearch onUsersSelected={(users) => setSelectedFriends(users)} />
+                    </div>
+                )}
+            </div>
+
+            {/* Main Content Scroll Area */}
             <div style={{
                 position: 'absolute',
                 top: 'calc(env(safe-area-inset-top) + 297px)',
@@ -163,9 +243,8 @@ const CourseSelection: React.FC = () => {
                 bottom: 'calc(var(--nav-height))',
                 overflowY: 'auto',
                 overflowX: 'hidden',
-                padding: '0 20px 20px 20px'
+                padding: '20px'
             }}>
-                {/* Course List */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                     {permissionStatus === 'granted' && !location && showLocationLoading && (
                         <div className="glass animate-pulse" style={{ padding: '15px', textAlign: 'center', background: 'rgba(163, 230, 53, 0.05)', border: '1px solid rgba(163, 230, 53, 0.2)' }}>
@@ -175,6 +254,7 @@ const CourseSelection: React.FC = () => {
                             </div>
                         </div>
                     )}
+
                     {filteredCourses.map((course) => (
                         <div key={course.id} className="glass" style={{ overflow: 'hidden' }}>
                             <div style={{ padding: '20px' }}>
@@ -194,7 +274,6 @@ const CourseSelection: React.FC = () => {
                                         </div>
                                     </div>
 
-                                    {/* Weather Widget Pequeno */}
                                     {weatherData[course.id] && (
                                         <div style={{
                                             background: 'rgba(163, 230, 53, 0.1)',
@@ -218,7 +297,6 @@ const CourseSelection: React.FC = () => {
                                     {course.description}
                                 </p>
 
-                                {/* Recorridos Selectors */}
                                 {course.recorridos ? (
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                                         <span style={{ fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', color: 'var(--secondary)' }}>
@@ -230,12 +308,7 @@ const CourseSelection: React.FC = () => {
                                                     key={r}
                                                     onClick={() => handleSelectCourse(course, r)}
                                                     className="btn-primary"
-                                                    style={{
-                                                        flex: 1,
-                                                        width: 'auto',
-                                                        padding: '12px',
-                                                        fontSize: '13px'
-                                                    }}
+                                                    style={{ flex: 1, padding: '12px', fontSize: '13px' }}
                                                 >
                                                     {r} <ChevronRight size={14} />
                                                 </button>
@@ -245,10 +318,11 @@ const CourseSelection: React.FC = () => {
                                 ) : (
                                     <button
                                         onClick={() => handleSelectCourse(course)}
+                                        disabled={isCreatingGroup}
                                         className="btn-primary"
                                         style={{ width: '100%', padding: '14px' }}
                                     >
-                                        <Navigation size={18} fill="currentColor" /> Comenzar Partida
+                                        {isCreatingGroup ? 'Creando Grupo...' : <><Navigation size={18} fill="currentColor" /> Comenzar Partida</>}
                                     </button>
                                 )}
                             </div>
@@ -256,7 +330,6 @@ const CourseSelection: React.FC = () => {
                     ))}
                 </div>
 
-                {/* Debug Info at bottom */}
                 <div style={{ marginTop: '40px', padding: '20px', background: 'rgba(0,0,0,0.2)', borderRadius: '15px', border: '1px solid rgba(255,255,255,0.05)' }}>
                     <h4 style={{ fontSize: '12px', color: 'var(--text-dim)', marginBottom: '10px', textTransform: 'uppercase' }}>Depuración GPS</h4>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', fontSize: '11px' }}>
