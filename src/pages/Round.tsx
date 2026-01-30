@@ -1,12 +1,11 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import Card from '../components/Card';
 import { ChevronLeft, ChevronRight, Target, History } from 'lucide-react';
 import type { GolfCourse } from '../data/courses';
 import { supabase } from '../services/SupabaseManager';
 import { useGeoLocation } from '../hooks/useGeoLocation';
 import { fetchWeather, type WeatherData } from '../services/WeatherService';
-import { Wind, Navigation, Trophy } from 'lucide-react';
+import { Wind, Navigation, Trophy, Award } from 'lucide-react';
 import { motion } from 'framer-motion';
 const getWindDirection = (degrees?: number) => {
     if (degrees === undefined) return 'Variable';
@@ -59,9 +58,11 @@ const Round: React.FC = () => {
 
     // Restauramos estados
     const [currentHole, setCurrentHole] = React.useState(1);
+    const [weather, setWeather] = React.useState<WeatherData | null>(null);
     const [strokes, setStrokes] = React.useState<Record<number, number>>({});
     const [isSaving, setIsSaving] = React.useState(false);
-    const [weather, setWeather] = React.useState<WeatherData | null>(null);
+    const { location: userPos } = useGeoLocation();
+    const courseHoles = holeData;
     const [roundId, setRoundId] = React.useState<string | null>(null);
     const [groupMembers, setGroupMembers] = React.useState<any[]>([]);
     const [groupScores, setGroupScores] = React.useState<Record<string, number>>({});
@@ -216,16 +217,7 @@ const Round: React.FC = () => {
 
                     if (round?.group_id === groupId) {
                         // Re-fetch total for this specific round/user
-                        const { data: allHoles } = await supabase
-                            .from('round_holes')
-                            .select('score')
-                            .eq('round_id', newHole.round_id);
-
-                        const newTotal = allHoles?.reduce((acc: number, h: any) => acc + (h.score || 0), 0) || 0;
-                        setGroupScores(prev => ({
-                            ...prev,
-                            [round.user_id]: newTotal
-                        }));
+                        fetchGroupData();
                     }
                 }
             )
@@ -252,6 +244,13 @@ const Round: React.FC = () => {
             setCurrentHole(prev => prev - 1);
         }
     };
+
+    const relativeScore = Object.keys(strokes).reduce((acc, holeNum) => {
+        const hNum = parseInt(holeNum);
+        const hStrokes = strokes[hNum];
+        const hPar = holeData.find(h => h.hole_number === hNum)?.par || 4;
+        return acc + (hStrokes - hPar);
+    }, 0);
 
     const getScoreTerm = (par: number, strokes: number) => {
         if (strokes === 0) return 'Inicio';
@@ -430,20 +429,20 @@ const Round: React.FC = () => {
                         <p style={{ fontSize: '12px', color: 'var(--text-dim)' }}>{fieldName} • Par {course?.club.includes('Lagartos') && recorrido === 'Corea' ? 71 : 72}</p>
                     </div>
                 </div>
-                <button onClick={() => setShowFinishModal(true)} style={{ color: 'var(--secondary)' }}>Finalizar</button>
+                <button onClick={() => setShowFinishModal(true)} style={{ color: 'var(--secondary)', fontSize: '13px' }}>Finalizar</button>
             </header>
-=======
+
             {/* Leaderboard Toggle & Content */}
             {groupId && (
-                <div style={{ marginBottom: '8px', zIndex: 10 }}>
+                <div style={{ marginBottom: '6px', zIndex: 10 }}>
                     <button
                         onClick={() => setIsLeaderboardOpen(!isLeaderboardOpen)}
                         style={{
                             width: '100%',
-                            padding: '12px 15px',
+                            padding: '8px 12px',
                             background: 'rgba(163, 230, 53, 0.1)',
                             border: '1px solid rgba(163, 230, 53, 0.2)',
-                            borderRadius: '15px',
+                            borderRadius: '12px',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'space-between',
@@ -451,33 +450,33 @@ const Round: React.FC = () => {
                             cursor: 'pointer'
                         }}
                     >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                            <Trophy size={18} color="var(--secondary)" />
-                            <span style={{ fontWeight: '800', fontSize: '14px', textTransform: 'uppercase' }}>Marcador en Vivo</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <Trophy size={16} color="var(--secondary)" />
+                            <span style={{ fontWeight: '800', fontSize: '12px', textTransform: 'uppercase' }}>Marcador en Vivo</span>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <div style={{ display: 'flex', marginLeft: '-5px' }}>
                                 {groupMembers.slice(0, 3).map((m, i) => (
                                     <div key={i} style={{
-                                        width: '24px',
-                                        height: '24px',
+                                        width: '20px',
+                                        height: '20px',
                                         borderRadius: '50%',
-                                        border: '2px solid var(--primary)',
-                                        marginLeft: i > 0 ? '-8px' : 0,
+                                        border: '1.5px solid var(--primary)',
+                                        marginLeft: i > 0 ? '-6px' : 0,
                                         overflow: 'hidden',
                                         background: 'var(--secondary)'
                                     }}>
                                         {m.profiles?.id_photo_url ? (
                                             <img src={m.profiles.id_photo_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                         ) : (
-                                            <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', color: 'var(--primary)', fontWeight: 'bold' }}>
+                                            <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '8px', color: 'var(--primary)', fontWeight: 'bold' }}>
                                                 {m.profiles?.full_name?.charAt(0) || '?'}
                                             </div>
                                         )}
                                     </div>
                                 ))}
                             </div>
-                            <ChevronRight size={18} style={{ transform: isLeaderboardOpen ? 'rotate(90deg)' : 'none', transition: 'transform 0.3s ease' }} />
+                            <ChevronRight size={16} style={{ transform: isLeaderboardOpen ? 'rotate(90deg)' : 'none', transition: 'transform 0.3s ease' }} />
                         </div>
                     </button>
 
@@ -489,37 +488,37 @@ const Round: React.FC = () => {
                                 background: 'rgba(255, 255, 255, 0.03)',
                                 border: '1px solid rgba(255, 255, 255, 0.08)',
                                 borderTop: 'none',
-                                borderBottomLeftRadius: '15px',
-                                borderBottomRightRadius: '15px',
-                                padding: '15px',
+                                borderBottomLeftRadius: '12px',
+                                borderBottomRightRadius: '12px',
+                                padding: '10px',
                                 overflow: 'hidden'
                             }}
                         >
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                                 {groupMembers.map((member) => {
                                     const score = groupScores[member.user_id] || 0;
                                     return (
                                         <div key={member.user_id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                                <div style={{ width: '32px', height: '32px', borderRadius: '10px', overflow: 'hidden', background: 'rgba(255,255,255,0.1)' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                <div style={{ width: '24px', height: '24px', borderRadius: '8px', overflow: 'hidden', background: 'rgba(255,255,255,0.1)' }}>
                                                     {member.profiles?.id_photo_url ? (
                                                         <img src={member.profiles.id_photo_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                                     ) : (
-                                                        <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 'bold' }}>
+                                                        <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 'bold', fontSize: '10px' }}>
                                                             {member.profiles?.full_name?.charAt(0)}
                                                         </div>
                                                     )}
                                                 </div>
-                                                <span style={{ color: 'white', fontWeight: '600', fontSize: '14px' }}>
+                                                <span style={{ color: 'white', fontWeight: '600', fontSize: '12px' }}>
                                                     {member.profiles?.full_name?.split(' ')[0]} {member.user_id === currentUserId ? '(Tú)' : ''}
                                                 </span>
                                             </div>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                                                 <div style={{ textAlign: 'right' }}>
-                                                    <span style={{ fontSize: '18px', fontWeight: '900', color: score === 0 ? 'var(--text-dim)' : 'var(--secondary)' }}>
+                                                    <span style={{ fontSize: '14px', fontWeight: '900', color: score === 0 ? 'var(--text-dim)' : 'var(--secondary)' }}>
                                                         {score || '--'}
                                                     </span>
-                                                    <span style={{ fontSize: '10px', color: 'var(--text-dim)', marginLeft: '4px' }}>golpes</span>
+                                                    <span style={{ fontSize: '8px', color: 'var(--text-dim)', marginLeft: '4px' }}>golpes</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -531,18 +530,18 @@ const Round: React.FC = () => {
                 </div>
             )}
 
-            <div className="glass" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 25px', marginBottom: '8px', flexShrink: 0 }}>
-                <button onClick={() => handleHoleChange('prev')} disabled={currentHole === 1} style={{ opacity: currentHole === 1 ? 0.3 : 1 }}><ChevronLeft /></button>
+            <div className="glass" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 20px', marginBottom: '6px', flexShrink: 0 }}>
+                <button onClick={() => handleHoleChange('prev')} disabled={currentHole === 1} style={{ opacity: currentHole === 1 ? 0.3 : 1 }}><ChevronLeft size={20} /></button>
                 <div style={{ textAlign: 'center' }}>
-                    <span style={{ fontSize: '14px', color: 'var(--secondary)', fontWeight: '600' }}>HOYO</span>
-                    <div style={{ fontSize: '32px', fontWeight: '800' }}>{currentHole}</div>
-                    <span style={{ fontSize: '14px', color: 'var(--text-dim)' }}>Par {currentHoleInfo.par} • Hcp {currentHoleInfo.handicap}</span>
+                    <span style={{ fontSize: '12px', color: 'var(--secondary)', fontWeight: '600' }}>HOYO</span>
+                    <div style={{ fontSize: '24px', fontWeight: '800', lineHeight: '1' }}>{currentHole}</div>
+                    <span style={{ fontSize: '12px', color: 'var(--text-dim)' }}>Par {currentHoleInfo.par} • Hcp {currentHoleInfo.handicap}</span>
                 </div>
-                <button onClick={() => handleHoleChange('next')} disabled={currentHole === 18} style={{ opacity: currentHole === 18 ? 0.3 : 1 }}><ChevronRight /></button>
+                <button onClick={() => handleHoleChange('next')} disabled={currentHole === 18} style={{ opacity: currentHole === 18 ? 0.3 : 1 }}><ChevronRight size={20} /></button>
             </div>
 
-            <div style={{ marginBottom: '10px', padding: '0 10px', flexShrink: 0 }}>
-                <div style={{ display: 'flex', justifyContent: 'flex-start', gap: '15px', overflowX: 'auto', paddingBottom: '15px', paddingLeft: '10px', paddingRight: '10px', scrollSnapType: 'x proximity', WebkitOverflowScrolling: 'touch' }}>
+            <div style={{ marginBottom: '6px', padding: '0 5px', flexShrink: 0 }}>
+                <div style={{ display: 'flex', justifyContent: 'flex-start', gap: '10px', overflowX: 'auto', paddingBottom: '10px', paddingLeft: '5px', paddingRight: '5px', scrollSnapType: 'x proximity', WebkitOverflowScrolling: 'touch' }}>
                     {[
                         { label: 'Eagle', diff: -2, color: '#f59e0b' },
                         { label: 'Birdie', diff: -1, color: 'var(--secondary)' },
@@ -615,113 +614,66 @@ const Round: React.FC = () => {
                     </div>
                 </div>
 
-                <div style={{ textAlign: 'center', marginTop: '6px' }}>
-                    <div style={{ fontSize: '14px', color: 'var(--text-dim)', fontWeight: '500' }}>
-                        Puntaje: <span style={{ color: 'white', fontWeight: '800' }}>{currentStrokes === 0 ? 'PENDIENTE' : getScoreTerm(currentHoleInfo.par, currentStrokes)}</span>
-                    </div>
-                </div>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr 1fr', gap: '8px', marginBottom: '8px', alignItems: 'center', flexShrink: 0 }}>
-                <div className="glass flex-center" style={{ height: '80px', flexDirection: 'column' }}>
-                    <span style={{ fontSize: '11px', color: 'var(--text-dim)' }}>FRONT</span>
-                    <span style={{ fontSize: '20px', fontWeight: '700' }}>{distanceToHole ? Math.max(0, distanceToHole - 15) : (140 + currentHole * 2)}</span>
-                </div>
-
-                <div className="glass flex-center" style={{
-                    height: '110px',
-                    flexDirection: 'column',
-                    border: '2px solid transparent',
-                    transition: 'all 0.5s ease',
-                    position: 'relative'
-                }}>
-                    <span style={{ fontSize: '11px', color: 'var(--text-dim)', fontWeight: '600' }}>
-                        DISTANCIA AL CENTRO
+                <div style={{ textAlign: 'center', marginBottom: '6px', flexShrink: 0 }}>
+                    <span style={{ fontSize: '11px', color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '1px' }}>Puntaje: </span>
+                    <span style={{ fontSize: '11px', fontWeight: '900', color: relativeScore > 0 ? '#f87171' : relativeScore < 0 ? 'var(--secondary)' : 'white' }}>
+                        {relativeScore === 0 ? 'PAR' : (relativeScore > 0 ? `+${relativeScore}` : relativeScore)}
                     </span>
-
-                    {distanceToHole !== null ? (
-                        <span style={{ fontSize: '40px', fontWeight: '800' }}>
-                            {distanceToHole}
-                        </span>
-                    ) : (
-                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px' }}>
-                            <span style={{ fontSize: '9px', color: 'var(--text-dim)' }}>
-                                BUSCANDO...
-                            </span>
-                        </div>
-                    )}
-
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '11px', color: 'var(--text-dim)', marginTop: '2px' }}>
-                        <Target size={10} color={distanceToHole !== null ? 'var(--secondary)' : 'var(--text-dim)'} />
-                        <span>{distanceToHole !== null ? ' m' : '---'}</span>
-                    </div>
-                </div>
-
-                <div className="glass flex-center" style={{ height: '80px', flexDirection: 'column' }}>
-                    <span style={{ fontSize: '11px', color: 'var(--text-dim)' }}>BACK</span>
-                    <span style={{ fontSize: '20px', fontWeight: '700' }}>{distanceToHole ? (distanceToHole + 15) : (170 + currentHole * 4)}</span>
                 </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '8px', marginBottom: '8px', flexShrink: 0 }}>
-                <Card style={{ marginBottom: 0, padding: '10px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr 1fr', gap: '8px', marginBottom: '8px', flexShrink: 0 }}>
+                <div className="glass" style={{ padding: '8px', textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                    <div style={{ fontSize: '10px', color: 'var(--text-dim)', marginBottom: '2px' }}>FRONT</div>
+                    <div style={{ fontSize: '16px', fontWeight: '900', color: 'white' }}>{userPos && courseHoles.find((h: any) => h.number === currentHole)?.lat ? Math.round(calculateDistance(userPos.latitude, userPos.longitude, courseHoles.find((h: any) => h.number === currentHole)!.lat!, courseHoles.find((h: any) => h.number === currentHole)!.lon!) - 15) : '---'}</div>
+                </div>
+
+                <div className="glass" style={{ padding: '8px', textAlign: 'center', position: 'relative', border: '1px solid rgba(163, 230, 53, 0.3)', background: 'rgba(163, 230, 53, 0.05)' }}>
+                    <div style={{ fontSize: '10px', color: 'var(--secondary)', fontWeight: '700', marginBottom: '2px' }}>DISTANCIA</div>
+                    <div style={{ fontSize: '32px', fontWeight: '900', color: 'white', lineHeight: '1' }}>{distanceToHole || '---'}</div>
+                    <div style={{ fontSize: '8px', color: 'var(--secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                        <div style={{ width: '4px', height: '4px', borderRadius: '50%', background: 'var(--secondary)', animation: 'pulse 2s infinite' }}></div>
+                        m
+                    </div>
+                </div>
+
+                <div className="glass" style={{ padding: '8px', textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                    <div style={{ fontSize: '10px', color: 'var(--text-dim)', marginBottom: '2px' }}>BACK</div>
+                    <div style={{ fontSize: '16px', fontWeight: '900', color: 'white' }}>{userPos && courseHoles.find((h: any) => h.number === currentHole)?.lat ? Math.round(calculateDistance(userPos.latitude, userPos.longitude, courseHoles.find((h: any) => h.number === currentHole)!.lat!, courseHoles.find((h: any) => h.number === currentHole)!.lon!) + 15) : '---'}</div>
+                </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '8px', flexShrink: 0 }}>
+                <div className="glass" style={{ padding: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <Wind size={14} color="var(--secondary)" />
-                    <div style={{ display: 'flex', flexDirection: 'column' }}>
-                        <span style={{ fontSize: '9px', color: 'var(--text-dim)', fontWeight: '600' }}>VIENTO</span>
-                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
-                            <span style={{ fontSize: '18px', fontWeight: '800' }}>{weather?.wind || '--'}</span>
-                            <span style={{ fontSize: '9px', color: 'var(--text-dim)' }}>km/h</span>
-                        </div>
+                    <div>
+                        <div style={{ fontSize: '8px', color: 'var(--text-dim)', textTransform: 'uppercase' }}>VIENTO</div>
+                        <div style={{ fontSize: '12px', fontWeight: '800', color: 'white' }}>{weather?.wind ? `${Math.round(weather.wind * 3.6)} km/h` : '12 km/h'}</div>
                     </div>
-                </Card>
-
-                <Card style={{ marginBottom: 0, padding: '10px', background: 'linear-gradient(135deg, rgba(163, 230, 53, 0.1), rgba(163, 230, 53, 0.02))', border: '1px solid rgba(163, 230, 53, 0.2)', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <div style={{ color: 'var(--secondary)' }}>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M18 3L8 13" />
-                            <path d="M7 14c-1.5 1-2.5 2.5-1 4.5s3.5 0.5 4.5-1" />
-                        </svg>
+                </div>
+                <div className="glass" style={{ padding: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Navigation size={14} color="var(--secondary)" />
+                    <div>
+                        <div style={{ fontSize: '8px', color: 'var(--text-dim)', textTransform: 'uppercase' }}>PALO</div>
+                        <div style={{ fontSize: '12px', fontWeight: '800', color: 'white' }}>{getClubRecommendation(distanceToHole || 0)}</div>
                     </div>
-                    <div style={{ display: 'flex', flexDirection: 'column' }}>
-                        <span style={{ fontSize: '9px', color: 'var(--text-dim)', fontWeight: '600' }}>PALO SUGERIDO</span>
-                        <div style={{ fontSize: '13px', fontWeight: '800', color: 'white' }}>{getClubRecommendation(distanceToHole, weather?.wind, getWindDirection(weather?.windDirection))}</div>
-                    </div>
-                </Card>
+                </div>
             </div>
 
-            {/* AI Caddie Card */}
-            <Card style={{
-                marginBottom: 0,
-                padding: '20px 22px',
-                background: 'rgba(163, 230, 53, 0.05)',
-                border: '1px dashed rgba(163, 230, 53, 0.3)',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                minHeight: '90px'
-            }}>
-                <div style={{
-                    width: '32px',
-                    height: '32px',
-                    borderRadius: '50%',
-                    background: 'var(--secondary)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexShrink: 0,
-                    boxShadow: '0 0 10px rgba(163, 230, 53, 0.3)'
-                }}>
-                    <Navigation size={16} color="var(--primary)" />
+            <div className="glass" style={{ padding: '10px', border: '1px solid rgba(163, 230, 53, 0.2)', background: 'rgba(163, 230, 53, 0.05)', flexShrink: 0, marginBottom: '20px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                    <Award size={14} color="var(--secondary)" />
+                    <span style={{ fontSize: '10px', fontWeight: '800', color: 'var(--secondary)', textTransform: 'uppercase' }}>Caddie <span style={{ color: 'white' }}>Virtual</span></span>
                 </div>
-                <div style={{ textAlign: 'left' }}>
-                    <div style={{ fontSize: '13px', fontWeight: '900', color: 'white', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}>
-                        Caddie <span style={{ color: 'var(--secondary)' }}>Virtual</span>
+                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                    <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'var(--secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <Target size={16} color="var(--primary)" />
                     </div>
-                    <p style={{ fontSize: '15px', color: 'white', fontWeight: '500', lineHeight: '1.4', fontStyle: 'italic' }}>
+                    <p style={{ fontSize: '11px', color: 'white', fontStyle: 'italic', lineHeight: '1.3' }}>
                         "{caddieMessage}"
                     </p>
                 </div>
-            </Card>
+            </div>
 
             {showFinishModal && (
                 <div style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'flex-start', background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(8px)' }} onClick={() => setShowFinishModal(false)}>
