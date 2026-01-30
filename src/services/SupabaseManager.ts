@@ -18,14 +18,18 @@ export interface UserProfile {
 
 export interface Product {
     id: string;
-    name: string;
+    title: string;
     description: string;
     price: number;
     category: string;
     image_url: string;
     seller_id: string;
-    condition: 'Nuevo' | 'Usado';
+    condition: string;
     created_at: string;
+    status?: string;
+    is_negotiable?: boolean;
+    negotiating_buyer_id?: string | null;
+    negotiation_expires_at?: string | null;
 }
 
 export interface Round {
@@ -44,9 +48,8 @@ export interface Notification {
     user_id: string;
     title: string;
     message: string;
-    type: 'order_new' | 'order_shipped' | 'promo' | 'system';
-    read: boolean;
-    link?: string;
+    type: string;
+    is_read: boolean;
     created_at: string;
 }
 

@@ -198,7 +198,7 @@ const NotificationsPage: React.FC = () => {
             {/* Area de Scroll */}
             <div style={{
                 position: 'absolute',
-                top: notifications.length > 0 ? 'calc(var(--header-offset-top) + 108px)' : 'calc(var(--header-offset-top) + 58px)',
+                top: notifications.length > 0 ? 'calc(var(--header-offset-top) + 110px)' : 'calc(var(--header-offset-top) + 60px)',
                 left: '0',
                 right: '0',
                 bottom: 'calc(var(--nav-height))',

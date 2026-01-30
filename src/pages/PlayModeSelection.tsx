@@ -29,27 +29,53 @@ const PlayModeSelection: React.FC = () => {
 
     return (
         <div style={{
-            padding: '20px',
-            height: '100%',
+            position: 'fixed',
+            top: '0',
+            left: '0',
+            right: '0',
+            bottom: '0',
+            width: '100%',
+            maxWidth: 'var(--app-max-width)',
+            margin: '0 auto',
+            overflow: 'hidden',
             background: 'var(--primary)',
-            display: 'flex',
-            flexDirection: 'column',
-            overflow: 'hidden'
-        }}>
-            <PageHeader
-                title="Modo de Juego"
-                subtitle="¿Cómo deseas jugar hoy?"
-                showBack={true}
-                onBack={() => navigate('/')}
-            />
+            zIndex: 500
+        }} className="animate-fade">
 
+            {/* Header Fijo */}
             <div style={{
+                position: 'absolute',
+                top: 'var(--header-offset-top)',
+                left: '0',
+                right: '0',
+                width: '100%',
+                zIndex: 900,
+                background: 'var(--primary)',
+                paddingLeft: '20px',
+                paddingRight: '20px',
+                pointerEvents: 'auto'
+            }}>
+                <PageHeader
+                    title="Modo de Juego"
+                    subtitle="¿Cómo deseas jugar hoy?"
+                    showBack={true}
+                    onBack={() => navigate('/')}
+                />
+            </div>
+
+            {/* Area de Scroll */}
+            <div style={{
+                position: 'absolute',
+                top: 'calc(var(--header-offset-top) + 80px)',
+                left: '0',
+                right: '0',
+                bottom: 'calc(var(--nav-height))',
+                overflowY: 'auto',
+                overflowX: 'hidden',
+                padding: '0 20px 40px 20px',
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '15px',
-                marginTop: '5px',
-                flex: 1,
-                justifyContent: 'flex-start'
+                gap: '15px'
             }}>
                 {modes.map((mode) => (
                     <div
@@ -109,7 +135,7 @@ const PlayModeSelection: React.FC = () => {
                                 fontSize: '14px',
                                 color: 'var(--text-dim)',
                                 lineHeight: '1.5',
-                                maxWidth: '80%'
+                                maxWidth: '85%'
                             }}>
                                 {mode.description}
                             </p>
@@ -133,7 +159,6 @@ const PlayModeSelection: React.FC = () => {
                     </div>
                 ))}
             </div>
-
         </div>
     );
 };

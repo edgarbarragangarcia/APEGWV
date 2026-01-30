@@ -96,6 +96,11 @@ export type Database = {
                     is_active: boolean | null
                     product_id: string | null
                     seller_id: string
+                    discount_type: 'percentage' | 'fixed'
+                    discount_value: number
+                    usage_limit: number | null
+                    min_purchase_amount: number
+                    usage_count: number
                 }
                 Insert: {
                     code: string
@@ -105,6 +110,11 @@ export type Database = {
                     is_active?: boolean | null
                     product_id?: string | null
                     seller_id: string
+                    discount_type?: 'percentage' | 'fixed'
+                    discount_value?: number
+                    usage_limit?: number | null
+                    min_purchase_amount?: number
+                    usage_count?: number
                 }
                 Update: {
                     code?: string
@@ -114,6 +124,11 @@ export type Database = {
                     is_active?: boolean | null
                     product_id?: string | null
                     seller_id?: string
+                    discount_type?: 'percentage' | 'fixed'
+                    discount_value?: number
+                    usage_limit?: number | null
+                    min_purchase_amount?: number
+                    usage_count?: number
                 }
                 Relationships: [
                     {
@@ -288,6 +303,10 @@ export type Database = {
                     product_id: string | null
                     status: string | null
                     user_id: string | null
+                    message: string | null
+                    counter_amount: number | null
+                    counter_message: string | null
+                    seller_id: string | null
                 }
                 Insert: {
                     amount: number
@@ -296,6 +315,10 @@ export type Database = {
                     product_id?: string | null
                     status?: string | null
                     user_id?: string | null
+                    message?: string | null
+                    counter_amount?: number | null
+                    counter_message?: string | null
+                    seller_id?: string | null
                 }
                 Update: {
                     amount?: number
@@ -304,6 +327,10 @@ export type Database = {
                     product_id?: string | null
                     status?: string | null
                     user_id?: string | null
+                    message?: string | null
+                    counter_amount?: number | null
+                    counter_message?: string | null
+                    seller_id?: string | null
                 }
                 Relationships: [
                     {
@@ -364,6 +391,11 @@ export type Database = {
                     total_amount: number
                     tracking_number: string | null
                     tracking_provider: string | null
+                    seller_net_amount: number
+                    shipping_address: string | null
+                    buyer_name: string | null
+                    buyer_phone: string | null
+                    updated_at: string | null
                 }
                 Insert: {
                     buyer_id: string
@@ -374,6 +406,11 @@ export type Database = {
                     total_amount: number
                     tracking_number?: string | null
                     tracking_provider?: string | null
+                    seller_net_amount?: number
+                    shipping_address?: string | null
+                    buyer_name?: string | null
+                    buyer_phone?: string | null
+                    updated_at?: string
                 }
                 Update: {
                     buyer_id?: string
@@ -384,6 +421,11 @@ export type Database = {
                     total_amount?: number
                     tracking_number?: string | null
                     tracking_provider?: string | null
+                    seller_net_amount?: number
+                    shipping_address?: string | null
+                    buyer_name?: string | null
+                    buyer_phone?: string | null
+                    updated_at?: string
                 }
                 Relationships: [
                     {
@@ -441,6 +483,17 @@ export type Database = {
                     seller_id: string | null
                     status: string | null
                     title: string
+                    size_clothing: string | null
+                    size_shoes_us: string | null
+                    size_shoes_eu: string | null
+                    size_shoes_col: string | null
+                    size_shoes_cm: string | null
+                    clothing_type: string | null
+                    is_negotiable: boolean
+                    stock_quantity: number | null
+                    updated_at: string | null
+                    negotiating_buyer_id: string | null
+                    negotiation_expires_at: string | null
                 }
                 Insert: {
                     category: string
@@ -453,6 +506,17 @@ export type Database = {
                     seller_id?: string | null
                     status?: string | null
                     title: string
+                    size_clothing?: string | null
+                    size_shoes_us?: string | null
+                    size_shoes_eu?: string | null
+                    size_shoes_col?: string | null
+                    size_shoes_cm?: string | null
+                    clothing_type?: string | null
+                    is_negotiable?: boolean
+                    stock_quantity?: number
+                    updated_at?: string
+                    negotiating_buyer_id?: string | null
+                    negotiation_expires_at?: string | null
                 }
                 Update: {
                     category?: string
@@ -465,6 +529,17 @@ export type Database = {
                     seller_id?: string | null
                     status?: string | null
                     title?: string
+                    size_clothing?: string | null
+                    size_shoes_us?: string | null
+                    size_shoes_eu?: string | null
+                    size_shoes_col?: string | null
+                    size_shoes_cm?: string | null
+                    clothing_type?: string | null
+                    is_negotiable?: boolean
+                    stock_quantity?: number
+                    updated_at?: string
+                    negotiating_buyer_id?: string | null
+                    negotiation_expires_at?: string | null
                 }
                 Relationships: []
             }
@@ -710,6 +785,10 @@ export type Database = {
                     price: number
                     status: string | null
                     title: string
+                    address: string | null
+                    game_mode: string | null
+                    participants_limit: number | null
+                    creator_id: string | null
                 }
                 Insert: {
                     course_id?: string | null
@@ -721,6 +800,10 @@ export type Database = {
                     price: number
                     status?: string | null
                     title: string
+                    address?: string | null
+                    game_mode?: string | null
+                    participants_limit?: number | null
+                    creator_id?: string | null
                 }
                 Update: {
                     course_id?: string | null
@@ -732,6 +815,70 @@ export type Database = {
                     price?: number
                     status?: string | null
                     title?: string
+                    address?: string | null
+                    game_mode?: string | null
+                    participants_limit?: number | null
+                    creator_id?: string | null
+                }
+                Relationships: []
+            }
+            seller_profiles: {
+                Row: {
+                    account_holder_document: string | null
+                    account_holder_name: string | null
+                    account_number: string | null
+                    account_type: string | null
+                    bank_name: string | null
+                    company_name: string | null
+                    created_at: string | null
+                    document_number: string | null
+                    document_type: string | null
+                    entity_type: string | null
+                    full_name: string | null
+                    id: string
+                    legal_representative: string | null
+                    nit: string | null
+                    status: string | null
+                    store_name: string | null
+                    user_id: string
+                }
+                Insert: {
+                    account_holder_document?: string | null
+                    account_holder_name?: string | null
+                    account_number?: string | null
+                    account_type?: string | null
+                    bank_name?: string | null
+                    company_name?: string | null
+                    created_at?: string | null
+                    document_number?: string | null
+                    document_type?: string | null
+                    entity_type?: string | null
+                    full_name?: string | null
+                    id?: string
+                    legal_representative?: string | null
+                    nit?: string | null
+                    status?: string | null
+                    store_name?: string | null
+                    user_id: string
+                }
+                Update: {
+                    account_holder_document?: string | null
+                    account_holder_name?: string | null
+                    account_number?: string | null
+                    account_type?: string | null
+                    bank_name?: string | null
+                    company_name?: string | null
+                    created_at?: string | null
+                    document_number?: string | null
+                    document_type?: string | null
+                    entity_type?: string | null
+                    full_name?: string | null
+                    id?: string
+                    legal_representative?: string | null
+                    nit?: string | null
+                    status?: string | null
+                    store_name?: string | null
+                    user_id?: string
                 }
                 Relationships: []
             }

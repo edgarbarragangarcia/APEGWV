@@ -37,7 +37,7 @@ const Home: React.FC = () => {
         queryFn: async () => {
             const { data: registrations } = await supabase
                 .from('tournament_registrations')
-                .select('*, profiles(full_name, id_photo_url), tournaments(name)')
+                .select('*, profiles:user_id(full_name, id_photo_url), tournaments:tournament_id(title)')
                 .order('created_at', { ascending: false })
                 .limit(5);
 
@@ -51,10 +51,10 @@ const Home: React.FC = () => {
                 ...(registrations?.map(r => ({
                     id: r.id,
                     type: 'registration' as ActivityType,
-                    userName: r.profiles?.full_name || 'Alguien',
-                    userImage: r.profiles?.id_photo_url || undefined,
+                    userName: (r.profiles as any)?.full_name || 'Alguien',
+                    userImage: (r.profiles as any)?.id_photo_url || undefined,
                     description: `Se inscribió al torneo`,
-                    itemName: r.tournaments?.name,
+                    itemName: (r.tournaments as any)?.title,
                     created_at: r.created_at
                 })) || []),
                 ...(newProducts?.map(p => ({
@@ -62,7 +62,7 @@ const Home: React.FC = () => {
                     type: 'product' as ActivityType,
                     userName: 'Comunidad APEG',
                     description: `Nuevo artículo disponible`,
-                    itemName: p.name,
+                    itemName: p.title,
                     itemImage: p.image_url || undefined,
                     created_at: p.created_at
                 })) || [])
@@ -301,7 +301,7 @@ const Home: React.FC = () => {
                                     }}>
                                         <img
                                             src={product.image_url || undefined}
-                                            alt={product.name}
+                                            alt={product.title}
                                             style={{
                                                 width: '100%',
                                                 height: '100%',
@@ -333,7 +333,7 @@ const Home: React.FC = () => {
                                             width: '100%',
                                             color: 'white'
                                         }}>
-                                            {product.name}
+                                            {product.title}
                                         </h4>
 
                                         <div style={{ marginBottom: '4px' }}>
@@ -387,9 +387,9 @@ const Home: React.FC = () => {
                                             backgroundPosition: 'center'
                                         }} />
                                         <div>
-                                            <div style={{ fontWeight: '500', fontSize: '14px' }}>{tournament.name}</div>
+                                            <div style={{ fontWeight: '500', fontSize: '14px' }}>{tournament.title}</div>
                                             <div style={{ fontSize: '12px', color: 'var(--text-dim)' }}>
-                                                {new Date(tournament.date).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })} • {tournament.club}
+                                                {new Date(tournament.date).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}
                                             </div>
                                         </div>
                                     </div>

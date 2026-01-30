@@ -24,26 +24,57 @@ const FriendSelection: React.FC = () => {
 
     return (
         <div style={{
-            padding: '20px',
-            height: '100%',
+            position: 'fixed',
+            top: '0',
+            left: '0',
+            right: '0',
+            bottom: '0',
+            width: '100%',
+            maxWidth: 'var(--app-max-width)',
+            margin: '0 auto',
+            overflow: 'hidden',
             background: 'var(--primary)',
-            display: 'flex',
-            flexDirection: 'column',
-            overflow: 'hidden'
-        }}>
-            <PageHeader
-                title="Invita Amigos"
-                subtitle="Selecciona hasta 3 amigos para tu grupo"
-                showBack={true}
-                onBack={() => navigate('/play-mode')}
-            />
+            zIndex: 500
+        }} className="animate-fade">
 
-            <div style={{ flex: 1, marginTop: '10px' }}>
+            {/* Header Fijo */}
+            <div style={{
+                position: 'absolute',
+                top: 'var(--header-offset-top)',
+                left: '0',
+                right: '0',
+                width: '100%',
+                zIndex: 900,
+                background: 'var(--primary)',
+                paddingLeft: '20px',
+                paddingRight: '20px',
+                pointerEvents: 'auto'
+            }}>
+                <PageHeader
+                    title="Invita Amigos"
+                    subtitle="Selecciona hasta 3 amigos para tu grupo"
+                    showBack={true}
+                    onBack={() => navigate('/play-mode')}
+                />
+            </div>
+
+            {/* Area de Scroll */}
+            <div style={{
+                position: 'absolute',
+                top: 'calc(var(--header-offset-top) + 80px)',
+                left: '0',
+                right: '0',
+                bottom: 'calc(var(--nav-height))',
+                overflowY: 'auto',
+                overflowX: 'hidden',
+                padding: '0 20px 20px 20px'
+            }}>
                 <div style={{
                     background: 'rgba(255, 255, 255, 0.02)',
                     borderRadius: '24px',
                     padding: '24px',
-                    border: '1px solid rgba(255, 255, 255, 0.05)'
+                    border: '1px solid rgba(255, 255, 255, 0.05)',
+                    marginBottom: '20px'
                 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '20px' }}>
                         <div style={{ position: 'relative' }}>
@@ -92,37 +123,32 @@ const FriendSelection: React.FC = () => {
 
                     <UserSearch onUsersSelected={setSelectedFriends} />
                 </div>
-            </div>
 
-            <div
-                style={{
-                    padding: '20px 0',
-                    paddingBottom: 'calc(var(--safe-bottom) + 60px)' // Reduced from 80px to bring it higher
-                }}
-            >
-                <button
-                    onClick={handleContinue}
-                    style={{
-                        width: '100%',
-                        padding: '18px',
-                        borderRadius: '18px',
-                        background: 'var(--secondary)',
-                        color: 'var(--primary)',
-                        fontWeight: '900',
-                        fontSize: '16px',
-                        border: 'none',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '10px',
-                        cursor: 'pointer',
-                        boxShadow: '0 10px 30px rgba(163, 230, 53, 0.3)',
-                        transition: 'all 0.3s ease'
-                    }}
-                >
-                    Continuar a Campos
-                    <ChevronRight size={20} />
-                </button>
+                <div style={{ paddingBottom: '40px' }}>
+                    <button
+                        onClick={handleContinue}
+                        style={{
+                            width: '100%',
+                            padding: '18px',
+                            borderRadius: '18px',
+                            background: 'var(--secondary)',
+                            color: 'var(--primary)',
+                            fontWeight: '900',
+                            fontSize: '16px',
+                            border: 'none',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '10px',
+                            cursor: 'pointer',
+                            boxShadow: '0 10px 30px rgba(163, 230, 53, 0.3)',
+                            transition: 'all 0.3s ease'
+                        }}
+                    >
+                        Continuar a Campos
+                        <ChevronRight size={20} />
+                    </button>
+                </div>
             </div>
         </div>
     );

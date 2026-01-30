@@ -7,6 +7,7 @@ import { useGeoLocation } from '../hooks/useGeoLocation';
 import { fetchWeather, type WeatherData } from '../services/WeatherService';
 import { Wind, Navigation, Trophy, Award } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { COLOMBIAN_COURSES } from '../data/courses';
 const getWindDirection = (degrees?: number) => {
     if (degrees === undefined) return 'Variable';
     const sectors = ['N', 'NE', 'E', 'SE', 'S', 'SO', 'O', 'NO'];
@@ -42,10 +43,21 @@ const getClubRecommendation = (distance: number | null, windSpeed: number = 0, w
 const Round: React.FC = () => {
     const location = useLocation();
     const navigate = useNavigate();
-    const { course, recorrido, groupId } = (location.state as { course?: GolfCourse; recorrido?: string; groupId?: string }) || {};
+    const searchParams = new URLSearchParams(location.search);
+    const urlGroupId = searchParams.get('group_id');
 
-    const clubName = course?.club || 'Club de Golf';
-    const fieldName = recorrido ? `${course?.name} - ${recorrido}` : (course?.name || 'Recorrido Principal');
+    const {
+        course: stateCourse,
+        recorrido: stateRecorrido,
+        groupId: stateGroupId
+    } = (location.state as { course?: GolfCourse; recorrido?: string; groupId?: string }) || {};
+
+    const [course, setCourse] = React.useState<GolfCourse | undefined>(stateCourse);
+    const [recorrido] = React.useState<string | undefined>(stateRecorrido);
+    const groupId = stateGroupId || urlGroupId;
+
+    const clubName = course?.club || 'Cargando campo...';
+    const fieldName = recorrido ? `${course?.name} - ${recorrido}` : (course?.name || 'Localizando...');
     const [holeData, setHoleData] = React.useState<any[]>([]);
 
     // Hooks
@@ -62,7 +74,6 @@ const Round: React.FC = () => {
     const [strokes, setStrokes] = React.useState<Record<number, number>>({});
     const [isSaving, setIsSaving] = React.useState(false);
     const { location: userPos } = useGeoLocation();
-    const courseHoles = holeData;
     const [roundId, setRoundId] = React.useState<string | null>(null);
     const [groupMembers, setGroupMembers] = React.useState<any[]>([]);
     const [groupScores, setGroupScores] = React.useState<Record<string, number>>({});
@@ -227,6 +238,25 @@ const Round: React.FC = () => {
             supabase.removeChannel(channel);
         };
     }, [groupId]);
+
+    // Fetch course details if missing (for invited members joining via notification)
+    React.useEffect(() => {
+        if (!course && groupId) {
+            const fetchCourseFromGroup = async () => {
+                const { data: group } = await supabase
+                    .from('game_groups' as any)
+                    .select('course_id')
+                    .eq('id', groupId)
+                    .single();
+
+                if (group && (group as any).course_id) {
+                    const found = COLOMBIAN_COURSES.find((c: GolfCourse) => c.id === (group as any).course_id);
+                    if (found) setCourse(found);
+                }
+            };
+            fetchCourseFromGroup();
+        }
+    }, [course, groupId]);
 
     const handleStrokeChange = (change: number) => {
         const newScore = Math.max(0, (strokes[currentHole] || 0) + change);
@@ -610,7 +640,9 @@ const Round: React.FC = () => {
                                 style={{ width: '25px', height: '50px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderTopRightRadius: '25px', borderBottomRightRadius: '25px', color: 'white' }}
                             >+</button>
                         </div>
-                        <span style={{ fontSize: '10px', fontWeight: '700', color: 'var(--text-dim)', textTransform: 'uppercase' }}>+/-</span>
+                        <span style={{ fontSize: '10px', fontWeight: '700', color: 'var(--text-dim)', textTransform: 'uppercase' }}>
+                            {getScoreTerm(currentHoleInfo.par, currentStrokes)}
+                        </span>
                     </div>
                 </div>
 
@@ -625,7 +657,11 @@ const Round: React.FC = () => {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr 1fr', gap: '8px', marginBottom: '8px', flexShrink: 0 }}>
                 <div className="glass" style={{ padding: '8px', textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                     <div style={{ fontSize: '10px', color: 'var(--text-dim)', marginBottom: '2px' }}>FRONT</div>
-                    <div style={{ fontSize: '16px', fontWeight: '900', color: 'white' }}>{userPos && courseHoles.find((h: any) => h.number === currentHole)?.lat ? Math.round(calculateDistance(userPos.latitude, userPos.longitude, courseHoles.find((h: any) => h.number === currentHole)!.lat!, courseHoles.find((h: any) => h.number === currentHole)!.lon!) - 15) : '---'}</div>
+                    <div style={{ fontSize: '16px', fontWeight: '900', color: 'white' }}>
+                        {(userPos && holeData.find((h: any) => h.hole_number === currentHole)?.lat)
+                            ? Math.round((calculateDistance(holeData.find((h: any) => h.hole_number === currentHole).lat, holeData.find((h: any) => h.hole_number === currentHole).lon) || 0) - 15)
+                            : '---'}
+                    </div>
                 </div>
 
                 <div className="glass" style={{ padding: '8px', textAlign: 'center', position: 'relative', border: '1px solid rgba(163, 230, 53, 0.3)', background: 'rgba(163, 230, 53, 0.05)' }}>
@@ -639,7 +675,11 @@ const Round: React.FC = () => {
 
                 <div className="glass" style={{ padding: '8px', textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                     <div style={{ fontSize: '10px', color: 'var(--text-dim)', marginBottom: '2px' }}>BACK</div>
-                    <div style={{ fontSize: '16px', fontWeight: '900', color: 'white' }}>{userPos && courseHoles.find((h: any) => h.number === currentHole)?.lat ? Math.round(calculateDistance(userPos.latitude, userPos.longitude, courseHoles.find((h: any) => h.number === currentHole)!.lat!, courseHoles.find((h: any) => h.number === currentHole)!.lon!) + 15) : '---'}</div>
+                    <div style={{ fontSize: '16px', fontWeight: '900', color: 'white' }}>
+                        {(userPos && holeData.find((h: any) => h.hole_number === currentHole)?.lat)
+                            ? Math.round((calculateDistance(holeData.find((h: any) => h.hole_number === currentHole).lat, holeData.find((h: any) => h.hole_number === currentHole).lon) || 0) + 15)
+                            : '---'}
+                    </div>
                 </div>
             </div>
 

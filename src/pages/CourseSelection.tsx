@@ -8,11 +8,13 @@ import type { WeatherData } from '../services/WeatherService';
 import { useGeoLocation } from '../hooks/useGeoLocation';
 import { supabase } from '../services/SupabaseManager';
 import { useAuth } from '../context/AuthContext';
+import { useProfile } from '../hooks/useProfile';
 
 const CourseSelection: React.FC = () => {
     const navigate = useNavigate();
     const locationState = useLocation();
     const { user } = useAuth();
+    const { data: profile } = useProfile();
 
     // Friends passed from FriendSelection page
     const selectedFriends = (locationState.state as any)?.selectedFriends || [];
@@ -100,6 +102,25 @@ const CourseSelection: React.FC = () => {
                     .insert(members);
 
                 if (memberError) throw memberError;
+
+                // 3. Create notifications for invited friends
+                if (validFriends.length > 0) {
+                    const userName = profile?.full_name || user?.email || 'Un amigo';
+                    const notifications = validFriends.map((f: any) => ({
+                        user_id: f.id,
+                        type: 'game_invitation',
+                        title: '¡Te han invitado a jugar!',
+                        message: `${userName} te ha invitado a una partida en ${course.club}`,
+                        link: `/round?group_id=${groupData.id}`,
+                        read: false
+                    }));
+
+                    const { error: notifError } = await supabase
+                        .from('notifications')
+                        .insert(notifications);
+
+                    if (notifError) console.error('Error sending invitations:', notifError);
+                }
 
                 navigate('/round', { state: { course, recorrido, groupId: groupData.id } });
             } catch (err) {
