@@ -89,7 +89,7 @@ const NotificationsPage: React.FC = () => {
         try {
             const { error } = await supabase
                 .from('group_members' as any)
-                .update({ status: action, joined_at: new Date().toISOString() })
+                .update({ status: action })
                 .eq('group_id', groupId)
                 .eq('user_id', user?.id);
 

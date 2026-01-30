@@ -44,17 +44,28 @@ const TournamentParticipants: React.FC = () => {
             if (tournamentError) throw tournamentError;
             setTournamentName(tournament.title);
 
-            // Fetch participants
-            const { data, error } = await supabase
+            // Fetch participants registrations
+            const { data: registrations, error: regError } = await supabase
                 .from('tournament_registrations')
-                .select(`
-                    profiles (id, full_name, id_photo_url, handicap, email, phone, total_rounds, average_score)
-                `)
+                .select('user_id')
                 .eq('tournament_id', id || '');
 
-            if (error) throw error;
-            const list = data?.map((r: any) => r.profiles).filter(Boolean) || [];
-            setParticipants(list as Participant[]);
+            if (regError) throw regError;
+
+            // Fetch profiles separately
+            const userIds = registrations?.map(r => r.user_id).filter((uid): uid is string => uid !== null) || [];
+
+            if (userIds.length > 0) {
+                const { data: profilesData, error: profilesError } = await supabase
+                    .from('profiles')
+                    .select('id, full_name, id_photo_url, handicap, email, phone, total_rounds, average_score')
+                    .in('id', userIds);
+
+                if (profilesError) throw profilesError;
+                setParticipants(profilesData as Participant[]);
+            } else {
+                setParticipants([]);
+            }
         } catch (err) {
             console.error('Error fetching data:', err);
         } finally {

@@ -37,9 +37,20 @@ const Home: React.FC = () => {
         queryFn: async () => {
             const { data: registrations } = await supabase
                 .from('tournament_registrations')
-                .select('*, profiles:user_id(full_name, id_photo_url), tournaments:tournament_id(title)')
+                .select('*, tournaments:tournament_id(title)')
                 .order('created_at', { ascending: false })
                 .limit(5);
+
+            // Fetch profiles separately
+            const userIds = registrations?.map(r => r.user_id).filter((id): id is string => id !== null) || [];
+            const { data: profiles } = userIds.length > 0
+                ? await supabase
+                    .from('profiles')
+                    .select('id, full_name, id_photo_url')
+                    .in('id', userIds)
+                : { data: [] };
+
+            const profilesMap = new Map(profiles?.map(p => [p.id, p]) || []);
 
             const { data: newProducts } = await supabase
                 .from('products')
@@ -51,8 +62,8 @@ const Home: React.FC = () => {
                 ...(registrations?.map(r => ({
                     id: r.id,
                     type: 'registration' as ActivityType,
-                    userName: (r.profiles as any)?.full_name || 'Alguien',
-                    userImage: (r.profiles as any)?.id_photo_url || undefined,
+                    userName: (r.user_id ? profilesMap.get(r.user_id)?.full_name : null) || 'Alguien',
+                    userImage: (r.user_id ? profilesMap.get(r.user_id)?.id_photo_url : null) || undefined,
                     description: `Se inscribió al torneo`,
                     itemName: (r.tournaments as any)?.title,
                     created_at: r.created_at
