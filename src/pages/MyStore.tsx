@@ -1779,7 +1779,7 @@ const MyStore: React.FC = () => {
                                                     </div>
                                                 )
                                             }
-
+                                        </div>
                                     </Card>
                                 ))}
                             </div>
