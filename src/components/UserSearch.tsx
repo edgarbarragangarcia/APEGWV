@@ -6,6 +6,7 @@ interface UserProfile {
     id: string;
     full_name: string | null;
     email: string | null;
+    id_photo_url?: string | null;
 }
 
 interface UserSearchProps {
@@ -28,7 +29,7 @@ const UserSearch: React.FC<UserSearchProps> = ({ onUsersSelected }) => {
             setSearching(true);
             const { data, error } = await supabase
                 .from('profiles')
-                .select('id, full_name, email')
+                .select('id, full_name, email, id_photo_url')
                 .or(`full_name.ilike.%${query}%,email.ilike.%${query}%`)
                 .limit(5);
 
@@ -74,13 +75,20 @@ const UserSearch: React.FC<UserSearchProps> = ({ onUsersSelected }) => {
                         <div key={user.id} style={{
                             background: 'rgba(163, 230, 53, 0.1)',
                             border: '1px solid rgba(163, 230, 53, 0.3)',
-                            padding: '6px 12px',
+                            padding: '4px 10px',
                             borderRadius: '12px',
                             display: 'flex',
                             alignItems: 'center',
                             gap: '8px',
                             animation: 'scaleIn 0.2s ease'
                         }}>
+                            {user.id_photo_url ? (
+                                <img src={user.id_photo_url} alt="" style={{ width: '20px', height: '20px', borderRadius: '50%', objectFit: 'cover' }} />
+                            ) : (
+                                <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px' }}>
+                                    {user.full_name?.charAt(0) || user.email?.charAt(0)}
+                                </div>
+                            )}
                             <span style={{ fontSize: '13px', fontWeight: '600', color: 'white' }}>{user.full_name || user.email}</span>
                             <button onClick={() => toggleUser(user)} style={{ background: 'none', border: 'none', color: 'var(--secondary)', cursor: 'pointer', padding: 0, display: 'flex' }}>
                                 <X size={14} />
@@ -138,9 +146,18 @@ const UserSearch: React.FC<UserSearchProps> = ({ onUsersSelected }) => {
                                 alignItems: 'center'
                             }}
                         >
-                            <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                <span style={{ fontWeight: '600', fontSize: '14px' }}>{user.full_name}</span>
-                                <span style={{ fontSize: '11px', color: 'var(--text-dim)' }}>{user.email}</span>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                {user.id_photo_url ? (
+                                    <img src={user.id_photo_url} alt="" style={{ width: '32px', height: '32px', borderRadius: '10px', objectFit: 'cover' }} />
+                                ) : (
+                                    <div style={{ width: '32px', height: '32px', borderRadius: '10px', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px' }}>
+                                        {user.full_name?.charAt(0) || user.email?.charAt(0)}
+                                    </div>
+                                )}
+                                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                    <span style={{ fontWeight: '600', fontSize: '14px' }}>{user.full_name}</span>
+                                    <span style={{ fontSize: '11px', color: 'var(--text-dim)' }}>{user.email}</span>
+                                </div>
                             </div>
                             <UserPlus size={16} color="var(--secondary)" />
                         </button>
