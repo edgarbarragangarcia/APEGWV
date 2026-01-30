@@ -87,9 +87,12 @@ const CourseSelection: React.FC = () => {
                 if (groupError) throw groupError;
                 const groupData = group as any;
 
+                // Filter out current user from selectedFriends to avoid duplication
+                const validFriends = selectedFriends.filter((f: any) => f.id !== user?.id);
+
                 const members = [
                     { group_id: groupData.id, user_id: user?.id, status: 'accepted' },
-                    ...selectedFriends.map((f: any) => ({ group_id: groupData.id, user_id: f.id, status: 'invited' }))
+                    ...validFriends.map((f: any) => ({ group_id: groupData.id, user_id: f.id, status: 'invited' }))
                 ];
 
                 const { error: memberError } = await supabase
