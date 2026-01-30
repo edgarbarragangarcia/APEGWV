@@ -93,11 +93,17 @@ const Shop: React.FC = () => {
             const { data, error } = await supabase
                 .from('offers')
                 .select('*, product:products(*)')
-                .eq('buyer_id', userId)
+                .eq('user_id', userId)
                 .order('created_at', { ascending: false });
 
             if (error) throw error;
-            if (data) setMyOffers(data);
+            if (data) {
+                const enrichedOffers = data.map((offer: any) => ({
+                    ...offer,
+                    product: Array.isArray(offer.product) ? offer.product[0] : offer.product
+                }));
+                setMyOffers(enrichedOffers);
+            }
         } catch (err: any) {
             console.error('Error fetching offers:', err);
         }
@@ -111,13 +117,20 @@ const Shop: React.FC = () => {
             const { data, error } = await supabase
                 .from('orders')
                 .select('*, product:products!product_id(*), seller:profiles!seller_id(*)')
-                .eq('buyer_id', userId)
+                .eq('user_id', userId)
                 .order('created_at', { ascending: false });
 
             console.log('Orders fetch result:', { data, error });
 
             if (error) throw error;
-            if (data) setMyOrders(data);
+            if (data) {
+                const enrichedOrders = data.map((order: any) => ({
+                    ...order,
+                    product: Array.isArray(order.product) ? order.product[0] : order.product,
+                    seller: Array.isArray(order.seller) ? order.seller[0] : order.seller
+                }));
+                setMyOrders(enrichedOrders);
+            }
         } catch (err: any) {
             console.error('Error fetching orders:', err);
             setOrdersError(err.message);
@@ -231,7 +244,7 @@ const Shop: React.FC = () => {
         const matchesCategory = activeTab === 'Todo' ||
             prodCategoryNorm === normalize(categoryMapping[activeTab] || '');
 
-        const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        const matchesSearch = product.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
             prodCategoryNorm.includes(searchQuery.toLowerCase());
 
         return matchesCategory && matchesSearch;
@@ -505,7 +518,7 @@ const Shop: React.FC = () => {
                                         }}>
                                             <img
                                                 src={optimizeImage(product.image_url, { width: 400, height: 400 })}
-                                                alt={product.name}
+                                                alt={product.title}
                                                 loading="lazy"
                                                 onError={(e) => {
                                                     const target = e.target as HTMLImageElement;
@@ -588,7 +601,7 @@ const Shop: React.FC = () => {
                                                 lineHeight: '1.2',
                                                 color: 'white'
                                             }}>
-                                                {product.name}
+                                                {product.title}
                                             </h4>
 
                                             <div style={{ marginBottom: 0 }}>
@@ -640,7 +653,7 @@ const Shop: React.FC = () => {
                                             />
                                             <div style={{ flex: 1 }}>
                                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                                                    <h4 style={{ fontSize: '15px', fontWeight: '800' }}>{offer.product?.name}</h4>
+                                                    <h4 style={{ fontSize: '15px', fontWeight: '800' }}>{offer.product?.title}</h4>
                                                     <span style={{
                                                         background: offer.status === 'accepted' ? '#10b981' : (offer.status === 'countered' ? '#3b82f6' : 'rgba(255,255,255,0.1)'),
                                                         padding: '4px 8px', borderRadius: '6px', fontSize: '10px', fontWeight: '900', color: 'white', textTransform: 'uppercase'
@@ -651,7 +664,7 @@ const Shop: React.FC = () => {
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
                                                     <span style={{ fontSize: '13px', color: 'var(--text-dim)', textDecoration: (offer.status === 'accepted' || offer.status === 'countered') ? 'line-through' : 'none' }}>${offer.product?.price.toLocaleString()}</span>
                                                     <span style={{ fontSize: '15px', fontWeight: '900', color: offer.status === 'accepted' ? '#10b981' : (offer.status === 'countered' ? '#60a5fa' : 'var(--secondary)') }}>
-                                                        ${(offer.status === 'countered' ? offer.counter_amount : offer.offer_amount)?.toLocaleString()}
+                                                        ${(offer.status === 'countered' ? offer.counter_amount : offer.amount)?.toLocaleString()}
                                                     </span>
                                                 </div>
                                                 {offer.status === 'countered' && (
@@ -712,7 +725,7 @@ const Shop: React.FC = () => {
                                                 alt=""
                                             />
                                             <div>
-                                                <h4 style={{ fontSize: '15px', fontWeight: '800' }}>{order.product?.name || 'Pedido sin información'}</h4>
+                                                <h4 style={{ fontSize: '15px', fontWeight: '800' }}>{order.product?.title || 'Pedido sin información'}</h4>
                                                 <p style={{ color: 'var(--secondary)', fontWeight: '800' }}>$ {new Intl.NumberFormat('es-CO').format(order.total_amount || 0)}</p>
                                             </div>
                                         </div>
@@ -747,7 +760,7 @@ const Shop: React.FC = () => {
                                                     </div>
                                                     <div style={{ fontSize: '12px' }}>
                                                         <p style={{ fontWeight: '700', color: order.status === 'Enviado' ? 'white' : 'var(--text-dim)' }}>Pedido enviado</p>
-                                                        {order.tracking_number && <p style={{ fontSize: '11px', color: 'var(--secondary)', fontWeight: '600', marginTop: '4px' }}>Guía: {order.shipping_provider} - {order.tracking_number}</p>}
+                                                        {order.tracking_number && <p style={{ fontSize: '11px', color: 'var(--secondary)', fontWeight: '600', marginTop: '4px' }}>Guía: {order.tracking_provider} - {order.tracking_number}</p>}
                                                     </div>
                                                 </div>
                                             </div>
@@ -797,7 +810,7 @@ const Shop: React.FC = () => {
                                 <img
                                     src={optimizeImage(selectedProduct.image_url, { width: 600, height: 800 })}
                                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                    alt={selectedProduct.name}
+                                    alt={selectedProduct.title}
                                 />
                                 {/* Overlay */}
                                 <div style={{
@@ -901,7 +914,7 @@ const Shop: React.FC = () => {
                                         )}
                                     </div>
                                     <h2 style={{ fontSize: '24px', fontWeight: '900', marginBottom: '4px', lineHeight: '1.2', color: 'white', letterSpacing: '-0.02em' }}>
-                                        {selectedProduct.name}
+                                        {selectedProduct.title}
                                     </h2>
                                     <p style={{
                                         fontSize: '28px',
@@ -1056,7 +1069,7 @@ const Shop: React.FC = () => {
                                                 let finalPrice: number;
 
                                                 if (activeOffer) {
-                                                    finalPrice = activeOffer.status === 'countered' ? (activeOffer.counter_amount || selectedProduct.price) : activeOffer.offer_amount;
+                                                    finalPrice = activeOffer.status === 'countered' ? (activeOffer.counter_amount || selectedProduct.price) : (activeOffer.amount || 0);
                                                 } else {
                                                     finalPrice = calculateDiscountedPrice(selectedProduct.price, coupon);
                                                 }
@@ -1155,7 +1168,7 @@ const Shop: React.FC = () => {
                                         />
                                         <div>
                                             <h3 style={{ fontSize: '20px', fontWeight: '900', color: 'white' }}>Nueva Oferta</h3>
-                                            <p style={{ fontSize: '14px', color: 'var(--text-dim)' }}>{selectedProduct.name}</p>
+                                            <p style={{ fontSize: '14px', color: 'var(--text-dim)' }}>{selectedProduct.title}</p>
                                             <p style={{ fontSize: '13px', color: 'var(--secondary)', fontWeight: '800', marginTop: '4px' }}>
                                                 Precio base: $ {new Intl.NumberFormat('es-CO').format(selectedProduct.price)}
                                             </p>
@@ -1242,9 +1255,9 @@ const Shop: React.FC = () => {
                                                         .from('offers')
                                                         .insert([{
                                                             product_id: selectedProduct.id,
-                                                            buyer_id: user.id,
+                                                            user_id: user.id,
                                                             seller_id: selectedProduct.seller_id,
-                                                            offer_amount: parseFloat(offerAmount),
+                                                            amount: parseFloat(offerAmount),
                                                             message: offerMessage,
                                                             status: 'pending'
                                                         }]);
@@ -1255,7 +1268,7 @@ const Shop: React.FC = () => {
                                                     await supabase.from('notifications').insert([{
                                                         user_id: selectedProduct.seller_id,
                                                         title: 'Nueva oferta recibida',
-                                                        message: `Has recibido una oferta de $${new Intl.NumberFormat('es-CO').format(parseFloat(offerAmount))} por ${selectedProduct.name}`,
+                                                        message: `Has recibido una oferta de $${new Intl.NumberFormat('es-CO').format(parseFloat(offerAmount))} por ${selectedProduct.title}`,
                                                         type: 'offer',
                                                         link: '/my-store?tab=offers'
                                                     }]);

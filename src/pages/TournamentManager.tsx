@@ -8,7 +8,7 @@ import { useAuth } from '../context/AuthContext';
 
 interface Tournament {
     id: string;
-    name: string;
+    title: string;
     description: string | null;
     date: string;
     club: string;
@@ -144,7 +144,7 @@ const TournamentManager: React.FC = () => {
 
     // Form State
     const [formData, setFormData] = useState({
-        name: '',
+        title: '',
         description: '',
         date: '',
         club: '',
@@ -286,7 +286,7 @@ const TournamentManager: React.FC = () => {
                 result = await supabase
                     .from('tournaments')
                     .update({
-                        name: formData.name,
+                        title: formData.title,
                         description: formData.description,
                         date: formData.date,
                         club: formData.club,
@@ -306,7 +306,7 @@ const TournamentManager: React.FC = () => {
                 result = await supabase
                     .from('tournaments')
                     .insert([{
-                        name: formData.name,
+                        title: formData.title,
                         description: formData.description,
                         date: formData.date,
                         club: formData.club,
@@ -344,7 +344,7 @@ const TournamentManager: React.FC = () => {
 
     const resetForm = () => {
         setFormData({
-            name: '',
+            title: '',
             description: '',
             date: '',
             club: '',
@@ -367,7 +367,7 @@ const TournamentManager: React.FC = () => {
     const handleEditClick = (tournament: Tournament) => {
         const p = tournament.price.toString();
         setFormData({
-            name: tournament.name,
+            title: tournament.title,
             description: tournament.description || '',
             date: tournament.date.split('T')[0],
             club: tournament.club,
@@ -394,7 +394,7 @@ const TournamentManager: React.FC = () => {
         setDeleteModal({
             isOpen: true,
             tournamentId: tournament.id,
-            tournamentName: tournament.name
+            tournamentName: tournament.title
         });
     };
 
@@ -516,8 +516,8 @@ const TournamentManager: React.FC = () => {
                                 <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Nombre del Torneo</label>
                                 <input
                                     required
-                                    value={formData.name}
-                                    onChange={e => setFormData({ ...formData, name: e.target.value })}
+                                    value={formData.title}
+                                    onChange={e => setFormData({ ...formData, title: e.target.value })}
                                     style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '12px', color: 'white', fontSize: '15px' }}
                                     placeholder="Ej: Abierto APEG Verano"
                                 />
@@ -792,7 +792,7 @@ const TournamentManager: React.FC = () => {
                                                 overflow: 'hidden',
                                                 textOverflow: 'ellipsis',
                                                 whiteSpace: 'nowrap'
-                                            }}>{tourney.name}</h3>
+                                            }}>{tourney.title}</h3>
                                             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', fontSize: '13px' }}>
                                                 <span style={{ display: 'flex', alignItems: 'center', gap: '5px', color: 'var(--text-dim)', fontWeight: '600' }}>
                                                     <Calendar size={14} color="var(--secondary)" />
