@@ -215,7 +215,7 @@ const CourseSelection: React.FC = () => {
             {/* Main Content Scroll Area */}
             <div style={{
                 position: 'absolute',
-                top: 'calc(env(safe-area-inset-top) + 275px)',
+                top: 'calc(env(safe-area-inset-top) + 290px)',
                 left: '0',
                 right: '0',
                 bottom: 'calc(var(--nav-height))',

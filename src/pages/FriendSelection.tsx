@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { ChevronRight, Users } from 'lucide-react';
 import PageHeader from '../components/PageHeader';
 import UserSearch from '../components/UserSearch';
-import { motion } from 'framer-motion';
 import { useProfile } from '../hooks/useProfile';
 
 interface UserProfile {
@@ -24,13 +23,13 @@ const FriendSelection: React.FC = () => {
     };
 
     return (
-        <div className="animate-fade" style={{
+        <div style={{
             padding: '20px',
-            paddingTop: 'calc(env(safe-area-inset-top) + 20px)',
-            minHeight: '100dvh',
+            height: '100%',
             background: 'var(--primary)',
             display: 'flex',
-            flexDirection: 'column'
+            flexDirection: 'column',
+            overflow: 'hidden'
         }}>
             <PageHeader
                 title="Invita Amigos"
@@ -39,7 +38,7 @@ const FriendSelection: React.FC = () => {
                 onBack={() => navigate('/play-mode')}
             />
 
-            <div style={{ flex: 1, marginTop: '20px' }}>
+            <div style={{ flex: 1, marginTop: '10px' }}>
                 <div style={{
                     background: 'rgba(255, 255, 255, 0.02)',
                     borderRadius: '24px',
@@ -95,23 +94,20 @@ const FriendSelection: React.FC = () => {
                 </div>
             </div>
 
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
+            <div
                 style={{
                     padding: '20px 0',
-                    paddingBottom: 'calc(var(--safe-bottom) + 80px)' // Leave space for BottomNav
+                    paddingBottom: 'calc(var(--safe-bottom) + 60px)' // Reduced from 80px to bring it higher
                 }}
             >
                 <button
                     onClick={handleContinue}
-                    disabled={selectedFriends.length === 0}
                     style={{
                         width: '100%',
                         padding: '18px',
                         borderRadius: '18px',
-                        background: selectedFriends.length > 0 ? 'var(--secondary)' : 'rgba(255,255,255,0.05)',
-                        color: selectedFriends.length > 0 ? 'var(--primary)' : 'var(--text-dim)',
+                        background: 'var(--secondary)',
+                        color: 'var(--primary)',
                         fontWeight: '900',
                         fontSize: '16px',
                         border: 'none',
@@ -119,15 +115,15 @@ const FriendSelection: React.FC = () => {
                         alignItems: 'center',
                         justifyContent: 'center',
                         gap: '10px',
-                        cursor: selectedFriends.length > 0 ? 'pointer' : 'not-allowed',
-                        boxShadow: selectedFriends.length > 0 ? '0 10px 30px rgba(163, 230, 53, 0.3)' : 'none',
+                        cursor: 'pointer',
+                        boxShadow: '0 10px 30px rgba(163, 230, 53, 0.3)',
                         transition: 'all 0.3s ease'
                     }}
                 >
                     Continuar a Campos
                     <ChevronRight size={20} />
                 </button>
-            </motion.div>
+            </div>
         </div>
     );
 };

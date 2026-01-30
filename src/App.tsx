@@ -94,6 +94,8 @@ const AppContent: React.FC = () => {
 
   const isRoundPage = location.pathname === '/round';
   const isNotificationsPage = location.pathname === '/notifications';
+  const isPlayFlow = ['/play-mode', '/friend-selection'].includes(location.pathname);
+  const isFixedPage = isRoundPage || isNotificationsPage || isPlayFlow;
 
   return (
     <div
@@ -110,8 +112,8 @@ const AppContent: React.FC = () => {
       {session && <Navbar />}
 
       <main
-        className={`${session ? "page-content container" : ""} ${(isRoundPage || isNotificationsPage) ? 'round-page-content' : ''}`}
-        style={!session ? { flex: 1, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', padding: 0, margin: 0 } : { flex: 1, overflow: (isRoundPage || isNotificationsPage) ? 'hidden' : 'auto' }}
+        className={`${session ? "page-content container" : ""} ${isFixedPage ? 'round-page-content' : ''}`}
+        style={!session ? { flex: 1, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', padding: 0, margin: 0 } : { flex: 1, overflow: isFixedPage ? 'hidden' : 'auto' }}
       >
         <Routes>
           {!session ? (

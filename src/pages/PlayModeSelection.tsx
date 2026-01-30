@@ -1,7 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { User, Users, ChevronRight } from 'lucide-react';
-import { motion } from 'framer-motion';
 import PageHeader from '../components/PageHeader';
 
 const PlayModeSelection: React.FC = () => {
@@ -29,13 +28,13 @@ const PlayModeSelection: React.FC = () => {
     ];
 
     return (
-        <div className="animate-fade" style={{
+        <div style={{
             padding: '20px',
-            paddingTop: 'calc(env(safe-area-inset-top) + 20px)',
-            minHeight: '100dvh',
+            height: '100%',
             background: 'var(--primary)',
             display: 'flex',
-            flexDirection: 'column'
+            flexDirection: 'column',
+            overflow: 'hidden'
         }}>
             <PageHeader
                 title="Modo de Juego"
@@ -47,33 +46,27 @@ const PlayModeSelection: React.FC = () => {
             <div style={{
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '20px',
-                marginTop: '10px',
+                gap: '15px',
+                marginTop: '5px',
                 flex: 1,
-                justifyContent: 'flex-start',
-                paddingTop: '20px'
+                justifyContent: 'flex-start'
             }}>
-                {modes.map((mode, index) => (
-                    <motion.div
+                {modes.map((mode) => (
+                    <div
                         key={mode.id}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.1 }}
                         onClick={() => navigate(mode.path)}
                         style={{
                             background: 'rgba(255, 255, 255, 0.03)',
                             borderRadius: '30px',
-                            padding: '30px',
+                            padding: '25px',
                             border: '1px solid rgba(255, 255, 255, 0.08)',
                             cursor: 'pointer',
                             position: 'relative',
                             overflow: 'hidden',
                             display: 'flex',
                             flexDirection: 'column',
-                            gap: '15px'
+                            gap: '12px'
                         }}
-                        whileHover={{ scale: 1.02, background: 'rgba(255, 255, 255, 0.05)' }}
-                        whileTap={{ scale: 0.98 }}
                     >
                         {/* Background Glow */}
                         <div style={{
@@ -137,19 +130,10 @@ const PlayModeSelection: React.FC = () => {
                         }}>
                             <ChevronRight size={20} />
                         </div>
-                    </motion.div>
+                    </div>
                 ))}
             </div>
 
-            <div style={{
-                textAlign: 'center',
-                padding: '40px 0',
-                opacity: 0.5
-            }}>
-                <p style={{ fontSize: '12px', color: 'var(--text-dim)' }}>
-                    APEG Golf • Elige tu modalidad
-                </p>
-            </div>
         </div>
     );
 };

@@ -221,7 +221,8 @@ button {
 .round-page-content {
   padding-top: var(--header-offset-top) !important;
   padding-bottom: var(--nav-height) !important;
-  height: 100dvh;
+  flex: 1;
+  min-height: 0;
   overflow: hidden;
   display: flex;
   flex-direction: column;
