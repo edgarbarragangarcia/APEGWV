@@ -268,7 +268,7 @@ const ChatModal: React.FC<ChatModalProps> = ({
             <div className="glass" style={{
                 padding: '15px 20px',
                 borderTop: '1px solid rgba(255,255,255,0.05)',
-                paddingBottom: 'calc(15px + env(safe-area-inset-bottom))'
+                paddingBottom: 'calc(15px + var(--nav-height))'
             }}>
                 <form onSubmit={handleSendMessage} style={{ display: 'flex', gap: '10px' }}>
                     <input
