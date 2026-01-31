@@ -167,30 +167,47 @@ const FriendSelection: React.FC = () => {
             }}>
                 {/* Saved Groups Quick Selection */}
                 {savedGroups.length > 0 && (
-                    <div style={{ marginBottom: '20px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                    <div style={{
+                        marginBottom: '25px',
+                        marginLeft: '-20px',
+                        marginRight: '-20px'
+                    }}>
+                        <div style={{ paddingLeft: '20px', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
                             <Star size={16} color="var(--secondary)" fill="var(--secondary)" />
                             <h4 style={{ fontSize: '13px', fontWeight: '800', color: 'white', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Tus Grupos Guardados</h4>
                         </div>
-                        <div style={{ display: 'flex', overflowX: 'auto', gap: '10px', paddingBottom: '5px', scrollbarWidth: 'none' }}>
+                        <div style={{
+                            display: 'flex',
+                            overflowX: 'auto',
+                            gap: '12px',
+                            paddingLeft: '20px',
+                            paddingRight: '20px',
+                            paddingBottom: '8px',
+                            scrollbarWidth: 'none',
+                            WebkitOverflowScrolling: 'touch',
+                            msOverflowStyle: 'none'
+                        }}>
                             {savedGroups.map(group => (
                                 <button
                                     key={group.id}
                                     onClick={() => selectSavedGroup(group)}
                                     style={{
                                         flexShrink: 0,
-                                        background: 'rgba(255, 255, 255, 0.03)',
-                                        border: '1.5px solid rgba(255, 255, 255, 0.1)',
-                                        borderRadius: '16px',
-                                        padding: '10px 15px',
+                                        background: 'rgba(255, 255, 255, 0.04)',
+                                        border: '1.5px solid rgba(255, 255, 255, 0.12)',
+                                        borderRadius: '20px',
+                                        padding: '14px 20px',
                                         color: 'white',
                                         cursor: 'pointer',
                                         textAlign: 'left',
-                                        minWidth: '130px'
+                                        minWidth: '150px',
+                                        transition: 'all 0.2s ease'
                                     }}
+                                    onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.96)'}
+                                    onMouseUp={(e) => e.currentTarget.style.transform = 'scale(1)'}
                                 >
-                                    <p style={{ fontSize: '14px', fontWeight: '700', marginBottom: '2px' }}>{group.name}</p>
-                                    <p style={{ fontSize: '11px', color: 'var(--text-dim)' }}>{group.members.length + 1} jugadores</p>
+                                    <p style={{ fontSize: '15px', fontWeight: '800', marginBottom: '4px', whiteSpace: 'nowrap' }}>{group.name}</p>
+                                    <p style={{ fontSize: '12px', color: 'var(--text-dim)', fontWeight: '500' }}>{group.members.length + 1} jugadores</p>
                                 </button>
                             ))}
                         </div>
