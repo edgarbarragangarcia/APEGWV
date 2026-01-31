@@ -49,7 +49,7 @@ export interface Notification {
     title: string;
     message: string;
     type: string;
-    is_read: boolean;
+    read: boolean;
     created_at: string;
 }
 

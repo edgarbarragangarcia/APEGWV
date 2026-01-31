@@ -29,6 +29,35 @@ const FriendSelection: React.FC = () => {
 
     useEffect(() => {
         fetchSavedGroups();
+
+        // Subscribe to real-time changes
+        let channel: any = null;
+
+        const setupSubscription = async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) return;
+
+            // Subscribe to changes in both tables that affect the user
+            channel = supabase
+                .channel('saved_groups_changes')
+                .on(
+                    'postgres_changes',
+                    { event: '*', schema: 'public', table: 'saved_groups' },
+                    () => fetchSavedGroups()
+                )
+                .on(
+                    'postgres_changes',
+                    { event: '*', schema: 'public', table: 'saved_group_members' },
+                    () => fetchSavedGroups()
+                )
+                .subscribe();
+        };
+
+        setupSubscription();
+
+        return () => {
+            if (channel) supabase.removeChannel(channel);
+        };
     }, []);
 
     const fetchSavedGroups = async () => {

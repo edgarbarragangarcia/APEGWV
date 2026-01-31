@@ -9,7 +9,7 @@ interface NotificationContextType {
     markAllAsRead: () => Promise<void>;
     deleteNotification: (id: string) => Promise<void>;
     deleteAllNotifications: () => Promise<void>;
-    addNotification: (notification: Omit<Notification, 'id' | 'created_at' | 'is_read'>) => Promise<void>;
+    addNotification: (notification: Omit<Notification, 'id' | 'created_at' | 'read'>) => Promise<void>;
 }
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
@@ -96,11 +96,11 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     const markAsRead = async (id: string) => {
         const { error } = await supabase
             .from('notifications')
-            .update({ is_read: true })
+            .update({ read: true })
             .eq('id', id);
 
         if (!error) {
-            setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n));
+            setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
         }
     };
 
@@ -110,12 +110,12 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
         const { error } = await supabase
             .from('notifications')
-            .update({ is_read: true })
+            .update({ read: true })
             .eq('user_id', session.user.id)
-            .eq('is_read', false);
+            .eq('read', false);
 
         if (!error) {
-            setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
+            setNotifications(prev => prev.map(n => ({ ...n, read: true })));
         }
     };
 
@@ -144,7 +144,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
         }
     };
 
-    const addNotification = async (notificationData: Omit<Notification, 'id' | 'created_at' | 'is_read'>) => {
+    const addNotification = async (notificationData: Omit<Notification, 'id' | 'created_at' | 'read'>) => {
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) return;
 
@@ -152,12 +152,12 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
             .from('notifications')
             .insert({
                 ...notificationData,
-                is_read: false,
+                read: false,
                 user_id: session.user.id
             });
     };
 
-    const unreadCount = notifications.filter(n => !n.is_read).length;
+    const unreadCount = notifications.filter(n => !n.read).length;
 
     return (
         <NotificationContext.Provider value={{
