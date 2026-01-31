@@ -482,7 +482,7 @@ export type Database = {
                     price: number
                     seller_id: string | null
                     status: string | null
-                    title: string
+                    name: string
                     size_clothing: string | null
                     size_shoes_us: string | null
                     size_shoes_eu: string | null
@@ -505,7 +505,7 @@ export type Database = {
                     price: number
                     seller_id?: string | null
                     status?: string | null
-                    title: string
+                    name: string
                     size_clothing?: string | null
                     size_shoes_us?: string | null
                     size_shoes_eu?: string | null
@@ -528,7 +528,7 @@ export type Database = {
                     price?: number
                     seller_id?: string | null
                     status?: string | null
-                    title?: string
+                    name?: string
                     size_clothing?: string | null
                     size_shoes_us?: string | null
                     size_shoes_eu?: string | null
@@ -784,7 +784,7 @@ export type Database = {
                     image_url: string | null
                     price: number
                     status: string | null
-                    title: string
+                    name: string
                     address: string | null
                     game_mode: string | null
                     participants_limit: number | null
@@ -799,7 +799,7 @@ export type Database = {
                     image_url?: string | null
                     price: number
                     status?: string | null
-                    title: string
+                    name: string
                     address?: string | null
                     game_mode?: string | null
                     participants_limit?: number | null
@@ -814,7 +814,7 @@ export type Database = {
                     image_url?: string | null
                     price?: number
                     status?: string | null
-                    title?: string
+                    name?: string
                     address?: string | null
                     game_mode?: string | null
                     participants_limit?: number | null

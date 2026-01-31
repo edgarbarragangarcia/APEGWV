@@ -37,12 +37,12 @@ const TournamentParticipants: React.FC = () => {
             // Fetch tournament details
             const { data: tournament, error: tournamentError } = await supabase
                 .from('tournaments')
-                .select('title')
+                .select('name')
                 .eq('id', id || '')
                 .single();
 
             if (tournamentError) throw tournamentError;
-            setTournamentName(tournament.title);
+            setTournamentName(tournament.name);
 
             // Fetch participants registrations
             const { data: registrations, error: regError } = await supabase

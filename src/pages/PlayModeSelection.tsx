@@ -267,7 +267,7 @@ const PlayModeSelection: React.FC = () => {
                                     background: 'rgba(255, 255, 255, 0.03)',
                                     borderRadius: '30px',
                                     padding: '25px',
-                                    border: '1px solid rgba(255, 255, 255, 0.08)',
+                                    border: '1px solid var(--glass-border)',
                                     cursor: 'pointer',
                                     position: 'relative',
                                     overflow: 'hidden',

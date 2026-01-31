@@ -244,7 +244,7 @@ const Shop: React.FC = () => {
         const matchesCategory = activeTab === 'Todo' ||
             prodCategoryNorm === normalize(categoryMapping[activeTab]);
 
-        const matchesSearch = normalize(product.title).includes(searchQuery.toLowerCase()) ||
+        const matchesSearch = normalize(product.name).includes(searchQuery.toLowerCase()) ||
             prodCategoryNorm.includes(searchQuery.toLowerCase());
 
         return matchesCategory && matchesSearch;
@@ -518,7 +518,7 @@ const Shop: React.FC = () => {
                                         }}>
                                             <img
                                                 src={optimizeImage(product.image_url, { width: 400, height: 400 })}
-                                                alt={product.title}
+                                                alt={product.name}
                                                 loading="lazy"
                                                 onError={(e) => {
                                                     const target = e.target as HTMLImageElement;
@@ -601,7 +601,7 @@ const Shop: React.FC = () => {
                                                 lineHeight: '1.2',
                                                 color: 'white'
                                             }}>
-                                                {product.title}
+                                                {product.name}
                                             </h4>
 
                                             <div style={{ marginBottom: 0 }}>
@@ -653,7 +653,7 @@ const Shop: React.FC = () => {
                                             />
                                             <div style={{ flex: 1 }}>
                                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                                                    <h4 style={{ fontSize: '15px', fontWeight: '800' }}>{offer.product?.title}</h4>
+                                                    <h4 style={{ fontSize: '15px', fontWeight: '800' }}>{offer.product?.name}</h4>
                                                     <span style={{
                                                         background: offer.status === 'accepted' ? '#10b981' : (offer.status === 'countered' ? '#3b82f6' : 'rgba(255,255,255,0.1)'),
                                                         padding: '4px 8px', borderRadius: '6px', fontSize: '10px', fontWeight: '900', color: 'white', textTransform: 'uppercase'
@@ -725,7 +725,7 @@ const Shop: React.FC = () => {
                                                 alt=""
                                             />
                                             <div>
-                                                <h4 style={{ fontSize: '15px', fontWeight: '800' }}>{order.product?.title || 'Pedido sin información'}</h4>
+                                                <h4 style={{ fontSize: '15px', fontWeight: '800' }}>{order.product?.name || 'Pedido sin información'}</h4>
                                                 <p style={{ color: 'var(--secondary)', fontWeight: '800' }}>$ {new Intl.NumberFormat('es-CO').format(order.total_amount || 0)}</p>
                                             </div>
                                         </div>
@@ -810,7 +810,7 @@ const Shop: React.FC = () => {
                                 <img
                                     src={optimizeImage(selectedProduct.image_url, { width: 600, height: 800 })}
                                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                    alt={selectedProduct.title}
+                                    alt={selectedProduct.name}
                                 />
                                 {/* Overlay */}
                                 <div style={{
@@ -915,7 +915,7 @@ const Shop: React.FC = () => {
                                         )}
                                     </div>
                                     <h2 style={{ fontSize: '24px', fontWeight: '900', marginBottom: '4px', lineHeight: '1.2', color: 'white', letterSpacing: '-0.02em' }}>
-                                        {selectedProduct.title}
+                                        {selectedProduct.name}
                                     </h2>
                                     <p style={{
                                         fontSize: '28px',
@@ -1169,7 +1169,7 @@ const Shop: React.FC = () => {
                                         />
                                         <div>
                                             <h3 style={{ fontSize: '20px', fontWeight: '900', color: 'white' }}>Nueva Oferta</h3>
-                                            <p style={{ fontSize: '14px', color: 'var(--text-dim)' }}>{selectedProduct.title}</p>
+                                            <p style={{ fontSize: '14px', color: 'var(--text-dim)' }}>{selectedProduct.name}</p>
                                             <p style={{ fontSize: '13px', color: 'var(--secondary)', fontWeight: '800', marginTop: '4px' }}>
                                                 Precio base: $ {new Intl.NumberFormat('es-CO').format(selectedProduct.price)}
                                             </p>
@@ -1269,7 +1269,7 @@ const Shop: React.FC = () => {
                                                     await supabase.from('notifications').insert([{
                                                         user_id: selectedProduct.seller_id,
                                                         title: 'Nueva oferta recibida',
-                                                        message: `Has recibido una oferta de $${new Intl.NumberFormat('es-CO').format(parseFloat(offerAmount))} por ${selectedProduct.title}`,
+                                                        message: `Has recibido una oferta de $${new Intl.NumberFormat('es-CO').format(parseFloat(offerAmount))} por ${selectedProduct.name}`,
                                                         type: 'offer',
                                                         link: '/my-store?tab=offers'
                                                     }]);

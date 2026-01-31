@@ -24,7 +24,7 @@ type Order = Pick<Database['public']['Tables']['orders']['Row'], 'id' | 'created
     shipping_address?: string;
     buyer_name?: string;
     buyer_phone?: string;
-    product: { title: string; image_url: string | null } | null;
+    product: { name: string; image_url: string | null } | null;
     buyer: { full_name: string | null; id_photo_url: string | null; phone: string | null } | null;
 };
 type Offer = Pick<Database['public']['Tables']['offers']['Row'], 'id' | 'created_at' | 'status' | 'amount'> & {
@@ -32,7 +32,7 @@ type Offer = Pick<Database['public']['Tables']['offers']['Row'], 'id' | 'created
     buyer_id: string;
     counter_amount?: number;
     counter_message?: string;
-    product: { id: string; title: string; image_url: string | null; price: number } | null;
+    product: { id: string; name: string; image_url: string | null; price: number } | null;
     buyer: { id: string; full_name: string | null; id_photo_url: string | null } | null;
 };
 
@@ -156,7 +156,7 @@ const MyStore: React.FC = () => {
         try {
             const { data: userOrders, error } = await supabase
                 .from('orders')
-                .select('id, created_at, status, total_amount, tracking_number, tracking_provider, product:products!orders_product_id_fkey(title, image_url), buyer:profiles!orders_buyer_id_fkey(full_name, id_photo_url, phone)')
+                .select('id, created_at, status, total_amount, tracking_number, tracking_provider, product:products!orders_product_id_fkey(name, image_url), buyer:profiles!orders_buyer_id_fkey(full_name, id_photo_url, phone)')
                 .eq('seller_id', userId)
                 .order('created_at', { ascending: false });
 
@@ -185,7 +185,7 @@ const MyStore: React.FC = () => {
         try {
             const { data: userOffers, error: offersError } = await supabase
                 .from('offers')
-                .select('id, created_at, status, amount, buyer_id, product:products(id, title, image_url, price)')
+                .select('id, created_at, status, amount, buyer_id, product:products(id, name, image_url, price)')
 
                 .eq('seller_id', userId)
                 .order('created_at', { ascending: false });
@@ -394,7 +394,7 @@ const MyStore: React.FC = () => {
                 result = await supabase
                     .from('products')
                     .update({
-                        title: formData.name,
+                        name: formData.name,
                         description: formData.description,
                         price: parseFloat(formData.price),
                         category: formData.category,
@@ -418,7 +418,7 @@ const MyStore: React.FC = () => {
                 result = await supabase
                     .from('products')
                     .insert([{
-                        title: formData.name,
+                        name: formData.name,
                         description: formData.description,
                         price: parseFloat(formData.price),
                         category: formData.category,
@@ -481,7 +481,7 @@ const MyStore: React.FC = () => {
     const handleEditClick = (product: Product) => {
         const p = product.price?.toString() || '';
         setFormData({
-            name: product.title,
+            name: product.name,
             description: product.description || '',
             price: p,
             displayPrice: formatPrice(p),
@@ -504,7 +504,7 @@ const MyStore: React.FC = () => {
         setDeleteModal({
             isOpen: true,
             productId: product.id,
-            productName: product.title
+            productName: product.name
         });
     };
 
@@ -620,13 +620,13 @@ const MyStore: React.FC = () => {
 
                 if (status === 'accepted') {
                     title = '¡Oferta Aceptada!';
-                    message = `El vendedor aceptó tu oferta por ${offer.product?.title}. Tienes 1 hora para completar el pago.`;
+                    message = `El vendedor aceptó tu oferta por ${offer.product?.name}. Tienes 1 hora para completar el pago.`;
                 } else if (status === 'countered') {
                     title = 'Nueva Contraoferta';
-                    message = `El vendedor hizo una contraoferta de $${extraData?.counter_amount?.toLocaleString()} por ${offer.product?.title}.`;
+                    message = `El vendedor hizo una contraoferta de $${extraData?.counter_amount?.toLocaleString()} por ${offer.product?.name}.`;
                 } else if (status === 'rejected') {
                     title = 'Oferta Rechazada';
-                    message = `El vendedor rechazó tu oferta por ${offer.product?.title}.`;
+                    message = `El vendedor rechazó tu oferta por ${offer.product?.name}.`;
                 }
 
                 if (title) {
@@ -1429,7 +1429,7 @@ const MyStore: React.FC = () => {
                                                 </div>
                                             </div>
                                             <div style={{ flex: 1 }}>
-                                                <h4 style={{ fontSize: '15px', fontWeight: '800', marginBottom: '4px' }}>{order.product?.title}</h4>
+                                                <h4 style={{ fontSize: '15px', fontWeight: '800', marginBottom: '4px' }}>{order.product?.name}</h4>
                                                 <p style={{ fontSize: '16px', color: 'var(--secondary)', fontWeight: '900' }}>
                                                     {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(order.seller_net_amount || 0)}
                                                     <span style={{ fontSize: '10px', color: 'var(--text-dim)', fontWeight: '600', marginLeft: '5px' }}>NETOS</span>
@@ -1660,7 +1660,7 @@ const MyStore: React.FC = () => {
                                                 </div>
                                             </div>
                                             <div style={{ flex: 1 }}>
-                                                <h4 style={{ fontSize: '15px', fontWeight: '800', marginBottom: '6px' }}>{offer.product?.title}</h4>
+                                                <h4 style={{ fontSize: '15px', fontWeight: '800', marginBottom: '6px' }}>{offer.product?.name}</h4>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                                                     <p style={{ fontSize: '18px', color: 'var(--secondary)', fontWeight: '900' }}>
                                                         {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(offer.amount || 0)}
@@ -2312,7 +2312,7 @@ const MyStore: React.FC = () => {
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
                                 <div>
                                     <h3 style={{ fontSize: '24px', fontWeight: '900', color: 'white', marginBottom: '4px' }}>Enviar Contraoferta</h3>
-                                    <p style={{ fontSize: '14px', color: 'rgba(255,255,255,0.5)' }}>Para {selectedOfferForCounter?.product?.title}</p>
+                                    <p style={{ fontSize: '14px', color: 'rgba(255,255,255,0.5)' }}>Para {selectedOfferForCounter?.product?.name}</p>
                                 </div>
                                 <button
                                     onClick={() => setShowCounterModal(false)}

@@ -12,7 +12,7 @@ interface Tournament {
     name: string;
     description: string | null;
     date: string;
-    club: string;
+    address: string;
     price: number;
     participants_limit: number | null;
     current_participants: number | null;
@@ -40,7 +40,7 @@ const Tournaments: React.FC = () => {
             // Fetch all tournaments
             const { data: allTourneys, error: tError } = await supabase
                 .from('tournaments')
-                .select('id, name, description, date, club, price, participants_limit, current_participants, status, image_url, budget_prizes')
+                .select('id, name, description, date, address, price, participants_limit, current_participants, status, image_url, budget_prizes')
                 .order('date', { ascending: true });
 
             if (tError) throw tError;
@@ -141,7 +141,7 @@ const Tournaments: React.FC = () => {
 
     const filteredTournaments = tournaments.filter(t => {
         const matchesSearch = t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            t.club.toLowerCase().includes(searchQuery.toLowerCase());
+            t.address.toLowerCase().includes(searchQuery.toLowerCase());
 
         if (activeTab === 'my') {
             return matchesSearch && registrations.includes(t.id);
@@ -373,7 +373,7 @@ const Tournaments: React.FC = () => {
                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
                                             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '14px', color: 'rgba(255,255,255,0.7)', fontWeight: '600' }}>
-                                                    <MapPin size={16} color="var(--secondary)" /> {tourney.club}
+                                                    <MapPin size={16} color="var(--secondary)" /> {tourney.address}
                                                 </div>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: 'var(--text-dim)', fontWeight: '500' }}>
                                                     {tourney.budget_prizes && tourney.budget_prizes > 0 ? (
