@@ -105,7 +105,7 @@ const Home: React.FC = () => {
                     userName: (r.user_id ? profilesMap.get(r.user_id)?.full_name : null) || 'Alguien',
                     userImage: (r.user_id ? profilesMap.get(r.user_id)?.id_photo_url : null) || undefined,
                     description: `Se inscribió al torneo`,
-                    itemName: (r.tournaments as any)?.title,
+                    itemName: (r.tournament_id as any)?.title,
                     created_at: r.created_at
                 })) || []),
                 ...(newProducts?.map(p => ({
