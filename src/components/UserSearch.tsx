@@ -68,7 +68,7 @@ const UserSearch: React.FC<UserSearchProps> = ({ onUsersSelected, initialSelecte
     };
 
     return (
-        <div style={{ marginBottom: '20px' }}>
+        <div style={{ marginBottom: '20px', position: 'relative' }}>
             <label style={{ display: 'block', fontSize: '12px', fontWeight: '800', color: 'var(--secondary)', marginBottom: '10px', textTransform: 'uppercase' }}>
                 Invitar Amigos (Opcional)
             </label>
@@ -125,12 +125,14 @@ const UserSearch: React.FC<UserSearchProps> = ({ onUsersSelected, initialSelecte
             {results.length > 0 && (
                 <div style={{
                     marginTop: '8px',
-                    background: 'rgba(15, 47, 31, 0.95)',
+                    background: 'rgba(15, 47, 31, 0.98)',
                     borderRadius: '12px',
                     border: '1px solid rgba(255,255,255,0.1)',
                     overflow: 'hidden',
                     position: 'absolute',
-                    width: 'calc(100% - 40px)',
+                    top: '100%',
+                    left: 0,
+                    right: 0,
                     zIndex: 1000,
                     boxShadow: '0 10px 30px rgba(0,0,0,0.5)'
                 }}>
