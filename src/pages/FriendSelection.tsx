@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronRight, Users } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import PageHeader from '../components/PageHeader';
 import UserSearch from '../components/UserSearch';
 import { useProfile } from '../hooks/useProfile';
@@ -100,18 +100,6 @@ const FriendSelection: React.FC = () => {
                                     {profile?.full_name?.charAt(0) || 'U'}
                                 </div>
                             )}
-                            <div style={{
-                                position: 'absolute',
-                                bottom: '-5px',
-                                right: '-5px',
-                                background: 'var(--primary)',
-                                borderRadius: '50%',
-                                padding: '2px'
-                            }}>
-                                <div style={{ background: '#3b82f6', color: 'white', borderRadius: '50%', padding: '4px' }}>
-                                    <Users size={12} />
-                                </div>
-                            </div>
                         </div>
                         <div>
                             <h4 style={{ fontSize: '18px', fontWeight: '900', color: 'white', margin: 0 }}>Tu Grupo</h4>
