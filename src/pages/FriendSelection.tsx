@@ -39,7 +39,7 @@ const FriendSelection: React.FC = () => {
                     id,
                     name,
                     owner_id,
-                    owner: profiles!saved_groups_owner_id_fkey(id, full_name, email, id_photo_url),
+                    owner:profiles(id, full_name, email, id_photo_url),
                     members: saved_group_members(
                         member_id,
                         profile: profiles(id, full_name, email, id_photo_url)
