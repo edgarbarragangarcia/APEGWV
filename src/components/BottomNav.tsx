@@ -20,17 +20,17 @@ const BottomNav: React.FC = () => {
             width: '100%',
             maxWidth: 'var(--app-max-width)',
             margin: '0 auto',
-            height: 'calc(48px + var(--safe-bottom))',
+            height: 'calc(55px + var(--safe-bottom))',
             display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-around',
+            alignItems: 'stretch',
             zIndex: 1000,
-            padding: '0 10px var(--safe-bottom) 10px',
-            background: 'linear-gradient(135deg, rgba(14, 47, 31, 0.95) 0%, rgba(20, 64, 42, 0.95) 100%)',
+            padding: '0 0 var(--safe-bottom) 0',
+            background: 'linear-gradient(135deg, rgba(14, 47, 31, 0.98) 0%, rgba(20, 64, 42, 0.98) 100%)',
             backdropFilter: 'blur(15px)',
             borderTop: '1px solid rgba(255, 255, 255, 0.1)',
             boxShadow: '0 -4px 20px rgba(0, 0, 0, 0.4)',
-            borderRadius: '20px 20px 0 0'
+            borderRadius: '24px 24px 0 0',
+            overflow: 'hidden'
         }}>
             {navItems.map((item) => (
                 <NavLink
@@ -38,17 +38,56 @@ const BottomNav: React.FC = () => {
                     to={item.path}
                     id={`nav-${item.label.toLowerCase().replace(' ', '-')}`}
                     style={({ isActive }) => ({
+                        flex: 1,
                         display: 'flex',
                         flexDirection: 'column',
                         alignItems: 'center',
+                        justifyContent: 'center',
                         gap: '4px',
                         color: isActive ? 'var(--secondary)' : 'var(--text-dim)',
                         textDecoration: 'none',
-                        transition: 'all 0.3s ease'
+                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                        padding: '6px 0',
+                        position: 'relative'
                     })}
                 >
-                    <item.icon size={24} />
-                    <span style={{ fontSize: '10px', fontWeight: '500', lineHeight: 1 }}>{item.label}</span>
+                    {({ isActive }) => (
+                        <>
+                            <div style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                height: '24px',
+                                transition: 'transform 0.3s ease',
+                                transform: isActive ? 'translateY(-2px)' : 'none'
+                            }}>
+                                <item.icon size={22} strokeWidth={isActive ? 2.5 : 2} />
+                            </div>
+                            <span style={{
+                                fontSize: '9px',
+                                fontWeight: isActive ? '800' : '500',
+                                lineHeight: 1,
+                                whiteSpace: 'nowrap',
+                                textAlign: 'center',
+                                letterSpacing: '0.1px',
+                                transition: 'all 0.3s ease',
+                                opacity: isActive ? 1 : 0.8
+                            }}>
+                                {item.label}
+                            </span>
+                            {isActive && (
+                                <div style={{
+                                    position: 'absolute',
+                                    bottom: '10px',
+                                    width: '4px',
+                                    height: '4px',
+                                    borderRadius: '50%',
+                                    background: 'var(--secondary)',
+                                    boxShadow: '0 0 10px var(--secondary)'
+                                }} />
+                            )}
+                        </>
+                    )}
                 </NavLink>
             ))}
         </nav>
