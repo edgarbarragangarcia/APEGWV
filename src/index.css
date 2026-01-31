@@ -9,7 +9,7 @@
   --bg-card: rgba(30, 30, 30, 0.7);
   --text-main: #FFFFFF;
   --text-dim: rgba(255, 255, 255, 0.6);
-  --glass-border: rgba(255, 255, 255, 0.4);
+  --glass-border: rgba(255, 255, 255, 0.2);
   --glass-bg: rgba(255, 255, 255, 0.05);
   --font-main: 'Outfit', sans-serif;
   --header-height: calc(70px + env(safe-area-inset-top));

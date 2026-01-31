@@ -11,13 +11,18 @@ interface UserProfile {
 
 interface UserSearchProps {
     onUsersSelected: (users: UserProfile[]) => void;
+    initialSelected?: UserProfile[];
 }
 
-const UserSearch: React.FC<UserSearchProps> = ({ onUsersSelected }) => {
+const UserSearch: React.FC<UserSearchProps> = ({ onUsersSelected, initialSelected = [] }) => {
     const [query, setQuery] = useState('');
     const [results, setResults] = useState<UserProfile[]>([]);
-    const [selectedUsers, setSelectedUsers] = useState<UserProfile[]>([]);
+    const [selectedUsers, setSelectedUsers] = useState<UserProfile[]>(initialSelected);
     const [searching, setSearching] = useState(false);
+
+    useEffect(() => {
+        setSelectedUsers(initialSelected);
+    }, [initialSelected]);
 
     useEffect(() => {
         const searchUsers = async () => {
@@ -103,7 +108,8 @@ const UserSearch: React.FC<UserSearchProps> = ({ onUsersSelected }) => {
                 display: 'flex',
                 alignItems: 'center',
                 gap: '12px',
-                border: '1px solid rgba(255,255,255,0.1)'
+                border: '1.5px solid rgba(255,255,255,0.15)',
+                background: 'rgba(0,0,0,0.2)'
             }}>
                 <Search size={18} color="var(--text-dim)" />
                 <input
