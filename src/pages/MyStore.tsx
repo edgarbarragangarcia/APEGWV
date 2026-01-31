@@ -1262,7 +1262,7 @@ const MyStore: React.FC = () => {
                                                             <img
                                                                 src={optimizeImage(product.image_url, { width: 200, height: 200 }) || ''}
                                                                 style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                                                alt={product.title}
+                                                                alt={product.name}
                                                             />
                                                         </div>
                                                         <div style={{
@@ -1292,7 +1292,7 @@ const MyStore: React.FC = () => {
                                                             overflow: 'hidden',
                                                             textOverflow: 'ellipsis',
                                                             whiteSpace: 'nowrap'
-                                                        }}>{product.title}</h3>
+                                                        }}>{product.name}</h3>
 
                                                         <div style={{ display: 'flex', alignItems: 'baseline', gap: '5px', marginBottom: '10px' }}>
                                                             <span style={{ color: 'var(--secondary)', fontWeight: '900', fontSize: '20px' }}>

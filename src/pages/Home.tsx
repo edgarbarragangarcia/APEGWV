@@ -415,17 +415,6 @@ const Home: React.FC = () => {
                     </Card>
                 </div>
 
-                {/* Translucent fade effect at the bottom of the fixed section */}
-                <div style={{
-                    position: 'absolute',
-                    bottom: '-35px',
-                    left: '-20px',
-                    right: '-20px',
-                    height: '35px',
-                    background: 'linear-gradient(to bottom, var(--primary), transparent)',
-                    pointerEvents: 'none',
-                    zIndex: 901
-                }} />
             </div>
         </div>
     );
