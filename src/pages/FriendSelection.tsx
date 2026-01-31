@@ -39,7 +39,6 @@ const FriendSelection: React.FC = () => {
                     id,
                     name,
                     owner_id,
-                    owner:profiles(id, full_name, email, id_photo_url),
                     members: saved_group_members(
                         member_id,
                         profile: profiles(id, full_name, email, id_photo_url)
@@ -114,12 +113,11 @@ const FriendSelection: React.FC = () => {
     };
 
     const selectSavedGroup = (group: any) => {
-        // Collect all potential players (members + owner)
+        // Collect all available profiles from the members join
         const allMembersProfiles = group.members.map((m: any) => m.profile).filter(Boolean);
-        const ownerProfile = group.owner;
 
-        // Combine them
-        const allPlayers = ownerProfile ? [...allMembersProfiles, ownerProfile] : allMembersProfiles;
+        // Combine them (the simplified query only returns members for now to avoid 400 error)
+        const allPlayers = [...allMembersProfiles];
 
         // Filter out the current user because they are already shown separately in the UI
         const friendsOnly = allPlayers.filter((p: any) => p.id !== profile?.id);
