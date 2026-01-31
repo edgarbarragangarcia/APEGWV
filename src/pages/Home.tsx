@@ -283,10 +283,16 @@ const Home: React.FC = () => {
                     </div>
                     <div
                         style={{
-                            display: 'grid',
-                            gridTemplateColumns: '1fr 1fr',
+                            display: 'flex',
                             gap: '15px',
-                            paddingBottom: '10px'
+                            overflowX: 'auto',
+                            overflowY: 'hidden',
+                            paddingBottom: '10px',
+                            scrollSnapType: 'x mandatory',
+                            scrollbarWidth: 'none',
+                            WebkitOverflowScrolling: 'touch',
+                            margin: '0 -20px',
+                            padding: '10px 20px 10px 25px'
                         }}
                     >
                         {featuredProducts.length > 0 ? (
@@ -294,6 +300,9 @@ const Home: React.FC = () => {
                                 <Card
                                     key={product.id}
                                     style={{
+                                        minWidth: '200px',
+                                        width: '200px',
+                                        scrollSnapAlign: 'start',
                                         padding: '0',
                                         position: 'relative',
                                         overflow: 'hidden',
@@ -364,7 +373,7 @@ const Home: React.FC = () => {
                                 </Card>
                             ))
                         ) : (
-                            <div style={{ color: 'var(--text-dim)', fontSize: '14px', padding: '20px 0', gridColumn: 'span 2', textAlign: 'center' }}>No hay productos destacados aún.</div>
+                            <div style={{ color: 'var(--text-dim)', fontSize: '14px', padding: '20px 0', width: '100%', textAlign: 'center' }}>No hay productos destacados aún.</div>
                         )}
                     </div>
                 </div>
