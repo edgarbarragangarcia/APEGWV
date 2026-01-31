@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronRight, Star } from 'lucide-react';
+import { ChevronRight, Star, Trash2 } from 'lucide-react';
 import PageHeader from '../components/PageHeader';
 import UserSearch from '../components/UserSearch';
 import { useProfile } from '../hooks/useProfile';
@@ -126,6 +126,28 @@ const FriendSelection: React.FC = () => {
         setGroupName(group.name);
     };
 
+    const deleteGroup = async (groupId: string, e: React.MouseEvent) => {
+        e.stopPropagation(); // Prevent selecting the group when deleting
+
+        if (!confirm('¿Estás seguro de eliminar este grupo?')) return;
+
+        try {
+            const { error } = await supabase
+                .from('saved_groups' as any)
+                .delete()
+                .eq('id', groupId);
+
+            if (error) throw error;
+
+            // Update local state
+            setSavedGroups(savedGroups.filter(g => g.id !== groupId));
+            success('Grupo eliminado exitosamente');
+        } catch (err) {
+            console.error('Error deleting group:', err);
+            showError('No se pudo eliminar el grupo');
+        }
+    };
+
     return (
         <div style={{
             position: 'fixed',
@@ -196,10 +218,10 @@ const FriendSelection: React.FC = () => {
                             msOverflowStyle: 'none'
                         }}>
                             {savedGroups.map(group => (
-                                <button
+                                <div
                                     key={group.id}
-                                    onClick={() => selectSavedGroup(group)}
                                     style={{
+                                        position: 'relative',
                                         flexShrink: 0,
                                         background: 'rgba(255, 255, 255, 0.04)',
                                         border: '1.5px solid rgba(255, 255, 255, 0.12)',
@@ -211,127 +233,187 @@ const FriendSelection: React.FC = () => {
                                         minWidth: '150px',
                                         transition: 'all 0.2s ease'
                                     }}
-                                    onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.96)'}
-                                    onMouseUp={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                                    onClick={() => selectSavedGroup(group)}
                                 >
-                                    <p style={{ fontSize: '15px', fontWeight: '800', marginBottom: '4px', whiteSpace: 'nowrap' }}>{group.name}</p>
+                                    <button
+                                        onClick={(e) => deleteGroup(group.id, e)}
+                                        style={{
+                                            position: 'absolute',
+                                            top: '8px',
+                                            right: '8px',
+                                            background: 'rgba(220, 38, 38, 0.15)',
+                                            border: '1px solid rgba(220, 38, 38, 0.3)',
+                                            borderRadius: '8px',
+                                            width: '28px',
+                                            height: '28px',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            cursor: 'pointer',
+                                            opacity: 0.7,
+                                            transition: 'all 0.2s ease'
+                                        }}
+                                        onMouseEnter={(e) => {
+                                            e.currentTarget.style.opacity = '1';
+                                            e.currentTarget.style.background = 'rgba(220, 38, 38, 0.25)';
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            e.currentTarget.style.opacity = '0.7';
+                                            e.currentTarget.style.background = 'rgba(220, 38, 38, 0.15)';
+                                        }}
+                                    >
+                                        <Trash2 size={14} color="#dc2626" />
+                                    </button>
+                                    <p style={{ fontSize: '15px', fontWeight: '800', marginBottom: '4px', whiteSpace: 'nowrap', paddingRight: '30px' }}>{group.name}</p>
                                     <p style={{ fontSize: '12px', color: 'var(--text-dim)', fontWeight: '500' }}>{group.members.length + 1} jugadores</p>
-                                </button>
+                                </div>
                             ))}
                         </div>
                     </div>
                 )}
                 <div style={{
                     background: 'rgba(255, 255, 255, 0.03)',
-                    borderRadius: '24px',
+                    borderRadius: '28px',
                     padding: '24px',
                     border: '1.5px solid rgba(255, 255, 255, 0.18)',
                     marginBottom: '20px',
                     boxShadow: '0 10px 40px rgba(0,0,0,0.2)'
                 }}>
-                    {/* Group Name Input */}
-                    <div style={{ marginBottom: '20px' }}>
-                        <label style={{ display: 'block', fontSize: '11px', fontWeight: '800', color: 'var(--secondary)', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '1px' }}>
-                            Nombre del Grupo
-                        </label>
-                        <div style={{
-                            background: 'rgba(0,0,0,0.2)',
-                            border: '1.5px solid rgba(255,255,255,0.15)',
-                            borderRadius: '16px',
-                            padding: '14px 18px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '12px'
-                        }}>
-                            <input
-                                type="text"
-                                placeholder="Ej: Los Amigos del Golf"
-                                value={groupName}
-                                onChange={(e) => setGroupName(e.target.value)}
-                                style={{
-                                    background: 'none',
-                                    border: 'none',
-                                    color: 'white',
-                                    width: '100%',
-                                    outline: 'none',
-                                    fontSize: '16px',
-                                    fontWeight: '600'
-                                }}
-                            />
+                    {/* --- SECCIÓN 1: IDENTIDAD DEL GRUPO --- */}
+                    <div style={{
+                        borderBottom: '1.5px solid rgba(255,255,255,0.08)',
+                        paddingBottom: '20px',
+                        marginBottom: '24px'
+                    }}>
+                        <div style={{ marginBottom: '16px' }}>
+                            <label style={{ display: 'block', fontSize: '11px', fontWeight: '800', color: 'var(--secondary)', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                                Nombre del Grupo
+                            </label>
+                            <div style={{
+                                background: 'rgba(0,0,0,0.25)',
+                                border: '1.5px solid rgba(255,255,255,0.12)',
+                                borderRadius: '18px',
+                                padding: '14px 18px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '12px'
+                            }}>
+                                <input
+                                    type="text"
+                                    placeholder="Ej: Los Amigos del Golf"
+                                    value={groupName}
+                                    onChange={(e) => setGroupName(e.target.value)}
+                                    style={{
+                                        background: 'none',
+                                        border: 'none',
+                                        color: 'white',
+                                        width: '100%',
+                                        outline: 'none',
+                                        fontSize: '17px',
+                                        fontWeight: '600'
+                                    }}
+                                />
+                            </div>
+                        </div>
+
+                        {/* Save Group Toggle - More Subtle */}
+                        <div
+                            onClick={() => setSaveGroup(!saveGroup)}
+                            style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '10px',
+                                cursor: 'pointer',
+                                userSelect: 'none',
+                                padding: '6px 12px',
+                                borderRadius: '10px',
+                                background: saveGroup ? 'rgba(163, 230, 53, 0.1)' : 'transparent',
+                                transition: 'all 0.2s ease'
+                            }}
+                        >
+                            <div style={{
+                                width: '18px',
+                                height: '18px',
+                                borderRadius: '5px',
+                                border: `2px solid ${saveGroup ? 'var(--secondary)' : 'rgba(255,255,255,0.3)'}`,
+                                background: saveGroup ? 'var(--secondary)' : 'transparent',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                transition: 'all 0.2s ease'
+                            }}>
+                                {saveGroup && <div style={{ width: '8px', height: '8px', background: 'var(--primary)', borderRadius: '1.5px' }} />}
+                            </div>
+                            <span style={{ fontSize: '13px', color: saveGroup ? 'white' : 'var(--text-dim)', fontWeight: '600' }}>
+                                Guardar para el futuro
+                            </span>
                         </div>
                     </div>
 
-                    {/* Save Group Toggle */}
-                    <div
-                        onClick={() => setSaveGroup(!saveGroup)}
-                        style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '10px',
-                            marginBottom: '25px',
-                            cursor: 'pointer',
-                            userSelect: 'none'
-                        }}
-                    >
-                        <div style={{
-                            width: '20px',
-                            height: '20px',
-                            borderRadius: '6px',
-                            border: `2px solid ${saveGroup ? 'var(--secondary)' : 'rgba(255,255,255,0.3)'}`,
-                            background: saveGroup ? 'var(--secondary)' : 'transparent',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            transition: 'all 0.2s ease'
-                        }}>
-                            {saveGroup && <div style={{ width: '10px', height: '10px', background: 'var(--primary)', borderRadius: '2px' }} />}
-                        </div>
-                        <span style={{ fontSize: '13px', color: saveGroup ? 'white' : 'var(--text-dim)', fontWeight: '600' }}>
-                            Guardar este grupo para el futuro
-                        </span>
-                    </div>
-
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '25px' }}>
+                    {/* --- SECCIÓN 2: JUGADORES --- */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px' }}>
                         <div style={{ position: 'relative' }}>
                             {profile?.id_photo_url ? (
                                 <img
                                     src={profile.id_photo_url}
                                     alt="Tú"
-                                    style={{ width: '56px', height: '56px', borderRadius: '18px', objectFit: 'cover', border: '2.5px solid var(--secondary)' }}
+                                    style={{
+                                        width: '56px',
+                                        height: '56px',
+                                        borderRadius: '20px',
+                                        objectFit: 'cover',
+                                        border: '2.5px solid var(--secondary)',
+                                        boxShadow: '0 4px 15px rgba(163, 230, 53, 0.3)'
+                                    }}
                                 />
                             ) : (
                                 <div style={{
                                     width: '56px',
                                     height: '56px',
-                                    borderRadius: '18px',
+                                    borderRadius: '20px',
                                     background: 'var(--secondary)',
                                     color: 'var(--primary)',
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
                                     fontSize: '24px',
-                                    fontWeight: '900'
+                                    fontWeight: '900',
+                                    boxShadow: '0 4px 15px rgba(163, 230, 53, 0.3)'
                                 }}>
                                     {profile?.full_name?.charAt(0) || 'U'}
                                 </div>
                             )}
+                            <div style={{
+                                position: 'absolute',
+                                bottom: '-4px',
+                                right: '-4px',
+                                background: 'var(--secondary)',
+                                color: 'var(--primary)',
+                                fontSize: '10px',
+                                fontWeight: '900',
+                                padding: '2px 6px',
+                                borderRadius: '8px',
+                                border: '2px solid var(--primary)'
+                            }}>TÚ</div>
                         </div>
                         <div>
-                            <h4 style={{ fontSize: '18px', fontWeight: '900', color: 'white', margin: 0 }}>{groupName || 'Tu Grupo'}</h4>
-                            <p style={{ fontSize: '13px', color: 'var(--text-dim)', margin: 0 }}>
-                                {selectedFriends.length + 1} de 4 jugadores
-                            </p>
+                            <h4 style={{ fontSize: '18px', fontWeight: '900', color: 'white', margin: '0 0 2px 0', letterSpacing: '-0.5px' }}>
+                                {groupName || 'Tu Grupo'}
+                            </h4>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--secondary)' }}></div>
+                                <p style={{ fontSize: '13px', color: 'var(--text-dim)', margin: 0, fontWeight: '700' }}>
+                                    {selectedFriends.length + 1} de 4 <span style={{ opacity: 0.6, fontWeight: '500' }}>Jugadores</span>
+                                </p>
+                            </div>
                         </div>
                     </div>
 
                     <UserSearch initialSelected={selectedFriends} onUsersSelected={setSelectedFriends} />
                 </div>
 
-
-
-
-
-                <div style={{ paddingBottom: '40px' }}>
+                {/* Botón de Continuar - Dentro del área scrolleable */}
+                <div style={{ padding: '0 0 40px 0' }}>
                     <button
                         onClick={handleContinue}
                         disabled={saving}
