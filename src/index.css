@@ -13,7 +13,7 @@
   --glass-bg: rgba(255, 255, 255, 0.05);
   --font-main: 'Outfit', sans-serif;
   --header-height: calc(70px + env(safe-area-inset-top));
-  --nav-height: calc(80px + env(safe-area-inset-bottom));
+  --nav-height: calc(50px + env(safe-area-inset-bottom));
   --safe-top: env(safe-area-inset-top);
   --safe-bottom: env(safe-area-inset-bottom);
   --app-max-width: 600px;

@@ -20,7 +20,7 @@ const BottomNav: React.FC = () => {
             width: '100%',
             maxWidth: 'var(--app-max-width)',
             margin: '0 auto',
-            height: 'calc(55px + var(--safe-bottom))',
+            height: 'calc(48px + var(--safe-bottom))',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-around',
@@ -29,8 +29,8 @@ const BottomNav: React.FC = () => {
             background: 'linear-gradient(135deg, rgba(14, 47, 31, 0.95) 0%, rgba(20, 64, 42, 0.95) 100%)',
             backdropFilter: 'blur(15px)',
             borderTop: '1px solid rgba(255, 255, 255, 0.1)',
-            boxShadow: '0 -8px 32px rgba(0, 0, 0, 0.4)',
-            borderRadius: '30px 30px 0 0'
+            boxShadow: '0 -4px 20px rgba(0, 0, 0, 0.4)',
+            borderRadius: '20px 20px 0 0'
         }}>
             {navItems.map((item) => (
                 <NavLink
@@ -48,7 +48,7 @@ const BottomNav: React.FC = () => {
                     })}
                 >
                     <item.icon size={24} />
-                    <span style={{ fontSize: '10px', fontWeight: '500' }}>{item.label}</span>
+                    <span style={{ fontSize: '10px', fontWeight: '500', lineHeight: 1 }}>{item.label}</span>
                 </NavLink>
             ))}
         </nav>
