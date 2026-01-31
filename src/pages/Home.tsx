@@ -31,45 +31,6 @@ const Home: React.FC = () => {
     const { data: featuredProducts = [] } = useFeaturedProducts(4);
     const { data: tournaments = [] } = useUpcomingTournaments(3);
 
-    const scrollContainerRef = React.useRef<HTMLDivElement>(null);
-
-    const handleScroll = () => {
-        const container = scrollContainerRef.current;
-        if (!container) return;
-
-        const center = container.getBoundingClientRect().left + container.offsetWidth / 2;
-        const children = container.children;
-
-        for (let i = 0; i < children.length; i++) {
-            const child = children[i] as HTMLElement;
-            const childRect = child.getBoundingClientRect();
-            const childCenter = childRect.left + childRect.width / 2;
-            const distance = Math.abs(center - childCenter);
-            const maxDistance = 200; // Radius of effect
-
-            let scale = 0.9; // Base scale
-            if (distance < maxDistance) {
-                // Calculate increase based on proximity
-                const increase = 0.15 * (1 - (distance / maxDistance));
-                scale += increase;
-            }
-            // Clamp
-            scale = Math.max(0.9, Math.min(1.05, scale));
-
-            child.style.transform = `scale(${scale})`;
-            // child.style.transition = 'transform 0.1s ease-out'; // Commented out to prevent fighting with scroll
-        }
-    };
-
-    useEffect(() => {
-        const container = scrollContainerRef.current;
-        if (container) {
-            container.addEventListener('scroll', handleScroll);
-            // Initial calculation needs a small delay for layout to settle
-            setTimeout(handleScroll, 100);
-        }
-        return () => container?.removeEventListener('scroll', handleScroll);
-    }, [featuredProducts]);
 
     // Fetch Activities with React Query
     const { data: activities = [], refetch: refetchActivities } = useQuery({
@@ -313,110 +274,95 @@ const Home: React.FC = () => {
                         </button>
                     </div>
                     <div
-                        ref={scrollContainerRef}
                         style={{
                             display: 'flex',
-                            gap: '15px',
+                            gap: '12px',
                             overflowX: 'auto',
                             overflowY: 'hidden',
-                            paddingBottom: '20px', // Extra padding for scale effect
-                            paddingTop: '10px',
+                            paddingBottom: '10px',
                             scrollSnapType: 'x mandatory',
                             scrollbarWidth: 'none',
                             WebkitOverflowScrolling: 'touch',
                             margin: '0 -20px',
-                            padding: '10px 20px 20px 20px'
+                            padding: '0 20px 10px 20px'
                         }}
                     >
                         {featuredProducts.length > 0 ? (
                             featuredProducts.map((product, index) => (
-                                <div
+                                <Card
                                     key={product.id}
                                     style={{
                                         minWidth: '160px',
                                         width: '160px',
                                         marginLeft: index === 0 ? '5px' : '0',
-                                        scrollSnapAlign: 'center',
-                                        height: '100%',
+                                        scrollSnapAlign: 'start',
+                                        padding: '0',
+                                        position: 'relative',
+                                        overflow: 'hidden',
+                                        marginBottom: 0,
                                         display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        transition: 'transform 0.1s ease-out', // Smooth scaling
-                                        transformOrigin: 'center center'
+                                        flexDirection: 'column',
                                     }}
+                                    onClick={() => navigate('/shop')}
                                 >
-                                    <Card
-                                        style={{
-                                            width: '100%',
-                                            height: '100%',
-                                            padding: '0',
-                                            position: 'relative',
-                                            overflow: 'hidden',
-                                            marginBottom: 0,
-                                            display: 'flex',
-                                            flexDirection: 'column',
-                                        }}
-                                        onClick={() => navigate('/shop')}
-                                    >
-                                        <div style={{
-                                            position: 'relative',
-                                            width: '100%',
-                                            aspectRatio: '1/1',
-                                            overflow: 'hidden'
-                                        }}>
-                                            <img
-                                                src={product.image_url || undefined}
-                                                alt={product.title}
-                                                style={{
-                                                    width: '100%',
-                                                    height: '100%',
-                                                    objectFit: 'cover'
-                                                }}
-                                            />
-                                            <div style={{
-                                                position: 'absolute',
-                                                top: '8px',
-                                                right: '8px',
-                                                background: 'rgba(0,0,0,0.4)',
-                                                backdropFilter: 'blur(8px)',
-                                                borderRadius: '50%',
-                                                padding: '6px',
-                                                display: 'flex',
-                                                border: '1px solid rgba(255,255,255,0.1)'
-                                            }}>
-                                                <Heart size={14} color="white" />
-                                            </div>
-                                        </div>
-                                        <div style={{ padding: '10px 12px', display: 'flex', flexDirection: 'column', flex: 1 }}>
-                                            <h4 style={{
-                                                fontSize: '15px',
-                                                fontWeight: '800',
-                                                marginBottom: '2px',
-                                                whiteSpace: 'nowrap',
-                                                overflow: 'hidden',
-                                                textOverflow: 'ellipsis',
+                                    <div style={{
+                                        position: 'relative',
+                                        width: '100%',
+                                        aspectRatio: '1/1',
+                                        overflow: 'hidden'
+                                    }}>
+                                        <img
+                                            src={product.image_url || undefined}
+                                            alt={product.title}
+                                            style={{
                                                 width: '100%',
-                                                color: 'white'
+                                                height: '100%',
+                                                objectFit: 'cover'
+                                            }}
+                                        />
+                                        <div style={{
+                                            position: 'absolute',
+                                            top: '8px',
+                                            right: '8px',
+                                            background: 'rgba(0,0,0,0.4)',
+                                            backdropFilter: 'blur(8px)',
+                                            borderRadius: '50%',
+                                            padding: '6px',
+                                            display: 'flex',
+                                            border: '1px solid rgba(255,255,255,0.1)'
+                                        }}>
+                                            <Heart size={14} color="white" />
+                                        </div>
+                                    </div>
+                                    <div style={{ padding: '10px 12px', display: 'flex', flexDirection: 'column', flex: 1 }}>
+                                        <h4 style={{
+                                            fontSize: '15px',
+                                            fontWeight: '800',
+                                            marginBottom: '2px',
+                                            whiteSpace: 'nowrap',
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis',
+                                            width: '100%',
+                                            color: 'white'
+                                        }}>
+                                            {product.title}
+                                        </h4>
+
+                                        <div style={{ marginBottom: '4px' }}>
+                                            <div style={{
+                                                color: 'var(--secondary)',
+                                                fontSize: '13px',
+                                                fontWeight: '900'
                                             }}>
-                                                {product.title}
-                                            </h4>
-
-                                            <div style={{ marginBottom: '4px' }}>
-                                                <div style={{
-                                                    color: 'var(--secondary)',
-                                                    fontSize: '13px',
-                                                    fontWeight: '900'
-                                                }}>
-                                                    {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(product.price)}
-                                                </div>
-                                            </div>
-
-                                            <div style={{ marginTop: 'auto' }}>
-                                                <span style={{ fontSize: '9px', color: 'var(--text-dim)', fontWeight: '600', textTransform: 'uppercase' }}>{product.category}</span>
+                                                {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(product.price)}
                                             </div>
                                         </div>
-                                    </Card>
-                                </div> // Cerrar wrapper
+
+                                        <div style={{ marginTop: 'auto' }}>
+                                            <span style={{ fontSize: '9px', color: 'var(--text-dim)', fontWeight: '600', textTransform: 'uppercase' }}>{product.category}</span>
+                                        </div>
+                                    </div>
+                                </Card>
                             ))
                         ) : (
                             <div style={{ color: 'var(--text-dim)', fontSize: '14px', padding: '20px 0', width: '100%', textAlign: 'center' }}>No hay productos destacados aún.</div>
