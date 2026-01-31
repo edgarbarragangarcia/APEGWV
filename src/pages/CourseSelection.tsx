@@ -162,7 +162,13 @@ const CourseSelection: React.FC = () => {
                 paddingRight: '20px',
                 pointerEvents: 'auto'
             }}>
-                <div style={{ marginBottom: '20px', display: 'flex', gap: '15px', alignItems: 'flex-start' }}>
+                <div style={{ marginBottom: '20px', display: 'flex', gap: '15px', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+                    <div style={{ flex: 1 }}>
+                        <h1 style={{ fontSize: '28px', fontWeight: '900', marginBottom: '5px', color: 'white' }}>
+                            Selecciona <span style={{ color: 'var(--secondary)' }}>tu</span> Campo
+                        </h1>
+                        <p style={{ color: 'var(--text-dim)', fontSize: '14px' }}>Listado oficial de clubes en Colombia</p>
+                    </div>
                     <button
                         onClick={() => navigate(-1)}
                         style={{
@@ -181,12 +187,6 @@ const CourseSelection: React.FC = () => {
                     >
                         <ArrowLeft size={20} />
                     </button>
-                    <div>
-                        <h1 style={{ fontSize: '28px', fontWeight: '900', marginBottom: '5px', color: 'white' }}>
-                            Selecciona <span style={{ color: 'var(--secondary)' }}>tu</span> Campo
-                        </h1>
-                        <p style={{ color: 'var(--text-dim)', fontSize: '14px' }}>Listado oficial de clubes en Colombia</p>
-                    </div>
                 </div>
 
                 <div className="glass" style={{
@@ -239,7 +239,7 @@ const CourseSelection: React.FC = () => {
             {/* Main Content Scroll Area */}
             <div style={{
                 position: 'absolute',
-                top: 'calc(env(safe-area-inset-top) + 290px)',
+                top: 'calc(env(safe-area-inset-top) + 310px)',
                 left: '0',
                 right: '0',
                 bottom: 'calc(var(--nav-height))',
