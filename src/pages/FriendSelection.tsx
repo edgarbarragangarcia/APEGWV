@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronRight, Star, Info } from 'lucide-react';
+import { ChevronRight, Star } from 'lucide-react';
 import PageHeader from '../components/PageHeader';
 import UserSearch from '../components/UserSearch';
 import { useProfile } from '../hooks/useProfile';
@@ -165,6 +165,37 @@ const FriendSelection: React.FC = () => {
                 overflowX: 'hidden',
                 padding: '0 20px 20px 20px'
             }}>
+                {/* Saved Groups Quick Selection */}
+                {savedGroups.length > 0 && (
+                    <div style={{ marginBottom: '20px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                            <Star size={16} color="var(--secondary)" fill="var(--secondary)" />
+                            <h4 style={{ fontSize: '13px', fontWeight: '800', color: 'white', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Tus Grupos Guardados</h4>
+                        </div>
+                        <div style={{ display: 'flex', overflowX: 'auto', gap: '10px', paddingBottom: '5px', scrollbarWidth: 'none' }}>
+                            {savedGroups.map(group => (
+                                <button
+                                    key={group.id}
+                                    onClick={() => selectSavedGroup(group)}
+                                    style={{
+                                        flexShrink: 0,
+                                        background: 'rgba(255, 255, 255, 0.03)',
+                                        border: '1.5px solid rgba(255, 255, 255, 0.1)',
+                                        borderRadius: '16px',
+                                        padding: '10px 15px',
+                                        color: 'white',
+                                        cursor: 'pointer',
+                                        textAlign: 'left',
+                                        minWidth: '130px'
+                                    }}
+                                >
+                                    <p style={{ fontSize: '14px', fontWeight: '700', marginBottom: '2px' }}>{group.name}</p>
+                                    <p style={{ fontSize: '11px', color: 'var(--text-dim)' }}>{group.members.length + 1} jugadores</p>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                )}
                 <div style={{
                     background: 'rgba(255, 255, 255, 0.03)',
                     borderRadius: '24px',
@@ -271,52 +302,9 @@ const FriendSelection: React.FC = () => {
                     <UserSearch initialSelected={selectedFriends} onUsersSelected={setSelectedFriends} />
                 </div>
 
-                {/* Saved Groups Quick Selection */}
-                {savedGroups.length > 0 && (
-                    <div style={{ marginBottom: '25px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '15px' }}>
-                            <Star size={16} color="var(--secondary)" fill="var(--secondary)" />
-                            <h4 style={{ fontSize: '14px', fontWeight: '800', color: 'white', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Tus Grupos Guardados</h4>
-                        </div>
-                        <div style={{ display: 'flex', overflowX: 'auto', gap: '12px', paddingBottom: '10px', scrollbarWidth: 'none' }}>
-                            {savedGroups.map(group => (
-                                <button
-                                    key={group.id}
-                                    onClick={() => selectSavedGroup(group)}
-                                    style={{
-                                        flexShrink: 0,
-                                        background: 'rgba(255, 255, 255, 0.03)',
-                                        border: '1.5px solid rgba(255, 255, 255, 0.1)',
-                                        borderRadius: '18px',
-                                        padding: '12px 18px',
-                                        color: 'white',
-                                        cursor: 'pointer',
-                                        textAlign: 'left',
-                                        minWidth: '140px'
-                                    }}
-                                >
-                                    <p style={{ fontSize: '14px', fontWeight: '700', marginBottom: '4px' }}>{group.name}</p>
-                                    <p style={{ fontSize: '11px', color: 'var(--text-dim)' }}>{group.members.length + 1} jugadores</p>
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-                )}
 
-                <div style={{
-                    background: 'rgba(163, 230, 53, 0.05)',
-                    borderRadius: '18px',
-                    padding: '15px',
-                    border: '1px solid rgba(163, 230, 53, 0.1)',
-                    marginBottom: '30px',
-                    display: 'flex',
-                    gap: '12px'
-                }}>
-                    <Info size={20} color="var(--secondary)" style={{ flexShrink: 0 }} />
-                    <p style={{ fontSize: '12px', color: 'var(--text-dim)', margin: 0, lineHeight: '1.5' }}>
-                        El nombre del grupo aparecerá en el leaderboard y en tu historial de rondas.
-                    </p>
-                </div>
+
+
 
                 <div style={{ paddingBottom: '40px' }}>
                     <button
