@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronRight, Star, Trash2 } from 'lucide-react';
+import { ChevronRight, Star, Trash2, Bookmark } from 'lucide-react';
 import PageHeader from '../components/PageHeader';
 import UserSearch from '../components/UserSearch';
 import { useProfile } from '../hooks/useProfile';
@@ -22,7 +22,6 @@ const FriendSelection: React.FC = () => {
     const [selectedFriends, setSelectedFriends] = useState<UserProfile[]>([]);
     const [groupName, setGroupName] = useState('');
     const [savedGroups, setSavedGroups] = useState<any[]>([]);
-    const [saveGroup, setSaveGroup] = useState(false);
     const [saving, setSaving] = useState(false);
     const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
     const [groupToDelete, setGroupToDelete] = useState<string | null>(null);
@@ -85,69 +84,67 @@ const FriendSelection: React.FC = () => {
         }
     };
 
-    const handleContinue = async () => {
-        if (saveGroup) {
-            if (!groupName.trim()) {
-                showError('Por favor ponle un nombre al grupo para guardarlo');
-                return;
-            }
-            if (selectedFriends.length === 0) {
-                showError('Selecciona al menos un amigo para guardar el grupo');
-                return;
-            }
-
-            setSaving(true);
-            try {
-                const { data: { session } } = await supabase.auth.getSession();
-                if (!session) throw new Error('No session');
-
-                // 1. Create group
-                const { data: group, error: groupError } = await (supabase as any)
-                    .from('saved_groups')
-                    .insert({
-                        name: groupName,
-                        owner_id: session.user.id
-                    })
-                    .select()
-                    .single();
-
-                if (groupError) throw groupError;
-
-                // 2. Add members
-                const membersToInsert = selectedFriends.map(friend => ({
-                    group_id: group.id,
-                    member_id: friend.id
-                }));
-
-                const { error: membersError } = await (supabase as any)
-                    .from('saved_group_members')
-                    .insert(membersToInsert);
-
-                if (membersError) throw membersError;
-
-                // 3. Add to local state immediately for instant visual feedback
-                const newGroupWithMembers = {
-                    id: group.id,
-                    name: group.name,
-                    owner_id: group.owner_id,
-                    members: selectedFriends.map(friend => ({
-                        member_id: friend.id,
-                        profile: friend
-                    }))
-                };
-
-                setSavedGroups([newGroupWithMembers, ...savedGroups]);
-                success('¡Grupo guardado con éxito!');
-            } catch (err) {
-                console.error('Error saving group:', err);
-                showError('Error al guardar el grupo');
-                setSaving(false);
-                return; // Don't navigate if there was an error
-            } finally {
-                setSaving(false);
-            }
+    const handleSaveGroup = async () => {
+        if (!groupName.trim()) {
+            showError('Por favor ponle un nombre al grupo para guardarlo');
+            return;
+        }
+        if (selectedFriends.length === 0) {
+            showError('Selecciona al menos un amigo para guardar el grupo');
+            return;
         }
 
+        setSaving(true);
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) throw new Error('No session');
+
+            // 1. Create group
+            const { data: group, error: groupError } = await (supabase as any)
+                .from('saved_groups')
+                .insert({
+                    name: groupName,
+                    owner_id: session.user.id
+                })
+                .select()
+                .single();
+
+            if (groupError) throw groupError;
+
+            // 2. Add members
+            const membersToInsert = selectedFriends.map(friend => ({
+                group_id: group.id,
+                member_id: friend.id
+            }));
+
+            const { error: membersError } = await (supabase as any)
+                .from('saved_group_members')
+                .insert(membersToInsert);
+
+            if (membersError) throw membersError;
+
+            // 3. Add to local state immediately for instant visual feedback
+            const newGroupWithMembers = {
+                id: group.id,
+                name: group.name,
+                owner_id: group.owner_id,
+                members: selectedFriends.map(friend => ({
+                    member_id: friend.id,
+                    profile: friend
+                }))
+            };
+
+            setSavedGroups([newGroupWithMembers, ...savedGroups]);
+            success('¡Grupo guardado con éxito!');
+        } catch (err) {
+            console.error('Error saving group:', err);
+            showError('Error al guardar el grupo');
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleContinue = async () => {
         // Navigate to course selection with the selected friends and group name
         navigate('/select-course', {
             state: {
@@ -335,79 +332,15 @@ const FriendSelection: React.FC = () => {
                         marginBottom: '20px',
                         boxShadow: '0 10px 40px rgba(0,0,0,0.2)'
                     }}>
-                        {/* --- SECCIÓN 1: IDENTIDAD DEL GRUPO --- */}
+                        {/* --- SECCIÓN 1: JUGADORES --- */}
                         <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '16px',
+                            marginBottom: '24px',
                             borderBottom: '1.5px solid rgba(255,255,255,0.08)',
-                            paddingBottom: '20px',
-                            marginBottom: '24px'
+                            paddingBottom: '24px'
                         }}>
-                            <div style={{ marginBottom: '16px' }}>
-                                <label style={{ display: 'block', fontSize: '11px', fontWeight: '800', color: 'var(--secondary)', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '1px' }}>
-                                    Nombre del Grupo
-                                </label>
-                                <div style={{
-                                    background: 'rgba(0,0,0,0.25)',
-                                    border: '1.5px solid rgba(255,255,255,0.12)',
-                                    borderRadius: '18px',
-                                    padding: '14px 18px',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '12px'
-                                }}>
-                                    <input
-                                        type="text"
-                                        placeholder="Ej: Los Amigos del Golf"
-                                        value={groupName}
-                                        onChange={(e) => setGroupName(e.target.value)}
-                                        style={{
-                                            background: 'none',
-                                            border: 'none',
-                                            color: 'white',
-                                            width: '100%',
-                                            outline: 'none',
-                                            fontSize: '17px',
-                                            fontWeight: '600'
-                                        }}
-                                    />
-                                </div>
-                            </div>
-
-                            {/* Save Group Toggle - More Subtle */}
-                            <div
-                                onClick={() => setSaveGroup(!saveGroup)}
-                                style={{
-                                    display: 'inline-flex',
-                                    alignItems: 'center',
-                                    gap: '10px',
-                                    cursor: 'pointer',
-                                    userSelect: 'none',
-                                    padding: '6px 12px',
-                                    borderRadius: '10px',
-                                    background: saveGroup ? 'rgba(163, 230, 53, 0.1)' : 'transparent',
-                                    transition: 'all 0.2s ease'
-                                }}
-                            >
-                                <div style={{
-                                    width: '18px',
-                                    height: '18px',
-                                    borderRadius: '5px',
-                                    border: `2px solid ${saveGroup ? 'var(--secondary)' : 'rgba(255,255,255,0.3)'}`,
-                                    background: saveGroup ? 'var(--secondary)' : 'transparent',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    transition: 'all 0.2s ease'
-                                }}>
-                                    {saveGroup && <div style={{ width: '8px', height: '8px', background: 'var(--primary)', borderRadius: '1.5px' }} />}
-                                </div>
-                                <span style={{ fontSize: '13px', color: saveGroup ? 'white' : 'var(--text-dim)', fontWeight: '600' }}>
-                                    Guardar para el futuro
-                                </span>
-                            </div>
-                        </div>
-
-                        {/* --- SECCIÓN 2: JUGADORES --- */}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px' }}>
                             <div style={{ position: 'relative' }}>
                                 {profile?.id_photo_url ? (
                                     <img
@@ -465,7 +398,85 @@ const FriendSelection: React.FC = () => {
                             </div>
                         </div>
 
+                        {/* --- SECCIÓN 2: IDENTIDAD DEL GRUPO --- */}
+                        <div style={{
+                            marginBottom: '24px'
+                        }}>
+                            <div style={{ marginBottom: '16px' }}>
+                                <label style={{ display: 'block', fontSize: '11px', fontWeight: '800', color: 'var(--secondary)', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                                    Nombre del Grupo
+                                </label>
+                                <div style={{
+                                    background: 'rgba(0,0,0,0.25)',
+                                    border: '1.5px solid rgba(255,255,255,0.12)',
+                                    borderRadius: '18px',
+                                    padding: '14px 18px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '12px'
+                                }}>
+                                    <input
+                                        type="text"
+                                        placeholder="Ej: Los Amigos del Golf"
+                                        value={groupName}
+                                        onChange={(e) => setGroupName(e.target.value)}
+                                        style={{
+                                            background: 'none',
+                                            border: 'none',
+                                            color: 'white',
+                                            width: '100%',
+                                            outline: 'none',
+                                            fontSize: '17px',
+                                            fontWeight: '600'
+                                        }}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+
+
                         <UserSearch initialSelected={selectedFriends} onUsersSelected={setSelectedFriends} />
+
+                        {/* Standalone Save Group Button */}
+                        <div style={{ marginTop: '16px' }}>
+                            <button
+                                onClick={handleSaveGroup}
+                                disabled={saving}
+                                style={{
+                                    width: '100%',
+                                    background: 'rgba(163, 230, 53, 0.1)',
+                                    border: '1.5px solid rgba(163, 230, 53, 0.3)',
+                                    borderRadius: '16px',
+                                    padding: '12px',
+                                    color: 'var(--secondary)',
+                                    fontSize: '14px',
+                                    fontWeight: '800',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '8px',
+                                    cursor: saving ? 'wait' : 'pointer',
+                                    transition: 'all 0.2s ease',
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.5px'
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.background = 'rgba(163, 230, 53, 0.2)';
+                                    e.currentTarget.style.transform = 'translateY(-1px)';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.background = 'rgba(163, 230, 53, 0.1)';
+                                    e.currentTarget.style.transform = 'translateY(0)';
+                                }}
+                            >
+                                <Bookmark size={16} fill="var(--secondary)" />
+                                {saving ? 'Guardando...' : 'Guardar este Grupo'}
+                            </button>
+                            <p style={{ fontSize: '11px', color: 'var(--text-dim)', textAlign: 'center', marginTop: '8px', fontWeight: '500' }}>
+                                Guarda esta combinación para seleccionarla rápido después
+                            </p>
+                        </div>
                     </div>
 
                     {/* Botón de Continuar - Dentro del área scrolleable */}
