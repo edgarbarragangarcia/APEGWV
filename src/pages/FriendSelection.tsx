@@ -96,11 +96,24 @@ const FriendSelection: React.FC = () => {
 
                 if (membersError) throw membersError;
 
+                // 3. Add to local state immediately for instant visual feedback
+                const newGroupWithMembers = {
+                    id: group.id,
+                    name: group.name,
+                    owner_id: group.owner_id,
+                    members: selectedFriends.map(friend => ({
+                        member_id: friend.id,
+                        profile: friend
+                    }))
+                };
+
+                setSavedGroups([newGroupWithMembers, ...savedGroups]);
                 success('¡Grupo guardado con éxito!');
-                fetchSavedGroups(); // Refresh list
             } catch (err) {
                 console.error('Error saving group:', err);
                 showError('Error al guardar el grupo');
+                setSaving(false);
+                return; // Don't navigate if there was an error
             } finally {
                 setSaving(false);
             }
