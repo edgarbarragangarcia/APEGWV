@@ -144,16 +144,20 @@ const FriendSelection: React.FC = () => {
                 .delete()
                 .eq('id', groupToDelete);
 
-            if (error) throw error;
+            if (error) {
+                console.error('Supabase error:', error);
+                throw error;
+            }
 
             // Update local state
             setSavedGroups(savedGroups.filter(g => g.id !== groupToDelete));
             success('Grupo eliminado exitosamente');
-        } catch (err) {
+        } catch (err: any) {
             console.error('Error deleting group:', err);
-            showError('No se pudo eliminar el grupo');
+            showError(err?.message || 'No se pudo eliminar el grupo');
         } finally {
             setGroupToDelete(null);
+            setDeleteConfirmOpen(false); // Close modal after operation
         }
     };
 

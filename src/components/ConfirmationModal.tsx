@@ -161,10 +161,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                             <motion.button
                                 whileTap={{ scale: 0.95 }}
-                                onClick={() => {
-                                    onConfirm();
-                                    onClose();
-                                }}
+                                onClick={onConfirm}
                                 style={{
                                     width: '100%',
                                     padding: '16px',
