@@ -20,7 +20,7 @@ const BottomNav: React.FC = () => {
             width: '100%',
             maxWidth: 'var(--app-max-width)',
             margin: '0 auto',
-            height: 'calc(70px + var(--safe-bottom))',
+            height: 'calc(55px + var(--safe-bottom))',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-around',
