@@ -188,16 +188,7 @@ const Home: React.FC = () => {
                 </div>
 
                 {/* Translucent fade effect at the bottom of the fixed section */}
-                <div style={{
-                    position: 'absolute',
-                    bottom: '-35px',
-                    left: '-20px',
-                    right: '-20px',
-                    height: '35px',
-                    background: 'linear-gradient(to bottom, var(--primary), transparent)',
-                    pointerEvents: 'none',
-                    zIndex: 901
-                }} />
+
             </div>
 
             {/* Area de Scroll para el resto del contenido */}
@@ -292,7 +283,7 @@ const Home: React.FC = () => {
                             scrollbarWidth: 'none',
                             WebkitOverflowScrolling: 'touch',
                             margin: '0 -20px',
-                            padding: '10px 20px 10px 25px'
+                            padding: '10px 20px 10px 20px'
                         }}
                     >
                         {featuredProducts.length > 0 ? (
@@ -300,8 +291,8 @@ const Home: React.FC = () => {
                                 <Card
                                     key={product.id}
                                     style={{
-                                        minWidth: '200px',
-                                        width: '200px',
+                                        minWidth: '160px',
+                                        width: '160px',
                                         scrollSnapAlign: 'start',
                                         padding: '0',
                                         position: 'relative',
