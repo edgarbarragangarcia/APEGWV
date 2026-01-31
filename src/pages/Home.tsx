@@ -77,7 +77,7 @@ const Home: React.FC = () => {
         queryFn: async () => {
             const { data: registrations } = await supabase
                 .from('tournament_registrations')
-                .select('*, tournaments:tournament_id(title)')
+                .select('*, tournament_id(title)')
                 .order('created_at', { ascending: false })
                 .limit(5);
 
