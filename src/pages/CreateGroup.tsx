@@ -20,7 +20,7 @@ const CreateGroup: React.FC = () => {
 
     const navigate = useNavigate();
     const { data: profile } = useProfile();
-    const { success, error: showError } = useToast();
+    const { error: showError } = useToast();
     const [selectedFriends, setSelectedFriends] = useState<UserProfile[]>(groupToEdit?.members || []);
     const [groupName, setGroupName] = useState(groupToEdit?.name || '');
     const [saving, setSaving] = useState(false);

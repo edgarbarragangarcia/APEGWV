@@ -10,7 +10,7 @@ import ConfirmationModal from '../components/ConfirmationModal';
 const FriendSelection: React.FC = () => {
     const navigate = useNavigate();
     const { data: profile } = useProfile();
-    const { success, error: showError } = useToast();
+    const { error: showError } = useToast();
     const [savedGroups, setSavedGroups] = useState<any[]>([]);
     const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
     const [groupToDelete, setGroupToDelete] = useState<string | null>(null);
