@@ -99,7 +99,7 @@ const Round: React.FC = () => {
 
     // Guardar estado en localStorage cuando cambie
     React.useEffect(() => {
-        if (roundId) {
+        if (roundId && !isSaving) {
             localStorage.setItem('round_current_hole', currentHole.toString());
             localStorage.setItem('round_strokes', JSON.stringify(strokes));
             localStorage.setItem('round_id', roundId);
@@ -295,10 +295,9 @@ const Round: React.FC = () => {
                 (payload) => {
                     if (payload.new && (payload.new as any).status === 'completed') {
                         // The game was finished by someone else
+                        sessionStorage.setItem('game_just_finished', 'true');
                         clearRoundState();
-                        setTimeout(() => {
-                            navigate('/play-mode', { replace: true });
-                        }, 100);
+                        navigate('/play-mode', { replace: true });
                     }
                 }
             )
@@ -321,10 +320,9 @@ const Round: React.FC = () => {
 
                 if (group && (group as any).status === 'completed') {
                     // Safety check: if group is already finished when we join/reload
+                    sessionStorage.setItem('game_just_finished', 'true');
                     clearRoundState();
-                    setTimeout(() => {
-                        navigate('/play-mode', { replace: true });
-                    }, 100);
+                    navigate('/play-mode', { replace: true });
                     return;
                 }
 
@@ -492,23 +490,35 @@ const Round: React.FC = () => {
                 }
             }
 
-            // 3. TRY to mark the ENTIRE group game as completed (might fail due to RLS if not owner)
+            // 3. Mark the ENTIRE group game as completed
             if (groupId) {
                 try {
                     // Update game_groups
-                    await supabase
+                    const { error: groupError } = await supabase
                         .from('game_groups' as any)
                         .update({ status: 'completed' })
                         .eq('id', groupId);
 
+                    if (groupError) {
+                        console.error('Error updating game_groups status:', groupError);
+                        throw new Error(`No se pudo cerrar el juego: ${groupError.message}`);
+                    }
+
                     // Update ALL rounds in this group
-                    await supabase
+                    const { error: roundsError } = await supabase
                         .from('rounds')
                         .update({ status: 'completed' })
                         .eq('group_id', groupId);
+
+                    if (roundsError) {
+                        console.warn('Error updating rounds status:', roundsError);
+                    }
+
+                    console.log('✅ Juego marcado como completado exitosamente');
                 } catch (e) {
-                    // Ignore errors here - RLS might prevent update if not creator
-                    console.warn('Group-wide update failed (expected if not owner):', e);
+                    console.error('❌ Error crítico al cerrar el juego:', e);
+                    // Re-throw el error para que sea manejado por el catch principal
+                    throw e;
                 }
             }
 
@@ -524,9 +534,15 @@ const Round: React.FC = () => {
             navigate('/play-mode', { replace: true });
         } catch (error) {
             console.error('Error al finalizar ronda:', error);
-            // Even if it fails, we should clear the local state to avoid infinity loops
-            // but we alert the user first
-            alert('Se guardó tu progreso local pero hubo un error al sincronizar el final. Se cerrará la partida.');
+
+            // Determinar mensaje de error específico
+            const errorMessage = error instanceof Error
+                ? error.message
+                : 'Error desconocido al finalizar el juego';
+
+            // Mostrar error específico al usuario
+            alert(`Hubo un problema al finalizar el juego:\n\n${errorMessage}\n\nPor favor, intenta nuevamente o contacta a soporte.`);
+
 
             // Set a flag to prevent auto-redirect in PlayModeSelection
             sessionStorage.setItem('game_just_finished', 'true');

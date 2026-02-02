@@ -50,6 +50,7 @@ const PlayModeSelection: React.FC = () => {
                     .from('group_members')
                     .select(`
                         group_id,
+                        status,
                         game_groups!inner(id, course_id, status)
                     `)
                     .eq('user_id', user.id);
@@ -57,11 +58,12 @@ const PlayModeSelection: React.FC = () => {
                 if (error) throw error;
 
                 if (members && members.length > 0) {
-                    // Filter for active games manually to be safe
-                    // We consider 'pending' or 'in_progress' to be active. Only 'completed' is finished.
-                    // Note: TS might complain about nested types, referencing as 'any' for safety inside logic
+                    // Filter for active games where I've ACCEPTED the invitation
+                    // and the game is not yet completed.
                     const activeMember = members.find((m: any) =>
-                        m.game_groups && m.game_groups.status !== 'completed'
+                        m.status === 'accepted' &&
+                        m.game_groups &&
+                        m.game_groups.status !== 'completed'
                     );
 
                     if (activeMember) {
