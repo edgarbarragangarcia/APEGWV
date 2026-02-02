@@ -452,6 +452,21 @@ const Round: React.FC = () => {
                 }
             }
 
+            // 3. Mark the ENTIRE group game as completed (so everyone is kicked out/can't rejoin)
+            if (groupId) {
+                // Update game_groups
+                await supabase
+                    .from('game_groups' as any)
+                    .update({ status: 'completed' })
+                    .eq('id', groupId);
+
+                // Update ALL rounds in this group
+                await supabase
+                    .from('rounds')
+                    .update({ status: 'completed' })
+                    .eq('group_id', groupId);
+            }
+
             if (navigator.vibrate) navigator.vibrate([10, 30, 10]);
             clearRoundState();
             navigate('/rounds');

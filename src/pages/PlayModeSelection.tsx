@@ -2,6 +2,8 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { User, Users, ChevronRight } from 'lucide-react';
 import PageHeader from '../components/PageHeader';
+import { supabase } from '../services/SupabaseManager';
+import { COLOMBIAN_COURSES } from '../data/courses';
 
 const PlayModeSelection: React.FC = () => {
     const navigate = useNavigate();
@@ -25,7 +27,58 @@ const PlayModeSelection: React.FC = () => {
                     groupId: savedGroupId || undefined
                 }
             });
+            return;
         }
+
+        // Check for active group invitations/memberships in Supabase
+        const checkActiveGroup = async () => {
+            try {
+                const { data: { user } } = await supabase.auth.getUser();
+                if (!user) return;
+
+                // Find groups I belong to that are NOT completed
+                // We fetch group_members joined with game_groups
+                const { data: members, error } = await supabase
+                    .from('group_members')
+                    .select(`
+                        group_id,
+                        game_groups!inner(id, course_id, status)
+                    `)
+                    .eq('user_id', user.id);
+
+                if (error) throw error;
+
+                if (members && members.length > 0) {
+                    // Filter for active games manually to be safe
+                    // We consider 'pending' or 'in_progress' to be active. Only 'completed' is finished.
+                    // Note: TS might complain about nested types, referencing as 'any' for safety inside logic
+                    const activeMember = members.find((m: any) =>
+                        m.game_groups && m.game_groups.status !== 'completed'
+                    );
+
+                    if (activeMember) {
+                        const groupData = (activeMember as any).game_groups;
+                        const course = COLOMBIAN_COURSES.find(c => c.id === groupData.course_id);
+
+                        if (course) {
+                            setHasActiveRound(true);
+                            navigate('/round', {
+                                replace: true,
+                                state: {
+                                    course: course,
+                                    groupId: activeMember.group_id
+                                }
+                            });
+                        }
+                    }
+                }
+            } catch (err) {
+                console.error('Error checking active groups:', err);
+            }
+        };
+
+        checkActiveGroup();
+
     }, [navigate]);
 
     // const handleResumeRound was here
