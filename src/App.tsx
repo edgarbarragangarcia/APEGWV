@@ -16,6 +16,7 @@ import Auth from './pages/Auth';
 import CourseSelection from './pages/CourseSelection';
 import PlayModeSelection from './pages/PlayModeSelection';
 import FriendSelection from './pages/FriendSelection';
+import CreateGroup from './pages/CreateGroup';
 import EditProfile from './pages/EditProfile';
 import EditStats from './pages/EditStats';
 import RoundHistory from './pages/RoundHistory';
@@ -94,7 +95,7 @@ const AppContent: React.FC = () => {
 
   const isRoundPage = location.pathname === '/round';
   const isNotificationsPage = location.pathname === '/notifications';
-  const isPlayFlow = ['/play-mode', '/friend-selection'].includes(location.pathname);
+  const isPlayFlow = ['/play-mode', '/friend-selection', '/create-group'].includes(location.pathname);
   const isFixedPage = isRoundPage || isNotificationsPage || isPlayFlow;
 
   return (
@@ -127,6 +128,7 @@ const AppContent: React.FC = () => {
               <Route path="/round" element={<Round />} />
               <Route path="/play-mode" element={<PlayModeSelection />} />
               <Route path="/friend-selection" element={<FriendSelection />} />
+              <Route path="/create-group" element={<CreateGroup />} />
               <Route path="/select-course" element={<CourseSelection />} />
               <Route path="/green-fee" element={<GreenFee />} />
               <Route path="/green-fee/:courseId" element={<CourseReservation />} />
