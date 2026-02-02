@@ -10,6 +10,14 @@ const PlayModeSelection: React.FC = () => {
     const [hasActiveRound, setHasActiveRound] = React.useState(false);
 
     React.useEffect(() => {
+        // Check if user just finished a game - if so, clear the flag and don't redirect
+        const justFinished = sessionStorage.getItem('game_just_finished');
+        if (justFinished === 'true') {
+            sessionStorage.removeItem('game_just_finished');
+            // Don't redirect back to the game
+            return;
+        }
+
         const roundId = localStorage.getItem('round_id');
         const savedCourse = localStorage.getItem('round_course');
         const savedRecorrido = localStorage.getItem('round_recorrido');
@@ -58,6 +66,21 @@ const PlayModeSelection: React.FC = () => {
 
                     if (activeMember) {
                         const groupData = (activeMember as any).game_groups;
+
+                        // Check if I have already completed my round explicitly
+                        const { data: myRound } = await supabase
+                            .from('rounds')
+                            .select('status')
+                            .eq('group_id', activeMember.group_id || '')
+                            .eq('user_id', user.id)
+                            .eq('status', 'completed')
+                            .maybeSingle();
+
+                        if (myRound) {
+                            // I have finished my round, so I shouldn't be redirected back
+                            return;
+                        }
+
                         const course = COLOMBIAN_COURSES.find(c => c.id === groupData.course_id);
 
                         if (course) {

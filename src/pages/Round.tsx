@@ -256,7 +256,7 @@ const Round: React.FC = () => {
                     // When any hole score changes, we re-sum the scores for that user
                     // For efficiency, we can find which round this hole belongs to
                     const newHole = payload.new as any;
-                    if (!newHole) return;
+                    if (!newHole?.round_id) return;
 
                     // Fetch the round to see if it belongs to our group
                     const { data: round } = await supabase
@@ -278,15 +278,55 @@ const Round: React.FC = () => {
         };
     }, [groupId]);
 
+    // 4. Realtime subscription for group status (to know when someone else finishes the game)
+    React.useEffect(() => {
+        if (!groupId) return;
+
+        const channel = supabase
+            .channel(`group-status-${groupId}`)
+            .on(
+                'postgres_changes',
+                {
+                    event: 'UPDATE',
+                    schema: 'public',
+                    table: 'game_groups',
+                    filter: `id=eq.${groupId}`
+                },
+                (payload) => {
+                    if (payload.new && (payload.new as any).status === 'completed') {
+                        // The game was finished by someone else
+                        clearRoundState();
+                        setTimeout(() => {
+                            navigate('/play-mode', { replace: true });
+                        }, 100);
+                    }
+                }
+            )
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }, [groupId, navigate]);
+
     // Fetch course details if missing (for invited members joining via notification)
     React.useEffect(() => {
         if (!course && groupId) {
             const fetchCourseFromGroup = async () => {
                 const { data: group } = await supabase
                     .from('game_groups' as any)
-                    .select('course_id')
+                    .select('course_id, status')
                     .eq('id', groupId)
                     .single();
+
+                if (group && (group as any).status === 'completed') {
+                    // Safety check: if group is already finished when we join/reload
+                    clearRoundState();
+                    setTimeout(() => {
+                        navigate('/play-mode', { replace: true });
+                    }, 100);
+                    return;
+                }
 
                 if (group && (group as any).course_id) {
                     const found = COLOMBIAN_COURSES.find((c: GolfCourse) => c.id === (group as any).course_id);
@@ -295,7 +335,7 @@ const Round: React.FC = () => {
             };
             fetchCourseFromGroup();
         }
-    }, [course, groupId]);
+    }, [course, groupId, navigate]);
 
     const handleStrokeChange = (change: number) => {
         const newScore = Math.max(0, (strokes[currentHole] || 0) + change);
@@ -452,27 +492,51 @@ const Round: React.FC = () => {
                 }
             }
 
-            // 3. Mark the ENTIRE group game as completed (so everyone is kicked out/can't rejoin)
+            // 3. TRY to mark the ENTIRE group game as completed (might fail due to RLS if not owner)
             if (groupId) {
-                // Update game_groups
-                await supabase
-                    .from('game_groups' as any)
-                    .update({ status: 'completed' })
-                    .eq('id', groupId);
+                try {
+                    // Update game_groups
+                    await supabase
+                        .from('game_groups' as any)
+                        .update({ status: 'completed' })
+                        .eq('id', groupId);
 
-                // Update ALL rounds in this group
-                await supabase
-                    .from('rounds')
-                    .update({ status: 'completed' })
-                    .eq('group_id', groupId);
+                    // Update ALL rounds in this group
+                    await supabase
+                        .from('rounds')
+                        .update({ status: 'completed' })
+                        .eq('group_id', groupId);
+                } catch (e) {
+                    // Ignore errors here - RLS might prevent update if not creator
+                    console.warn('Group-wide update failed (expected if not owner):', e);
+                }
             }
 
             if (navigator.vibrate) navigator.vibrate([10, 30, 10]);
+
+            // Set a flag to prevent auto-redirect in PlayModeSelection
+            sessionStorage.setItem('game_just_finished', 'true');
+
+            // Clear localStorage
             clearRoundState();
-            navigate('/rounds');
+
+            // Navigate immediately
+            navigate('/play-mode', { replace: true });
         } catch (error) {
             console.error('Error al finalizar ronda:', error);
-            alert('Error al guardar los datos finales.');
+            // Even if it fails, we should clear the local state to avoid infinity loops
+            // but we alert the user first
+            alert('Se guardó tu progreso local pero hubo un error al sincronizar el final. Se cerrará la partida.');
+
+            // Set a flag to prevent auto-redirect in PlayModeSelection
+            sessionStorage.setItem('game_just_finished', 'true');
+
+            // Clear localStorage
+            clearRoundState();
+
+            // Navigate immediately
+            navigate('/play-mode', { replace: true });
+        } finally {
             setIsSaving(false);
         }
     };
