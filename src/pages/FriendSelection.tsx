@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronRight, Plus, Trash2, Users, Pencil } from 'lucide-react';
+import { ChevronRight, Plus, Trash2, Users, Pencil, Check } from 'lucide-react';
 import PageHeader from '../components/PageHeader';
 import { useProfile } from '../hooks/useProfile';
 import { supabase } from '../services/SupabaseManager';
@@ -14,6 +14,7 @@ const FriendSelection: React.FC = () => {
     const [savedGroups, setSavedGroups] = useState<any[]>([]);
     const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
     const [groupToDelete, setGroupToDelete] = useState<string | null>(null);
+    const [showSuccess, setShowSuccess] = useState(false);
 
     useEffect(() => {
         fetchSavedGroups();
@@ -126,7 +127,11 @@ const FriendSelection: React.FC = () => {
 
             // Update local state
             setSavedGroups(savedGroups.filter(g => g.id !== groupToDelete));
-            success('Grupo eliminado exitosamente');
+
+            // Show centered success overlay
+            setShowSuccess(true);
+            setTimeout(() => setShowSuccess(false), 2000);
+
         } catch (err: any) {
             console.error('Error deleting group:', err);
             showError(err?.message || 'No se pudo eliminar el grupo');
@@ -151,6 +156,69 @@ const FriendSelection: React.FC = () => {
                 background: 'var(--primary)',
                 zIndex: 500
             }} className="animate-fade">
+
+                {/* Success Overlay */}
+                {showSuccess && (
+                    <div style={{
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        background: 'rgba(0, 0, 0, 0.7)',
+                        backdropFilter: 'blur(5px)',
+                        zIndex: 2000,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        animation: 'fadeIn 0.2s ease-out'
+                    }}>
+                        <div style={{
+                            background: '#0f3a22',
+                            border: '2px solid var(--secondary)',
+                            borderRadius: '30px',
+                            padding: '40px',
+                            textAlign: 'center',
+                            maxWidth: '85%',
+                            width: '320px',
+                            boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
+                            transform: 'scale(1)',
+                            animation: 'scaleIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
+                        }}>
+                            <div style={{
+                                width: '80px',
+                                height: '80px',
+                                borderRadius: '50%',
+                                background: 'var(--secondary)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                margin: '0 auto 20px auto',
+                                boxShadow: '0 0 30px rgba(163, 230, 53, 0.4)'
+                            }}>
+                                <Check size={40} color="var(--primary)" strokeWidth={4} />
+                            </div>
+
+                            <h2 style={{
+                                fontSize: '24px',
+                                fontWeight: '900',
+                                color: 'white',
+                                marginBottom: '10px',
+                                lineHeight: '1.2'
+                            }}>
+                                ¡Grupo Eliminado!
+                            </h2>
+
+                            <p style={{
+                                fontSize: '15px',
+                                color: 'rgba(255,255,255,0.8)',
+                                marginBottom: '0'
+                            }}>
+                                El grupo ha sido eliminado correctamente.
+                            </p>
+                        </div>
+                    </div>
+                )}
 
                 {/* Header Fijo */}
                 <div style={{
