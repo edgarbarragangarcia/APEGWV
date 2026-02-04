@@ -782,7 +782,7 @@ const Round: React.FC = () => {
                     {[
                         { label: 'Eagle', diff: -2, color: '#f59e0b' },
                         { label: 'Birdie', diff: -1, color: 'var(--secondary)' },
-                        { label: 'Par', diff: 0, color: 'white' },
+                        { label: 'Par', diff: 0, color: '#60a5fa' },
                         { label: 'Bogey', diff: 1, color: '#f87171' },
                         { label: 'D.Bogey', diff: 2, color: '#ef4444' }
                     ].map((item) => {
