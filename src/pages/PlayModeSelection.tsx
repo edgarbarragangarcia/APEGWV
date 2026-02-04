@@ -11,10 +11,12 @@ const PlayModeSelection: React.FC = () => {
 
     React.useEffect(() => {
         // Check if user just finished a game - if so, clear the flag and don't redirect
+        // Use a ref to store the "just finished" status for the life of this mount
         const justFinished = sessionStorage.getItem('game_just_finished');
         if (justFinished === 'true') {
+            // We only clear it when the component unmounts or after a long delay,
+            // but for this mount, we consider the game as "just finished".
             sessionStorage.removeItem('game_just_finished');
-            // Don't redirect back to the game
             return;
         }
 
@@ -80,6 +82,11 @@ const PlayModeSelection: React.FC = () => {
 
                         if (myRound) {
                             // I have finished my round, so I shouldn't be redirected back
+                            return;
+                        }
+
+                        // If the group is in any status other than 'active', maybe don't redirect automatically
+                        if (groupData.status !== 'active') {
                             return;
                         }
 

@@ -96,6 +96,8 @@ const Round: React.FC = () => {
     const [groupScores, setGroupScores] = React.useState<Record<string, number>>({});
     const [isLeaderboardOpen, setIsLeaderboardOpen] = React.useState(false);
     const [currentUserId, setCurrentUserId] = React.useState<string | null>(null);
+    const hasNavigatedRef = React.useRef(false);
+    const realtimeTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
     // Guardar estado en localStorage cuando cambie
     React.useEffect(() => {
@@ -312,7 +314,10 @@ const Round: React.FC = () => {
                         setGameEndedMessage({ userName, action: actionText });
 
                         // Wait for user to see the message, then navigate
-                        setTimeout(() => {
+                        if (realtimeTimeoutRef.current) clearTimeout(realtimeTimeoutRef.current);
+                        realtimeTimeoutRef.current = setTimeout(() => {
+                            if (hasNavigatedRef.current) return;
+                            hasNavigatedRef.current = true;
                             sessionStorage.setItem('game_just_finished', 'true');
                             clearRoundState();
                             navigate('/play-mode', { replace: true });
@@ -323,6 +328,7 @@ const Round: React.FC = () => {
             .subscribe();
 
         return () => {
+            if (realtimeTimeoutRef.current) clearTimeout(realtimeTimeoutRef.current);
             supabase.removeChannel(channel);
         };
     }, [groupId, navigate]);
@@ -491,14 +497,17 @@ const Round: React.FC = () => {
             setIsSaving(false);
             setShowCancelModal(false);
 
-            // Set a flag to prevent auto-redirect in PlayModeSelection
-            sessionStorage.setItem('game_just_finished', 'true');
+            if (!hasNavigatedRef.current) {
+                hasNavigatedRef.current = true;
+                // Set a flag to prevent auto-redirect in PlayModeSelection
+                sessionStorage.setItem('game_just_finished', 'true');
 
-            // Clear localStorage
-            clearRoundState();
+                // Clear localStorage
+                clearRoundState();
 
-            // Navigate immediately
-            navigate('/play-mode', { replace: true });
+                // Navigate immediately
+                navigate('/play-mode', { replace: true });
+            }
         }
     };
 
@@ -593,16 +602,20 @@ const Round: React.FC = () => {
                 }
             }
 
+
             if (navigator.vibrate) navigator.vibrate([10, 30, 10]);
 
-            // Set a flag to prevent auto-redirect in PlayModeSelection
-            sessionStorage.setItem('game_just_finished', 'true');
+            if (!hasNavigatedRef.current) {
+                hasNavigatedRef.current = true;
+                // Set a flag to prevent auto-redirect in PlayModeSelection
+                sessionStorage.setItem('game_just_finished', 'true');
 
-            // Clear localStorage
-            clearRoundState();
+                // Clear localStorage
+                clearRoundState();
 
-            // Navigate immediately
-            navigate('/play-mode', { replace: true });
+                // Navigate immediately
+                navigate('/play-mode', { replace: true });
+            }
         } catch (error) {
             console.error('Error al finalizar ronda:', error);
 
@@ -615,14 +628,17 @@ const Round: React.FC = () => {
             alert(`Hubo un problema al finalizar el juego:\n\n${errorMessage}\n\nPor favor, intenta nuevamente o contacta a soporte.`);
 
 
-            // Set a flag to prevent auto-redirect in PlayModeSelection
-            sessionStorage.setItem('game_just_finished', 'true');
+            if (!hasNavigatedRef.current) {
+                hasNavigatedRef.current = true;
+                // Set a flag to prevent auto-redirect in PlayModeSelection
+                sessionStorage.setItem('game_just_finished', 'true');
 
-            // Clear localStorage
-            clearRoundState();
+                // Clear localStorage
+                clearRoundState();
 
-            // Navigate immediately
-            navigate('/play-mode', { replace: true });
+                // Navigate immediately
+                navigate('/play-mode', { replace: true });
+            }
         } finally {
             setIsSaving(false);
         }
