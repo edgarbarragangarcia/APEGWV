@@ -103,24 +103,6 @@ const CourseSelection: React.FC = () => {
 
                 if (memberError) throw memberError;
 
-                // 3. Create notifications for invited friends
-                if (validFriends.length > 0) {
-                    const userName = profile?.full_name || user?.email || 'Un amigo';
-                    const notifications = validFriends.map((f: any) => ({
-                        user_id: f.id,
-                        type: 'game_invitation',
-                        title: '¡Te han invitado a jugar!',
-                        message: `${userName} te ha invitado a una partida en ${course.club}`,
-                        link: `/round?group_id=${groupData.id}`,
-                        read: false
-                    }));
-
-                    const { error: notifError } = await supabase
-                        .from('notifications')
-                        .insert(notifications);
-
-                    if (notifError) console.error('Error sending invitations:', notifError);
-                }
 
                 // 4. Update game status to 'active' now that we're starting the game
                 const { error: statusError } = await supabase
