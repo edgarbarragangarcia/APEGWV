@@ -91,29 +91,50 @@ export type Database = {
                 Row: {
                     code: string
                     created_at: string
-                    discount_amount: number
+                    description: string | null
+                    discount_type: string
+                    discount_value: number
                     id: string
                     is_active: boolean | null
+                    min_purchase_amount: number | null
                     product_id: string | null
                     seller_id: string
+                    start_date: string | null
+                    end_date: string | null
+                    usage_limit: number | null
+                    usage_count: number | null
                 }
                 Insert: {
                     code: string
                     created_at?: string
-                    discount_amount: number
+                    description?: string | null
+                    discount_type: string
+                    discount_value: number
                     id?: string
                     is_active?: boolean | null
+                    min_purchase_amount?: number | null
                     product_id?: string | null
                     seller_id: string
+                    start_date?: string | null
+                    end_date?: string | null
+                    usage_limit?: number | null
+                    usage_count?: number | null
                 }
                 Update: {
                     code?: string
                     created_at?: string
-                    discount_amount?: number
+                    description?: string | null
+                    discount_type?: string
+                    discount_value?: number
                     id?: string
                     is_active?: boolean | null
+                    min_purchase_amount?: number | null
                     product_id?: string | null
                     seller_id?: string
+                    start_date?: string | null
+                    end_date?: string | null
+                    usage_limit?: number | null
+                    usage_count?: number | null
                 }
                 Relationships: [
                     {

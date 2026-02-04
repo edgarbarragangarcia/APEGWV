@@ -660,7 +660,6 @@ const MyStore: React.FC = () => {
                 code: couponFormData.code.toUpperCase(),
                 discount_type: couponFormData.discount_type,
                 discount_value: parseFloat(couponFormData.discount_value),
-                discount_amount: parseFloat(couponFormData.discount_value),
                 usage_limit: couponFormData.usage_limit ? parseInt(couponFormData.usage_limit) : null,
                 min_purchase_amount: couponFormData.min_purchase_amount ? parseFloat(couponFormData.min_purchase_amount) : 0,
                 is_active: couponFormData.is_active,
