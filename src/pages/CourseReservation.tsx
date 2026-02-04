@@ -1,16 +1,44 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MapPin, ChevronRight, CheckCircle2, Loader2 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '../services/SupabaseManager';
 import PageHeader from '../components/PageHeader';
 
 const CourseReservation: React.FC = () => {
     const navigate = useNavigate();
+    const { courseId } = useParams<{ courseId: string }>();
+    const [course, setCourse] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
     const [selectedDate, setSelectedDate] = useState<number | null>(null);
     const [selectedTime, setSelectedTime] = useState<string | null>(null);
     const [isReserved, setIsReserved] = useState(false);
     const [isPaymentProcessing, setIsPaymentProcessing] = useState(false);
+
+    React.useEffect(() => {
+        const fetchCourse = async () => {
+            if (!courseId) return;
+            setLoading(true);
+            try {
+                // Si el ID es un UUID, buscamos por ID, si no (caso legacy o slug), podría fallar o buscar por otro campo
+                // Pero en GreenFee.tsx ya pasamos el ID real de Supabase.
+                const { data, error } = await supabase
+                    .from('golf_courses')
+                    .select('*')
+                    .eq('id', courseId)
+                    .single();
+
+                if (data && !error) {
+                    setCourse(data);
+                }
+            } catch (err) {
+                console.error("Error fetching course:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchCourse();
+    }, [courseId]);
 
     const dates = [
         { day: 'Lun', num: 19 },
@@ -43,14 +71,19 @@ const CourseReservation: React.FC = () => {
 
             const { data: { session } } = await supabase.auth.getSession();
 
-            if (session) {
+            if (session && course) {
+                // Determinar si hoy es fin de semana para el precio
+                const today = new Date().getDay();
+                const isWeekend = today === 0 || today === 6;
+                const reservationPrice = isWeekend ? (course.price_weekend || 0) : (course.price_weekday || 0);
+
                 const { error } = await supabase.from('reservations').insert({
                     user_id: session.user.id,
-                    course_id: 'briceno-18', // Hardcoded for now based on context
-                    date: selectedDate?.toString() || '',
+                    course_id: course.id,
+                    date: `2026-01-${selectedDate?.toString().padStart(2, '0')}`, // Formato fecha ISO simple
                     time: selectedTime || '',
                     players_count: 1,
-                    price: 0,
+                    price: reservationPrice,
                     status: 'confirmed'
                 });
 
@@ -109,272 +142,298 @@ const CourseReservation: React.FC = () => {
                 padding: '0 20px 40px 20px',
                 overflowX: 'hidden'
             }}>
-                {/* Hero Section */}
-                <div style={{
-                    position: 'relative',
-                    height: '250px',
-                    borderRadius: '25px',
-                    overflow: 'hidden',
-                    marginBottom: '30px',
-                    boxShadow: '0 20px 40px rgba(0,0,0,0.4)'
-                }}>
-                    <img
-                        src="/images/briceno18.png"
-                        alt="Briceño 18"
-                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                    />
-                    <div style={{
-                        position: 'absolute',
-                        bottom: 0,
-                        left: 0,
-                        right: 0,
-                        padding: '30px 20px',
-                        background: 'linear-gradient(transparent, rgba(14, 47, 31, 0.9))',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '5px'
-                    }}>
-                        <h1 style={{ fontSize: '28px', color: 'white', fontWeight: '900' }}>
-                            Briceño <span style={{ color: 'var(--secondary)' }}>18</span>
-                        </h1>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: 'rgba(255,255,255,0.8)', fontSize: '14px' }}>
-                            <MapPin size={14} />
-                            <span>Km 18 Autopista Norte, Briceño</span>
-                        </div>
+                {loading ? (
+                    <div style={{ display: 'flex', justifyContent: 'center', padding: '100px 0' }}>
+                        <div className="spinner" style={{ borderTopColor: 'var(--secondary)' }}></div>
                     </div>
-                </div>
-
-                {/* Date Selection */}
-                <div style={{ marginBottom: '30px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-                        <h3 style={{ fontSize: '18px', fontWeight: '900', color: 'white' }}>
-                            Seleccionar <span style={{ color: 'var(--secondary)' }}>Fecha</span>
-                        </h3>
-                        <span style={{ fontSize: '14px', color: 'var(--secondary)' }}>Enero 2026</span>
-                    </div>
-                    <div style={{
-                        display: 'flex',
-                        gap: '12px',
-                        overflowX: 'auto',
-                        paddingBottom: '10px',
-                        scrollbarWidth: 'none'
-                    }}>
-                        {dates.map((date) => (
-                            <motion.button
-                                key={date.num}
-                                whileTap={{ scale: 0.9 }}
-                                onClick={() => setSelectedDate(date.num)}
-                                style={{
-                                    minWidth: '60px',
-                                    height: '80px',
-                                    borderRadius: '15px',
-                                    background: selectedDate === date.num ? 'var(--secondary)' : 'rgba(255,255,255,0.05)',
-                                    color: selectedDate === date.num ? 'var(--bg-dark)' : 'var(--text-main)',
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    gap: '5px',
-                                    border: 'none',
-                                    flexShrink: 0,
-                                    cursor: 'pointer',
-                                    transition: 'all 0.3s ease'
-                                }}
-                            >
-                                <span style={{ fontSize: '12px', fontWeight: '500', opacity: 0.7 }}>{date.day}</span>
-                                <span style={{ fontSize: '18px', fontWeight: '700' }}>{date.num}</span>
-                            </motion.button>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Time Selection */}
-                <div style={{ marginBottom: '100px' }}>
-                    <h3 style={{ fontSize: '18px', fontWeight: '900', color: 'white', marginBottom: '15px' }}>
-                        Horarios <span style={{ color: 'var(--secondary)' }}>Disponibles</span>
-                    </h3>
-                    <div style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(3, 1fr)',
-                        gap: '12px'
-                    }}>
-                        {timeSlots.map((time) => (
-                            <motion.button
-                                key={time}
-                                whileTap={{ scale: 0.95 }}
-                                onClick={() => setSelectedTime(time)}
-                                style={{
-                                    padding: '12px',
-                                    borderRadius: '12px',
-                                    background: selectedTime === time ? 'rgba(163, 230, 53, 0.2)' : 'rgba(255,255,255,0.05)',
-                                    color: selectedTime === time ? 'var(--secondary)' : 'var(--text-main)',
-                                    border: selectedTime === time ? '1px solid var(--secondary)' : '1px solid rgba(255,255,255,0.1)',
-                                    fontSize: '13px',
-                                    fontWeight: '600',
-                                    cursor: 'pointer',
-                                    transition: 'all 0.3s ease'
-                                }}
-                            >
-                                {time}
-                            </motion.button>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Modal de Confirmación */}
-                <AnimatePresence>
-                    {isReserved && (
+                ) : course ? (
+                    <>
+                        {/* Hero Section */}
                         <div style={{
-                            position: 'fixed',
-                            inset: 0,
-                            zIndex: 1000,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            padding: '20px',
-                            background: 'rgba(0,0,0,0.6)',
-                            backdropFilter: 'blur(5px)'
+                            position: 'relative',
+                            height: '250px',
+                            borderRadius: '25px',
+                            overflow: 'hidden',
+                            marginBottom: '30px',
+                            boxShadow: '0 20px 40px rgba(0,0,0,0.4)'
                         }}>
-                            <motion.div
-                                initial={{ scale: 0.9, opacity: 0, y: 50 }}
-                                animate={{ scale: 1, opacity: 1, y: 0 }}
-                                exit={{ scale: 0.9, opacity: 0, y: 50 }}
-                                className="glass"
-                                style={{
-                                    width: '100%',
-                                    maxWidth: '340px',
-                                    padding: '30px',
-                                    background: 'var(--primary)',
-                                    borderRadius: '30px',
-                                    textAlign: 'center',
-                                    border: '1px solid rgba(255,255,255,0.1)',
-                                    boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
-                                }}
-                            >
-                                <div style={{
-                                    width: '70px',
-                                    height: '70px',
-                                    background: 'rgba(163, 230, 53, 0.1)',
-                                    borderRadius: '50%',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    margin: '0 auto 20px',
-                                    color: 'var(--secondary)'
-                                }}>
-                                    <CheckCircle2 size={32} />
+                            <img
+                                src={course.image_url || '/images/briceno18.png'}
+                                alt={course.name}
+                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                            />
+                            <div style={{
+                                position: 'absolute',
+                                bottom: 0,
+                                left: 0,
+                                right: 0,
+                                padding: '30px 20px',
+                                background: 'linear-gradient(transparent, rgba(14, 47, 31, 0.9))',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: '5px'
+                            }}>
+                                <h1 style={{ fontSize: '28px', color: 'white', fontWeight: '900' }}>
+                                    {course.name.split(' ')[0]} <span style={{ color: 'var(--secondary)' }}>{course.name.split(' ').slice(1).join(' ')}</span>
+                                </h1>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: 'rgba(255,255,255,0.8)', fontSize: '14px' }}>
+                                    <MapPin size={14} />
+                                    <span>{course.address || course.location}</span>
                                 </div>
+                            </div>
+                        </div>
 
-                                <h2 style={{ fontSize: '22px', fontWeight: '900', color: 'white', marginBottom: '10px' }}>
-                                    ¡Reserva <span style={{ color: 'var(--secondary)' }}>Lista</span>!
-                                </h2>
-
-                                <div style={{
-                                    background: 'rgba(255,255,255,0.05)',
-                                    borderRadius: '20px',
-                                    padding: '15px',
-                                    marginBottom: '25px',
-                                    textAlign: 'left'
-                                }}>
-                                    <div style={{ fontSize: '13px', color: 'var(--text-dim)', marginBottom: '5px' }}>Campo</div>
-                                    <div style={{ fontWeight: '600', marginBottom: '10px' }}>Briceño 18</div>
-                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                                        <div>
-                                            <div style={{ fontSize: '13px', color: 'var(--text-dim)', marginBottom: '5px' }}>Fecha</div>
-                                            <div style={{ fontWeight: '600' }}>{selectedDate} Enero</div>
-                                        </div>
-                                        <div>
-                                            <div style={{ fontSize: '13px', color: 'var(--text-dim)', marginBottom: '5px' }}>Hora</div>
-                                            <div style={{ fontWeight: '600' }}>{selectedTime}</div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div style={{ display: 'flex', gap: '10px' }}>
-                                    <button
-                                        onClick={() => setIsReserved(false)}
+                        {/* Date Selection */}
+                        <div style={{ marginBottom: '30px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+                                <h3 style={{ fontSize: '18px', fontWeight: '900', color: 'white' }}>
+                                    Seleccionar <span style={{ color: 'var(--secondary)' }}>Fecha</span>
+                                </h3>
+                                <span style={{ fontSize: '14px', color: 'var(--secondary)' }}>Enero 2026</span>
+                            </div>
+                            <div style={{
+                                display: 'flex',
+                                gap: '12px',
+                                overflowX: 'auto',
+                                paddingBottom: '10px',
+                                scrollbarWidth: 'none'
+                            }}>
+                                {dates.map((date) => (
+                                    <motion.button
+                                        key={date.num}
+                                        whileTap={{ scale: 0.9 }}
+                                        onClick={() => setSelectedDate(date.num)}
                                         style={{
-                                            flex: 1,
-                                            padding: '15px',
+                                            minWidth: '60px',
+                                            height: '80px',
                                             borderRadius: '15px',
-                                            background: 'rgba(255,255,255,0.05)',
-                                            color: 'white',
-                                            fontWeight: '700',
-                                            fontSize: '14px',
-                                            border: '1px solid rgba(255,255,255,0.1)'
+                                            background: selectedDate === date.num ? 'var(--secondary)' : 'rgba(255,255,255,0.05)',
+                                            color: selectedDate === date.num ? 'var(--bg-dark)' : 'var(--text-main)',
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            gap: '5px',
+                                            border: 'none',
+                                            flexShrink: 0,
+                                            cursor: 'pointer',
+                                            transition: 'all 0.3s ease'
                                         }}
                                     >
-                                        Editar
-                                    </button>
-                                    <button
-                                        onClick={handlePayment}
-                                        disabled={isPaymentProcessing}
+                                        <span style={{ fontSize: '12px', fontWeight: '500', opacity: 0.7 }}>{date.day}</span>
+                                        <span style={{ fontSize: '18px', fontWeight: '700' }}>{date.num}</span>
+                                    </motion.button>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Time Selection */}
+                        <div style={{ marginBottom: '100px' }}>
+                            <h3 style={{ fontSize: '18px', fontWeight: '900', color: 'white', marginBottom: '15px' }}>
+                                Horarios <span style={{ color: 'var(--secondary)' }}>Disponibles</span>
+                            </h3>
+                            <div style={{
+                                display: 'grid',
+                                gridTemplateColumns: 'repeat(3, 1fr)',
+                                gap: '12px'
+                            }}>
+                                {timeSlots.map((time) => (
+                                    <motion.button
+                                        key={time}
+                                        whileTap={{ scale: 0.95 }}
+                                        onClick={() => setSelectedTime(time)}
                                         style={{
-                                            flex: 1,
+                                            padding: '12px',
+                                            borderRadius: '12px',
+                                            background: selectedTime === time ? 'rgba(163, 230, 53, 0.2)' : 'rgba(255,255,255,0.05)',
+                                            color: selectedTime === time ? 'var(--secondary)' : 'var(--text-main)',
+                                            border: selectedTime === time ? '1px solid var(--secondary)' : '1px solid rgba(255,255,255,0.1)',
+                                            fontSize: '13px',
+                                            fontWeight: '600',
+                                            cursor: 'pointer',
+                                            transition: 'all 0.3s ease'
+                                        }}
+                                    >
+                                        {time}
+                                    </motion.button>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Modal de Confirmación */}
+                        <AnimatePresence>
+                            {isReserved && (
+                                <div style={{
+                                    position: 'fixed',
+                                    inset: 0,
+                                    zIndex: 1000,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    padding: '20px',
+                                    background: 'rgba(0,0,0,0.6)',
+                                    backdropFilter: 'blur(5px)'
+                                }}>
+                                    <motion.div
+                                        initial={{ scale: 0.9, opacity: 0, y: 50 }}
+                                        animate={{ scale: 1, opacity: 1, y: 0 }}
+                                        exit={{ scale: 0.9, opacity: 0, y: 50 }}
+                                        className="glass"
+                                        style={{
+                                            width: '100%',
+                                            maxWidth: '340px',
+                                            padding: '30px',
+                                            background: 'var(--primary)',
+                                            borderRadius: '30px',
+                                            textAlign: 'center',
+                                            border: '1px solid rgba(255,255,255,0.1)',
+                                            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
+                                        }}
+                                    >
+                                        <div style={{
+                                            width: '70px',
+                                            height: '70px',
+                                            background: 'rgba(163, 230, 53, 0.1)',
+                                            borderRadius: '50%',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            margin: '0 auto 20px',
+                                            color: 'var(--secondary)'
+                                        }}>
+                                            <CheckCircle2 size={32} />
+                                        </div>
+
+                                        <h2 style={{ fontSize: '22px', fontWeight: '900', color: 'white', marginBottom: '10px' }}>
+                                            ¡Reserva <span style={{ color: 'var(--secondary)' }}>Lista</span>!
+                                        </h2>
+
+                                        <div style={{
+                                            background: 'rgba(255,255,255,0.05)',
+                                            borderRadius: '20px',
                                             padding: '15px',
-                                            borderRadius: '15px',
+                                            marginBottom: '25px',
+                                            textAlign: 'left'
+                                        }}>
+                                            <div style={{ fontSize: '13px', color: 'var(--text-dim)', marginBottom: '5px' }}>Campo</div>
+                                            <div style={{ fontWeight: '600', marginBottom: '10px' }}>Briceño 18</div>
+                                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                                                <div>
+                                                    <div style={{ fontSize: '13px', color: 'var(--text-dim)', marginBottom: '5px' }}>Fecha</div>
+                                                    <div style={{ fontWeight: '600' }}>{selectedDate} Enero</div>
+                                                </div>
+                                                <div>
+                                                    <div style={{ fontSize: '13px', color: 'var(--text-dim)', marginBottom: '5px' }}>Hora</div>
+                                                    <div style={{ fontWeight: '600' }}>{selectedTime}</div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div style={{ display: 'flex', gap: '10px' }}>
+                                            <button
+                                                onClick={() => setIsReserved(false)}
+                                                style={{
+                                                    flex: 1,
+                                                    padding: '15px',
+                                                    borderRadius: '15px',
+                                                    background: 'rgba(255,255,255,0.05)',
+                                                    color: 'white',
+                                                    fontWeight: '700',
+                                                    fontSize: '14px',
+                                                    border: '1px solid rgba(255,255,255,0.1)'
+                                                }}
+                                            >
+                                                Editar
+                                            </button>
+                                            <button
+                                                onClick={handlePayment}
+                                                disabled={isPaymentProcessing}
+                                                style={{
+                                                    flex: 1,
+                                                    padding: '15px',
+                                                    borderRadius: '15px',
+                                                    background: 'var(--secondary)',
+                                                    color: 'var(--primary)',
+                                                    fontWeight: '800',
+                                                    fontSize: '14px',
+                                                    display: 'flex',
+                                                    justifyContent: 'center',
+                                                    alignItems: 'center',
+                                                    opacity: isPaymentProcessing ? 0.7 : 1
+                                                }}
+                                            >
+                                                {isPaymentProcessing ? (
+                                                    <Loader2 className="animate-spin" size={20} />
+                                                ) : (
+                                                    'Pagar Ahora'
+                                                )}
+                                            </button>
+                                        </div>
+                                    </motion.div>
+                                </div>
+                            )}
+                        </AnimatePresence>
+
+                        {/* Footer Action */}
+                        <AnimatePresence>
+                            {!isReserved && selectedDate && selectedTime && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: 20 }}
+                                    style={{
+                                        marginTop: '40px',
+                                        marginBottom: '40px',
+                                        width: '100%'
+                                    }}
+                                >
+                                    <button
+                                        className="btn-primary"
+                                        style={{
+                                            width: '100%',
+                                            height: '60px',
                                             background: 'var(--secondary)',
                                             color: 'var(--primary)',
+                                            borderRadius: '20px',
                                             fontWeight: '800',
-                                            fontSize: '14px',
+                                            fontSize: '18px',
                                             display: 'flex',
-                                            justifyContent: 'center',
                                             alignItems: 'center',
-                                            opacity: isPaymentProcessing ? 0.7 : 1
+                                            justifyContent: 'center',
+                                            gap: '10px'
                                         }}
+                                        onClick={handleReserve}
                                     >
-                                        {isPaymentProcessing ? (
-                                            <Loader2 className="animate-spin" size={20} />
-                                        ) : (
-                                            'Pagar Ahora'
-                                        )}
+                                        Reservar Salida <ChevronRight />
                                     </button>
-                                </div>
-                            </motion.div>
-                        </div>
-                    )}
-                </AnimatePresence>
-
-                {/* Footer Action */}
-                <AnimatePresence>
-                    {!isReserved && selectedDate && selectedTime && (
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: 20 }}
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                        {/* Final del Área de Scroll */}
+                    </>
+                ) : (
+                    <div style={{ textAlign: 'center', padding: '100px 20px', color: 'var(--text-dim)' }}>
+                        <Loader2 className="animate-spin" size={48} style={{ opacity: 0.3, marginBottom: '15px' }} />
+                        <p>No se pudo cargar la información del campo. ID: {courseId}</p>
+                        <button
+                            onClick={() => navigate(-1)}
                             style={{
-                                marginTop: '40px',
-                                marginBottom: '40px',
-                                width: '100%'
+                                marginTop: '20px',
+                                padding: '10px 20px',
+                                background: 'var(--secondary)',
+                                color: 'var(--primary)',
+                                borderRadius: '10px',
+                                border: 'none',
+                                fontWeight: '700'
                             }}
                         >
-                            <button
-                                className="btn-primary"
-                                style={{
-                                    width: '100%',
-                                    height: '60px',
-                                    background: 'var(--secondary)',
-                                    color: 'var(--primary)',
-                                    borderRadius: '20px',
-                                    fontWeight: '800',
-                                    fontSize: '18px',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    gap: '10px'
-                                }}
-                                onClick={handleReserve}
-                            >
-                                Reservar Salida <ChevronRight />
-                            </button>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
-                {/* Final del Área de Scroll */}
+                            Volver
+                        </button>
+                    </div>
+                )}
             </div>
         </div>
     );
-
 };
 
 export default CourseReservation;

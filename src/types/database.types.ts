@@ -96,11 +96,6 @@ export type Database = {
                     is_active: boolean | null
                     product_id: string | null
                     seller_id: string
-                    discount_type: 'percentage' | 'fixed'
-                    discount_value: number
-                    usage_limit: number | null
-                    min_purchase_amount: number
-                    usage_count: number
                 }
                 Insert: {
                     code: string
@@ -110,11 +105,6 @@ export type Database = {
                     is_active?: boolean | null
                     product_id?: string | null
                     seller_id: string
-                    discount_type?: 'percentage' | 'fixed'
-                    discount_value?: number
-                    usage_limit?: number | null
-                    min_purchase_amount?: number
-                    usage_count?: number
                 }
                 Update: {
                     code?: string
@@ -124,11 +114,6 @@ export type Database = {
                     is_active?: boolean | null
                     product_id?: string | null
                     seller_id?: string
-                    discount_type?: 'percentage' | 'fixed'
-                    discount_value?: number
-                    usage_limit?: number | null
-                    min_purchase_amount?: number
-                    usage_count?: number
                 }
                 Relationships: [
                     {
@@ -136,6 +121,38 @@ export type Database = {
                         columns: ["product_id"]
                         isOneToOne: false
                         referencedRelation: "products"
+                        referencedColumns: ["id"]
+                    },
+                ]
+            }
+            course_blocked_days: {
+                Row: {
+                    blocked_date: string
+                    course_id: string | null
+                    created_at: string | null
+                    id: string
+                    reason: string | null
+                }
+                Insert: {
+                    blocked_date: string
+                    course_id?: string | null
+                    created_at?: string | null
+                    id?: string
+                    reason?: string | null
+                }
+                Update: {
+                    blocked_date?: string
+                    course_id?: string | null
+                    created_at?: string | null
+                    id?: string
+                    reason?: string | null
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "course_blocked_days_course_id_fkey"
+                        columns: ["course_id"]
+                        isOneToOne: false
+                        referencedRelation: "golf_courses"
                         referencedColumns: ["id"]
                     },
                 ]
@@ -170,6 +187,44 @@ export type Database = {
                 }
                 Relationships: []
             }
+            course_price_overrides: {
+                Row: {
+                    course_id: string | null
+                    created_at: string | null
+                    end_date: string
+                    id: string
+                    note: string | null
+                    price: number
+                    start_date: string
+                }
+                Insert: {
+                    course_id?: string | null
+                    created_at?: string | null
+                    end_date: string
+                    id?: string
+                    note?: string | null
+                    price: number
+                    start_date: string
+                }
+                Update: {
+                    course_id?: string | null
+                    created_at?: string | null
+                    end_date?: string
+                    id?: string
+                    note?: string | null
+                    price?: number
+                    start_date?: string
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "course_price_overrides_course_id_fkey"
+                        columns: ["course_id"]
+                        isOneToOne: false
+                        referencedRelation: "golf_courses"
+                        referencedColumns: ["id"]
+                    },
+                ]
+            }
             game_groups: {
                 Row: {
                     course_id: string | null
@@ -190,6 +245,57 @@ export type Database = {
                     created_at?: string
                     created_by?: string | null
                     id?: string
+                    status?: string | null
+                }
+                Relationships: []
+            }
+            golf_courses: {
+                Row: {
+                    address: string | null
+                    caddy_included: boolean | null
+                    created_at: string | null
+                    description: string | null
+                    holes: number | null
+                    id: string
+                    image_url: string | null
+                    location: string | null
+                    name: string
+                    price_weekday: number | null
+                    price_weekend: number | null
+                    rating: number | null
+                    source: string | null
+                    status: string | null
+                }
+                Insert: {
+                    address?: string | null
+                    caddy_included?: boolean | null
+                    created_at?: string | null
+                    description?: string | null
+                    holes?: number | null
+                    id?: string
+                    image_url?: string | null
+                    location?: string | null
+                    name: string
+                    price_weekday?: number | null
+                    price_weekend?: number | null
+                    rating?: number | null
+                    source?: string | null
+                    status?: string | null
+                }
+                Update: {
+                    address?: string | null
+                    caddy_included?: boolean | null
+                    created_at?: string | null
+                    description?: string | null
+                    holes?: number | null
+                    id?: string
+                    image_url?: string | null
+                    location?: string | null
+                    name?: string
+                    price_weekday?: number | null
+                    price_weekend?: number | null
+                    rating?: number | null
+                    source?: string | null
                     status?: string | null
                 }
                 Relationships: []
@@ -269,8 +375,8 @@ export type Database = {
                 Row: {
                     created_at: string | null
                     id: string
-                    read: boolean | null
                     message: string
+                    read: boolean | null
                     title: string
                     type: string
                     user_id: string | null
@@ -278,8 +384,8 @@ export type Database = {
                 Insert: {
                     created_at?: string | null
                     id?: string
-                    read?: boolean | null
                     message: string
+                    read?: boolean | null
                     title: string
                     type: string
                     user_id?: string | null
@@ -287,8 +393,8 @@ export type Database = {
                 Update: {
                     created_at?: string | null
                     id?: string
-                    read?: boolean | null
                     message?: string
+                    read?: boolean | null
                     title?: string
                     type?: string
                     user_id?: string | null
@@ -298,39 +404,39 @@ export type Database = {
             offers: {
                 Row: {
                     amount: number
-                    created_at: string | null
-                    id: string
-                    product_id: string | null
-                    status: string | null
                     buyer_id: string | null
-                    message: string | null
                     counter_amount: number | null
                     counter_message: string | null
+                    created_at: string | null
+                    id: string
+                    message: string | null
+                    product_id: string | null
                     seller_id: string | null
+                    status: string | null
                 }
                 Insert: {
                     amount: number
-                    created_at?: string | null
-                    id?: string
-                    product_id?: string | null
-                    status?: string | null
                     buyer_id?: string | null
-                    message?: string | null
                     counter_amount?: number | null
                     counter_message?: string | null
+                    created_at?: string | null
+                    id?: string
+                    message?: string | null
+                    product_id?: string | null
                     seller_id?: string | null
+                    status?: string | null
                 }
                 Update: {
                     amount?: number
-                    created_at?: string | null
-                    id?: string
-                    product_id?: string | null
-                    status?: string | null
                     buyer_id?: string | null
-                    message?: string | null
                     counter_amount?: number | null
                     counter_message?: string | null
+                    created_at?: string | null
+                    id?: string
+                    message?: string | null
+                    product_id?: string | null
                     seller_id?: string | null
+                    status?: string | null
                 }
                 Relationships: [
                     {
@@ -384,48 +490,48 @@ export type Database = {
             orders: {
                 Row: {
                     buyer_id: string
+                    buyer_name: string | null
+                    buyer_phone: string | null
                     created_at: string
                     id: string
                     seller_id: string
+                    seller_net_amount: number
+                    shipping_address: string | null
                     status: string
                     total_amount: number
                     tracking_number: string | null
                     tracking_provider: string | null
-                    seller_net_amount: number
-                    shipping_address: string | null
-                    buyer_name: string | null
-                    buyer_phone: string | null
                     updated_at: string | null
                 }
                 Insert: {
                     buyer_id: string
+                    buyer_name?: string | null
+                    buyer_phone?: string | null
                     created_at?: string
                     id?: string
                     seller_id: string
+                    seller_net_amount: number
+                    shipping_address?: string | null
                     status?: string
                     total_amount: number
                     tracking_number?: string | null
                     tracking_provider?: string | null
-                    seller_net_amount?: number
-                    shipping_address?: string | null
-                    buyer_name?: string | null
-                    buyer_phone?: string | null
-                    updated_at?: string
+                    updated_at?: string | null
                 }
                 Update: {
                     buyer_id?: string
+                    buyer_name?: string | null
+                    buyer_phone?: string | null
                     created_at?: string
                     id?: string
                     seller_id?: string
+                    seller_net_amount?: number
+                    shipping_address?: string | null
                     status?: string
                     total_amount?: number
                     tracking_number?: string | null
                     tracking_provider?: string | null
-                    seller_net_amount?: number
-                    shipping_address?: string | null
-                    buyer_name?: string | null
-                    buyer_phone?: string | null
-                    updated_at?: string
+                    updated_at?: string | null
                 }
                 Relationships: [
                     {
@@ -474,72 +580,72 @@ export type Database = {
             products: {
                 Row: {
                     category: string
+                    clothing_type: string | null
                     condition: string
                     created_at: string | null
                     description: string
                     id: string
                     image_url: string
-                    price: number
-                    seller_id: string | null
-                    status: string | null
-                    name: string
-                    size_clothing: string | null
-                    size_shoes_us: string | null
-                    size_shoes_eu: string | null
-                    size_shoes_col: string | null
-                    size_shoes_cm: string | null
-                    clothing_type: string | null
                     is_negotiable: boolean
-                    stock_quantity: number | null
-                    updated_at: string | null
+                    name: string
                     negotiating_buyer_id: string | null
                     negotiation_expires_at: string | null
+                    price: number
+                    seller_id: string | null
+                    size_clothing: string | null
+                    size_shoes_cm: string | null
+                    size_shoes_col: string | null
+                    size_shoes_eu: string | null
+                    size_shoes_us: string | null
+                    status: string | null
+                    stock_quantity: number | null
+                    updated_at: string | null
                 }
                 Insert: {
                     category: string
+                    clothing_type?: string | null
                     condition: string
                     created_at?: string | null
                     description: string
                     id?: string
                     image_url: string
-                    price: number
-                    seller_id?: string | null
-                    status?: string | null
-                    name: string
-                    size_clothing?: string | null
-                    size_shoes_us?: string | null
-                    size_shoes_eu?: string | null
-                    size_shoes_col?: string | null
-                    size_shoes_cm?: string | null
-                    clothing_type?: string | null
                     is_negotiable?: boolean
-                    stock_quantity?: number
-                    updated_at?: string
+                    name: string
                     negotiating_buyer_id?: string | null
                     negotiation_expires_at?: string | null
+                    price: number
+                    seller_id?: string | null
+                    size_clothing?: string | null
+                    size_shoes_cm?: string | null
+                    size_shoes_col?: string | null
+                    size_shoes_eu?: string | null
+                    size_shoes_us?: string | null
+                    status?: string | null
+                    stock_quantity?: number | null
+                    updated_at?: string | null
                 }
                 Update: {
                     category?: string
+                    clothing_type?: string | null
                     condition?: string
                     created_at?: string | null
                     description?: string
                     id?: string
                     image_url?: string
-                    price?: number
-                    seller_id?: string | null
-                    status?: string | null
-                    name?: string
-                    size_clothing?: string | null
-                    size_shoes_us?: string | null
-                    size_shoes_eu?: string | null
-                    size_shoes_col?: string | null
-                    size_shoes_cm?: string | null
-                    clothing_type?: string | null
                     is_negotiable?: boolean
-                    stock_quantity?: number
-                    updated_at?: string
+                    name?: string
                     negotiating_buyer_id?: string | null
                     negotiation_expires_at?: string | null
+                    price?: number
+                    seller_id?: string | null
+                    size_clothing?: string | null
+                    size_shoes_cm?: string | null
+                    size_shoes_col?: string | null
+                    size_shoes_eu?: string | null
+                    size_shoes_us?: string | null
+                    status?: string | null
+                    stock_quantity?: number | null
+                    updated_at?: string | null
                 }
                 Relationships: []
             }
@@ -742,86 +848,6 @@ export type Database = {
                     },
                 ]
             }
-            tournament_registrations: {
-                Row: {
-                    created_at: string | null
-                    id: string
-                    status: string | null
-                    tournament_id: string | null
-                    user_id: string | null
-                }
-                Insert: {
-                    created_at?: string | null
-                    id?: string
-                    status?: string | null
-                    tournament_id?: string | null
-                    user_id?: string | null
-                }
-                Update: {
-                    created_at?: string | null
-                    id?: string
-                    status?: string | null
-                    tournament_id?: string | null
-                    user_id?: string | null
-                }
-                Relationships: [
-                    {
-                        foreignKeyName: "tournament_registrations_tournament_id_fkey"
-                        columns: ["tournament_id"]
-                        isOneToOne: false
-                        referencedRelation: "tournaments"
-                        referencedColumns: ["id"]
-                    },
-                ]
-            }
-            tournaments: {
-                Row: {
-                    course_id: string | null
-                    created_at: string | null
-                    date: string
-                    description: string
-                    id: string
-                    image_url: string | null
-                    price: number
-                    status: string | null
-                    name: string
-                    address: string | null
-                    game_mode: string | null
-                    participants_limit: number | null
-                    creator_id: string | null
-                }
-                Insert: {
-                    course_id?: string | null
-                    created_at?: string | null
-                    date: string
-                    description: string
-                    id?: string
-                    image_url?: string | null
-                    price: number
-                    status?: string | null
-                    name: string
-                    address?: string | null
-                    game_mode?: string | null
-                    participants_limit?: number | null
-                    creator_id?: string | null
-                }
-                Update: {
-                    course_id?: string | null
-                    created_at?: string | null
-                    date?: string
-                    description?: string
-                    id?: string
-                    image_url?: string | null
-                    price?: number
-                    status?: string | null
-                    name?: string
-                    address?: string | null
-                    game_mode?: string | null
-                    participants_limit?: number | null
-                    creator_id?: string | null
-                }
-                Relationships: []
-            }
             seller_profiles: {
                 Row: {
                     account_holder_document: string | null
@@ -879,6 +905,86 @@ export type Database = {
                     status?: string | null
                     store_name?: string | null
                     user_id?: string
+                }
+                Relationships: []
+            }
+            tournament_registrations: {
+                Row: {
+                    created_at: string | null
+                    id: string
+                    status: string | null
+                    tournament_id: string | null
+                    user_id: string | null
+                }
+                Insert: {
+                    created_at?: string | null
+                    id?: string
+                    status?: string | null
+                    tournament_id?: string | null
+                    user_id?: string | null
+                }
+                Update: {
+                    created_at?: string | null
+                    id?: string
+                    status?: string | null
+                    tournament_id?: string | null
+                    user_id?: string | null
+                }
+                Relationships: [
+                    {
+                        foreignKeyName: "tournament_registrations_tournament_id_fkey"
+                        columns: ["tournament_id"]
+                        isOneToOne: false
+                        referencedRelation: "tournaments"
+                        referencedColumns: ["id"]
+                    },
+                ]
+            }
+            tournaments: {
+                Row: {
+                    address: string | null
+                    course_id: string | null
+                    created_at: string | null
+                    creator_id: string | null
+                    date: string
+                    description: string
+                    game_mode: string | null
+                    id: string
+                    image_url: string | null
+                    name: string
+                    participants_limit: number | null
+                    price: number
+                    status: string | null
+                }
+                Insert: {
+                    address?: string | null
+                    course_id?: string | null
+                    created_at?: string | null
+                    creator_id?: string | null
+                    date: string
+                    description: string
+                    game_mode?: string | null
+                    id?: string
+                    image_url?: string | null
+                    name: string
+                    participants_limit?: number | null
+                    price: number
+                    status?: string | null
+                }
+                Update: {
+                    address?: string | null
+                    course_id?: string | null
+                    created_at?: string | null
+                    creator_id?: string | null
+                    date?: string
+                    description?: string
+                    game_mode?: string | null
+                    id?: string
+                    image_url?: string | null
+                    name?: string
+                    participants_limit?: number | null
+                    price?: number
+                    status?: string | null
                 }
                 Relationships: []
             }

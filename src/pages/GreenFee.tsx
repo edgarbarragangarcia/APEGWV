@@ -4,57 +4,60 @@ import { MapPin, ChevronRight, Star, Filter, LayoutGrid, Ticket } from 'lucide-r
 import Card from '../components/Card';
 import PageHeader from '../components/PageHeader';
 import MyReservations from './MyReservations';
+import { supabase } from '../services/SupabaseManager';
 
-const courses = [
-    {
-        id: 'briceno-18',
-        name: 'Briceño 18',
-        city: 'Bogotá',
-        location: 'Km 18 Autopista Norte, Briceño',
-        image: '/images/briceno18.png',
-        rating: 4.8,
-        price: '$250.000',
-        available: true
-    },
-    {
-        id: 'club-campestre',
-        name: 'Club Campestre APEG',
-        city: 'Bogotá',
-        location: 'La Calera, Cundinamarca',
-        image: 'https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?q=80&w=2070&auto=format&fit=crop',
-        rating: 4.9,
-        price: 'Próximamente',
-        available: false
-    },
-    {
-        id: 'el-rodeo',
-        name: 'Club El Rodeo',
-        city: 'Medellín',
-        location: 'Medellín, Antioquia',
-        image: 'https://images.unsplash.com/photo-1600607686527-6fb886090705?q=80&w=2727&auto=format&fit=crop',
-        rating: 4.7,
-        price: '$300.000',
-        available: false
-    },
-    {
-        id: 'lagartos',
-        name: 'Club Los Lagartos',
-        city: 'Bogotá',
-        location: 'Bogotá D.C.',
-        image: 'https://images.unsplash.com/photo-1592919505780-303950717e80?q=80&w=2622&auto=format&fit=crop',
-        rating: 4.9,
-        price: '$450.000',
-        available: false
-    }
-];
 
-const cities = ['Todas', 'Bogotá', 'Medellín', 'Cali', 'Barranquilla'];
 
 const GreenFee: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const [selectedCity, setSelectedCity] = useState('Todas');
     const [activeTab, setActiveTab] = useState<'courses' | 'reservations'>('courses');
+    const [dbCourses, setDbCourses] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchCourses = async () => {
+            setLoading(true);
+            try {
+                const { data, error } = await supabase
+                    .from('golf_courses')
+                    .select('*')
+                    .order('name');
+
+                if (data && !error) {
+                    const mappedCourses = data.map(course => {
+                        // Determinar si hoy es fin de semana (Sábado=6, Domingo=0)
+                        const today = new Date().getDay();
+                        const isWeekend = today === 0 || today === 6;
+                        const displayPrice = isWeekend ? course.price_weekend : course.price_weekday;
+
+                        return {
+                            id: course.id,
+                            name: course.name,
+                            city: course.location ? course.location.split(',')[0].trim() : 'Colombia',
+                            location: course.address || course.location,
+                            image: course.image_url || 'https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?q=80&w=2070&auto=format&fit=crop',
+                            rating: course.rating || 4.5,
+                            price: displayPrice ? new Intl.NumberFormat('es-CO', {
+                                style: 'currency',
+                                currency: 'COP',
+                                maximumFractionDigits: 0
+                            }).format(displayPrice) : 'Próximamente',
+                            available: course.status === 'active'
+                        };
+                    });
+                    setDbCourses(mappedCourses);
+                }
+            } catch (err) {
+                console.error('Error fetching courses:', err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchCourses();
+    }, []);
 
     useEffect(() => {
         if (location.state && location.state.tab) {
@@ -63,8 +66,10 @@ const GreenFee: React.FC = () => {
     }, [location.state]);
 
     const filteredCourses = selectedCity === 'Todas'
-        ? courses
-        : courses.filter(course => course.city === selectedCity);
+        ? dbCourses
+        : dbCourses.filter(course => course.city === selectedCity);
+
+    const availableCities = ['Todas', ...new Set(dbCourses.map(c => c.city))];
 
     return (
         <div style={{
@@ -163,7 +168,7 @@ const GreenFee: React.FC = () => {
                         marginBottom: '4px',
                         scrollbarWidth: 'none'
                     }}>
-                        {cities.map(city => (
+                        {availableCities.map(city => (
                             <button
                                 key={city}
                                 onClick={() => setSelectedCity(city)}
@@ -209,7 +214,11 @@ const GreenFee: React.FC = () => {
                 overflowX: 'hidden',
                 padding: '0 20px 20px 20px'
             }}>
-                {activeTab === 'courses' ? (
+                {loading ? (
+                    <div style={{ display: 'flex', justifyContent: 'center', padding: '100px 0' }}>
+                        <div className="spinner" style={{ borderTopColor: 'var(--secondary)' }}></div>
+                    </div>
+                ) : activeTab === 'courses' ? (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                         {filteredCourses.length > 0 ? (
                             filteredCourses.map((course) => (

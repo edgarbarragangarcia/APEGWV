@@ -32,12 +32,12 @@ const MyReservations: React.FC<MyReservationsProps> = ({ onRequestSwitchTab }) =
 
                 const { data, error } = await supabase
                     .from('reservations')
-                    .select('*')
+                    .select('*, golf_courses(name, location)')
                     .eq('user_id', session.user.id)
                     .order('created_at', { ascending: false });
 
                 if (error) throw error;
-                setReservations((data as unknown as Reservation[]) || []);
+                setReservations((data as any) || []);
             } catch (err) {
                 console.error('Error fetching reservations:', err);
             } finally {
@@ -81,10 +81,10 @@ const MyReservations: React.FC<MyReservationsProps> = ({ onRequestSwitchTab }) =
                         <Card key={res.id} style={{ padding: '20px' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '15px' }}>
                                 <div>
-                                    <h3 style={{ fontSize: '18px', fontWeight: '700', marginBottom: '5px' }}>{res.status || 'Reserva de Green Fee'}</h3>
+                                    <h3 style={{ fontSize: '18px', fontWeight: '700', marginBottom: '5px' }}>{(res as any).golf_courses?.name || 'Reserva de Green Fee'}</h3>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '13px', color: 'var(--text-dim)' }}>
                                         <MapPin size={12} />
-                                        <span>Confirmado</span>
+                                        <span>{(res as any).golf_courses?.location || 'Confirmado'}</span>
                                     </div>
                                 </div>
                                 <div style={{
