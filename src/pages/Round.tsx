@@ -647,24 +647,7 @@ const Round: React.FC = () => {
                         <p style={{ fontSize: '12px', color: 'var(--text-dim)' }}>{fieldName} • Par {course?.club.includes('Lagartos') && recorrido === 'Corea' ? 71 : 72}</p>
                     </div>
                 </div>
-                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                    {groupId && (
-                        <button
-                            onClick={() => setShowCancelModal(true)}
-                            style={{
-                                color: '#f87171',
-                                fontSize: '13px',
-                                background: 'rgba(248, 113, 113, 0.1)',
-                                padding: '6px 12px',
-                                borderRadius: '8px',
-                                border: '1px solid rgba(248, 113, 113, 0.2)'
-                            }}
-                        >
-                            Cancelar
-                        </button>
-                    )}
-                    <button onClick={() => setShowFinishModal(true)} style={{ color: 'var(--secondary)', fontSize: '13px' }}>Finalizar</button>
-                </div>
+                <button onClick={() => setShowFinishModal(true)} style={{ color: 'var(--secondary)', fontSize: '13px' }}>Finalizar</button>
             </header>
 
             {/* Leaderboard Toggle & Content */}
@@ -926,10 +909,63 @@ const Round: React.FC = () => {
                         <h2 style={{ fontSize: '20px', fontWeight: '900', color: 'white', marginBottom: '8px' }}>
                             ¿Finalizar <span style={{ color: 'var(--secondary)' }}>Partida</span>?
                         </h2>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginTop: '20px' }}>
-                            <button onClick={() => setShowFinishModal(false)} style={{ padding: '14px', borderRadius: '14px', background: 'rgba(255,255,255,0.05)', color: 'white' }}>Continuar</button>
-                            <button onClick={handleFinishRound} disabled={isSaving} style={{ padding: '14px', borderRadius: '14px', background: 'var(--secondary)', color: 'var(--primary)', fontWeight: '800' }}>{isSaving ? 'Guardando...' : 'Finalizar'}</button>
-                        </div>
+
+                        {groupId ? (
+                            <>
+                                <p style={{ fontSize: '13px', color: 'rgba(255, 255, 255, 0.7)', marginBottom: '20px', lineHeight: '1.4' }}>
+                                    Elige una opción:
+                                </p>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '20px' }}>
+                                    <button
+                                        onClick={handleFinishRound}
+                                        disabled={isSaving}
+                                        style={{
+                                            padding: '14px',
+                                            borderRadius: '14px',
+                                            background: 'var(--secondary)',
+                                            color: 'var(--primary)',
+                                            fontWeight: '800',
+                                            border: 'none'
+                                        }}
+                                    >
+                                        {isSaving ? 'Guardando...' : '✅ Guardar mi Score'}
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            setShowFinishModal(false);
+                                            setShowCancelModal(true);
+                                        }}
+                                        style={{
+                                            padding: '14px',
+                                            borderRadius: '14px',
+                                            background: 'rgba(248, 113, 113, 0.15)',
+                                            color: '#f87171',
+                                            fontWeight: '700',
+                                            border: '1px solid rgba(248, 113, 113, 0.3)'
+                                        }}
+                                    >
+                                        ❌ Terminar Juego para Todos
+                                    </button>
+                                    <button
+                                        onClick={() => setShowFinishModal(false)}
+                                        style={{
+                                            padding: '14px',
+                                            borderRadius: '14px',
+                                            background: 'rgba(255,255,255,0.05)',
+                                            color: 'white',
+                                            border: 'none'
+                                        }}
+                                    >
+                                        Continuar Jugando
+                                    </button>
+                                </div>
+                            </>
+                        ) : (
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginTop: '20px' }}>
+                                <button onClick={() => setShowFinishModal(false)} style={{ padding: '14px', borderRadius: '14px', background: 'rgba(255,255,255,0.05)', color: 'white' }}>Continuar</button>
+                                <button onClick={handleFinishRound} disabled={isSaving} style={{ padding: '14px', borderRadius: '14px', background: 'var(--secondary)', color: 'var(--primary)', fontWeight: '800' }}>{isSaving ? 'Guardando...' : 'Finalizar'}</button>
+                            </div>
+                        )}
                     </motion.div>
                 </div>
             )}
