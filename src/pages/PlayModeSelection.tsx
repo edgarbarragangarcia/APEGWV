@@ -123,7 +123,8 @@ const PlayModeSelection: React.FC = () => {
             description: 'Juega una partida solo y registra tu propio puntaje y estadísticas.',
             icon: User,
             color: 'var(--secondary)',
-            gradient: 'linear-gradient(135deg, rgba(163, 230, 53, 0.2) 0%, rgba(163, 230, 53, 0.05) 100%)',
+            accent: 'rgba(163, 230, 53, 0.5)',
+            gradient: 'linear-gradient(135deg, rgba(163, 230, 53, 0.2) 0%, rgba(163, 230, 53, 0.02) 100%)',
             path: '/select-course'
         },
         {
@@ -131,8 +132,9 @@ const PlayModeSelection: React.FC = () => {
             title: 'Juego en Grupo',
             description: 'Invita a tus amigos, compite en tiempo real y gestiona el grupo.',
             icon: Users,
-            color: '#3b82f6',
-            gradient: 'linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(59, 130, 246, 0.05) 100%)',
+            color: '#60a5fa',
+            accent: 'rgba(96, 165, 250, 0.5)',
+            gradient: 'linear-gradient(135deg, rgba(96, 165, 250, 0.2) 0%, rgba(96, 165, 250, 0.02) 100%)',
             path: '/friend-selection'
         }
     ];
@@ -200,80 +202,122 @@ const PlayModeSelection: React.FC = () => {
                                 key={mode.id}
                                 onClick={() => navigate(mode.path)}
                                 style={{
-                                    background: 'rgba(255, 255, 255, 0.03)',
-                                    borderRadius: '30px',
-                                    padding: '25px',
-                                    border: '1px solid var(--glass-border)',
+                                    background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%)',
+                                    borderRadius: '35px',
+                                    padding: '30px',
+                                    border: '1px solid rgba(255, 255, 255, 0.1)',
                                     cursor: 'pointer',
                                     position: 'relative',
                                     overflow: 'hidden',
                                     display: 'flex',
                                     flexDirection: 'column',
-                                    gap: '12px'
+                                    gap: '15px',
+                                    transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+                                    boxShadow: '0 20px 40px rgba(0,0,0,0.3)',
+                                    backdropFilter: 'blur(20px)',
+                                    WebkitBackdropFilter: 'blur(20px)'
                                 }}
+                                className="active:scale-[0.97]"
                             >
-                                {/* Background Glow */}
+                                {/* Inner Border Glow */}
                                 <div style={{
                                     position: 'absolute',
-                                    top: '-20%',
-                                    right: '-10%',
-                                    width: '40%',
-                                    height: '60%',
+                                    inset: 0,
+                                    borderRadius: '35px',
+                                    padding: '1px',
+                                    background: `linear-gradient(135deg, ${mode.accent} 0%, transparent 40%, transparent 60%, rgba(255,255,255,0.1) 100%)`,
+                                    WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+                                    WebkitMaskComposite: 'xor',
+                                    pointerEvents: 'none'
+                                }} />
+
+                                {/* Background Mesh / Glows */}
+                                <div style={{
+                                    position: 'absolute',
+                                    top: '-40%',
+                                    right: '-20%',
+                                    width: '180px',
+                                    height: '180px',
                                     background: mode.color,
-                                    filter: 'blur(60px)',
+                                    filter: 'blur(70px)',
+                                    opacity: 0.2,
+                                    zIndex: 0
+                                }} />
+
+                                <div style={{
+                                    position: 'absolute',
+                                    bottom: '-20%',
+                                    left: '-10%',
+                                    width: '120px',
+                                    height: '120px',
+                                    background: mode.color,
+                                    filter: 'blur(50px)',
                                     opacity: 0.1,
                                     zIndex: 0
                                 }} />
 
                                 <div style={{
-                                    width: '60px',
-                                    height: '60px',
-                                    borderRadius: '20px',
+                                    width: '64px',
+                                    height: '64px',
+                                    borderRadius: '22px',
                                     background: mode.gradient,
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
                                     marginBottom: '5px',
                                     position: 'relative',
-                                    zIndex: 1
+                                    zIndex: 1,
+                                    border: '1px solid rgba(255,255,255,0.1)',
+                                    boxShadow: `0 10px 20px ${mode.accent.replace('0.5', '0.1')}`
                                 }}>
-                                    <mode.icon size={32} color={mode.color} />
+                                    <mode.icon size={30} color={mode.color} strokeWidth={2.5} />
                                 </div>
 
                                 <div style={{ position: 'relative', zIndex: 1 }}>
                                     <h3 style={{
-                                        fontSize: '24px',
+                                        fontSize: '22px',
                                         fontWeight: '900',
                                         color: 'white',
-                                        marginBottom: '8px'
+                                        marginBottom: '6px',
+                                        letterSpacing: '-0.5px'
                                     }}>
                                         {mode.title}
                                     </h3>
                                     <p style={{
                                         fontSize: '14px',
-                                        color: 'var(--text-dim)',
+                                        color: 'rgba(255,255,255,0.6)',
                                         lineHeight: '1.5',
-                                        maxWidth: '85%'
+                                        maxWidth: '90%',
+                                        fontWeight: '500'
                                     }}>
                                         {mode.description}
                                     </p>
                                 </div>
 
                                 <div style={{
-                                    position: 'absolute',
-                                    right: '30px',
-                                    bottom: '30px',
-                                    width: '40px',
-                                    height: '40px',
-                                    borderRadius: '15px',
-                                    background: 'rgba(255, 255, 255, 0.05)',
                                     display: 'flex',
                                     alignItems: 'center',
-                                    justifyContent: 'center',
-                                    color: 'white'
+                                    gap: '8px',
+                                    color: mode.color,
+                                    fontSize: '12px',
+                                    fontWeight: '800',
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '1px',
+                                    marginTop: '10px',
+                                    zIndex: 1
                                 }}>
-                                    <ChevronRight size={20} />
+                                    Empezar ahora <ChevronRight size={16} />
                                 </div>
+
+                                {/* Subtle Texture Overlay */}
+                                <div style={{
+                                    position: 'absolute',
+                                    inset: 0,
+                                    opacity: 0.03,
+                                    pointerEvents: 'none',
+                                    backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3BaseFilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/baseFilter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
+                                    filter: 'contrast(150%) brightness(100%)'
+                                }} />
                             </div>
                         ))}
                     </>

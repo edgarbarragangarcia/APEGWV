@@ -211,7 +211,10 @@ const NotificationsPage: React.FC = () => {
                 <ConfirmationModal
                     isOpen={isDeleteModalOpen}
                     onClose={() => setIsDeleteModalOpen(false)}
-                    onConfirm={deleteAllNotifications}
+                    onConfirm={() => {
+                        deleteAllNotifications();
+                        setIsDeleteModalOpen(false);
+                    }}
                     title="¿Eliminar todo?"
                     message="Esta acción borrará permanentemente todas tus notificaciones. ¿Deseas continuar?"
                     confirmText="Sí, eliminar todo"
