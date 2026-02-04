@@ -293,8 +293,9 @@ const Round: React.FC = () => {
                     filter: `id=eq.${groupId}`
                 },
                 (payload) => {
-                    if (payload.new && (payload.new as any).status === 'completed') {
-                        // The game was finished by someone else
+                    const newStatus = (payload.new as any)?.status;
+                    if (newStatus === 'completed' || newStatus === 'cancelled') {
+                        // The game was finished or cancelled by someone else
                         sessionStorage.setItem('game_just_finished', 'true');
                         clearRoundState();
                         navigate('/play-mode', { replace: true });
@@ -431,6 +432,57 @@ const Round: React.FC = () => {
         }
     };
 
+    const handleCancelGame = async () => {
+        if (isSaving) return;
+        setIsSaving(true);
+        try {
+            // 1. Mark the ENTIRE group game as cancelled
+            if (groupId) {
+                const { error: groupError } = await supabase
+                    .from('game_groups' as any)
+                    .update({ status: 'cancelled' })
+                    .eq('id', groupId);
+
+                if (groupError) {
+                    console.error('Error cancelling game_groups:', groupError);
+                    throw new Error(`No se pudo cancelar el juego: ${groupError.message}`);
+                }
+
+                // 2. Update ALL rounds in this group to cancelled
+                const { error: roundsError } = await supabase
+                    .from('rounds')
+                    .update({ status: 'cancelled' })
+                    .eq('group_id', groupId);
+
+                if (roundsError) {
+                    console.warn('Error updating rounds status:', roundsError);
+                }
+
+                console.log('✅ Juego cancelado exitosamente');
+            }
+
+            if (navigator.vibrate) navigator.vibrate([10, 30, 10]);
+
+            // Set a flag to prevent auto-redirect in PlayModeSelection
+            sessionStorage.setItem('game_just_finished', 'true');
+
+            // Clear localStorage
+            clearRoundState();
+
+            // Navigate immediately
+            navigate('/play-mode', { replace: true });
+        } catch (error) {
+            console.error('Error al cancelar juego:', error);
+            const errorMessage = error instanceof Error
+                ? error.message
+                : 'Error desconocido al cancelar el juego';
+            alert(`Hubo un problema al cancelar el juego:\n\n${errorMessage}\n\nPor favor, intenta nuevamente.`);
+        } finally {
+            setIsSaving(false);
+            setShowCancelModal(false);
+        }
+    };
+
     const handleFinishRound = async () => {
         if (isSaving) return;
         setIsSaving(true);
@@ -558,6 +610,7 @@ const Round: React.FC = () => {
     };
 
     const [showFinishModal, setShowFinishModal] = React.useState(false);
+    const [showCancelModal, setShowCancelModal] = React.useState(false);
 
     return (
         <div className="animate-fade" style={{
@@ -594,7 +647,24 @@ const Round: React.FC = () => {
                         <p style={{ fontSize: '12px', color: 'var(--text-dim)' }}>{fieldName} • Par {course?.club.includes('Lagartos') && recorrido === 'Corea' ? 71 : 72}</p>
                     </div>
                 </div>
-                <button onClick={() => setShowFinishModal(true)} style={{ color: 'var(--secondary)', fontSize: '13px' }}>Finalizar</button>
+                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                    {groupId && (
+                        <button
+                            onClick={() => setShowCancelModal(true)}
+                            style={{
+                                color: '#f87171',
+                                fontSize: '13px',
+                                background: 'rgba(248, 113, 113, 0.1)',
+                                padding: '6px 12px',
+                                borderRadius: '8px',
+                                border: '1px solid rgba(248, 113, 113, 0.2)'
+                            }}
+                        >
+                            Cancelar
+                        </button>
+                    )}
+                    <button onClick={() => setShowFinishModal(true)} style={{ color: 'var(--secondary)', fontSize: '13px' }}>Finalizar</button>
+                </div>
             </header>
 
             {/* Leaderboard Toggle & Content */}
@@ -859,6 +929,25 @@ const Round: React.FC = () => {
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginTop: '20px' }}>
                             <button onClick={() => setShowFinishModal(false)} style={{ padding: '14px', borderRadius: '14px', background: 'rgba(255,255,255,0.05)', color: 'white' }}>Continuar</button>
                             <button onClick={handleFinishRound} disabled={isSaving} style={{ padding: '14px', borderRadius: '14px', background: 'var(--secondary)', color: 'var(--primary)', fontWeight: '800' }}>{isSaving ? 'Guardando...' : 'Finalizar'}</button>
+                        </div>
+                    </motion.div>
+                </div>
+            )}
+
+            {showCancelModal && (
+                <div style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'flex-start', background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(8px)' }} onClick={() => setShowCancelModal(false)}>
+                    <motion.div initial={{ y: '-100%' }} animate={{ y: 0 }} transition={{ type: 'spring', damping: 25, stiffness: 200 }} onClick={(e: React.MouseEvent) => e.stopPropagation()} style={{ width: '100%', background: 'rgba(45, 20, 20, 0.98)', borderBottomLeftRadius: '30px', borderBottomRightRadius: '30px', padding: 'calc(20px + env(safe-area-inset-top)) 25px 30px', textAlign: 'center', border: '2px solid rgba(248, 113, 113, 0.3)' }}>
+                        <h2 style={{ fontSize: '20px', fontWeight: '900', color: 'white', marginBottom: '8px' }}>
+                            ¿Cancelar <span style={{ color: '#f87171' }}>Juego</span>?
+                        </h2>
+                        <p style={{ fontSize: '13px', color: 'rgba(255, 255, 255, 0.7)', marginBottom: '20px', lineHeight: '1.4' }}>
+                            {groupId
+                                ? 'Esta acción terminará el juego para todos los jugadores. No se podrá deshacer.'
+                                : 'Se perderán todos los datos de esta ronda.'}
+                        </p>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginTop: '20px' }}>
+                            <button onClick={() => setShowCancelModal(false)} style={{ padding: '14px', borderRadius: '14px', background: 'rgba(255,255,255,0.05)', color: 'white' }}>Volver</button>
+                            <button onClick={handleCancelGame} disabled={isSaving} style={{ padding: '14px', borderRadius: '14px', background: '#f87171', color: 'white', fontWeight: '800' }}>{isSaving ? 'Cancelando...' : 'Sí, Cancelar'}</button>
                         </div>
                     </motion.div>
                 </div>

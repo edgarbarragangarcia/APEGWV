@@ -122,6 +122,33 @@ const CourseSelection: React.FC = () => {
                     if (notifError) console.error('Error sending invitations:', notifError);
                 }
 
+                // 4. Update game status to 'active' now that we're starting the game
+                const { error: statusError } = await supabase
+                    .from('game_groups' as any)
+                    .update({ status: 'active' })
+                    .eq('id', groupData.id);
+
+                if (statusError) console.error('Error updating game status:', statusError);
+
+                // 5. Send game start notifications to all invited friends
+                if (validFriends.length > 0) {
+                    const userName = profile?.full_name || user?.email || 'Un amigo';
+                    const startNotifications = validFriends.map((f: any) => ({
+                        user_id: f.id,
+                        type: 'game_started',
+                        title: '🏌️ ¡El juego ha comenzado!',
+                        message: `${userName} ha iniciado la partida en ${course.club}. ¡Es hora de jugar!`,
+                        link: `/round?group_id=${groupData.id}`,
+                        read: false
+                    }));
+
+                    const { error: startNotifError } = await supabase
+                        .from('notifications')
+                        .insert(startNotifications);
+
+                    if (startNotifError) console.error('Error sending game start notifications:', startNotifError);
+                }
+
                 navigate('/round', { state: { course, recorrido, groupId: groupData.id } });
             } catch (err) {
                 console.error('Error creating group:', err);
