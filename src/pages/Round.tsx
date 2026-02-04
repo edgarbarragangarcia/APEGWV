@@ -481,14 +481,6 @@ const Round: React.FC = () => {
 
             if (navigator.vibrate) navigator.vibrate([10, 30, 10]);
 
-            // Set a flag to prevent auto-redirect in PlayModeSelection
-            sessionStorage.setItem('game_just_finished', 'true');
-
-            // Clear localStorage
-            clearRoundState();
-
-            // Navigate immediately
-            navigate('/play-mode', { replace: true });
         } catch (error) {
             console.error('Error al cancelar juego:', error);
             const errorMessage = error instanceof Error
@@ -498,6 +490,15 @@ const Round: React.FC = () => {
         } finally {
             setIsSaving(false);
             setShowCancelModal(false);
+
+            // Set a flag to prevent auto-redirect in PlayModeSelection
+            sessionStorage.setItem('game_just_finished', 'true');
+
+            // Clear localStorage
+            clearRoundState();
+
+            // Navigate immediately
+            navigate('/play-mode', { replace: true });
         }
     };
 
