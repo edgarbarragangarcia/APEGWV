@@ -223,7 +223,7 @@ const PlayModeSelection: React.FC = () => {
                                     width: '200%',
                                     height: '200%',
                                     background: 'conic-gradient(from 0deg, transparent 0deg, transparent 120deg, #e2e8f0 180deg, transparent 240deg, transparent 360deg)',
-                                    animation: 'border-run 3s linear infinite',
+                                    animation: 'border-run 6s linear infinite',
                                     zIndex: 0
                                 }} />
 
