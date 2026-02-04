@@ -292,13 +292,31 @@ const Round: React.FC = () => {
                     table: 'game_groups',
                     filter: `id=eq.${groupId}`
                 },
-                (payload) => {
+                async (payload) => {
                     const newStatus = (payload.new as any)?.status;
                     if (newStatus === 'completed' || newStatus === 'cancelled') {
-                        // The game was finished or cancelled by someone else
-                        sessionStorage.setItem('game_just_finished', 'true');
-                        clearRoundState();
-                        navigate('/play-mode', { replace: true });
+                        // Fetch the user who ended the game
+                        const createdBy = (payload.new as any)?.created_by;
+
+                        // Get the user's profile to show their name
+                        const { data: userProfile } = await supabase
+                            .from('profiles')
+                            .select('full_name, email')
+                            .eq('id', createdBy)
+                            .single();
+
+                        const userName = userProfile?.full_name || userProfile?.email || 'Un jugador';
+                        const actionText = newStatus === 'cancelled' ? 'cancelado' : 'terminado';
+
+                        // Show modal with user's name
+                        setGameEndedMessage({ userName, action: actionText });
+
+                        // Wait for user to see the message, then navigate
+                        setTimeout(() => {
+                            sessionStorage.setItem('game_just_finished', 'true');
+                            clearRoundState();
+                            navigate('/play-mode', { replace: true });
+                        }, 2500);
                     }
                 }
             )
@@ -611,6 +629,7 @@ const Round: React.FC = () => {
 
     const [showFinishModal, setShowFinishModal] = React.useState(false);
     const [showCancelModal, setShowCancelModal] = React.useState(false);
+    const [gameEndedMessage, setGameEndedMessage] = React.useState<{ userName: string, action: string } | null>(null);
 
     return (
         <div className="animate-fade" style={{
@@ -985,6 +1004,44 @@ const Round: React.FC = () => {
                             <button onClick={() => setShowCancelModal(false)} style={{ padding: '14px', borderRadius: '14px', background: 'rgba(255,255,255,0.05)', color: 'white' }}>Volver</button>
                             <button onClick={handleCancelGame} disabled={isSaving} style={{ padding: '14px', borderRadius: '14px', background: '#f87171', color: 'white', fontWeight: '800' }}>{isSaving ? 'Cancelando...' : 'Sí, Cancelar'}</button>
                         </div>
+                    </motion.div>
+                </div>
+            )}
+
+            {gameEndedMessage && (
+                <div style={{ position: 'fixed', inset: 0, zIndex: 1001, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)' }}>
+                    <motion.div
+                        initial={{ scale: 0.8, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        transition={{ type: 'spring', damping: 20, stiffness: 300 }}
+                        style={{
+                            background: 'rgba(20, 45, 30, 0.98)',
+                            borderRadius: '30px',
+                            padding: '40px 30px',
+                            textAlign: 'center',
+                            maxWidth: '90%',
+                            width: '350px',
+                            border: '2px solid var(--secondary)'
+                        }}
+                    >
+                        <div style={{ fontSize: '48px', marginBottom: '20px' }}>🏌️</div>
+                        <h2 style={{ fontSize: '22px', fontWeight: '900', color: 'white', marginBottom: '12px' }}>
+                            Juego <span style={{ color: 'var(--secondary)' }}>Finalizado</span>
+                        </h2>
+                        <p style={{ fontSize: '16px', color: 'rgba(255, 255, 255, 0.9)', lineHeight: '1.5' }}>
+                            <strong style={{ color: 'var(--secondary)' }}>{gameEndedMessage.userName}</strong> ha {gameEndedMessage.action} el juego.
+                        </p>
+                        <div style={{ marginTop: '24px', height: '4px', background: 'rgba(163, 230, 53, 0.2)', borderRadius: '2px', overflow: 'hidden' }}>
+                            <motion.div
+                                initial={{ width: '0%' }}
+                                animate={{ width: '100%' }}
+                                transition={{ duration: 2.5, ease: 'linear' }}
+                                style={{ height: '100%', background: 'var(--secondary)' }}
+                            />
+                        </div>
+                        <p style={{ fontSize: '12px', color: 'rgba(255, 255, 255, 0.6)', marginTop: '12px' }}>
+                            Regresando al menú...
+                        </p>
                     </motion.div>
                 </div>
             )}
