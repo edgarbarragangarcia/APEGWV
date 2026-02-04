@@ -44,9 +44,13 @@ const RoundDetail: React.FC = () => {
                     .select('*')
                     .eq('id', id)
                     .eq('user_id', session.user.id)
-                    .single();
+                    .maybeSingle();
 
                 if (roundError) throw roundError;
+                if (!roundData) {
+                    setLoading(false);
+                    return;
+                }
                 setRound(roundData as unknown as Round);
 
                 // Fetch holes

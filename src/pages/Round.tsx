@@ -265,7 +265,7 @@ const Round: React.FC = () => {
                         .from('rounds')
                         .select('user_id, group_id')
                         .eq('id', newHole.round_id)
-                        .single();
+                        .maybeSingle();
 
                     if (round?.group_id === groupId) {
                         // Re-fetch total for this specific round/user
@@ -305,7 +305,7 @@ const Round: React.FC = () => {
                             .from('profiles')
                             .select('full_name, email')
                             .eq('id', createdBy)
-                            .single();
+                            .maybeSingle();
 
                         const userName = userProfile?.full_name || userProfile?.email || 'Un jugador';
                         const actionText = newStatus === 'cancelled' ? 'cancelado' : 'terminado';
@@ -341,7 +341,7 @@ const Round: React.FC = () => {
                     .from('game_groups' as any)
                     .select('course_id, status')
                     .eq('id', groupId)
-                    .single();
+                    .maybeSingle();
 
                 if (group && (group as any).status === 'completed') {
                     // Safety check: if group is already finished when we join/reload
@@ -419,9 +419,10 @@ const Round: React.FC = () => {
                         group_id: groupId
                     }])
                     .select()
-                    .single();
+                    .maybeSingle();
 
                 if (rErr) throw rErr;
+                if (!newRound) throw new Error("No se pudo crear la ronda");
                 currentRoundId = newRound.id;
                 setRoundId(currentRoundId);
             }
@@ -434,7 +435,7 @@ const Round: React.FC = () => {
                 .select('id')
                 .eq('round_id', currentRoundId)
                 .eq('hole_number', holeNum)
-                .single();
+                .maybeSingle();
 
             if (existingHole) {
                 await supabase
@@ -555,9 +556,10 @@ const Round: React.FC = () => {
                         status: 'completed'
                     }])
                     .select()
-                    .single();
+                    .maybeSingle();
 
                 if (roundError) throw roundError;
+                if (!round) throw new Error("No se pudo crear la ronda");
 
                 if (round && holeNumbers.length > 0) {
                     const holesToInsert = holeNumbers.map(h => ({

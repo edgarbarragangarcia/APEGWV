@@ -120,21 +120,21 @@ const PlayModeSelection: React.FC = () => {
         {
             id: 'individual',
             title: 'Juego Individual',
-            description: 'Juega una partida solo y registra tu propio puntaje y estadísticas.',
+            description: 'Registra tu propio puntaje y estadísticas personales.',
             icon: User,
             color: 'var(--secondary)',
             accent: 'rgba(163, 230, 53, 0.5)',
-            gradient: 'linear-gradient(135deg, rgba(163, 230, 53, 0.2) 0%, rgba(163, 230, 53, 0.02) 100%)',
+            silver: 'linear-gradient(90deg, #e2e8f0 0%, #ffffff 50%, #e2e8f0 100%)',
             path: '/select-course'
         },
         {
             id: 'group',
             title: 'Juego en Grupo',
-            description: 'Invita a tus amigos, compite en tiempo real y gestiona el grupo.',
+            description: 'Compite en tiempo real y gestiona el grupo con amigos.',
             icon: Users,
             color: '#60a5fa',
             accent: 'rgba(96, 165, 250, 0.5)',
-            gradient: 'linear-gradient(135deg, rgba(96, 165, 250, 0.2) 0%, rgba(96, 165, 250, 0.02) 100%)',
+            silver: 'linear-gradient(90deg, #cbd5e1 0%, #f8fafc 50%, #cbd5e1 100%)',
             path: '/friend-selection'
         }
     ];
@@ -202,122 +202,115 @@ const PlayModeSelection: React.FC = () => {
                                 key={mode.id}
                                 onClick={() => navigate(mode.path)}
                                 style={{
-                                    background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%)',
-                                    borderRadius: '35px',
-                                    padding: '30px',
-                                    border: '1px solid rgba(255, 255, 255, 0.1)',
-                                    cursor: 'pointer',
                                     position: 'relative',
+                                    borderRadius: '32px',
+                                    padding: '2px', // This creates the "border width"
                                     overflow: 'hidden',
+                                    background: 'rgba(255, 255, 255, 0.05)', // Fallback
                                     display: 'flex',
-                                    flexDirection: 'column',
-                                    gap: '15px',
-                                    transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
-                                    boxShadow: '0 20px 40px rgba(0,0,0,0.3)',
-                                    backdropFilter: 'blur(20px)',
-                                    WebkitBackdropFilter: 'blur(20px)'
+                                    alignItems: 'stretch',
+                                    justifyContent: 'stretch',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.3s ease'
                                 }}
                                 className="active:scale-[0.97]"
                             >
-                                {/* Inner Border Glow */}
+                                {/* THE ANIMATED BORDER: A rotating gradient behind the card */}
                                 <div style={{
                                     position: 'absolute',
-                                    inset: 0,
-                                    borderRadius: '35px',
-                                    padding: '1px',
-                                    background: `linear-gradient(135deg, ${mode.accent} 0%, transparent 40%, transparent 60%, rgba(255,255,255,0.1) 100%)`,
-                                    WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
-                                    WebkitMaskComposite: 'xor',
-                                    pointerEvents: 'none'
-                                }} />
-
-                                {/* Background Mesh / Glows */}
-                                <div style={{
-                                    position: 'absolute',
-                                    top: '-40%',
-                                    right: '-20%',
-                                    width: '180px',
-                                    height: '180px',
-                                    background: mode.color,
-                                    filter: 'blur(70px)',
-                                    opacity: 0.2,
+                                    top: '-50%',
+                                    left: '-50%',
+                                    width: '200%',
+                                    height: '200%',
+                                    background: 'conic-gradient(from 0deg, transparent 0deg, transparent 120deg, #e2e8f0 180deg, transparent 240deg, transparent 360deg)',
+                                    animation: 'border-run 3s linear infinite',
                                     zIndex: 0
                                 }} />
 
+                                {/* THE CARD CONTENT: Sits inside the border */}
                                 <div style={{
-                                    position: 'absolute',
-                                    bottom: '-20%',
-                                    left: '-10%',
-                                    width: '120px',
-                                    height: '120px',
-                                    background: mode.color,
-                                    filter: 'blur(50px)',
-                                    opacity: 0.1,
-                                    zIndex: 0
-                                }} />
-
-                                <div style={{
-                                    width: '64px',
-                                    height: '64px',
-                                    borderRadius: '22px',
-                                    background: mode.gradient,
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    marginBottom: '5px',
                                     position: 'relative',
                                     zIndex: 1,
-                                    border: '1px solid rgba(255,255,255,0.1)',
-                                    boxShadow: `0 10px 20px ${mode.accent.replace('0.5', '0.1')}`
-                                }}>
-                                    <mode.icon size={30} color={mode.color} strokeWidth={2.5} />
-                                </div>
-
-                                <div style={{ position: 'relative', zIndex: 1 }}>
-                                    <h3 style={{
-                                        fontSize: '22px',
-                                        fontWeight: '900',
-                                        color: 'white',
-                                        marginBottom: '6px',
-                                        letterSpacing: '-0.5px'
-                                    }}>
-                                        {mode.title}
-                                    </h3>
-                                    <p style={{
-                                        fontSize: '14px',
-                                        color: 'rgba(255,255,255,0.6)',
-                                        lineHeight: '1.5',
-                                        maxWidth: '90%',
-                                        fontWeight: '500'
-                                    }}>
-                                        {mode.description}
-                                    </p>
-                                </div>
-
-                                <div style={{
+                                    width: '100%',
+                                    background: 'rgba(10, 25, 15, 0.95)',
+                                    borderRadius: '30px', // Slightly smaller than outer to fit inside
+                                    padding: '30px',
                                     display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '8px',
-                                    color: mode.color,
-                                    fontSize: '12px',
-                                    fontWeight: '800',
-                                    textTransform: 'uppercase',
-                                    letterSpacing: '1px',
-                                    marginTop: '10px',
-                                    zIndex: 1
+                                    flexDirection: 'column',
+                                    gap: '15px',
+                                    backdropFilter: 'blur(20px)'
                                 }}>
-                                    Empezar ahora <ChevronRight size={16} />
-                                </div>
+                                    {/* Static Silver Inner Border for extra sharpness */}
+                                    <div style={{
+                                        position: 'absolute',
+                                        inset: 0,
+                                        borderRadius: '30px',
+                                        border: '1px solid rgba(255,255,255,0.05)',
+                                        pointerEvents: 'none'
+                                    }} />
 
-                                {/* Subtle Texture Overlay */}
-                                <div style={{
-                                    position: 'absolute',
-                                    inset: 0,
-                                    opacity: 0.03,
-                                    pointerEvents: 'none',
-                                    backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3BaseFilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/baseFilter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
-                                    filter: 'contrast(150%) brightness(100%)'
-                                }} />
+                                    {/* Background Glows */}
+                                    <div style={{
+                                        position: 'absolute',
+                                        top: '-40%',
+                                        right: '-20%',
+                                        width: '180px',
+                                        height: '180px',
+                                        background: mode.color,
+                                        filter: 'blur(80px)',
+                                        opacity: 0.1,
+                                        zIndex: -1
+                                    }} />
+
+                                    <div style={{
+                                        width: '64px',
+                                        height: '64px',
+                                        borderRadius: '20px',
+                                        background: 'rgba(255,255,255,0.03)',
+                                        border: '1px solid rgba(255,255,255,0.1)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        position: 'relative',
+                                        zIndex: 1
+                                    }}>
+                                        <mode.icon size={30} color={mode.color} strokeWidth={2} />
+                                    </div>
+
+                                    <div style={{ position: 'relative', zIndex: 1 }}>
+                                        <h3 style={{
+                                            fontSize: '24px',
+                                            fontWeight: '900',
+                                            color: 'white',
+                                            marginBottom: '6px',
+                                            letterSpacing: '-0.025em'
+                                        }}>
+                                            {mode.title}
+                                        </h3>
+                                        <p style={{
+                                            fontSize: '15px',
+                                            color: 'rgba(255,255,255,0.5)',
+                                            lineHeight: '1.4',
+                                            maxWidth: '90%',
+                                            fontWeight: '400'
+                                        }}>
+                                            {mode.description}
+                                        </p>
+                                    </div>
+
+                                    <div style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '6px',
+                                        color: 'white',
+                                        fontSize: '13px',
+                                        fontWeight: '700',
+                                        marginTop: '8px',
+                                        zIndex: 1
+                                    }}>
+                                        Explorar <ChevronRight size={16} strokeWidth={3} />
+                                    </div>
+                                </div>
                             </div>
                         ))}
                     </>
