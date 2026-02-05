@@ -123,6 +123,11 @@ const CourseReservation: React.FC = () => {
             const { data: { session } } = await supabase.auth.getSession();
 
             if (session) {
+                // Determinar el precio basado en el día
+                const dayOfWeek = new Date(selectedDateStr).getDay();
+                const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+                const price = isWeekend ? (course.price_weekend || 0) : (course.price_weekday || 0);
+
                 const { error } = await supabase.from('reservations').insert({
                     user_id: session.user.id,
                     course_id: course.id,
@@ -130,6 +135,8 @@ const CourseReservation: React.FC = () => {
                     date: selectedDateStr,
                     time: selectedTime,
                     status: 'confirmed',
+                    players_count: 1,
+                    price: price,
                     reservation_date: selectedDateStr
                 } as any);
 
@@ -184,7 +191,7 @@ const CourseReservation: React.FC = () => {
                 right: '0',
                 bottom: 0,
                 overflowY: 'auto',
-                padding: '0 20px 40px 20px',
+                padding: '0 20px 120px 20px',
                 overflowX: 'hidden'
             }}>
                 {loading ? (
@@ -468,41 +475,7 @@ const CourseReservation: React.FC = () => {
                             )}
                         </AnimatePresence>
 
-                        {/* Footer Action */}
-                        <AnimatePresence>
-                            {!isReserved && selectedDateStr && selectedTime && (
-                                <motion.div
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: 20 }}
-                                    style={{
-                                        marginTop: '40px',
-                                        marginBottom: '40px',
-                                        width: '100%'
-                                    }}
-                                >
-                                    <button
-                                        className="btn-primary"
-                                        style={{
-                                            width: '100%',
-                                            height: '60px',
-                                            background: 'var(--secondary)',
-                                            color: 'var(--primary)',
-                                            borderRadius: '20px',
-                                            fontWeight: '800',
-                                            fontSize: '18px',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            gap: '10px'
-                                        }}
-                                        onClick={handleReserve}
-                                    >
-                                        Reservar Salida <ChevronRight />
-                                    </button>
-                                </motion.div>
-                            )}
-                        </AnimatePresence>
+
                         {/* Final del Área de Scroll */}
                     </>
                 ) : (
@@ -526,6 +499,52 @@ const CourseReservation: React.FC = () => {
                     </div>
                 )}
             </div>
+
+            {/* Floating Reserve Button */}
+            <AnimatePresence>
+                {!isReserved && selectedDateStr && selectedTime && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 100 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 100 }}
+                        style={{
+                            position: 'absolute',
+                            bottom: '90px',
+                            left: '20px',
+                            right: '20px',
+                            zIndex: 1000,
+                            pointerEvents: 'none'
+                        }}
+                    >
+                        <motion.button
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            onClick={handleReserve}
+                            style={{
+                                width: '100%',
+                                height: '70px',
+                                background: '#A3E635', // Primary lime green from image
+                                color: 'var(--primary)',
+                                borderRadius: '35px',
+                                fontWeight: '900',
+                                fontSize: '20px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                padding: '0 30px',
+                                border: 'none',
+                                cursor: 'pointer',
+                                pointerEvents: 'auto',
+                                boxShadow: '0 15px 30px rgba(163, 230, 53, 0.4), 0 0 20px rgba(163, 230, 53, 0.2)',
+                                transition: 'all 0.3s ease'
+                            }}
+                        >
+                            <span style={{ flex: 1, textAlign: 'center' }}>Reservar Salida</span>
+                            <ChevronRight size={28} />
+                        </motion.button>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 };
