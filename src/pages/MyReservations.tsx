@@ -148,7 +148,10 @@ const MyReservations: React.FC<MyReservationsProps> = ({ onRequestSwitchTab }) =
                                         <div>
                                             <div style={{ fontSize: '10px', color: 'var(--text-dim)', textTransform: 'uppercase', fontWeight: '700' }}>Fecha</div>
                                             <div style={{ fontSize: '14px', fontWeight: '700' }}>
-                                                {new Date(res.date).toLocaleDateString('es-CO', { day: 'numeric', month: 'short' })}
+                                                {(() => {
+                                                    const [y, m, d] = res.date.split('-').map(Number);
+                                                    return new Date(y, m - 1, d).toLocaleDateString('es-CO', { day: 'numeric', month: 'short' });
+                                                })()}
                                             </div>
                                         </div>
                                     </div>

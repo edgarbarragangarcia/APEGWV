@@ -42,18 +42,22 @@ const CourseReservation: React.FC = () => {
         // Generar fechas dinámicamente
         const generateDates = () => {
             const dates = [];
-            const today = new Date();
+            const now = new Date();
             const days = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
 
-            for (let i = 0; i < 365; i++) {
-                const date = new Date();
-                date.setDate(today.getDate() + i);
+            for (let i = 0; i < 90; i++) {
+                const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() + i);
+                const year = d.getFullYear();
+                const month = String(d.getMonth() + 1).padStart(2, '0');
+                const day = String(d.getDate()).padStart(2, '0');
+                const fullDate = `${year}-${month}-${day}`;
+
                 dates.push({
-                    day: days[date.getDay()],
-                    num: date.getDate(),
-                    fullDate: date.toISOString().split('T')[0],
-                    monthName: date.toLocaleString('es-ES', { month: 'long' }),
-                    year: date.getFullYear()
+                    day: days[d.getDay()],
+                    num: d.getDate(),
+                    fullDate: fullDate,
+                    monthName: d.toLocaleString('es-ES', { month: 'long' }),
+                    year: year
                 });
             }
             return dates;
@@ -78,7 +82,8 @@ const CourseReservation: React.FC = () => {
     const getFilteredTimeSlots = () => {
         if (!selectedDateStr) return [];
 
-        const todayStr = new Date().toISOString().split('T')[0];
+        const today = new Date();
+        const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
         if (selectedDateStr !== todayStr) return timeSlots;
 
         const now = new Date();
@@ -123,21 +128,23 @@ const CourseReservation: React.FC = () => {
             const { data: { session } } = await supabase.auth.getSession();
 
             if (session) {
-                // Determinar el precio basado en el día
-                const dayOfWeek = new Date(selectedDateStr).getDay();
+                // Determinar el precio basado en el día (usando componentes locales para evitar errores de zona horaria)
+                const [y, m, d] = selectedDateStr.split('-').map(Number);
+                const dayOfWeek = new Date(y, m - 1, d).getDay();
                 const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
                 const price = isWeekend ? (course.price_weekend || 0) : (course.price_weekday || 0);
 
+                // Asegurarnos que insertamos exactamente lo seleccionado
                 const { error } = await supabase.from('reservations').insert({
                     user_id: session.user.id,
                     course_id: course.id,
                     course_name: course.name,
-                    date: selectedDateStr,
+                    date: selectedDateStr, // "2026-02-05"
                     time: selectedTime,
                     status: 'confirmed',
                     players_count: 1,
                     price: price,
-                    reservation_date: selectedDateStr
+                    reservation_date: selectedDateStr // "2026-02-05"
                 } as any);
 
                 if (error) throw error;
@@ -421,7 +428,13 @@ const CourseReservation: React.FC = () => {
                                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                                                 <div>
                                                     <div style={{ fontSize: '13px', color: 'var(--text-dim)', marginBottom: '5px' }}>Fecha</div>
-                                                    <div style={{ fontWeight: '600' }}>{new Date(selectedDateStr || '').toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}</div>
+                                                    <div style={{ fontWeight: '600' }}>
+                                                        {(() => {
+                                                            if (!selectedDateStr) return '';
+                                                            const [y, m, d] = selectedDateStr.split('-').map(Number);
+                                                            return new Date(y, m - 1, d).toLocaleDateString('es-ES', { day: 'numeric', month: 'long' });
+                                                        })()}
+                                                    </div>
                                                 </div>
                                                 <div>
                                                     <div style={{ fontSize: '13px', color: 'var(--text-dim)', marginBottom: '5px' }}>Hora</div>
@@ -509,7 +522,7 @@ const CourseReservation: React.FC = () => {
                         exit={{ opacity: 0, y: 100 }}
                         style={{
                             position: 'absolute',
-                            bottom: '90px',
+                            bottom: '110px',
                             left: '20px',
                             right: '20px',
                             zIndex: 1000,

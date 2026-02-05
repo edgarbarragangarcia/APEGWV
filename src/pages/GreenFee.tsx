@@ -94,7 +94,7 @@ const GreenFee: React.FC = () => {
                 width: '100%',
                 zIndex: 900,
                 background: 'var(--primary)',
-                paddingBottom: '4px',
+                paddingBottom: '0px',
                 paddingLeft: '20px',
                 paddingRight: '20px',
                 pointerEvents: 'auto'
@@ -110,15 +110,15 @@ const GreenFee: React.FC = () => {
                 <div style={{
                     display: 'flex',
                     background: 'rgba(255,255,255,0.05)',
-                    padding: '4px',
+                    padding: '3px',
                     borderRadius: '16px',
-                    marginBottom: '10px'
+                    marginBottom: '0px'
                 }}>
                     <button
                         onClick={() => setActiveTab('courses')}
                         style={{
                             flex: 1,
-                            padding: '10px',
+                            padding: '8px',
                             borderRadius: '12px',
                             border: 'none',
                             background: activeTab === 'courses' ? 'var(--secondary)' : 'transparent',
@@ -139,7 +139,7 @@ const GreenFee: React.FC = () => {
                         onClick={() => setActiveTab('reservations')}
                         style={{
                             flex: 1,
-                            padding: '10px',
+                            padding: '8px',
                             borderRadius: '12px',
                             border: 'none',
                             background: activeTab === 'reservations' ? 'var(--secondary)' : 'transparent',
@@ -164,8 +164,9 @@ const GreenFee: React.FC = () => {
                         display: 'flex',
                         gap: '10px',
                         overflowX: 'auto',
-                        paddingBottom: '4px',
-                        marginBottom: '4px',
+                        paddingTop: '6px',
+                        paddingBottom: '0px',
+                        marginBottom: '0px',
                         scrollbarWidth: 'none'
                     }}>
                         {availableCities.map(city => (
@@ -173,7 +174,7 @@ const GreenFee: React.FC = () => {
                                 key={city}
                                 onClick={() => setSelectedCity(city)}
                                 style={{
-                                    padding: '8px 16px',
+                                    padding: '6px 14px',
                                     borderRadius: '20px',
                                     background: selectedCity === city ? 'var(--secondary)' : 'rgba(255,255,255,0.05)',
                                     color: selectedCity === city ? 'var(--primary)' : 'var(--text-main)',
@@ -193,10 +194,10 @@ const GreenFee: React.FC = () => {
                 {/* Translucent fade transition at the bottom of the fixed section */}
                 <div style={{
                     position: 'absolute',
-                    bottom: '-35px',
+                    bottom: '-20px',
                     left: '0',
                     right: '0',
-                    height: '35px',
+                    height: '20px',
                     background: 'linear-gradient(to bottom, var(--primary), transparent)',
                     pointerEvents: 'none',
                     zIndex: 901
@@ -206,13 +207,13 @@ const GreenFee: React.FC = () => {
             {/* Área de Scroll */}
             <div style={{
                 position: 'absolute',
-                top: activeTab === 'courses' ? 'calc(var(--header-offset-top) + 193px)' : 'calc(var(--header-offset-top) + 143px)',
+                top: activeTab === 'courses' ? 'calc(var(--header-offset-top) + 144px)' : 'calc(var(--header-offset-top) + 104px)',
                 left: '0',
                 right: '0',
                 bottom: 'calc(var(--nav-height))',
                 overflowY: 'auto',
                 overflowX: 'hidden',
-                padding: '0 20px 20px 20px'
+                padding: '5px 20px 20px 20px'
             }}>
                 {loading ? (
                     <div style={{ display: 'flex', justifyContent: 'center', padding: '100px 0' }}>

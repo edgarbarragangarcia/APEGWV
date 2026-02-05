@@ -28,7 +28,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({
             alignItems: 'center',
             justifyContent: 'space-between',
             marginTop: noMargin ? '0' : '0', // Default to 0 for standardization
-            marginBottom: noMargin ? '4px' : '15px',
+            marginBottom: noMargin ? '0px' : '15px',
             position: 'relative',
             zIndex: 10
         }}>
@@ -53,7 +53,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({
                         );
                     })()}
                 </h1>
-                {subtitle && <p style={{ fontSize: '13px', color: 'var(--text-dim)', margin: 0, marginTop: '2px' }}>{subtitle}</p>}
+                {subtitle && <p style={{ fontSize: '13px', color: 'var(--text-dim)', margin: 0, marginTop: '0px' }}>{subtitle}</p>}
             </div>
             {showBack && (
                 <button
