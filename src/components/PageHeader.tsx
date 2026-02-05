@@ -28,7 +28,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({
             alignItems: 'center',
             justifyContent: 'space-between',
             marginTop: noMargin ? '0' : '0', // Default to 0 for standardization
-            marginBottom: '15px',
+            marginBottom: noMargin ? '4px' : '15px',
             position: 'relative',
             zIndex: 10
         }}>

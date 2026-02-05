@@ -10,18 +10,18 @@ const CourseReservation: React.FC = () => {
     const { courseId } = useParams<{ courseId: string }>();
     const [course, setCourse] = useState<any>(null);
     const [loading, setLoading] = useState(true);
-    const [selectedDate, setSelectedDate] = useState<number | null>(null);
+    const [availableDates, setAvailableDates] = useState<any[]>([]);
+    const [selectedDateStr, setSelectedDateStr] = useState<string | null>(null);
     const [selectedTime, setSelectedTime] = useState<string | null>(null);
     const [isReserved, setIsReserved] = useState(false);
     const [isPaymentProcessing, setIsPaymentProcessing] = useState(false);
+    const dateInputRef = React.useRef<HTMLInputElement>(null);
 
     React.useEffect(() => {
         const fetchCourse = async () => {
             if (!courseId) return;
             setLoading(true);
             try {
-                // Si el ID es un UUID, buscamos por ID, si no (caso legacy o slug), podría fallar o buscar por otro campo
-                // Pero en GreenFee.tsx ya pasamos el ID real de Supabase.
                 const { data, error } = await supabase
                     .from('golf_courses')
                     .select('*')
@@ -38,31 +38,90 @@ const CourseReservation: React.FC = () => {
             }
         };
         fetchCourse();
-    }, [courseId]);
 
-    const dates = [
-        { day: 'Lun', num: 19 },
-        { day: 'Mar', num: 20 },
-        { day: 'Mié', num: 21 },
-        { day: 'Jue', num: 22 },
-        { day: 'Vie', num: 23 },
-        { day: 'Sáb', num: 24 },
-        { day: 'Dom', num: 25 },
-    ];
+        // Generar fechas dinámicamente
+        const generateDates = () => {
+            const dates = [];
+            const today = new Date();
+            const days = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+
+            for (let i = 0; i < 90; i++) {
+                const date = new Date();
+                date.setDate(today.getDate() + i);
+                dates.push({
+                    day: days[date.getDay()],
+                    num: date.getDate(),
+                    fullDate: date.toISOString().split('T')[0],
+                    monthName: date.toLocaleString('es-ES', { month: 'long' }),
+                    year: date.getFullYear()
+                });
+            }
+            return dates;
+        };
+
+        const dates = generateDates();
+        setAvailableDates(dates);
+        if (dates.length > 0) {
+            setSelectedDateStr(dates[0].fullDate);
+        }
+    }, [courseId]);
 
     const timeSlots = [
         '06:00 AM', '06:30 AM', '07:00 AM', '07:30 AM',
         '08:00 AM', '08:30 AM', '09:00 AM', '09:30 AM',
         '10:00 AM', '10:30 AM', '11:00 AM', '11:30 AM',
+        '12:00 PM', '12:30 PM', '01:00 PM', '01:30 PM',
+        '02:00 PM', '02:30 PM', '03:00 PM', '03:30 PM',
     ];
 
+    const getFilteredTimeSlots = () => {
+        if (!selectedDateStr) return [];
+
+        const todayStr = new Date().toISOString().split('T')[0];
+        if (selectedDateStr !== todayStr) return timeSlots;
+
+        const now = new Date();
+        const minTime = new Date(now.getTime() + 2 * 60 * 60 * 1000);
+
+        return timeSlots.filter(slot => {
+            const [time, period] = slot.split(' ');
+            let [hours, minutes] = time.split(':').map(Number);
+
+            if (period === 'PM' && hours < 12) hours += 12;
+            if (period === 'AM' && hours === 12) hours = 0;
+
+            const slotDate = new Date();
+            slotDate.setHours(hours, minutes, 0, 0);
+
+            return slotDate > minTime;
+        });
+    };
+
+    const filteredTimeSlots = getFilteredTimeSlots();
+
     const handleReserve = () => {
-        if (selectedDate && selectedTime) {
+        if (selectedDateStr && selectedTime) {
             setIsReserved(true);
         }
     };
 
+    const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const date = e.target.value;
+        if (date) {
+            setSelectedDateStr(date);
+            setSelectedTime(null);
+
+            // Si la fecha no está en availableDates (poco probable con 90 días, pero posible), podríamos regenerar
+            // Por ahora 90 días es suficiente.
+        }
+    };
+
     const handlePayment = async () => {
+        if (!selectedDateStr || !selectedTime || !course) {
+            alert("Por favor selecciona una fecha y hora.");
+            return;
+        }
+
         setIsPaymentProcessing(true);
 
         try {
@@ -71,21 +130,16 @@ const CourseReservation: React.FC = () => {
 
             const { data: { session } } = await supabase.auth.getSession();
 
-            if (session && course) {
-                // Determinar si hoy es fin de semana para el precio
-                const today = new Date().getDay();
-                const isWeekend = today === 0 || today === 6;
-                const reservationPrice = isWeekend ? (course.price_weekend || 0) : (course.price_weekday || 0);
-
+            if (session) {
                 const { error } = await supabase.from('reservations').insert({
                     user_id: session.user.id,
                     course_id: course.id,
-                    date: `2026-01-${selectedDate?.toString().padStart(2, '0')}`, // Formato fecha ISO simple
-                    time: selectedTime || '',
-                    players_count: 1,
-                    price: reservationPrice,
-                    status: 'confirmed'
-                });
+                    course_name: course.name,
+                    date: selectedDateStr,
+                    time: selectedTime,
+                    status: 'confirmed',
+                    reservation_date: selectedDateStr
+                } as any);
 
                 if (error) throw error;
             }
@@ -99,7 +153,6 @@ const CourseReservation: React.FC = () => {
             setIsPaymentProcessing(false);
         }
     };
-
 
     return (
         <div className="animate-fade" style={{
@@ -134,7 +187,7 @@ const CourseReservation: React.FC = () => {
             {/* Área de Scroll */}
             <div style={{
                 position: 'absolute',
-                top: 'calc(var(--header-offset-top) + 78px)',
+                top: 'calc(var(--header-offset-top) + 52px)',
                 left: '0',
                 right: '0',
                 bottom: 0,
@@ -189,7 +242,37 @@ const CourseReservation: React.FC = () => {
                                 <h3 style={{ fontSize: '18px', fontWeight: '900', color: 'white' }}>
                                     Seleccionar <span style={{ color: 'var(--secondary)' }}>Fecha</span>
                                 </h3>
-                                <span style={{ fontSize: '14px', color: 'var(--secondary)' }}>Enero 2026</span>
+                                <div
+                                    onClick={() => dateInputRef.current?.showPicker()}
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '6px',
+                                        cursor: 'pointer',
+                                        background: 'rgba(163, 230, 53, 0.1)',
+                                        padding: '5px 12px',
+                                        borderRadius: '10px',
+                                        border: '1px solid rgba(163, 230, 53, 0.2)'
+                                    }}
+                                >
+                                    <span style={{ fontSize: '14px', color: 'var(--secondary)', textTransform: 'capitalize', fontWeight: '700' }}>
+                                        {availableDates.find(d => d.fullDate === selectedDateStr)?.monthName} {availableDates.find(d => d.fullDate === selectedDateStr)?.year}
+                                    </span>
+                                    <ChevronRight size={14} color="var(--secondary)" style={{ transform: 'rotate(90deg)' }} />
+                                    <input
+                                        ref={dateInputRef}
+                                        type="date"
+                                        style={{
+                                            position: 'absolute',
+                                            opacity: 0,
+                                            pointerEvents: 'none',
+                                            width: 0,
+                                            height: 0
+                                        }}
+                                        min={new Date().toISOString().split('T')[0]}
+                                        onChange={handleDateChange}
+                                    />
+                                </div>
                             </div>
                             <div style={{
                                 display: 'flex',
@@ -198,17 +281,20 @@ const CourseReservation: React.FC = () => {
                                 paddingBottom: '10px',
                                 scrollbarWidth: 'none'
                             }}>
-                                {dates.map((date) => (
+                                {availableDates.map((date) => (
                                     <motion.button
-                                        key={date.num}
+                                        key={date.fullDate}
                                         whileTap={{ scale: 0.9 }}
-                                        onClick={() => setSelectedDate(date.num)}
+                                        onClick={() => {
+                                            setSelectedDateStr(date.fullDate);
+                                            setSelectedTime(null); // Reset time when date changes
+                                        }}
                                         style={{
                                             minWidth: '60px',
                                             height: '80px',
                                             borderRadius: '15px',
-                                            background: selectedDate === date.num ? 'var(--secondary)' : 'rgba(255,255,255,0.05)',
-                                            color: selectedDate === date.num ? 'var(--bg-dark)' : 'var(--text-main)',
+                                            background: selectedDateStr === date.fullDate ? 'var(--secondary)' : 'rgba(255,255,255,0.05)',
+                                            color: selectedDateStr === date.fullDate ? 'var(--bg-dark)' : 'var(--text-main)',
                                             display: 'flex',
                                             flexDirection: 'column',
                                             alignItems: 'center',
@@ -237,26 +323,32 @@ const CourseReservation: React.FC = () => {
                                 gridTemplateColumns: 'repeat(3, 1fr)',
                                 gap: '12px'
                             }}>
-                                {timeSlots.map((time) => (
-                                    <motion.button
-                                        key={time}
-                                        whileTap={{ scale: 0.95 }}
-                                        onClick={() => setSelectedTime(time)}
-                                        style={{
-                                            padding: '12px',
-                                            borderRadius: '12px',
-                                            background: selectedTime === time ? 'rgba(163, 230, 53, 0.2)' : 'rgba(255,255,255,0.05)',
-                                            color: selectedTime === time ? 'var(--secondary)' : 'var(--text-main)',
-                                            border: selectedTime === time ? '1px solid var(--secondary)' : '1px solid rgba(255,255,255,0.1)',
-                                            fontSize: '13px',
-                                            fontWeight: '600',
-                                            cursor: 'pointer',
-                                            transition: 'all 0.3s ease'
-                                        }}
-                                    >
-                                        {time}
-                                    </motion.button>
-                                ))}
+                                {filteredTimeSlots.length > 0 ? (
+                                    filteredTimeSlots.map((time) => (
+                                        <motion.button
+                                            key={time}
+                                            whileTap={{ scale: 0.95 }}
+                                            onClick={() => setSelectedTime(time)}
+                                            style={{
+                                                padding: '12px',
+                                                borderRadius: '12px',
+                                                background: selectedTime === time ? 'rgba(163, 230, 53, 0.2)' : 'rgba(255,255,255,0.05)',
+                                                color: selectedTime === time ? 'var(--secondary)' : 'var(--text-main)',
+                                                border: selectedTime === time ? '1px solid var(--secondary)' : '1px solid rgba(255,255,255,0.1)',
+                                                fontSize: '13px',
+                                                fontWeight: '600',
+                                                cursor: 'pointer',
+                                                transition: 'all 0.3s ease'
+                                            }}
+                                        >
+                                            {time}
+                                        </motion.button>
+                                    ))
+                                ) : (
+                                    <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '20px', color: 'var(--text-dim)' }}>
+                                        No hay horarios disponibles para el tiempo restante de hoy (+2h).
+                                    </div>
+                                )}
                             </div>
                         </div>
 
@@ -316,11 +408,11 @@ const CourseReservation: React.FC = () => {
                                             textAlign: 'left'
                                         }}>
                                             <div style={{ fontSize: '13px', color: 'var(--text-dim)', marginBottom: '5px' }}>Campo</div>
-                                            <div style={{ fontWeight: '600', marginBottom: '10px' }}>Briceño 18</div>
+                                            <div style={{ fontWeight: '600', marginBottom: '10px' }}>{course.name}</div>
                                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                                                 <div>
                                                     <div style={{ fontSize: '13px', color: 'var(--text-dim)', marginBottom: '5px' }}>Fecha</div>
-                                                    <div style={{ fontWeight: '600' }}>{selectedDate} Enero</div>
+                                                    <div style={{ fontWeight: '600' }}>{new Date(selectedDateStr || '').toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}</div>
                                                 </div>
                                                 <div>
                                                     <div style={{ fontSize: '13px', color: 'var(--text-dim)', marginBottom: '5px' }}>Hora</div>
@@ -376,7 +468,7 @@ const CourseReservation: React.FC = () => {
 
                         {/* Footer Action */}
                         <AnimatePresence>
-                            {!isReserved && selectedDate && selectedTime && (
+                            {!isReserved && selectedDateStr && selectedTime && (
                                 <motion.div
                                     initial={{ opacity: 0, y: 20 }}
                                     animate={{ opacity: 1, y: 0 }}
