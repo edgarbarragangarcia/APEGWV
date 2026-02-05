@@ -283,18 +283,7 @@ const GreenFee: React.FC = () => {
                                                     <span>{course.city} • {course.location}</span>
                                                 </div>
                                             </div>
-                                            {course.available && (
-                                                <div style={{
-                                                    background: 'rgba(163, 230, 53, 0.1)',
-                                                    color: 'var(--secondary)',
-                                                    padding: '4px 10px',
-                                                    borderRadius: '8px',
-                                                    fontSize: '12px',
-                                                    fontWeight: '700'
-                                                }}>
-                                                    {course.price}
-                                                </div>
-                                            )}
+                                            {/* Price removed as per user request */}
                                         </div>
 
                                         {course.available && (

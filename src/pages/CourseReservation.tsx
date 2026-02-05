@@ -15,7 +15,7 @@ const CourseReservation: React.FC = () => {
     const [selectedMonth, setSelectedMonth] = useState<string>('');
     const [selectedTime, setSelectedTime] = useState<string | null>(null);
     const [isReserved, setIsReserved] = useState(false);
-    const [isPaymentProcessing, setIsPaymentProcessing] = useState(false);
+    const [priceOverrides, setPriceOverrides] = useState<any[]>([]);
 
     React.useEffect(() => {
         const fetchCourse = async () => {
@@ -30,6 +30,16 @@ const CourseReservation: React.FC = () => {
 
                 if (data && !error) {
                     setCourse(data);
+                }
+
+                // Fetch price overrides
+                const { data: overrides } = await supabase
+                    .from('course_price_overrides')
+                    .select('*')
+                    .eq('course_id', courseId);
+
+                if (overrides) {
+                    setPriceOverrides(overrides);
                 }
             } catch (err) {
                 console.error("Error fetching course:", err);
@@ -105,6 +115,29 @@ const CourseReservation: React.FC = () => {
 
     const filteredTimeSlots = getFilteredTimeSlots();
 
+    const getCurrentPrice = () => {
+        if (!selectedDateStr || !course) return 0;
+
+        // Check for overrides first (First image: course_price_overrides)
+        const override = priceOverrides.find(ov => {
+            const start = ov.start_date;
+            const end = ov.end_date;
+            return selectedDateStr >= start && selectedDateStr <= end;
+        });
+
+        if (override) {
+            return override.price;
+        }
+
+        // Fallback to base prices (Second image: golf_courses)
+        const [y, m, d] = selectedDateStr.split('-').map(Number);
+        const dayOfWeek = new Date(y, m - 1, d).getDay();
+        const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+        return isWeekend ? (course.price_weekend || 0) : (course.price_weekday || 0);
+    };
+
+    const currentPrice = getCurrentPrice();
+
     const handleReserve = () => {
         if (selectedDateStr && selectedTime) {
             setIsReserved(true);
@@ -119,44 +152,27 @@ const CourseReservation: React.FC = () => {
             return;
         }
 
-        setIsPaymentProcessing(true);
-
         try {
-            // Simulate payment processing time
-            await new Promise(resolve => setTimeout(resolve, 2000));
-
             const { data: { session } } = await supabase.auth.getSession();
-
-            if (session) {
-                // Determinar el precio basado en el día (usando componentes locales para evitar errores de zona horaria)
-                const [y, m, d] = selectedDateStr.split('-').map(Number);
-                const dayOfWeek = new Date(y, m - 1, d).getDay();
-                const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-                const price = isWeekend ? (course.price_weekend || 0) : (course.price_weekday || 0);
-
-                // Asegurarnos que insertamos exactamente lo seleccionado
-                const { error } = await supabase.from('reservations').insert({
-                    user_id: session.user.id,
-                    course_id: course.id,
-                    course_name: course.name,
-                    date: selectedDateStr, // "2026-02-05"
-                    time: selectedTime,
-                    status: 'confirmed',
-                    players_count: 1,
-                    price: price,
-                    reservation_date: selectedDateStr // "2026-02-05"
-                } as any);
-
-                if (error) throw error;
+            if (!session) {
+                alert("Debes iniciar sesión para reservar.");
+                return;
             }
 
-            // Redirect to My Reservations tab in Green Fee page
-            navigate('/green-fee', { state: { tab: 'reservations' } });
-
+            navigate('/checkout', {
+                state: {
+                    reservation: {
+                        course: course,
+                        reservation_date: selectedDateStr,
+                        time: selectedTime,
+                        price: currentPrice,
+                        players_count: 1
+                    }
+                }
+            });
         } catch (error) {
-            console.error("Payment/Reservation error:", error);
-            alert("Hubo un error al procesar la reserva. Intenta nuevamente.");
-            setIsPaymentProcessing(false);
+            console.error("Error al obtener la sesión:", error);
+            alert("Hubo un error al verificar tu sesión. Intenta nuevamente.");
         }
     };
 
@@ -423,12 +439,13 @@ const CourseReservation: React.FC = () => {
                                             marginBottom: '25px',
                                             textAlign: 'left'
                                         }}>
-                                            <div style={{ fontSize: '13px', color: 'var(--text-dim)', marginBottom: '5px' }}>Campo</div>
-                                            <div style={{ fontWeight: '600', marginBottom: '10px' }}>{course.name}</div>
-                                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                                            <div style={{ fontSize: '12px', color: 'var(--text-dim)', marginBottom: '5px', textTransform: 'uppercase', fontWeight: '700' }}>Campo</div>
+                                            <div style={{ fontWeight: '700', marginBottom: '10px', fontSize: '16px' }}>{course.name}</div>
+
+                                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '15px' }}>
                                                 <div>
-                                                    <div style={{ fontSize: '13px', color: 'var(--text-dim)', marginBottom: '5px' }}>Fecha</div>
-                                                    <div style={{ fontWeight: '600' }}>
+                                                    <div style={{ fontSize: '12px', color: 'var(--text-dim)', marginBottom: '5px', textTransform: 'uppercase', fontWeight: '700' }}>Fecha</div>
+                                                    <div style={{ fontWeight: '700' }}>
                                                         {(() => {
                                                             if (!selectedDateStr) return '';
                                                             const [y, m, d] = selectedDateStr.split('-').map(Number);
@@ -437,8 +454,25 @@ const CourseReservation: React.FC = () => {
                                                     </div>
                                                 </div>
                                                 <div>
-                                                    <div style={{ fontSize: '13px', color: 'var(--text-dim)', marginBottom: '5px' }}>Hora</div>
-                                                    <div style={{ fontWeight: '600' }}>{selectedTime}</div>
+                                                    <div style={{ fontSize: '12px', color: 'var(--text-dim)', marginBottom: '5px', textTransform: 'uppercase', fontWeight: '700' }}>Hora</div>
+                                                    <div style={{ fontWeight: '700' }}>{selectedTime}</div>
+                                                </div>
+                                            </div>
+
+                                            <div style={{
+                                                borderTop: '1px solid rgba(255,255,255,0.1)',
+                                                paddingTop: '15px',
+                                                display: 'flex',
+                                                justifyContent: 'space-between',
+                                                alignItems: 'center'
+                                            }}>
+                                                <div style={{ fontSize: '12px', color: 'var(--text-dim)', textTransform: 'uppercase', fontWeight: '700' }}>Precio Total</div>
+                                                <div style={{ fontSize: '20px', fontWeight: '900', color: 'var(--secondary)' }}>
+                                                    {new Intl.NumberFormat('es-CO', {
+                                                        style: 'currency',
+                                                        currency: 'COP',
+                                                        maximumFractionDigits: 0
+                                                    }).format(currentPrice)}
                                                 </div>
                                             </div>
                                         </div>
@@ -461,7 +495,6 @@ const CourseReservation: React.FC = () => {
                                             </button>
                                             <button
                                                 onClick={handlePayment}
-                                                disabled={isPaymentProcessing}
                                                 style={{
                                                     flex: 1,
                                                     padding: '15px',
@@ -473,14 +506,10 @@ const CourseReservation: React.FC = () => {
                                                     display: 'flex',
                                                     justifyContent: 'center',
                                                     alignItems: 'center',
-                                                    opacity: isPaymentProcessing ? 0.7 : 1
+                                                    boxShadow: '0 10px 20px rgba(163, 230, 53, 0.2)'
                                                 }}
                                             >
-                                                {isPaymentProcessing ? (
-                                                    <Loader2 className="animate-spin" size={20} />
-                                                ) : (
-                                                    'Pagar Ahora'
-                                                )}
+                                                Pagar Ahora
                                             </button>
                                         </div>
                                     </motion.div>
@@ -552,7 +581,13 @@ const CourseReservation: React.FC = () => {
                                 transition: 'all 0.3s ease'
                             }}
                         >
-                            <span style={{ flex: 1, textAlign: 'center' }}>Reservar Salida</span>
+                            <span style={{ flex: 1, textAlign: 'center' }}>
+                                Reservar Salida • {new Intl.NumberFormat('es-CO', {
+                                    style: 'currency',
+                                    currency: 'COP',
+                                    maximumFractionDigits: 0
+                                }).format(currentPrice)}
+                            </span>
                             <ChevronRight size={28} />
                         </motion.button>
                     </motion.div>

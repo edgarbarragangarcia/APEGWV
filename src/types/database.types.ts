@@ -473,21 +473,21 @@ export type Database = {
                 Row: {
                     id: string
                     order_id: string
-                    price: number
+                    price_at_purchase: number
                     product_id: string
                     quantity: number
                 }
                 Insert: {
                     id?: string
                     order_id: string
-                    price: number
+                    price_at_purchase: number
                     product_id: string
                     quantity: number
                 }
                 Update: {
                     id?: string
                     order_id?: string
-                    price?: number
+                    price_at_purchase?: number
                     product_id?: string
                     quantity?: number
                 }
@@ -573,28 +573,34 @@ export type Database = {
             }
             payment_methods: {
                 Row: {
-                    card_last4: string
-                    card_type: string
-                    created_at: string | null
                     id: string
+                    user_id: string
                     is_default: boolean | null
-                    user_id: string | null
+                    created_at: string | null
+                    expiry: string
+                    card_type: string
+                    card_holder: string
+                    last_four: string
                 }
                 Insert: {
-                    card_last4: string
-                    card_type: string
-                    created_at?: string | null
                     id?: string
+                    user_id: string
                     is_default?: boolean | null
-                    user_id?: string | null
+                    created_at?: string | null
+                    expiry: string
+                    card_type: string
+                    card_holder: string
+                    last_four: string
                 }
                 Update: {
-                    card_last4?: string
-                    card_type?: string
-                    created_at?: string | null
                     id?: string
+                    user_id?: string
                     is_default?: boolean | null
-                    user_id?: string | null
+                    created_at?: string | null
+                    expiry?: string
+                    card_type?: string
+                    card_holder?: string
+                    last_four?: string
                 }
                 Relationships: []
             }

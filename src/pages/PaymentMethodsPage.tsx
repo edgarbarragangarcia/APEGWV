@@ -59,19 +59,27 @@ const PaymentMethodsPage: React.FC = () => {
         }
     };
 
+    // Handlers
     const handleAddCard = async (cardData: any) => {
         setIsSaving(true);
         try {
             const lastFour = cardData.number.replace(/\s/g, '').slice(-4);
-            const cardType = cardData.number.startsWith('4') ? 'Visa' :
-                cardData.number.startsWith('5') ? 'MasterCard' : 'Card';
+            const getCardType = (num: string) => {
+                if (num.startsWith('4')) return 'Visa';
+                if (num.startsWith('5')) return 'MasterCard';
+                if (num.startsWith('3')) return 'Amex';
+                return 'Card';
+            };
+            const cardType = getCardType(cardData.number);
 
             const { data, error } = await supabase
                 .from('payment_methods')
                 .insert([{
                     user_id: user.id,
-                    card_last4: lastFour,
+                    last_four: lastFour,
                     card_type: cardType,
+                    card_holder: cardData.name,
+                    expiry: cardData.expiry,
                     is_default: methods.length === 0 // First card is default
                 }])
                 .select()

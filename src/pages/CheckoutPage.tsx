@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
     MapPin, CreditCard,
     ShieldCheck, Loader2, Camera, Scan,
@@ -13,7 +13,7 @@ import CardInput from '../components/CardInput';
 
 interface PaymentMethod {
     id: string;
-    card_last4: string;
+    last_four: string;
     card_type: string;
     is_default: boolean | null;
     user_id: string | null;
@@ -21,8 +21,14 @@ interface PaymentMethod {
 
 const CheckoutPage: React.FC = () => {
     const navigate = useNavigate();
-    const { cartItems, totalAmount, clearCart } = useCart();
-    const [step, setStep] = useState<1 | 2>(1);
+    const location = useLocation();
+    const { cartItems, totalAmount: cartTotal, clearCart } = useCart();
+
+    const reservationData = location.state?.reservation;
+    const isReservation = !!reservationData;
+    const totalAmount = isReservation ? reservationData.price : cartTotal;
+
+    const [step, setStep] = useState<1 | 2>(isReservation ? 2 : 1);
     const [isProcessing, setIsProcessing] = useState(false);
     const [showScanner, setShowScanner] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
@@ -30,8 +36,9 @@ const CheckoutPage: React.FC = () => {
 
     // Payment Methods State
     const [savedMethods, setSavedMethods] = useState<PaymentMethod[]>([]);
-    const [selectedMethodId, setSelectedMethodId] = useState<string | 'new'>('new');
-    const [loadingMethods, setLoadingMethods] = useState(false);
+    // Initialize as null to indicate "not decided yet"
+    const [selectedMethodId, setSelectedMethodId] = useState<string | 'new' | null>(null);
+    const [loadingMethods, setLoadingMethods] = useState(true);
 
     const [shipping, setShipping] = useState({
         name: '',
@@ -94,9 +101,12 @@ const CheckoutPage: React.FC = () => {
                 setSelectedMethodId(defaultMethod.id);
             } else if (data && data.length > 0) {
                 setSelectedMethodId(data[0].id);
+            } else {
+                setSelectedMethodId('new');
             }
         } catch (err) {
             console.error('Error fetching methods:', err);
+            setSelectedMethodId('new');
         } finally {
             setLoadingMethods(false);
         }
@@ -120,6 +130,27 @@ const CheckoutPage: React.FC = () => {
         setIsProcessing(true);
         setError(null);
         try {
+            // Handle Reservation Payment
+            if (isReservation) {
+                const { error } = await supabase.from('reservations').insert({
+                    user_id: user.id,
+                    course_id: reservationData.course.id,
+                    time: reservationData.time,
+                    status: 'confirmed',
+                    players_count: reservationData.players_count,
+                    price: reservationData.price,
+                    reservation_date: reservationData.reservation_date
+                } as any);
+
+                if (error) throw error;
+
+                setIsSuccess(true);
+                setTimeout(() => {
+                    navigate('/green-fee', { state: { tab: 'reservations' } });
+                }, 3000);
+                return;
+            }
+
             // Group items by seller
             const ordersBySeller: Record<string, typeof cartItems> = {};
             cartItems.forEach(item => {
@@ -138,6 +169,7 @@ const CheckoutPage: React.FC = () => {
                     : shipping.address;
 
                 const { data: orderData, error: orderError } = await supabase.from('orders').insert({
+                    user_id: user.id, // Required by DB
                     buyer_id: user.id,
                     seller_id: sellerId === 'admin' ? null : sellerId,
                     total_amount: sellerTotal,
@@ -159,7 +191,7 @@ const CheckoutPage: React.FC = () => {
                         order_id: newOrderId,
                         product_id: item.id,
                         quantity: item.quantity,
-                        price: item.price
+                        price_at_purchase: item.price
                     });
                     if (itemError) throw itemError;
 
@@ -295,7 +327,7 @@ const CheckoutPage: React.FC = () => {
                     transition={{ delay: 0.3 }}
                     style={{ fontSize: '32px', fontWeight: '900', marginBottom: '15px', color: 'white' }}
                 >
-                    ¡GRACIAS POR TU COMPRA!
+                    {isReservation ? '¡RESERVA CONFIRMADA!' : '¡GRACIAS POR TU COMPRA!'}
                 </motion.h1>
 
                 <motion.p
@@ -304,7 +336,9 @@ const CheckoutPage: React.FC = () => {
                     transition={{ delay: 0.4 }}
                     style={{ color: 'var(--text-dim)', marginBottom: '50px', maxWidth: '300px', lineHeight: '1.6' }}
                 >
-                    Tu pedido ha sido procesado con éxito. El vendedor ya recibió tu notificación y está preparando el envío.
+                    {isReservation
+                        ? 'Tu reserva ha sido procesada con éxito. Te hemos enviado un correo con los detalles.'
+                        : 'Tu pedido ha sido procesado con éxito. El vendedor ya recibió tu notificación y está preparando el envío.'}
                 </motion.p>
 
                 <motion.div
@@ -316,7 +350,11 @@ const CheckoutPage: React.FC = () => {
                     <button
                         onClick={() => {
                             clearCart();
-                            navigate('/shop?tab=myorders');
+                            if (isReservation) {
+                                navigate('/green-fee', { state: { tab: 'reservations' } });
+                            } else {
+                                navigate('/shop?tab=myorders');
+                            }
                         }}
                         style={{
                             background: 'white',
@@ -384,8 +422,8 @@ const CheckoutPage: React.FC = () => {
 
             <PageHeader
                 noMargin
-                title="Finalizar Compra"
-                onBack={() => step === 1 ? navigate(-1) : setStep(1)}
+                title={isReservation ? "Confirmar Reserva" : "Finalizar Compra"}
+                onBack={() => step === 1 ? navigate(-1) : isReservation ? navigate(-1) : setStep(1)}
             />
 
             {/* Error Banner */}
@@ -396,7 +434,7 @@ const CheckoutPage: React.FC = () => {
             {/* ABORTING single replace to switch to multi_replace for cleaner state insertion */}
 
             {/* Re-rendering original content to restart with multi_replace */}
-            <div style={{ display: 'flex', gap: '8px', marginBottom: '30px' }}>
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '30px', opacity: isReservation ? 0 : 1 }}>
                 <div style={{ flex: 1, height: '4px', background: 'var(--secondary)', borderRadius: '2px' }} />
                 <div style={{ flex: 1, height: '4px', background: step === 2 ? 'var(--secondary)' : 'rgba(255,b255,b255,0.1)', borderRadius: '2px', transition: '0.3s' }} />
             </div>
@@ -521,6 +559,19 @@ const CheckoutPage: React.FC = () => {
                             )}
                         </div>
 
+                        {/* Loading Skeleton */}
+                        {loadingMethods && (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                                {[...Array(2)].map((_, i) => (
+                                    <div key={i} className="animate-pulse" style={{
+                                        height: '60px',
+                                        background: 'rgba(255,255,255,0.05)',
+                                        borderRadius: '16px'
+                                    }} />
+                                ))}
+                            </div>
+                        )}
+
                         {/* Saved Methods List */}
                         {!loadingMethods && savedMethods.length > 0 && (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '25px' }}>
@@ -555,7 +606,7 @@ const CheckoutPage: React.FC = () => {
                                             {method.card_type.toUpperCase()}
                                         </div>
                                         <div style={{ flex: 1 }}>
-                                            <p style={{ fontWeight: '700', fontSize: '14px' }}>•••• {method.card_last4}</p>
+                                            <p style={{ fontWeight: '700', fontSize: '14px' }}>•••• {method.last_four}</p>
                                             <p style={{ fontSize: '11px', color: 'var(--text-dim)' }}>{method.card_type}</p>
                                         </div>
                                         <div style={{
@@ -604,8 +655,8 @@ const CheckoutPage: React.FC = () => {
                             </div>
                         )}
 
-                        {selectedMethodId === 'new' && (
-                            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}>
+                        {!loadingMethods && selectedMethodId === 'new' && (
+                            <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }}>
                                 <CardInput onComplete={() => { }} />
                             </motion.div>
                         )}

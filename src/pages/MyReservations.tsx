@@ -7,7 +7,7 @@ import { Calendar, Clock, MapPin } from 'lucide-react';
 interface Reservation {
     id: string;
     club_id: string | null;
-    date: string;
+    reservation_date: string;
     time: string;
     players_count: number;
     price: number;
@@ -35,7 +35,7 @@ const MyReservations: React.FC<MyReservationsProps> = ({ onRequestSwitchTab }) =
                     .from('reservations')
                     .select('*, golf_courses(*)')
                     .eq('user_id', session.user.id)
-                    .order('date', { ascending: false });
+                    .order('reservation_date', { ascending: false });
 
                 if (error) throw error;
                 setReservations((data as any) || []);
@@ -149,7 +149,7 @@ const MyReservations: React.FC<MyReservationsProps> = ({ onRequestSwitchTab }) =
                                             <div style={{ fontSize: '10px', color: 'var(--text-dim)', textTransform: 'uppercase', fontWeight: '700' }}>Fecha</div>
                                             <div style={{ fontSize: '14px', fontWeight: '700' }}>
                                                 {(() => {
-                                                    const [y, m, d] = res.date.split('-').map(Number);
+                                                    const [y, m, d] = res.reservation_date.split('-').map(Number);
                                                     return new Date(y, m - 1, d).toLocaleDateString('es-CO', { day: 'numeric', month: 'short' });
                                                 })()}
                                             </div>
