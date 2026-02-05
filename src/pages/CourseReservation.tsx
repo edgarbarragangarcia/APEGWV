@@ -12,10 +12,10 @@ const CourseReservation: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [availableDates, setAvailableDates] = useState<any[]>([]);
     const [selectedDateStr, setSelectedDateStr] = useState<string | null>(null);
+    const [selectedMonth, setSelectedMonth] = useState<string>('');
     const [selectedTime, setSelectedTime] = useState<string | null>(null);
     const [isReserved, setIsReserved] = useState(false);
     const [isPaymentProcessing, setIsPaymentProcessing] = useState(false);
-    const dateInputRef = React.useRef<HTMLInputElement>(null);
 
     React.useEffect(() => {
         const fetchCourse = async () => {
@@ -45,7 +45,7 @@ const CourseReservation: React.FC = () => {
             const today = new Date();
             const days = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
 
-            for (let i = 0; i < 90; i++) {
+            for (let i = 0; i < 365; i++) {
                 const date = new Date();
                 date.setDate(today.getDate() + i);
                 dates.push({
@@ -63,6 +63,7 @@ const CourseReservation: React.FC = () => {
         setAvailableDates(dates);
         if (dates.length > 0) {
             setSelectedDateStr(dates[0].fullDate);
+            setSelectedMonth(dates[0].monthName);
         }
     }, [courseId]);
 
@@ -105,16 +106,7 @@ const CourseReservation: React.FC = () => {
         }
     };
 
-    const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const date = e.target.value;
-        if (date) {
-            setSelectedDateStr(date);
-            setSelectedTime(null);
-
-            // Si la fecha no está en availableDates (poco probable con 90 días, pero posible), podríamos regenerar
-            // Por ahora 90 días es suficiente.
-        }
-    };
+    const uniqueMonths = Array.from(new Set(availableDates.map(d => d.monthName)));
 
     const handlePayment = async () => {
         if (!selectedDateStr || !selectedTime || !course) {
@@ -236,44 +228,52 @@ const CourseReservation: React.FC = () => {
                             </div>
                         </div>
 
-                        {/* Date Selection */}
                         <div style={{ marginBottom: '30px' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
                                 <h3 style={{ fontSize: '18px', fontWeight: '900', color: 'white' }}>
                                     Seleccionar <span style={{ color: 'var(--secondary)' }}>Fecha</span>
                                 </h3>
-                                <div
-                                    onClick={() => dateInputRef.current?.showPicker()}
-                                    style={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: '6px',
-                                        cursor: 'pointer',
-                                        background: 'rgba(163, 230, 53, 0.1)',
-                                        padding: '5px 12px',
-                                        borderRadius: '10px',
-                                        border: '1px solid rgba(163, 230, 53, 0.2)'
-                                    }}
-                                >
-                                    <span style={{ fontSize: '14px', color: 'var(--secondary)', textTransform: 'capitalize', fontWeight: '700' }}>
-                                        {availableDates.find(d => d.fullDate === selectedDateStr)?.monthName} {availableDates.find(d => d.fullDate === selectedDateStr)?.year}
-                                    </span>
-                                    <ChevronRight size={14} color="var(--secondary)" style={{ transform: 'rotate(90deg)' }} />
-                                    <input
-                                        ref={dateInputRef}
-                                        type="date"
-                                        style={{
-                                            position: 'absolute',
-                                            opacity: 0,
-                                            pointerEvents: 'none',
-                                            width: 0,
-                                            height: 0
-                                        }}
-                                        min={new Date().toISOString().split('T')[0]}
-                                        onChange={handleDateChange}
-                                    />
-                                </div>
                             </div>
+
+                            {/* Month Selection Buttons */}
+                            <div style={{
+                                display: 'flex',
+                                gap: '10px',
+                                overflowX: 'auto',
+                                paddingBottom: '15px',
+                                scrollbarWidth: 'none'
+                            }}>
+                                {uniqueMonths.map(month => (
+                                    <button
+                                        key={month}
+                                        onClick={() => {
+                                            setSelectedMonth(month);
+                                            const firstDayOfMonth = availableDates.find(d => d.monthName === month);
+                                            if (firstDayOfMonth) {
+                                                setSelectedDateStr(firstDayOfMonth.fullDate);
+                                                setSelectedTime(null);
+                                            }
+                                        }}
+                                        style={{
+                                            padding: '8px 16px',
+                                            borderRadius: '20px',
+                                            background: selectedMonth === month ? 'var(--secondary)' : 'rgba(255,255,255,0.05)',
+                                            color: selectedMonth === month ? 'var(--bg-dark)' : 'white',
+                                            border: 'none',
+                                            fontSize: '13px',
+                                            fontWeight: '700',
+                                            textTransform: 'capitalize',
+                                            whiteSpace: 'nowrap',
+                                            cursor: 'pointer',
+                                            transition: 'all 0.3s ease'
+                                        }}
+                                    >
+                                        {month}
+                                    </button>
+                                ))}
+                            </div>
+
+                            {/* Days Selection Carrusel (filtered by month) */}
                             <div style={{
                                 display: 'flex',
                                 gap: '12px',
@@ -281,35 +281,37 @@ const CourseReservation: React.FC = () => {
                                 paddingBottom: '10px',
                                 scrollbarWidth: 'none'
                             }}>
-                                {availableDates.map((date) => (
-                                    <motion.button
-                                        key={date.fullDate}
-                                        whileTap={{ scale: 0.9 }}
-                                        onClick={() => {
-                                            setSelectedDateStr(date.fullDate);
-                                            setSelectedTime(null); // Reset time when date changes
-                                        }}
-                                        style={{
-                                            minWidth: '60px',
-                                            height: '80px',
-                                            borderRadius: '15px',
-                                            background: selectedDateStr === date.fullDate ? 'var(--secondary)' : 'rgba(255,255,255,0.05)',
-                                            color: selectedDateStr === date.fullDate ? 'var(--bg-dark)' : 'var(--text-main)',
-                                            display: 'flex',
-                                            flexDirection: 'column',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            gap: '5px',
-                                            border: 'none',
-                                            flexShrink: 0,
-                                            cursor: 'pointer',
-                                            transition: 'all 0.3s ease'
-                                        }}
-                                    >
-                                        <span style={{ fontSize: '12px', fontWeight: '500', opacity: 0.7 }}>{date.day}</span>
-                                        <span style={{ fontSize: '18px', fontWeight: '700' }}>{date.num}</span>
-                                    </motion.button>
-                                ))}
+                                {availableDates
+                                    .filter(d => d.monthName === selectedMonth)
+                                    .map((date) => (
+                                        <motion.button
+                                            key={date.fullDate}
+                                            whileTap={{ scale: 0.9 }}
+                                            onClick={() => {
+                                                setSelectedDateStr(date.fullDate);
+                                                setSelectedTime(null);
+                                            }}
+                                            style={{
+                                                minWidth: '60px',
+                                                height: '80px',
+                                                borderRadius: '15px',
+                                                background: selectedDateStr === date.fullDate ? 'var(--secondary)' : 'rgba(255,255,255,0.05)',
+                                                color: selectedDateStr === date.fullDate ? 'var(--bg-dark)' : 'var(--text-main)',
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                gap: '5px',
+                                                border: 'none',
+                                                flexShrink: 0,
+                                                cursor: 'pointer',
+                                                transition: 'all 0.3s ease'
+                                            }}
+                                        >
+                                            <span style={{ fontSize: '12px', fontWeight: '500', opacity: 0.7 }}>{date.day}</span>
+                                            <span style={{ fontSize: '18px', fontWeight: '700' }}>{date.num}</span>
+                                        </motion.button>
+                                    ))}
                             </div>
                         </div>
 
