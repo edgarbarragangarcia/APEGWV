@@ -16,9 +16,10 @@ const CategoryHero: React.FC<CategoryHeroProps> = ({ title, subtitle, image, pro
     return (
         <div style={{
             position: 'sticky',
-            top: 'calc(-1 * var(--header-offset-top))',
+            top: 0,
+            marginTop: 'calc(-1 * var(--header-offset-top))',
             width: '100%',
-            height: '400px',
+            height: '420px',
             zIndex: 0,
             overflow: 'hidden',
         }}>
@@ -85,7 +86,7 @@ const CategoryHero: React.FC<CategoryHeroProps> = ({ title, subtitle, image, pro
             {/* Content */}
             <div style={{
                 position: 'absolute',
-                top: 'calc(var(--header-offset-top) + 60px)',
+                top: 'calc(var(--header-offset-top) + 40px)',
                 left: '24px',
                 right: '24px',
                 zIndex: 5

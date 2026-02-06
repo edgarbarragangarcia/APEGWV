@@ -70,7 +70,7 @@ const Navbar: React.FC = () => {
             borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
             backdropFilter: 'blur(15px)',
             boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
-            background: 'linear-gradient(135deg, rgba(14, 47, 31, 0.95) 0%, rgba(20, 64, 42, 0.95) 100%)'
+            background: 'linear-gradient(135deg, rgba(14, 47, 31, 0.8) 0%, rgba(20, 64, 42, 0.8) 100%)'
         }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                 <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
