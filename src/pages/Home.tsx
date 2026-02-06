@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import Card from '../components/Card';
 import { ArrowRight, Heart, Users } from 'lucide-react';
@@ -6,10 +7,9 @@ import { supabase } from '../services/SupabaseManager';
 import ActivityCard from '../components/ActivityCard';
 import type { ActivityType } from '../components/ActivityCard';
 import { useProfile } from '../hooks/useProfile';
-import { useFeaturedProducts, useUpcomingTournaments, useUserRoundCount } from '../hooks/useHomeData';
+import { useFeaturedProducts, useUpcomingTournaments } from '../hooks/useHomeData';
 import { useQuery } from '@tanstack/react-query';
 import PageHeader from '../components/PageHeader';
-import { useAuth } from '../context/AuthContext';
 
 interface ActivityItem {
     id: string;
@@ -25,9 +25,7 @@ interface ActivityItem {
 const Home: React.FC = () => {
     const navigate = useNavigate();
     const activitiesRef = React.useRef<HTMLDivElement>(null);
-    const { user } = useAuth();
     const { data: profile } = useProfile();
-    const { data: roundCount = 0 } = useUserRoundCount(user?.id);
     const { data: featuredProducts = [] } = useFeaturedProducts(4);
     const { data: tournaments = [] } = useUpcomingTournaments(3);
 
@@ -155,38 +153,7 @@ const Home: React.FC = () => {
                     subtitle="¿Listo para tu próxima victoria en el campo?"
                 />
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
-                    <Card style={{
-                        marginBottom: 0,
-                        padding: '6px 15px',
-                        background: 'linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%)',
-                        boxShadow: '0 8px 20px rgba(16, 185, 129, 0.3)',
-                        animation: 'float 3s ease-in-out infinite'
-                    }}>
-                        <div style={{ textAlign: 'center' }}>
-                            <span style={{ fontSize: '9px', color: 'rgba(255, 255, 255, 0.8)', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: '800' }}>Hándicap</span>
-                            <div style={{ fontSize: '22px', fontWeight: '800', margin: '0', color: '#fff' }}>{profile?.handicap !== null && profile?.handicap !== undefined ? profile.handicap : '--'}</div>
-                            <div style={{ fontSize: '8px', color: 'rgba(255, 255, 255, 0.9)' }}>Actualizado</div>
-                        </div>
-                    </Card>
-                    <Card
-                        style={{
-                            marginBottom: 0,
-                            padding: '6px 15px',
-                            cursor: 'pointer',
-                            background: 'linear-gradient(135deg, #a855f7 0%, #9333ea 50%, #7e22ce 100%)',
-                            boxShadow: '0 8px 20px rgba(168, 85, 247, 0.3)',
-                            animation: 'float 3s ease-in-out infinite 0.5s'
-                        }}
-                        onClick={() => navigate('/rounds')}
-                    >
-                        <div style={{ textAlign: 'center' }}>
-                            <span style={{ fontSize: '9px', color: 'rgba(255, 255, 255, 0.8)', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: '800' }}>Rondas</span>
-                            <div style={{ fontSize: '22px', fontWeight: '800', margin: '0', color: '#fff' }}>{roundCount}</div>
-                            <div style={{ fontSize: '8px', color: '#a3e635' }}>Ver Historial →</div>
-                        </div>
-                    </Card>
-                </div>
+                {/* Stats cards removed as per user request */}
 
                 {/* Translucent fade effect at the bottom of the fixed section */}
 
@@ -195,7 +162,7 @@ const Home: React.FC = () => {
             {/* Area de Scroll para el resto del contenido */}
             <div style={{
                 position: 'absolute',
-                top: 'calc(var(--header-offset-top) + 178px)',
+                top: 'calc(var(--header-offset-top) + 65px)',
                 left: '0',
                 right: '0',
                 bottom: 'calc(var(--nav-height) + 5px)',
@@ -261,108 +228,156 @@ const Home: React.FC = () => {
                 </div>
 
                 {/* Marketplace Section */}
-                <div style={{ marginBottom: '10px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '8px', paddingRight: '5px' }}>
+                <div style={{ marginBottom: '25px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '15px', paddingRight: '5px' }}>
                         <div>
                             <h3 style={{ fontSize: '20px', fontWeight: '900', letterSpacing: '-0.5px', color: 'white' }}>Marketplace</h3>
                         </div>
                         <button
                             onClick={() => navigate('/shop')}
-                            style={{ background: 'rgba(163, 230, 53, 0.1)', border: 'none', color: 'var(--secondary)', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', padding: '6px 12px', borderRadius: '10px', fontWeight: '700' }}
+                            style={{
+                                background: 'transparent',
+                                border: 'none',
+                                color: 'var(--secondary)',
+                                fontSize: '14px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                                cursor: 'pointer',
+                                fontWeight: '600',
+                                padding: '4px 8px'
+                            }}
                         >
-                            Ver todo <ArrowRight size={12} />
+                            Ver todo <ArrowRight size={14} strokeWidth={2.5} />
                         </button>
                     </div>
                     <div
                         style={{
                             display: 'flex',
-                            gap: '12px',
+                            gap: '16px',
                             overflowX: 'auto',
                             overflowY: 'hidden',
-                            paddingBottom: '10px',
+                            paddingBottom: '20px',
                             scrollSnapType: 'x mandatory',
                             scrollbarWidth: 'none',
                             WebkitOverflowScrolling: 'touch',
                             margin: '0 -20px',
-                            padding: '0 20px 10px 20px'
+                            padding: '0 20px 20px 20px'
                         }}
                     >
                         {featuredProducts.length > 0 ? (
-                            featuredProducts.map((product, index) => (
-                                <Card
+                            featuredProducts.map((product) => (
+                                <motion.div
                                     key={product.id}
+                                    initial={{ opacity: 0, y: 15 }}
+                                    whileInView={{ opacity: 1, y: 0 }}
+                                    whileTap={{
+                                        scale: 0.95,
+                                        opacity: 0.9,
+                                        transition: { duration: 0.1 }
+                                    }}
+                                    viewport={{ once: true, margin: "0px 0px -50px 0px" }}
                                     style={{
-                                        minWidth: '160px',
-                                        width: '160px',
-                                        marginLeft: index === 0 ? '5px' : '0',
+                                        minWidth: '220px',
+                                        width: '220px',
                                         scrollSnapAlign: 'start',
-                                        padding: '0',
                                         position: 'relative',
                                         overflow: 'hidden',
-                                        marginBottom: 0,
                                         display: 'flex',
                                         flexDirection: 'column',
+                                        borderRadius: '28px',
+                                        background: 'rgba(255, 255, 255, 0.05)',
+                                        border: '1px solid rgba(255, 255, 255, 0.08)',
+                                        boxShadow: '0 10px 30px rgba(0,0,0,0.2)',
+                                        cursor: 'pointer',
+                                        WebkitTapHighlightColor: 'transparent',
+                                        touchAction: 'manipulation'
                                     }}
                                     onClick={() => navigate('/shop')}
                                 >
                                     <div style={{
                                         position: 'relative',
                                         width: '100%',
-                                        aspectRatio: '1/1',
-                                        overflow: 'hidden'
+                                        aspectRatio: '4/5',
+                                        overflow: 'hidden',
+                                        background: 'rgba(0,0,0,0.2)'
                                     }}>
-                                        <img
+                                        <motion.img
                                             src={product.image_url || undefined}
                                             alt={product.name}
+                                            whileHover={{ scale: 1.1 }}
+                                            transition={{ type: 'tween', duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
                                             style={{
                                                 width: '100%',
                                                 height: '100%',
-                                                objectFit: 'cover'
+                                                objectFit: 'cover',
                                             }}
                                         />
                                         <div style={{
                                             position: 'absolute',
-                                            top: '8px',
-                                            right: '8px',
-                                            background: 'rgba(0,0,0,0.4)',
-                                            backdropFilter: 'blur(8px)',
+                                            top: '12px',
+                                            right: '12px',
+                                            background: 'rgba(0,0,0,0.3)',
+                                            backdropFilter: 'blur(12px)',
                                             borderRadius: '50%',
-                                            padding: '6px',
+                                            padding: '8px',
                                             display: 'flex',
-                                            border: '1px solid rgba(255,255,255,0.1)'
+                                            border: '1px solid rgba(255,255,255,0.15)',
+                                            zIndex: 2
                                         }}>
-                                            <Heart size={14} color="white" />
+                                            <Heart size={16} color="white" strokeWidth={2.5} />
+                                        </div>
+
+                                        {/* Bottom info overlay for category */}
+                                        <div style={{
+                                            position: 'absolute',
+                                            bottom: '12px',
+                                            left: '12px',
+                                            background: 'rgba(163, 230, 53, 0.85)',
+                                            color: '#000',
+                                            padding: '4px 10px',
+                                            borderRadius: '10px',
+                                            fontSize: '10px',
+                                            fontWeight: '800',
+                                            textTransform: 'uppercase',
+                                            letterSpacing: '0.5px',
+                                            zIndex: 2
+                                        }}>
+                                            {product.category}
                                         </div>
                                     </div>
-                                    <div style={{ padding: '10px 12px', display: 'flex', flexDirection: 'column', flex: 1 }}>
+
+                                    <div style={{
+                                        padding: '16px',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        gap: '4px',
+                                        background: 'linear-gradient(to bottom, transparent, rgba(0,0,0,0.05))'
+                                    }}>
                                         <h4 style={{
-                                            fontSize: '15px',
-                                            fontWeight: '800',
-                                            marginBottom: '2px',
+                                            fontSize: '17px',
+                                            fontWeight: '700',
+                                            letterSpacing: '-0.3px',
+                                            margin: 0,
                                             whiteSpace: 'nowrap',
                                             overflow: 'hidden',
                                             textOverflow: 'ellipsis',
                                             width: '100%',
-                                            color: 'white'
+                                            color: '#fff'
                                         }}>
                                             {product.name}
                                         </h4>
 
-                                        <div style={{ marginBottom: '4px' }}>
-                                            <div style={{
-                                                color: 'var(--secondary)',
-                                                fontSize: '13px',
-                                                fontWeight: '900'
-                                            }}>
-                                                {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(product.price)}
-                                            </div>
-                                        </div>
-
-                                        <div style={{ marginTop: 'auto' }}>
-                                            <span style={{ fontSize: '9px', color: 'var(--text-dim)', fontWeight: '600', textTransform: 'uppercase' }}>{product.category}</span>
+                                        <div style={{
+                                            color: 'rgba(255,255,255,0.9)',
+                                            fontSize: '15px',
+                                            fontWeight: '600',
+                                            opacity: 0.9
+                                        }}>
+                                            {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(product.price)}
                                         </div>
                                     </div>
-                                </Card>
+                                </motion.div>
                             ))
                         ) : (
                             <div style={{ color: 'var(--text-dim)', fontSize: '14px', padding: '20px 0', width: '100%', textAlign: 'center' }}>No hay productos destacados aún.</div>
