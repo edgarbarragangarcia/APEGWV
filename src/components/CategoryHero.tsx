@@ -19,7 +19,7 @@ const CategoryHero: React.FC<CategoryHeroProps> = ({ title, subtitle, image, pro
             top: 0,
             marginTop: 'calc(-1 * var(--header-offset-top))',
             width: '100%',
-            height: '340px',
+            height: '400px',
             zIndex: 0,
             overflow: 'hidden',
         }}>
@@ -44,6 +44,7 @@ const CategoryHero: React.FC<CategoryHeroProps> = ({ title, subtitle, image, pro
                         width: '100%',
                         height: '100%',
                         objectFit: 'cover',
+                        objectPosition: 'top',
                         filter: 'brightness(0.7)',
                         display: image ? 'block' : 'none'
                     }}
@@ -86,7 +87,7 @@ const CategoryHero: React.FC<CategoryHeroProps> = ({ title, subtitle, image, pro
             {/* Content */}
             <div style={{
                 position: 'absolute',
-                top: 'calc(var(--safe-top) + 100px)',
+                top: 'calc(var(--safe-top) + 80px)',
                 left: '24px',
                 right: '24px',
                 zIndex: 5
