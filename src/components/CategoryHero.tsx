@@ -19,15 +19,15 @@ const CategoryHero: React.FC<CategoryHeroProps> = ({ title, subtitle, image, pro
             top: 0,
             marginTop: 'calc(-1 * var(--header-offset-top))',
             width: '100%',
-            height: '420px',
+            height: '340px',
             zIndex: 0,
             overflow: 'hidden',
         }}>
             {/* Background Image with Gradient Overlay */}
             <motion.div
-                initial={{ scale: 1.1 }}
-                animate={{ scale: 1 }}
-                transition={{ duration: 1.5, ease: "easeOut" }}
+                initial={{ scale: 1.1, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.8 }}
                 style={{
                     position: 'absolute',
                     top: 1,
@@ -54,7 +54,7 @@ const CategoryHero: React.FC<CategoryHeroProps> = ({ title, subtitle, image, pro
                 <div style={{
                     position: 'absolute',
                     inset: 0,
-                    background: 'linear-gradient(to bottom, rgba(14, 47, 31, 0.2) 0%, rgba(14, 47, 31, 0.9) 100%)',
+                    background: 'linear-gradient(to bottom, rgba(14, 47, 31, 0.1) 0%, rgba(14, 47, 31, 0.9) 100%)',
                 }} />
             </motion.div>
 
@@ -65,8 +65,8 @@ const CategoryHero: React.FC<CategoryHeroProps> = ({ title, subtitle, image, pro
                 onClick={() => navigate('/')}
                 style={{
                     position: 'absolute',
-                    top: 'calc(var(--header-offset-top) + 10px)',
-                    right: '20px',
+                    top: 'calc(var(--safe-top) + 20px)',
+                    right: '24px',
                     zIndex: 20,
                     width: '32px',
                     height: '32px',
@@ -86,7 +86,7 @@ const CategoryHero: React.FC<CategoryHeroProps> = ({ title, subtitle, image, pro
             {/* Content */}
             <div style={{
                 position: 'absolute',
-                top: 'calc(var(--header-offset-top) + 40px)',
+                top: 'calc(var(--safe-top) + 100px)',
                 left: '24px',
                 right: '24px',
                 zIndex: 5

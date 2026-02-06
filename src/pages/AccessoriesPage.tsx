@@ -35,10 +35,8 @@ const AccessoriesPage: React.FC = () => {
 
             <div style={{
                 padding: '30px 20px',
-                marginTop: '-140px',
                 position: 'relative',
                 zIndex: 10,
-                background: 'linear-gradient(to bottom, transparent 0%, var(--primary) 140px)',
             }}>
                 {isLoading ? (
                     <div style={{
