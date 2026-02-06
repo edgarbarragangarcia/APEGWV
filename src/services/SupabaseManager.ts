@@ -23,10 +23,10 @@ export interface Product {
     price: number;
     category: string;
     image_url: string;
-    seller_id: string;
+    seller_id?: string | null;
     condition: string;
-    created_at: string;
-    status?: string;
+    created_at?: string | null;
+    status?: string | null;
     is_negotiable?: boolean;
     negotiating_buyer_id?: string | null;
     negotiation_expires_at?: string | null;

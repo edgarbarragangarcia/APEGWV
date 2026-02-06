@@ -132,8 +132,6 @@ const Home: React.FC = () => {
             right: '0',
             bottom: '0',
             width: '100%',
-            maxWidth: 'var(--app-max-width)',
-            margin: '0 auto',
             overflow: 'hidden'
         }}>
             {/* Header y Stats Fijos */}

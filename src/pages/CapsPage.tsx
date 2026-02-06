@@ -1,14 +1,14 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Heart, ShoppingCart } from 'lucide-react';
-import PageHeader from '../components/PageHeader';
+import CategoryHero from '../components/CategoryHero';
+import PremiumProductCard from '../components/PremiumProductCard';
 import { useFeaturedProducts } from '../hooks/useHomeData';
 import { useCart } from '../context/CartContext';
 import { useNavigate } from 'react-router-dom';
 
 const CapsPage: React.FC = () => {
     const navigate = useNavigate();
-    const { data: featuredProducts = [] } = useFeaturedProducts(50);
+    const { data: featuredProducts = [], isLoading } = useFeaturedProducts(50);
     const { addToCart } = useCart();
 
     // Filter products for Gorras category
@@ -22,195 +22,80 @@ const CapsPage: React.FC = () => {
 
     return (
         <div className="animate-fade" style={{
-            position: 'absolute',
-            top: '0',
-            left: '0',
-            right: '0',
-            bottom: '0',
+            minHeight: '100vh',
             background: 'var(--primary)',
-            overflow: 'hidden'
+            paddingBottom: 'calc(var(--nav-height) + 40px)'
         }}>
-            {/* Fixed Header */}
-            <div style={{
-                position: 'absolute',
-                top: '0',
-                left: '0',
-                right: '0',
-                zIndex: 900,
-                background: 'var(--primary)',
-                paddingBottom: '5px'
-            }}>
-                <PageHeader
-                    noMargin
-                    showBack={true}
-                    title="Gorras"
-                    subtitle="Estilo y protección bajo el sol"
-                />
-            </div>
+            <CategoryHero
+                title="Gorras"
+                subtitle="El toque final de tu outfit. Estilo clásico y moderno para protegerte con elegancia."
+                image="/src/assets/heros/golf_accessories_hero_1770415216840.png"
+                productCount={capProducts.length}
+            />
 
-            {/* Scrollable Content */}
             <div style={{
-                position: 'absolute',
-                top: 'calc(var(--header-offset-top) + 100px)',
-                left: '0',
-                right: '0',
-                bottom: 'calc(var(--nav-height) + 5px)',
-                overflowY: 'auto',
-                padding: '10px 20px 20px 20px',
-                overflowX: 'hidden'
+                padding: '30px 20px',
+                position: 'relative',
+                zIndex: 10,
             }}>
-                {/* Products Grid */}
-                <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(2, 1fr)',
-                    gap: '12px',
-                    paddingBottom: '20px'
-                }}>
-                    {!capProducts || capProducts.length === 0 ? (
-                        <div style={{
-                            gridColumn: '1 / -1',
+                {isLoading ? (
+                    <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(2, 1fr)',
+                        gap: '16px',
+                    }}>
+                        {[1, 2, 3, 4].map(i => (
+                            <div key={i} className="skeleton" style={{ height: '260px', borderRadius: '32px' }} />
+                        ))}
+                    </div>
+                ) : capProducts.length === 0 ? (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        style={{
                             textAlign: 'center',
-                            padding: '40px 20px',
-                            color: 'var(--text-dim)'
-                        }}>
-                            <p>No hay productos disponibles en esta categoría</p>
-                        </div>
-                    ) : (
-                        capProducts.map((product, index) => {
-                            const groupIndex = index % 3;
-                            const isBig = groupIndex === 0;
-
-                            return (
-                                <motion.div
-                                    key={product.id}
-                                    whileTap={{ scale: 0.97 }}
+                            padding: '60px 20px',
+                            color: 'var(--text-dim)',
+                            background: 'rgba(255,255,255,0.02)',
+                            borderRadius: '32px',
+                            border: '1px dashed rgba(255,255,255,0.1)'
+                        }}
+                    >
+                        <p style={{ fontSize: '16px', marginBottom: '20px' }}>No hay productos disponibles en esta categoría</p>
+                        <button
+                            onClick={() => navigate('/')}
+                            style={{
+                                color: 'var(--secondary)',
+                                fontSize: '14px',
+                                fontWeight: '700',
+                                textDecoration: 'underline'
+                            }}
+                        >
+                            Volver al inicio
+                        </button>
+                    </motion.div>
+                ) : (
+                    <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(2, 1fr)',
+                        gap: '16px',
+                    }}>
+                        {capProducts.map((product, index) => (
+                            <motion.div
+                                key={product.id}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: index * 0.1 }}
+                            >
+                                <PremiumProductCard
+                                    product={product}
+                                    onAddToCart={handleAddToCart}
                                     onClick={() => navigate(`/product/${product.id}`)}
-                                    style={{
-                                        position: 'relative',
-                                        overflow: 'hidden',
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        borderRadius: '28px',
-                                        background: 'rgba(255, 255, 255, 0.03)',
-                                        border: '1px solid rgba(255, 255, 255, 0.05)',
-                                        boxShadow: '0 10px 30px rgba(0,0,0,0.2)',
-                                        cursor: 'pointer',
-                                        WebkitTapHighlightColor: 'transparent',
-                                        touchAction: 'manipulation',
-                                        gridRow: isBig ? 'span 2' : 'span 1',
-                                        gridColumn: isBig ? '1' : '2',
-                                        height: isBig ? '100%' : '110px',
-                                        minHeight: isBig ? '220px' : '110px'
-                                    }}
-                                >
-                                    {/* Product Image */}
-                                    <div style={{
-                                        position: 'relative',
-                                        width: '100%',
-                                        height: isBig ? '100%' : '110px',
-                                        overflow: 'hidden',
-                                        borderRadius: '28px'
-                                    }}>
-                                        <img
-                                            src={product.image_url || 'https://via.placeholder.com/300x200?text=Producto'}
-                                            alt={product.name}
-                                            style={{
-                                                width: '100%',
-                                                height: '100%',
-                                                objectFit: 'cover'
-                                            }}
-                                        />
-
-                                        {/* Favorite Icon */}
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                            }}
-                                            style={{
-                                                position: 'absolute',
-                                                top: '10px',
-                                                right: '10px',
-                                                background: 'rgba(0,0,0,0.4)',
-                                                backdropFilter: 'blur(10px)',
-                                                border: 'none',
-                                                borderRadius: '50%',
-                                                width: '32px',
-                                                height: '32px',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                cursor: 'pointer',
-                                                zIndex: 10
-                                            }}
-                                        >
-                                            <Heart size={16} color="white" />
-                                        </button>
-
-                                        {/* Add to Cart Button */}
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                handleAddToCart(product);
-                                            }}
-                                            style={{
-                                                position: 'absolute',
-                                                bottom: '10px',
-                                                right: '10px',
-                                                background: 'var(--secondary)',
-                                                border: 'none',
-                                                borderRadius: '50%',
-                                                width: '36px',
-                                                height: '36px',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                cursor: 'pointer',
-                                                boxShadow: '0 4px 12px rgba(163, 230, 53, 0.4)',
-                                                zIndex: 10
-                                            }}
-                                        >
-                                            <ShoppingCart size={18} color="var(--primary)" />
-                                        </button>
-                                    </div>
-
-                                    {/* Product Info - Only for big cards */}
-                                    {isBig && (
-                                        <div style={{
-                                            padding: '12px 14px',
-                                            background: 'rgba(0,0,0,0.2)',
-                                            backdropFilter: 'blur(10px)'
-                                        }}>
-                                            <h3 style={{
-                                                fontSize: '13px',
-                                                fontWeight: '700',
-                                                color: 'white',
-                                                margin: '0 0 4px 0',
-                                                overflow: 'hidden',
-                                                textOverflow: 'ellipsis',
-                                                whiteSpace: 'nowrap'
-                                            }}>
-                                                {product.name}
-                                            </h3>
-                                            <div style={{
-                                                display: 'flex',
-                                                justifyContent: 'space-between',
-                                                alignItems: 'center'
-                                            }}>
-                                                <span style={{
-                                                    fontSize: '15px',
-                                                    fontWeight: '900',
-                                                    color: 'var(--secondary)'
-                                                }}>
-                                                    ${product.price}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    )}
-                                </motion.div>
-                            );
-                        })
-                    )}
-                </div>
+                                />
+                            </motion.div>
+                        ))}
+                    </div>
+                )}
             </div>
         </div>
     );
