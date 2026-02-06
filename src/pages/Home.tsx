@@ -258,6 +258,20 @@ const Home: React.FC = () => {
                 </div>
             </div>
 
+            {/* Blur fade effect at bottom of fixed header */}
+            <div style={{
+                position: 'absolute',
+                top: viewTab === 'marketplace' ? 'calc(var(--header-offset-top) + 205px)' : 'calc(var(--header-offset-top) + 115px)',
+                left: '0',
+                right: '0',
+                height: '20px',
+                background: 'linear-gradient(to bottom, var(--primary), transparent)',
+                backdropFilter: 'blur(8px)',
+                WebkitBackdropFilter: 'blur(8px)',
+                pointerEvents: 'none',
+                zIndex: 899
+            }} />
+
             {/* Area de Scroll para el resto del contenido */}
             <div style={{
                 position: 'absolute',
@@ -282,7 +296,68 @@ const Home: React.FC = () => {
                     }}
                 >
                     {viewTab === 'marketplace' ? (
-                        filteredProducts.length > 0 ? (
+                        // Show skeleton loaders while loading
+                        !featuredProducts || featuredProducts.length === 0 ? (
+                            // Skeleton Cards
+                            Array.from({ length: 6 }).map((_, index) => {
+                                const groupIndex = index % 3;
+                                const isBig = groupIndex === 0;
+
+                                return (
+                                    <div
+                                        key={`skeleton-${index}`}
+                                        style={{
+                                            position: 'relative',
+                                            overflow: 'hidden',
+                                            borderRadius: '20px',
+                                            background: 'rgba(255, 255, 255, 0.03)',
+                                            border: '1px solid rgba(255, 255, 255, 0.05)',
+                                            gridRow: isBig ? 'span 2' : 'span 1',
+                                            gridColumn: isBig ? '1' : '2',
+                                            height: '100%',
+                                            minHeight: isBig ? '220px' : '110px'
+                                        }}
+                                    >
+                                        {/* Shimmer effect */}
+                                        <div
+                                            style={{
+                                                position: 'absolute',
+                                                top: 0,
+                                                left: '-100%',
+                                                width: '100%',
+                                                height: '100%',
+                                                background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent)',
+                                                animation: 'shimmer 1.5s infinite'
+                                            }}
+                                        />
+
+                                        {/* Skeleton content */}
+                                        <div style={{
+                                            height: isBig ? '100%' : '110px',
+                                            background: 'rgba(255,255,255,0.02)'
+                                        }} />
+
+                                        {!isBig && (
+                                            <div style={{ padding: '8px 10px' }}>
+                                                <div style={{
+                                                    height: '12px',
+                                                    background: 'rgba(255,255,255,0.05)',
+                                                    borderRadius: '4px',
+                                                    marginBottom: '6px',
+                                                    width: '70%'
+                                                }} />
+                                                <div style={{
+                                                    height: '10px',
+                                                    background: 'rgba(255,255,255,0.05)',
+                                                    borderRadius: '4px',
+                                                    width: '40%'
+                                                }} />
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            })
+                        ) : filteredProducts.length > 0 ? (
                             filteredProducts.map((product, index) => {
                                 const groupIndex = index % 3;
                                 const isBig = groupIndex === 0;
