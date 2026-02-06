@@ -269,10 +269,17 @@ const styles = {
         paddingTop: 'var(--header-offset-top)'
     },
     headerArea: {
-        flexShrink: 0, zIndex: 10, background: 'transparent', padding: '0 20px'
+        flexShrink: 0,
+        position: 'relative' as 'relative',
+        zIndex: 10,
+        background: 'transparent',
+        padding: '0 20px'
     },
     scrollArea: {
-        flex: 1, overflowY: 'auto' as 'auto',
+        flex: 1,
+        position: 'relative' as 'relative',
+        zIndex: 10,
+        overflowY: 'auto' as 'auto',
         padding: '0 20px 120px 20px',
         display: 'flex', flexDirection: 'column' as 'column',
         gap: '12px', WebkitOverflowScrolling: 'touch' as 'touch'

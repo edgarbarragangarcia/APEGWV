@@ -94,7 +94,7 @@ const EditRound: React.FC = () => {
                 left: '0',
                 right: '0',
                 width: '100%',
-                zIndex: 900,
+                zIndex: 1000,
                 background: 'transparent',
                 paddingLeft: '20px',
                 paddingRight: '20px',
@@ -116,7 +116,8 @@ const EditRound: React.FC = () => {
                 bottom: 0,
                 overflowY: 'auto',
                 padding: '0 20px 40px 20px',
-                overflowX: 'hidden'
+                overflowX: 'hidden',
+                zIndex: 10
             }}>
 
                 <form onSubmit={handleSave}>

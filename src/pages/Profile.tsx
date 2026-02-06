@@ -200,11 +200,17 @@ const styles = {
         overflow: 'hidden', zIndex: 900
     },
     headerArea: {
-        flexShrink: 0, zIndex: 10, background: 'transparent', padding: '0 20px',
+        flexShrink: 0,
+        position: 'relative' as 'relative',
+        zIndex: 10,
+        background: 'transparent',
+        padding: '0 20px',
         paddingTop: 'var(--header-offset-top)'
     },
     contentContainer: {
         flex: 1,
+        position: 'relative' as 'relative',
+        zIndex: 10,
         display: 'flex', flexDirection: 'column' as 'column',
         padding: '0 20px calc(var(--nav-height) + 15px) 20px',
         overflowY: 'auto' as 'auto', // Allow scroll only if screen is extremely small

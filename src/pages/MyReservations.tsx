@@ -222,7 +222,7 @@ const MyReservations: React.FC<MyReservationsProps> = ({ onRequestSwitchTab }) =
                 left: '0',
                 right: '0',
                 width: '100%',
-                zIndex: 900,
+                zIndex: 1000,
                 background: 'transparent',
                 paddingLeft: '20px',
                 paddingRight: '20px',
@@ -244,7 +244,8 @@ const MyReservations: React.FC<MyReservationsProps> = ({ onRequestSwitchTab }) =
                 bottom: 'calc(var(--nav-height))',
                 overflowY: 'auto',
                 padding: '0 20px 40px 20px',
-                overflowX: 'hidden'
+                overflowX: 'hidden',
+                zIndex: 10
             }}>
                 {content}
             </div>
