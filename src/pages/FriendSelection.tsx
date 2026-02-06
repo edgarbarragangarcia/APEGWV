@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronRight, Plus, Trash2, Users, Pencil, Check } from 'lucide-react';
+import { motion } from 'framer-motion';
 import PageHeader from '../components/PageHeader';
 import { useProfile } from '../hooks/useProfile';
 import { supabase } from '../services/SupabaseManager';
@@ -256,40 +257,44 @@ const FriendSelection: React.FC = () => {
                     gap: '20px'
                 }}>
 
-                    {/* Botón Agregar Grupo */}
-                    <button
+                    {/* Botón Agregar Grupo - Apple Elite Style */}
+                    <motion.button
+                        whileTap={{ scale: 0.96 }}
                         onClick={() => navigate('/create-group')}
                         style={{
                             width: '100%',
-                            background: 'rgba(59, 130, 246, 0.1)',
-                            border: '2px dashed #3b82f6',
-                            borderRadius: '24px',
-                            padding: '24px',
+                            background: 'linear-gradient(135deg, rgba(163, 230, 53, 0.12) 0%, rgba(163, 230, 53, 0.06) 100%)',
+                            backdropFilter: 'blur(16px)',
+                            WebkitBackdropFilter: 'blur(16px)',
+                            border: '1px solid rgba(163, 230, 53, 0.25)',
+                            borderRadius: '32px',
+                            padding: '20px 24px',
                             display: 'flex',
-                            flexDirection: 'column',
                             alignItems: 'center',
-                            justifyContent: 'center',
-                            gap: '12px',
+                            gap: '20px',
                             cursor: 'pointer',
-                            transition: 'all 0.2s',
-                            color: '#3b82f6'
+                            color: 'var(--secondary)',
+                            WebkitTapHighlightColor: 'transparent',
+                            boxShadow: '0 12px 40px rgba(0,0,0,0.2)',
                         }}
-                        className="active:scale-[0.98]"
                     >
                         <div style={{
-                            width: '50px',
-                            height: '50px',
-                            borderRadius: '50%',
-                            background: '#3b82f6',
+                            width: '52px',
+                            height: '52px',
+                            borderRadius: '18px',
+                            background: 'var(--secondary)',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            boxShadow: '0 4px 15px rgba(59, 130, 246, 0.3)'
+                            boxShadow: '0 8px 20px rgba(163, 230, 53, 0.3)'
                         }}>
-                            <Plus size={24} color="white" strokeWidth={3} />
+                            <Plus size={28} color="var(--primary)" strokeWidth={3} />
                         </div>
-                        <span style={{ fontSize: '16px', fontWeight: '800' }}>AGREGAR GRUPO NUEVO</span>
-                    </button>
+                        <div style={{ textAlign: 'left' }}>
+                            <span style={{ display: 'block', fontSize: '19px', fontWeight: '900', letterSpacing: '-0.7px', color: '#fff' }}>Nuevo Grupo</span>
+                            <span style={{ display: 'block', fontSize: '13px', color: 'rgba(255,255,255,0.45)', fontWeight: '600' }}>Inicia una nueva partida</span>
+                        </div>
+                    </motion.button>
 
                     {/* Lista de Grupos */}
                     {savedGroups.length > 0 && (
@@ -299,80 +304,89 @@ const FriendSelection: React.FC = () => {
                             </h4>
 
                             {savedGroups.map(group => (
-                                <div
+                                <motion.div
                                     key={group.id}
+                                    whileTap={{ scale: 0.96 }}
                                     onClick={() => handleGroupClick(group)}
                                     style={{
-                                        background: 'rgba(255, 255, 255, 0.03)',
-                                        borderRadius: '24px',
-                                        padding: '20px',
-                                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                                        background: 'rgba(255, 255, 255, 0.04)',
+                                        backdropFilter: 'blur(10px)',
+                                        WebkitBackdropFilter: 'blur(10px)',
+                                        borderRadius: '30px',
+                                        padding: '22px',
+                                        border: '1px solid rgba(255, 255, 255, 0.07)',
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'space-between',
                                         cursor: 'pointer',
                                         position: 'relative',
-                                        overflow: 'hidden'
+                                        boxShadow: '0 8px 32px rgba(0,0,0,0.1)'
                                     }}
-                                    className="active:scale-[0.98] transition-transform"
                                 >
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '18px' }}>
                                         <div style={{
-                                            width: '50px',
-                                            height: '50px',
-                                            borderRadius: '16px',
-                                            background: 'rgba(163, 230, 53, 0.15)',
+                                            width: '54px',
+                                            height: '54px',
+                                            borderRadius: '18px',
+                                            background: 'linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%)',
                                             display: 'flex',
                                             alignItems: 'center',
                                             justifyContent: 'center',
-                                            color: 'var(--secondary)'
+                                            color: 'var(--secondary)',
+                                            border: '1px solid rgba(255,255,255,0.08)'
                                         }}>
-                                            <Users size={24} />
+                                            <Users size={26} strokeWidth={2.5} />
                                         </div>
                                         <div>
-                                            <h3 style={{ fontSize: '17px', fontWeight: '800', color: 'white', marginBottom: '4px' }}>
+                                            <h3 style={{ fontSize: '18px', fontWeight: '900', color: '#fff', marginBottom: '2px', letterSpacing: '-0.5px' }}>
                                                 {group.name}
                                             </h3>
-                                            <p style={{ fontSize: '13px', color: 'var(--text-dim)', fontWeight: '500' }}>
+                                            <p style={{ fontSize: '14px', color: 'rgba(255,255,255,0.4)', fontWeight: '600' }}>
                                                 {group.members.length + 1} Jugadores
                                             </p>
                                         </div>
                                     </div>
 
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                        <button
-                                            onClick={(e) => editGroup(group, e)}
-                                            style={{
-                                                background: 'transparent',
-                                                border: 'none',
-                                                padding: '8px',
-                                                color: 'var(--secondary)',
-                                                cursor: 'pointer',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center'
-                                            }}
-                                        >
-                                            <Pencil size={18} />
-                                        </button>
-                                        <button
-                                            onClick={(e) => deleteGroup(group.id, e)}
-                                            style={{
-                                                background: 'transparent',
-                                                border: 'none',
-                                                padding: '8px',
-                                                color: '#ef4444',
-                                                cursor: 'pointer',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center'
-                                            }}
-                                        >
-                                            <Trash2 size={20} />
-                                        </button>
-                                        <ChevronRight size={20} color="var(--text-dim)" />
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                        <div style={{ display: 'flex', gap: '4px' }}>
+                                            <button
+                                                onClick={(e) => editGroup(group, e)}
+                                                style={{
+                                                    background: 'rgba(255,255,255,0.05)',
+                                                    border: 'none',
+                                                    padding: '10px',
+                                                    borderRadius: '12px',
+                                                    color: 'rgba(255,255,255,0.6)',
+                                                    cursor: 'pointer',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    transition: 'all 0.2s'
+                                                }}
+                                            >
+                                                <Pencil size={18} />
+                                            </button>
+                                            <button
+                                                onClick={(e) => deleteGroup(group.id, e)}
+                                                style={{
+                                                    background: 'rgba(239, 68, 68, 0.1)',
+                                                    border: 'none',
+                                                    padding: '10px',
+                                                    borderRadius: '12px',
+                                                    color: '#ef4444',
+                                                    cursor: 'pointer',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    transition: 'all 0.2s'
+                                                }}
+                                            >
+                                                <Trash2 size={18} />
+                                            </button>
+                                        </div>
+                                        <ChevronRight size={20} color="rgba(255,255,255,0.2)" />
                                     </div>
-                                </div>
+                                </motion.div>
                             ))}
                         </div>
                     )}

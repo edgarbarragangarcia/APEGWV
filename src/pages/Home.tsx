@@ -1,8 +1,7 @@
 import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import Card from '../components/Card';
-import { ArrowRight, Heart, Users } from 'lucide-react';
+import { ArrowRight, Heart, Users, ChevronRight } from 'lucide-react';
 import { supabase } from '../services/SupabaseManager';
 import ActivityCard from '../components/ActivityCard';
 import type { ActivityType } from '../components/ActivityCard';
@@ -173,9 +172,9 @@ const Home: React.FC = () => {
 
                 {/* Activity Feed Section */}
                 <div style={{ marginBottom: '10px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '8px', paddingRight: '5px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', paddingRight: '5px' }}>
                         <div>
-                            <h3 style={{ fontSize: '20px', fontWeight: '900', letterSpacing: '-0.5px', display: 'flex', alignItems: 'center', gap: '8px', color: 'white' }}>
+                            <h3 style={{ fontSize: '22px', fontWeight: '900', letterSpacing: '-0.8px', color: 'white' }}>
                                 Actividad <span style={{ color: 'var(--secondary)' }}>Comunidad</span>
                             </h3>
                         </div>
@@ -229,27 +228,33 @@ const Home: React.FC = () => {
 
                 {/* Marketplace Section */}
                 <div style={{ marginBottom: '25px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '15px', paddingRight: '5px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', paddingRight: '5px' }}>
                         <div>
-                            <h3 style={{ fontSize: '20px', fontWeight: '900', letterSpacing: '-0.5px', color: 'white' }}>Marketplace</h3>
+                            <h3 style={{ fontSize: '22px', fontWeight: '900', letterSpacing: '-0.8px', color: 'white' }}>Marketplace</h3>
                         </div>
-                        <button
+                        <motion.button
+                            whileTap={{ scale: 0.95 }}
                             onClick={() => navigate('/shop')}
                             style={{
-                                background: 'transparent',
-                                border: 'none',
+                                background: 'rgba(255, 255, 255, 0.05)',
+                                backdropFilter: 'blur(10px)',
+                                WebkitBackdropFilter: 'blur(10px)',
+                                border: '1px solid rgba(255, 255, 255, 0.1)',
                                 color: 'var(--secondary)',
-                                fontSize: '14px',
+                                fontSize: '13px',
                                 display: 'flex',
                                 alignItems: 'center',
-                                gap: '4px',
+                                gap: '6px',
                                 cursor: 'pointer',
-                                fontWeight: '600',
-                                padding: '4px 8px'
+                                fontWeight: '800',
+                                padding: '6px 14px',
+                                borderRadius: '20px',
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.5px'
                             }}
                         >
                             Ver todo <ArrowRight size={14} strokeWidth={2.5} />
-                        </button>
+                        </motion.button>
                     </div>
                     <div
                         style={{
@@ -387,49 +392,98 @@ const Home: React.FC = () => {
 
 
                 {/* Featured Caddies / Tournaments */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '15px' }}>
-                    <div style={{ marginBottom: '5px' }}>
-                        <h3 style={{ fontSize: '20px', fontWeight: '900', letterSpacing: '-0.5px', color: 'white' }}>Torneos</h3>
+                <div style={{ marginBottom: '40px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', paddingRight: '5px' }}>
+                        <h3 style={{ fontSize: '22px', fontWeight: '900', letterSpacing: '-0.8px', color: 'white' }}>Torneos <span style={{ color: 'rgba(255,255,255,0.3)', fontWeight: '500' }}>Populares</span></h3>
+                        <motion.button
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => navigate('/tournaments')}
+                            style={{
+                                background: 'rgba(255, 255, 255, 0.05)',
+                                backdropFilter: 'blur(10px)',
+                                WebkitBackdropFilter: 'blur(10px)',
+                                border: '1px solid rgba(255, 255, 255, 0.1)',
+                                color: 'rgba(255,255,255,0.6)',
+                                fontSize: '13px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                                cursor: 'pointer',
+                                fontWeight: '800',
+                                padding: '6px 14px',
+                                borderRadius: '20px'
+                            }}
+                        >
+                            Calendario <ChevronRight size={14} />
+                        </motion.button>
                     </div>
-                    <Card style={{ marginTop: '5px' }}>
-                        <div style={{ marginBottom: '15px' }}>
-                            <div style={{ fontSize: '16px', fontWeight: '700', color: 'white' }}>Próximos Torneos</div>
-                            <div style={{ fontSize: '13px', color: 'var(--text-dim)' }}>Inscríbete antes del cierre</div>
-                        </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                            {tournaments.length > 0 ? (
-                                tournaments.map(tournament => (
-                                    <div
-                                        key={tournament.id}
-                                        onClick={() => navigate('/tournaments')}
-                                        style={{ display: 'flex', gap: '15px', alignItems: 'center', padding: '10px', borderRadius: '12px', background: 'rgba(255,255,255,0.03)', cursor: 'pointer' }}
-                                    >
-                                        <div style={{
-                                            width: '50px',
-                                            height: '50px',
-                                            background: 'var(--primary-light)',
-                                            borderRadius: '10px',
-                                            backgroundImage: tournament.image_url ? `url(${tournament.image_url})` : 'none',
-                                            backgroundSize: 'cover',
-                                            backgroundPosition: 'center'
-                                        }} />
-                                        <div>
-                                            <div style={{ fontWeight: '500', fontSize: '14px' }}>{tournament.name}</div>
-                                            <div style={{ fontSize: '12px', color: 'var(--text-dim)' }}>
-                                                {new Date(tournament.date).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}
-                                            </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                        {tournaments.length > 0 ? (
+                            tournaments.map(tournament => (
+                                <motion.div
+                                    key={tournament.id}
+                                    whileTap={{ scale: 0.98 }}
+                                    onClick={() => navigate('/tournaments')}
+                                    style={{
+                                        display: 'flex',
+                                        gap: '16px',
+                                        alignItems: 'center',
+                                        padding: '12px',
+                                        borderRadius: '24px',
+                                        background: 'rgba(255,255,255,0.04)',
+                                        backdropFilter: 'blur(12px)',
+                                        WebkitBackdropFilter: 'blur(12px)',
+                                        border: '1px solid rgba(255,255,255,0.08)',
+                                        cursor: 'pointer',
+                                        boxShadow: '0 8px 32px rgba(0,0,0,0.1)'
+                                    }}
+                                >
+                                    <div style={{
+                                        width: '60px',
+                                        height: '60px',
+                                        background: 'rgba(255,255,255,0.05)',
+                                        borderRadius: '16px',
+                                        backgroundImage: tournament.image_url ? `url(${tournament.image_url})` : 'none',
+                                        backgroundSize: 'cover',
+                                        backgroundPosition: 'center',
+                                        border: '1px solid rgba(255,255,255,0.1)'
+                                    }} />
+                                    <div style={{ flex: 1 }}>
+                                        <div style={{ fontWeight: '900', fontSize: '16px', color: 'white', marginBottom: '2px', letterSpacing: '-0.3px' }}>{tournament.name}</div>
+                                        <div style={{ fontSize: '13px', color: 'var(--secondary)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                                            {new Date(tournament.date).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}
                                         </div>
                                     </div>
-                                ))
-                            ) : (
-                                <div style={{ fontSize: '14px', color: 'var(--text-dim)', textAlign: 'center', padding: '20px' }}>
+                                    <div style={{
+                                        width: '32px',
+                                        height: '32px',
+                                        borderRadius: '50%',
+                                        background: 'rgba(255,255,255,0.05)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        color: 'rgba(255,255,255,0.3)'
+                                    }}>
+                                        <ChevronRight size={18} />
+                                    </div>
+                                </motion.div>
+                            ))
+                        ) : (
+                            <div style={{
+                                padding: '30px',
+                                textAlign: 'center',
+                                background: 'rgba(255,255,255,0.02)',
+                                borderRadius: '24px',
+                                border: '1px dashed rgba(255,255,255,0.1)'
+                            }}>
+                                <p style={{ fontSize: '14px', color: 'var(--text-dim)', fontWeight: '500' }}>
                                     No hay torneos programados próximamente.
-                                </div>
-                            )}
-                        </div>
-                    </Card>
+                                </p>
+                            </div>
+                        )}
+                    </div>
                 </div>
-
             </div>
         </div>
     );

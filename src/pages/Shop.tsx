@@ -308,7 +308,7 @@ const Shop: React.FC = () => {
                 margin: '0 auto',
                 zIndex: 900,
                 background: 'var(--primary)',
-                paddingBottom: '20px',
+                paddingBottom: '10px',
                 paddingLeft: '20px',
                 paddingRight: '20px',
                 pointerEvents: 'auto'
@@ -350,7 +350,7 @@ const Shop: React.FC = () => {
                     background: 'rgba(255,255,255,0.05)',
                     padding: '4px',
                     borderRadius: '16px',
-                    marginBottom: '10px',
+                    marginBottom: '8px',
                     gap: '4px'
                 }}>
                     <button
@@ -402,7 +402,7 @@ const Shop: React.FC = () => {
                     <>
                         {/* Search Bar */}
                         <div style={{
-                            marginBottom: '10px',
+                            marginBottom: '8px',
                             padding: '12px 18px',
                             display: 'flex',
                             alignItems: 'center',
@@ -464,13 +464,13 @@ const Shop: React.FC = () => {
             {/* Área de Scroll */}
             <div style={{
                 position: 'absolute',
-                top: viewTab === 'marketplace' ? 'calc(var(--header-offset-top) + 225px)' : 'calc(var(--header-offset-top) + 135px)',
+                top: viewTab === 'marketplace' ? 'calc(var(--header-offset-top) + 185px)' : 'calc(var(--header-offset-top) + 105px)',
                 left: '0',
                 right: '0',
                 bottom: 'calc(var(--nav-height))',
                 overflowY: 'auto',
                 overflowX: 'hidden',
-                padding: '20px',
+                padding: '15px 20px 20px 20px',
                 transition: 'top 0.3s ease'
             }}>
                 {viewTab === 'marketplace' ? (
