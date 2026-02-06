@@ -15,10 +15,11 @@ const CategoryHero: React.FC<CategoryHeroProps> = ({ title, subtitle, image, pro
 
     return (
         <div style={{
-            position: 'relative',
+            position: 'sticky',
+            top: 'calc(-1 * var(--header-offset-top))',
             width: '100%',
             height: '400px',
-            marginTop: 'calc(-1 * var(--header-offset-top))',
+            zIndex: 0,
             overflow: 'hidden',
         }}>
             {/* Background Image with Gradient Overlay */}
@@ -58,13 +59,13 @@ const CategoryHero: React.FC<CategoryHeroProps> = ({ title, subtitle, image, pro
 
             {/* Back Button specifically for Home */}
             <motion.button
-                initial={{ opacity: 0, x: -20 }}
+                initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 onClick={() => navigate('/')}
                 style={{
                     position: 'absolute',
                     top: 'calc(var(--header-offset-top) + 10px)',
-                    left: '20px',
+                    right: '20px',
                     zIndex: 20,
                     width: '32px',
                     height: '32px',
