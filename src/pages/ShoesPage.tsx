@@ -33,7 +33,7 @@ const ShoesPage: React.FC = () => {
             <CategoryHero
                 title="Zapatos"
                 subtitle="Comodidad y estabilidad superior para que camines con confianza cada hoyo."
-                image="/src/assets/heros/golf_shoes_hero_1770415202682.png"
+                image="/heros/golf_shoes_hero_1770415202682.png"
                 productCount={shoeProducts.length}
             />
 

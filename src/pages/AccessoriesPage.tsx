@@ -33,7 +33,7 @@ const AccessoriesPage: React.FC = () => {
             <CategoryHero
                 title="Accesorios"
                 subtitle="Los detalles que marcan la diferencia. Todo lo que necesitas para complementar tu equipo."
-                image="/src/assets/heros/golf_accessories_hero_1770415216840.png"
+                image="/heros/golf_accessories_hero_1770415216840.png"
                 productCount={accessoryProducts.length}
             />
 

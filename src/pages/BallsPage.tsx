@@ -33,7 +33,7 @@ const BallsPage: React.FC = () => {
             <CategoryHero
                 title="Bolas"
                 subtitle="Encuentra la bola perfecta para tu nivel de juego y maximiza tu distancia."
-                image="/src/assets/heros/golf_balls_hero_1770415163307.png"
+                image="/heros/golf_balls_hero_1770415163307.png"
                 productCount={ballProducts.length}
             />
 

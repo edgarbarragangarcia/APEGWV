@@ -33,7 +33,7 @@ const ClothingPage: React.FC = () => {
             <CategoryHero
                 title="Ropa"
                 subtitle="Estilo y rendimiento en el campo con nuestra colección exclusiva de prendas técnicas."
-                image="/src/assets/heros/golf_apparel_hero_1770415189416.png"
+                image="/heros/golf_apparel_hero_1770415189416.png"
                 productCount={clothingProducts.length}
             />
 

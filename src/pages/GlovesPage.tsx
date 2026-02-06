@@ -33,7 +33,7 @@ const GlovesPage: React.FC = () => {
             <CategoryHero
                 title="Guantes"
                 subtitle="El contacto perfecto. Piel premium para una sensación y agarre inigualables."
-                image="/src/assets/heros/golf_gloves_hero_1770415231000.png"
+                image="/heros/golf_gloves_hero_1770415231000.png"
                 productCount={gloveProducts.length}
             />
 

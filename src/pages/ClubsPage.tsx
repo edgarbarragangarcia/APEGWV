@@ -33,7 +33,7 @@ const ClubsPage: React.FC = () => {
             <CategoryHero
                 title="Palos"
                 subtitle="El corazón de tu juego. Tecnología de vanguardia para alcanzar tu máximo potencial."
-                image="/src/assets/heros/golf_clubs_hero_1770415175713.png"
+                image="/heros/golf_clubs_hero_1770415175713.png"
                 productCount={clubProducts.length}
             />
 

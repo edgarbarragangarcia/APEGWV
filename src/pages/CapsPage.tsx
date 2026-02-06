@@ -33,7 +33,7 @@ const CapsPage: React.FC = () => {
             <CategoryHero
                 title="Gorras"
                 subtitle="El toque final de tu outfit. Estilo clásico y moderno para protegerte con elegancia."
-                image="/src/assets/heros/golf_accessories_hero_1770415216840.png"
+                image="/heros/golf_accessories_hero_1770415216840.png"
                 productCount={capProducts.length}
             />
 
