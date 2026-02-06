@@ -39,7 +39,9 @@ body {
   -webkit-font-smoothing: antialiased;
   position: relative;
   width: 100%;
-  overscroll-behavior-x: none;
+  overscroll-behavior: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 
   /* App-like behavior: Prevent selection and copy-paste */
   -webkit-user-select: none;
@@ -57,6 +59,13 @@ textarea,
   -moz-user-select: text;
   -ms-user-select: text;
   user-select: text;
+}
+
+/* iOS Zoom Prevention */
+input,
+select,
+textarea {
+  font-size: 16px !important;
 }
 
 #root {
@@ -92,7 +101,14 @@ button {
   background: none;
   cursor: pointer;
   font-family: inherit;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
+}
+
+button:active {
+  transform: scale(0.96);
+  opacity: 0.9;
 }
 
 /* Glassmorphism utility */
@@ -153,8 +169,9 @@ button {
 }
 
 .btn-primary:active {
-  transform: translateY(1px);
+  transform: scale(0.96);
   box-shadow: 0 4px 10px rgba(163, 230, 53, 0.2);
+  filter: brightness(0.95);
 }
 
 .btn-disabled {

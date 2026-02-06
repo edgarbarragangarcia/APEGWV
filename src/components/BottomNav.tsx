@@ -24,10 +24,11 @@ const BottomNav: React.FC = () => {
             alignItems: 'stretch',
             zIndex: 1000,
             padding: '0 0 var(--safe-bottom) 0',
-            background: 'linear-gradient(135deg, rgba(14, 47, 31, 0.98) 0%, rgba(20, 64, 42, 0.98) 100%)',
-            backdropFilter: 'blur(15px)',
-            borderTop: '1px solid rgba(255, 255, 255, 0.1)',
-            boxShadow: '0 -4px 20px rgba(0, 0, 0, 0.4)',
+            background: 'rgba(14, 47, 31, 0.95)',
+            backdropFilter: 'blur(25px) saturate(180%)',
+            WebkitBackdropFilter: 'blur(25px) saturate(180%)',
+            borderTop: '1px solid rgba(255, 255, 255, 0.15)',
+            boxShadow: '0 -10px 40px rgba(0, 0, 0, 0.5)',
             borderRadius: '24px 24px 0 0',
             overflow: 'hidden'
         }}>

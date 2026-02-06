@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { Bell, ShoppingBag } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useNotifications } from '../context/NotificationContext';
 import { useProfile } from '../hooks/useProfile';
@@ -11,6 +11,11 @@ const Navbar: React.FC = () => {
     const { totalItems } = useCart();
     const { unreadCount } = useNotifications();
     const videoRef = React.useRef<HTMLVideoElement>(null);
+
+    const location = useLocation();
+    const isCategoryPage = location.pathname.includes('/category/');
+    const isHomePage = location.pathname === '/';
+    const isTransparentNavbar = isCategoryPage || isHomePage;
 
     useEffect(() => {
         const video = videoRef.current;
@@ -65,12 +70,15 @@ const Navbar: React.FC = () => {
             alignItems: 'center',
             zIndex: 1000,
             justifyContent: 'space-between',
-            borderRadius: '0 0 30px 30px',
+            borderRadius: '0 0 24px 24px',
             border: 'none',
-            borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
-            backdropFilter: 'blur(15px)',
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
-            background: 'linear-gradient(135deg, rgba(14, 47, 31, 0.8) 0%, rgba(20, 64, 42, 0.8) 100%)'
+            borderBottom: isTransparentNavbar ? 'none' : '1px solid rgba(255, 255, 255, 0.15)',
+            backdropFilter: 'blur(25px) saturate(180%)',
+            WebkitBackdropFilter: 'blur(25px) saturate(180%)',
+            boxShadow: isTransparentNavbar ? 'none' : '0 10px 40px rgba(0, 0, 0, 0.5)',
+            background: isTransparentNavbar
+                ? 'linear-gradient(180deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 100%)'
+                : 'rgba(14, 47, 31, 0.85)'
         }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                 <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>

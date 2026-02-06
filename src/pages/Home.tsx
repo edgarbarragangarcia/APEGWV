@@ -134,6 +134,33 @@ const Home: React.FC = () => {
             width: '100%',
             overflow: 'hidden'
         }}>
+            {/* Hero Background Image */}
+            <div style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                height: '420px',
+                zIndex: 0,
+                overflow: 'hidden'
+            }}>
+                <img
+                    src="/images/briceno18.png"
+                    alt="Hero Background"
+                    style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                        opacity: 0.6
+                    }}
+                />
+                <div style={{
+                    position: 'absolute',
+                    inset: 0,
+                    background: 'linear-gradient(to bottom, rgba(14, 47, 31, 0.4) 0%, rgba(14, 47, 31, 0.8) 70%, var(--primary) 100%)'
+                }} />
+            </div>
+
             {/* Header y Stats Fijos */}
             <div style={{
                 position: 'absolute',
@@ -141,7 +168,7 @@ const Home: React.FC = () => {
                 left: '20px',
                 right: '20px',
                 zIndex: 900,
-                background: 'var(--primary)',
+                background: 'transparent',
                 paddingBottom: '5px'
             }}>
                 <PageHeader
@@ -343,19 +370,6 @@ const Home: React.FC = () => {
 
             </div>
 
-            {/* Blur fade effect at bottom of fixed header */}
-            <div style={{
-                position: 'absolute',
-                top: 'calc(var(--header-offset-top) + 260px)',
-                left: '0',
-                right: '0',
-                height: '20px',
-                background: 'linear-gradient(to bottom, var(--primary), transparent)',
-                backdropFilter: 'blur(8px)',
-                WebkitBackdropFilter: 'blur(8px)',
-                pointerEvents: 'none',
-                zIndex: 899
-            }} />
 
             {/* Area de Scroll para el resto del contenido */}
             <div style={{
