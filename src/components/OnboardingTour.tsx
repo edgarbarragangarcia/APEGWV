@@ -9,7 +9,6 @@ import {
     LayoutDashboard,
     Flag,
     Calendar,
-    ShoppingBag,
     Trophy,
     User,
     Settings
@@ -66,16 +65,6 @@ const steps: Step[] = [
         position: 'bottom',
         color: "#10b981",
         gradient: "linear-gradient(135deg, #10b981 0%, #059669 100%)"
-    },
-    {
-        title: "Marketplace",
-        description: "Encuentra el mejor equipamiento o vende lo que ya no usas. ¡Incluso puedes negociar precios con otros usuarios!",
-        icon: <ShoppingBag size={32} />,
-        targetId: 'nav-marketplace',
-        path: "/shop",
-        position: 'bottom',
-        color: "#ec4899",
-        gradient: "linear-gradient(135deg, #ec4899 0%, #be185d 100%)"
     },
     {
         title: "Eventos y Torneos",

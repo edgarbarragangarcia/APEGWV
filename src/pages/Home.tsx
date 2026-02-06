@@ -1,124 +1,108 @@
 import React, { useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, Heart, Users, ChevronRight } from 'lucide-react';
+import { Heart, ChevronRight, ShoppingCart, Search, ShoppingBag, Loader2, Plus, CheckCircle2, ArrowLeft } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 import { supabase } from '../services/SupabaseManager';
-import ActivityCard from '../components/ActivityCard';
-import type { ActivityType } from '../components/ActivityCard';
 import { useProfile } from '../hooks/useProfile';
 import { useFeaturedProducts, useUpcomingTournaments } from '../hooks/useHomeData';
-import { useQuery } from '@tanstack/react-query';
 import PageHeader from '../components/PageHeader';
-
-interface ActivityItem {
-    id: string;
-    type: ActivityType;
-    userName: string;
-    userImage?: string;
-    description: string;
-    itemName?: string;
-    itemImage?: string;
-    created_at: string | null;
-}
+import { useCart } from '../context/CartContext';
 
 const Home: React.FC = () => {
     const navigate = useNavigate();
-    const activitiesRef = React.useRef<HTMLDivElement>(null);
     const { data: profile } = useProfile();
-    const { data: featuredProducts = [] } = useFeaturedProducts(4);
+    const { data: featuredProducts = [] } = useFeaturedProducts(10); // Fetch more for filtering
     const { data: tournaments = [] } = useUpcomingTournaments(3);
 
+    const [viewTab, setViewTab] = React.useState<'marketplace' | 'myorders'>('marketplace');
+    const [activeTab, setActiveTab] = React.useState('Todo');
+    const [searchQuery, setSearchQuery] = React.useState('');
+    const { user } = useAuth();
+    const { addToCart } = useCart();
+    const [myOrders, setMyOrders] = React.useState<any[]>([]);
+    const [ordersLoading, setOrdersLoading] = React.useState(false);
+    const [selectedProduct, setSelectedProduct] = React.useState<any>(null);
+    const [showOfferModal, setShowOfferModal] = React.useState(false);
+    const [offerAmount, setOfferAmount] = React.useState('');
+    const [sendingOffer, setSendingOffer] = React.useState(false);
+    const [offerSuccess, setOfferSuccess] = React.useState(false);
+    const [addingToCart, setAddingToCart] = React.useState<string | null>(null);
+    const [buying, setBuying] = React.useState(false);
+    const [myOffers, setMyOffers] = React.useState<any[]>([]);
 
-    // Fetch Activities with React Query
-    const { data: activities = [], refetch: refetchActivities } = useQuery({
-        queryKey: ['activities'],
-        queryFn: async () => {
-            const { data: registrations } = await supabase
-                .from('tournament_registrations')
-                .select('*, tournament_id(name)')
-                .order('created_at', { ascending: false })
-                .limit(5);
 
-            // Fetch profiles separately
-            const userIds = registrations?.map(r => r.user_id).filter((id): id is string => id !== null) || [];
-            const { data: profiles } = userIds.length > 0
-                ? await supabase
-                    .from('profiles')
-                    .select('id, full_name, id_photo_url')
-                    .in('id', userIds)
-                : { data: [] };
+    // Fetch profile and initial data
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        const tab = params.get('tab');
+        if (tab === 'myorders') {
+            setViewTab('myorders');
+        }
+    }, []);
 
-            const profilesMap = new Map(profiles?.map(p => [p.id, p]) || []);
+    useEffect(() => {
+        if (user && viewTab === 'myorders') {
+            const fetchOrders = async () => {
+                setOrdersLoading(true);
+                try {
+                    const { data, error } = await supabase
+                        .from('orders')
+                        .select('*, product:products(*)')
+                        .eq('buyer_id', user.id)
+                        .order('created_at', { ascending: false })
+                        .limit(5);
 
-            const { data: newProducts } = await supabase
-                .from('products')
-                .select('*')
-                .order('created_at', { ascending: false })
-                .limit(5);
+                    if (error) throw error;
+                    setMyOrders(data || []);
+                } catch (err) {
+                    console.error('Error fetching orders:', err);
+                } finally {
+                    setOrdersLoading(false);
+                }
+            };
 
-            const combinedActivities: ActivityItem[] = [
-                ...(registrations?.map(r => ({
-                    id: r.id,
-                    type: 'registration' as ActivityType,
-                    userName: (r.user_id ? profilesMap.get(r.user_id)?.full_name : null) || 'Alguien',
-                    userImage: (r.user_id ? profilesMap.get(r.user_id)?.id_photo_url : null) || undefined,
-                    description: `Se inscribió al torneo`,
-                    itemName: r.tournament_id?.name,
-                    created_at: r.created_at
-                })) || []),
-                ...(newProducts?.map(p => ({
-                    id: p.id,
-                    type: 'product' as ActivityType,
-                    userName: 'Comunidad APEG',
-                    description: `Nuevo artículo disponible`,
-                    itemName: p.name,
-                    itemImage: p.image_url || undefined,
-                    created_at: p.created_at
-                })) || [])
-            ].sort((a, b) => {
-                const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
-                const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
-                return dateB - dateA;
-            }).slice(0, 10);
+            const fetchOffers = async () => {
+                try {
+                    const { data, error } = await supabase
+                        .from('offers')
+                        .select('*, product:products(*)')
+                        .eq('buyer_id', user.id)
+                        .order('created_at', { ascending: false });
 
-            return combinedActivities;
-        },
-        staleTime: 1000 * 60 * 5,
+                    if (error) throw error;
+                    setMyOffers(data || []);
+                } catch (err) {
+                    console.error('Error fetching offers:', err);
+                }
+            };
+
+            fetchOrders();
+            fetchOffers();
+        }
+    }, [user, viewTab]);
+
+    const optimizeImage = (url: string | null | undefined, options: { width: number, height: number }) => {
+        if (!url) return '';
+        if (url.includes('supabase.co')) {
+            return `${url}?width=${options.width}&height=${options.height}&resize=contain`;
+        }
+        return url;
+    };
+
+    const categories = ['Todo', 'Bolas', 'Ropa', 'Accesorios', 'Zapatos'];
+
+    const filteredProducts = featuredProducts.filter(product => {
+        const matchesCategory = activeTab === 'Todo' ||
+            (product.category || '').toLowerCase() === activeTab.toLowerCase();
+
+        const matchesSearch = (product.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+            (product.category || '').toLowerCase().includes(searchQuery.toLowerCase());
+
+        return matchesCategory && matchesSearch;
     });
 
-    useEffect(() => {
-        // Real-time subscription for tournament registrations
-        const channel = supabase
-            .channel('public:tournament_registrations')
-            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'tournament_registrations' }, () => {
-                refetchActivities();
-            })
-            .subscribe();
 
-        return () => {
-            supabase.removeChannel(channel);
-        };
-    }, [refetchActivities]);
-
-    // Auto-scroll logic for activities carousel
-    useEffect(() => {
-        if (!activitiesRef.current || activities.length === 0) return;
-
-        const interval = setInterval(() => {
-            if (activitiesRef.current) {
-                const { scrollLeft, scrollWidth, clientWidth } = activitiesRef.current;
-                const maxScroll = scrollWidth - clientWidth;
-
-                if (scrollLeft >= maxScroll - 10) {
-                    activitiesRef.current.scrollTo({ left: 0, behavior: 'smooth' });
-                } else {
-                    activitiesRef.current.scrollBy({ left: 292, behavior: 'smooth' }); // Item width (280) + gap (12)
-                }
-            }
-        }, 3500);
-
-        return () => clearInterval(interval);
-    }, [activities.length]);
 
 
 
@@ -154,14 +138,130 @@ const Home: React.FC = () => {
 
                 {/* Stats cards removed as per user request */}
 
-                {/* Translucent fade effect at the bottom of the fixed section */}
+                {/* Marketplace Navigation and Filters - Now Static */}
+                <div style={{ marginTop: '5px' }}>
+                    {/* Shop-style Tabs */}
+                    <div style={{
+                        display: 'flex',
+                        background: 'rgba(255,255,255,0.05)',
+                        padding: '4px',
+                        borderRadius: '16px',
+                        marginBottom: '12px',
+                        gap: '4px'
+                    }}>
+                        <button
+                            onClick={() => setViewTab('marketplace')}
+                            style={{
+                                flex: 1,
+                                padding: '10px',
+                                borderRadius: '12px',
+                                border: 'none',
+                                background: viewTab === 'marketplace' ? 'var(--secondary)' : 'transparent',
+                                color: viewTab === 'marketplace' ? 'var(--primary)' : 'var(--text-dim)',
+                                fontWeight: '700',
+                                fontSize: '11px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '4px',
+                                cursor: 'pointer',
+                                transition: 'all 0.3s ease'
+                            }}
+                        >
+                            <ShoppingBag size={14} /> Marketplace
+                        </button>
+                        <button
+                            onClick={() => setViewTab('myorders')}
+                            style={{
+                                flex: 1,
+                                padding: '10px',
+                                borderRadius: '12px',
+                                border: 'none',
+                                background: viewTab === 'myorders' ? 'var(--secondary)' : 'transparent',
+                                color: viewTab === 'myorders' ? 'var(--primary)' : 'var(--text-dim)',
+                                fontWeight: '700',
+                                fontSize: '11px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '4px',
+                                cursor: 'pointer',
+                                transition: 'all 0.3s ease'
+                            }}
+                        >
+                            <ShoppingCart size={14} /> Compras
+                        </button>
+                    </div>
 
+                    {viewTab === 'marketplace' && (
+                        <>
+                            {/* Search Bar */}
+                            <div style={{
+                                marginBottom: '12px',
+                                padding: '10px 16px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '10px',
+                                background: 'rgba(255,255,255,0.06)',
+                                borderRadius: '18px',
+                                border: 'none'
+                            }}>
+                                <Search size={16} color="var(--text-dim)" />
+                                <input
+                                    type="text"
+                                    placeholder="¿Qué estás buscando?"
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    style={{
+                                        background: 'none',
+                                        border: 'none',
+                                        color: 'white',
+                                        width: '100%',
+                                        outline: 'none',
+                                        fontSize: '14px'
+                                    }}
+                                />
+                            </div>
+
+                            {/* Category Filters */}
+                            <div style={{
+                                display: 'flex',
+                                gap: '8px',
+                                overflowX: 'auto',
+                                paddingBottom: '8px',
+                                scrollbarWidth: 'none',
+                                width: '100%',
+                                marginBottom: '5px'
+                            }}>
+                                {categories.map(tab => (
+                                    <button
+                                        key={tab}
+                                        onClick={() => setActiveTab(tab)}
+                                        style={{
+                                            padding: '6px 14px',
+                                            borderRadius: '20px',
+                                            background: activeTab === tab ? 'var(--secondary)' : 'rgba(255,255,255,0.05)',
+                                            color: activeTab === tab ? 'var(--primary)' : 'white',
+                                            fontSize: '11px',
+                                            fontWeight: '600',
+                                            border: '1px solid ' + (activeTab === tab ? 'var(--secondary)' : 'rgba(255,255,255,0.1)'),
+                                            whiteSpace: 'nowrap',
+                                            transition: 'all 0.3s ease'
+                                        }}
+                                    >
+                                        {tab}
+                                    </button>
+                                ))}
+                            </div>
+                        </>
+                    )}
+                </div>
             </div>
 
             {/* Area de Scroll para el resto del contenido */}
             <div style={{
                 position: 'absolute',
-                top: 'calc(var(--header-offset-top) + 65px)',
+                top: viewTab === 'marketplace' ? 'calc(var(--header-offset-top) + 215px)' : 'calc(var(--header-offset-top) + 125px)',
                 left: '0',
                 right: '0',
                 bottom: 'calc(var(--nav-height) + 5px)',
@@ -170,225 +270,608 @@ const Home: React.FC = () => {
                 overflowX: 'hidden'
             }}>
 
-                {/* Activity Feed Section */}
-                <div style={{ marginBottom: '10px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', paddingRight: '5px' }}>
-                        <div>
-                            <h3 style={{ fontSize: '22px', fontWeight: '900', letterSpacing: '-0.8px', color: 'white' }}>
-                                Actividad <span style={{ color: 'var(--secondary)' }}>Comunidad</span>
-                            </h3>
-                        </div>
-                    </div>
 
-                    <div
-                        ref={activitiesRef}
-                        style={{
-                            display: 'flex',
-                            gap: '12px',
-                            overflowX: 'auto',
-                            margin: '0 -20px',
-                            padding: '0 20px 10px 20px',
-                            scrollSnapType: 'x mandatory',
-                            scrollbarWidth: 'none',
-                            WebkitOverflowScrolling: 'touch'
-                        }}
-                    >
-                        {activities.length > 0 ? (
-                            activities.map((activity, index) => (
-                                <div key={activity.id + index} style={{ minWidth: '280px', width: '280px', scrollSnapAlign: 'start' }}>
-                                    <ActivityCard
-                                        type={activity.type}
-                                        userName={activity.userName}
-                                        userImage={activity.userImage}
-                                        description={activity.description}
-                                        time={activity.created_at ? new Date(activity.created_at).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) : '--:--'}
-                                        itemName={activity.itemName}
-                                        itemImage={activity.itemImage}
-                                        onClick={() => {
-                                            if (activity.type === 'registration') navigate('/tournaments');
-                                            if (activity.type === 'product') navigate('/shop');
+                {/* Content starts directly with the grid */}
+
+                <div
+                    style={{
+                        display: 'grid',
+                        gridTemplateColumns: viewTab === "marketplace" ? "repeat(2, 1fr)" : "1fr",
+                        gap: '10px',
+                        paddingBottom: '20px'
+                    }}
+                >
+                    {viewTab === 'marketplace' ? (
+                        filteredProducts.length > 0 ? (
+                            filteredProducts.map((product, index) => {
+                                const groupIndex = index % 3;
+                                const isBig = groupIndex === 0;
+
+                                return (
+                                    <motion.div
+                                        key={product.id}
+                                        initial={{ opacity: 0, y: 15 }}
+                                        whileInView={{ opacity: 1, y: 0 }}
+                                        whileTap={{
+                                            scale: 0.98,
+                                            opacity: 0.9,
+                                            transition: { duration: 0.1 }
                                         }}
-                                    />
-                                </div>
-                            ))
+                                        viewport={{ once: true, margin: "0px 0px -50px 0px" }}
+                                        style={{
+                                            position: 'relative',
+                                            overflow: 'hidden',
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            borderRadius: '20px',
+                                            background: 'rgba(255, 255, 255, 0.03)',
+                                            border: '1px solid rgba(255, 255, 255, 0.05)',
+                                            boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
+                                            cursor: 'pointer',
+                                            WebkitTapHighlightColor: 'transparent',
+                                            touchAction: 'manipulation',
+                                            gridRow: isBig ? 'span 2' : 'span 1',
+                                            gridColumn: isBig ? '1' : '2',
+                                            height: '100%'
+                                        }}
+                                        onClick={() => setSelectedProduct(product)}
+                                    >
+                                        <div style={{
+                                            position: 'relative',
+                                            width: '100%',
+                                            height: isBig ? '100%' : '110px',
+                                            minHeight: isBig ? '220px' : '110px',
+                                            overflow: 'hidden',
+                                            background: 'rgba(0,0,0,0.2)',
+                                        }}>
+                                            <motion.img
+                                                src={product.image_url || undefined}
+                                                alt={product.name}
+                                                whileHover={{ scale: 1.05 }}
+                                                transition={{ type: 'tween', duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
+                                                style={{
+                                                    width: '100%',
+                                                    height: '100%',
+                                                    objectFit: 'cover',
+                                                }}
+                                            />
+
+                                            {/* Gradient overlay for better text readability and depth */}
+                                            <div style={{
+                                                position: 'absolute',
+                                                inset: 0,
+                                                background: isBig
+                                                    ? 'linear-gradient(to bottom, rgba(0,0,0,0) 50%, rgba(0,0,0,0.6) 100%)'
+                                                    : 'linear-gradient(to bottom, rgba(0,0,0,0) 60%, rgba(0,0,0,0.4) 100%)',
+                                                zIndex: 1
+                                            }} />
+
+                                            <div style={{
+                                                position: 'absolute',
+                                                top: '8px',
+                                                right: '8px',
+                                                background: 'rgba(0,0,0,0.3)',
+                                                backdropFilter: 'blur(12px)',
+                                                borderRadius: '50%',
+                                                padding: '6px',
+                                                display: 'flex',
+                                                border: '1px solid rgba(255,255,255,0.15)',
+                                                zIndex: 2
+                                            }}>
+                                                <Heart size={12} color="white" strokeWidth={2.5} />
+                                            </div>
+
+                                            {/* Floating Info for Big Cards */}
+                                            {isBig && (
+                                                <div style={{
+                                                    position: 'absolute',
+                                                    bottom: '12px',
+                                                    left: '12px',
+                                                    right: '12px',
+                                                    zIndex: 3
+                                                }}>
+                                                    <div style={{
+                                                        fontSize: '8px',
+                                                        color: 'var(--secondary)',
+                                                        fontWeight: '900',
+                                                        textTransform: 'uppercase',
+                                                        letterSpacing: '0.1em',
+                                                        marginBottom: '2px'
+                                                    }}>
+                                                        {product.category}
+                                                    </div>
+                                                    <h4 style={{
+                                                        fontSize: '14px',
+                                                        fontWeight: '900',
+                                                        color: '#fff',
+                                                        margin: 0,
+                                                        lineHeight: 1.1,
+                                                        letterSpacing: '-0.3px',
+                                                        textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                                                    }}>
+                                                        {product.name}
+                                                    </h4>
+                                                    <div style={{
+                                                        color: 'white',
+                                                        fontSize: '15px',
+                                                        fontWeight: '900',
+                                                        marginTop: '4px'
+                                                    }}>
+                                                        ${new Intl.NumberFormat('es-CO').format(product.price)}
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {!isBig && (
+                                            <div style={{
+                                                padding: '8px 10px',
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                gap: '1px'
+                                            }}>
+                                                <h4 style={{
+                                                    fontSize: '12px',
+                                                    fontWeight: '800',
+                                                    letterSpacing: '-0.2px',
+                                                    margin: 0,
+                                                    whiteSpace: 'nowrap',
+                                                    overflow: 'hidden',
+                                                    textOverflow: 'ellipsis',
+                                                    width: '100%',
+                                                    color: '#fff'
+                                                }}>
+                                                    {product.name}
+                                                </h4>
+
+                                                <div style={{
+                                                    color: 'var(--secondary)',
+                                                    fontSize: '13px',
+                                                    fontWeight: '900',
+                                                }}>
+                                                    ${new Intl.NumberFormat('es-CO').format(product.price)}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </motion.div>
+                                );
+                            })
                         ) : (
-                            <div style={{
-                                padding: '30px',
-                                textAlign: 'center',
-                                background: 'rgba(255,255,255,0.02)',
-                                borderRadius: '20px',
-                                border: '1px dashed rgba(255,255,255,0.1)'
-                            }}>
-                                <Users size={24} color="var(--text-dim)" style={{ marginBottom: '10px', opacity: 0.5 }} />
-                                <p style={{ fontSize: '13px', color: 'var(--text-dim)' }}>No hay actividad reciente aún.</p>
+                            <div style={{ color: 'var(--text-dim)', fontSize: '14px', padding: '20px 0', width: '100%', textAlign: 'center' }}>No se encontraron productos.</div>
+                        )
+                    ) : (
+                        ordersLoading ? (
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', padding: '20px' }}>
+                                <Loader2 className="animate-spin" size={24} color="var(--secondary)" />
                             </div>
-                        )}
-                    </div>
+                        ) : (
+                            <div style={{ width: '100%' }}>
+                                {/* Mis Ofertas */}
+                                {myOffers.length > 0 && (
+                                    <div style={{ marginBottom: '24px' }}>
+                                        <h4 style={{ fontSize: '16px', fontWeight: '800', color: 'white', marginBottom: '12px', paddingLeft: '4px' }}>Mis Ofertas</h4>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', paddingBottom: '10px' }}>
+                                            {myOffers.map((offer) => (
+                                                <motion.div
+                                                    key={offer.id}
+                                                    whileTap={{ scale: 0.98 }}
+                                                    style={{
+                                                        width: '100%',
+                                                        padding: '16px',
+                                                        borderRadius: '24px',
+                                                        background: 'rgba(255, 255, 255, 0.03)',
+                                                        border: '1px solid rgba(255, 255, 255, 0.05)',
+                                                        display: 'flex',
+                                                        flexDirection: 'column',
+                                                        gap: '8px'
+                                                    }}
+                                                >
+                                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                        <span style={{
+                                                            background: offer.status === 'accepted' ? '#10b981' : (offer.status === 'rejected' ? '#ef4444' : '#f59e0b'),
+                                                            padding: '4px 8px',
+                                                            borderRadius: '6px',
+                                                            fontSize: '10px',
+                                                            fontWeight: '900',
+                                                            color: 'white'
+                                                        }}>
+                                                            {offer.status?.toUpperCase()}
+                                                        </span>
+                                                        <span style={{ fontSize: '10px', color: 'var(--text-dim)' }}>{new Date(offer.created_at).toLocaleDateString()}</span>
+                                                    </div>
+                                                    <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                                                        <img
+                                                            src={offer.product?.image_url || ''}
+                                                            style={{ width: '40px', height: '40px', borderRadius: '8px', objectFit: 'cover' }}
+                                                            alt=""
+                                                        />
+                                                        <div style={{ overflow: 'hidden' }}>
+                                                            <div style={{ fontSize: '14px', fontWeight: '800', color: 'white', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                                                {offer.product?.name}
+                                                            </div>
+                                                            <div style={{ fontSize: '12px', fontWeight: '700', color: 'var(--secondary)' }}>
+                                                                Oferta: ${offer.amount?.toLocaleString()}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </motion.div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Mis Pedidos */}
+                                <h4 style={{ fontSize: '16px', fontWeight: '800', color: 'white', marginBottom: '12px', paddingLeft: '4px' }}>Mis Pedidos</h4>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', paddingBottom: '10px' }}>
+                                    {myOrders.length > 0 ? (
+                                        myOrders.map((order) => (
+                                            <motion.div
+                                                key={order.id}
+                                                whileTap={{ scale: 0.98 }}
+                                                style={{
+                                                    width: '100%',
+                                                    padding: '16px',
+                                                    borderRadius: '24px',
+                                                    background: 'rgba(255, 255, 255, 0.03)',
+                                                    border: '1px solid rgba(255, 255, 255, 0.05)',
+                                                    display: 'flex',
+                                                    flexDirection: 'column',
+                                                    gap: '12px'
+                                                }}
+                                            >
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                    <span style={{
+                                                        background: '#f59e0b',
+                                                        padding: '4px 8px',
+                                                        borderRadius: '6px',
+                                                        fontSize: '10px',
+                                                        fontWeight: '900',
+                                                        color: 'white'
+                                                    }}>
+                                                        {order.status?.toUpperCase() || 'PAGADO'}
+                                                    </span>
+                                                    <span style={{ fontSize: '10px', color: 'var(--text-dim)' }}>{new Date(order.created_at).toLocaleDateString()}</span>
+                                                </div>
+                                                <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                                                    <img
+                                                        src={order.product?.image_url || ''}
+                                                        style={{ width: '40px', height: '40px', borderRadius: '8px', objectFit: 'cover' }}
+                                                        alt=""
+                                                    />
+                                                    <div style={{ overflow: 'hidden' }}>
+                                                        <div style={{ fontSize: '14px', fontWeight: '800', color: 'white', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                                            {order.product?.name}
+                                                        </div>
+                                                        <div style={{ fontSize: '12px', fontWeight: '700', color: 'var(--secondary)' }}>
+                                                            ${order.total_amount?.toLocaleString()}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </motion.div>
+                                        ))
+                                    ) : (
+                                        <div style={{ color: 'var(--text-dim)', fontSize: '14px', padding: '20px 0', width: '100%', textAlign: 'center' }}>No tienes pedidos aún.</div>
+                                    )}
+                                </div>
+                            </div>
+                        )
+                    )}
                 </div>
 
-                {/* Marketplace Section */}
-                <div style={{ marginBottom: '25px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', paddingRight: '5px' }}>
-                        <div>
-                            <h3 style={{ fontSize: '22px', fontWeight: '900', letterSpacing: '-0.8px', color: 'white' }}>Marketplace</h3>
-                        </div>
-                        <motion.button
-                            whileTap={{ scale: 0.95 }}
-                            onClick={() => navigate('/shop')}
+                {/* Modals moved from Shop.tsx */}
+                <AnimatePresence>
+                    {selectedProduct && (
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
                             style={{
-                                background: 'rgba(255, 255, 255, 0.05)',
-                                backdropFilter: 'blur(10px)',
-                                WebkitBackdropFilter: 'blur(10px)',
-                                border: '1px solid rgba(255, 255, 255, 0.1)',
-                                color: 'var(--secondary)',
-                                fontSize: '13px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '6px',
-                                cursor: 'pointer',
-                                fontWeight: '800',
-                                padding: '6px 14px',
-                                borderRadius: '20px',
-                                textTransform: 'uppercase',
-                                letterSpacing: '0.5px'
+                                position: 'fixed',
+                                inset: 0,
+                                zIndex: 2000,
+                                background: 'black'
                             }}
                         >
-                            Ver todo <ArrowRight size={14} strokeWidth={2.5} />
-                        </motion.button>
-                    </div>
-                    <div
-                        style={{
-                            display: 'flex',
-                            gap: '16px',
-                            overflowX: 'auto',
-                            overflowY: 'hidden',
-                            paddingBottom: '20px',
-                            scrollSnapType: 'x mandatory',
-                            scrollbarWidth: 'none',
-                            WebkitOverflowScrolling: 'touch',
-                            margin: '0 -20px',
-                            padding: '0 20px 20px 20px'
-                        }}
-                    >
-                        {featuredProducts.length > 0 ? (
-                            featuredProducts.map((product) => (
-                                <motion.div
-                                    key={product.id}
-                                    initial={{ opacity: 0, y: 15 }}
-                                    whileInView={{ opacity: 1, y: 0 }}
-                                    whileTap={{
-                                        scale: 0.95,
-                                        opacity: 0.9,
-                                        transition: { duration: 0.1 }
-                                    }}
-                                    viewport={{ once: true, margin: "0px 0px -50px 0px" }}
-                                    style={{
-                                        minWidth: '220px',
-                                        width: '220px',
-                                        scrollSnapAlign: 'start',
-                                        position: 'relative',
-                                        overflow: 'hidden',
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        borderRadius: '28px',
-                                        background: 'rgba(255, 255, 255, 0.05)',
-                                        border: '1px solid rgba(255, 255, 255, 0.08)',
-                                        boxShadow: '0 10px 30px rgba(0,0,0,0.2)',
-                                        cursor: 'pointer',
-                                        WebkitTapHighlightColor: 'transparent',
-                                        touchAction: 'manipulation'
-                                    }}
-                                    onClick={() => navigate('/shop')}
-                                >
+                            <div style={{
+                                position: 'relative',
+                                width: '100%',
+                                height: '100%',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                overflow: 'hidden'
+                            }}>
+                                <div style={{ position: 'relative', height: '60vh', width: '100%', flexShrink: 0 }}>
+                                    <img
+                                        src={optimizeImage(selectedProduct.image_url, { width: 600, height: 800 })}
+                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                        alt={selectedProduct.name}
+                                    />
                                     <div style={{
-                                        position: 'relative',
-                                        width: '100%',
-                                        aspectRatio: '4/5',
-                                        overflow: 'hidden',
-                                        background: 'rgba(0,0,0,0.2)'
-                                    }}>
-                                        <motion.img
-                                            src={product.image_url || undefined}
-                                            alt={product.name}
-                                            whileHover={{ scale: 1.1 }}
-                                            transition={{ type: 'tween', duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
-                                            style={{
-                                                width: '100%',
-                                                height: '100%',
-                                                objectFit: 'cover',
-                                            }}
-                                        />
-                                        <div style={{
-                                            position: 'absolute',
-                                            top: '12px',
-                                            right: '12px',
-                                            background: 'rgba(0,0,0,0.3)',
-                                            backdropFilter: 'blur(12px)',
+                                        position: 'absolute',
+                                        inset: 0,
+                                        background: 'linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, transparent 30%, transparent 70%, var(--primary) 100%)'
+                                    }} />
+                                </div>
+
+                                <div style={{
+                                    position: 'relative',
+                                    flex: 1,
+                                    background: 'var(--primary)',
+                                    borderTopLeftRadius: '24px',
+                                    borderTopRightRadius: '24px',
+                                    marginTop: '-50px',
+                                    padding: '15px 18px calc(var(--nav-height) + 40px)',
+                                    zIndex: 5,
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    overflow: 'hidden'
+                                }}>
+                                    <div style={{
+                                        width: '32px',
+                                        height: '3px',
+                                        background: 'rgba(255,255,255,0.1)',
+                                        borderRadius: '2px',
+                                        margin: '-6px auto 12px'
+                                    }} />
+
+                                    <button
+                                        onClick={() => setSelectedProduct(null)}
+                                        style={{
+                                            background: 'rgba(255,255,255,0.08)',
+                                            backdropFilter: 'blur(10px)',
+                                            border: '1px solid rgba(255,255,255,0.1)',
+                                            width: '32px',
+                                            height: '32px',
                                             borderRadius: '50%',
-                                            padding: '8px',
                                             display: 'flex',
-                                            border: '1px solid rgba(255,255,255,0.15)',
-                                            zIndex: 2
-                                        }}>
-                                            <Heart size={16} color="white" strokeWidth={2.5} />
-                                        </div>
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            color: 'white',
+                                            cursor: 'pointer',
+                                            marginBottom: '10px',
+                                            marginLeft: 'auto',
+                                            marginRight: 'auto'
+                                        }}
+                                    >
+                                        <ArrowLeft size={18} strokeWidth={2.5} />
+                                    </button>
 
-                                        {/* Bottom info overlay for category */}
-                                        <div style={{
-                                            position: 'absolute',
-                                            bottom: '12px',
-                                            left: '12px',
-                                            background: 'rgba(163, 230, 53, 0.85)',
-                                            color: '#000',
-                                            padding: '4px 10px',
-                                            borderRadius: '10px',
-                                            fontSize: '10px',
-                                            fontWeight: '800',
-                                            textTransform: 'uppercase',
-                                            letterSpacing: '0.5px',
-                                            zIndex: 2
-                                        }}>
-                                            {product.category}
+                                    <div style={{ marginBottom: '10px' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                                            <span style={{
+                                                background: 'rgba(163, 230, 53, 0.15)',
+                                                color: 'var(--secondary)',
+                                                padding: '4px 10px',
+                                                borderRadius: '8px',
+                                                fontSize: '11px',
+                                                fontWeight: '900',
+                                                textTransform: 'uppercase'
+                                            }}>
+                                                {selectedProduct.category}
+                                            </span>
                                         </div>
+                                        <h2 style={{ fontSize: '24px', fontWeight: '900', marginBottom: '4px', color: 'white' }}>
+                                            {selectedProduct.name}
+                                        </h2>
+                                        <p style={{ fontSize: '28px', fontWeight: '900', color: 'var(--secondary)', margin: 0 }}>
+                                            $ {new Intl.NumberFormat('es-CO').format(selectedProduct.price)}
+                                        </p>
                                     </div>
 
-                                    <div style={{
-                                        padding: '16px',
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        gap: '4px',
-                                        background: 'linear-gradient(to bottom, transparent, rgba(0,0,0,0.05))'
-                                    }}>
-                                        <h4 style={{
-                                            fontSize: '17px',
-                                            fontWeight: '700',
-                                            letterSpacing: '-0.3px',
-                                            margin: 0,
-                                            whiteSpace: 'nowrap',
-                                            overflow: 'hidden',
-                                            textOverflow: 'ellipsis',
-                                            width: '100%',
-                                            color: '#fff'
-                                        }}>
-                                            {product.name}
-                                        </h4>
-
-                                        <div style={{
-                                            color: 'rgba(255,255,255,0.9)',
-                                            fontSize: '15px',
-                                            fontWeight: '600',
-                                            opacity: 0.9
-                                        }}>
-                                            {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(product.price)}
+                                    {selectedProduct.description && (
+                                        <div style={{ marginBottom: '20px' }}>
+                                            <p style={{ color: 'rgba(255,255,255,0.7)', lineHeight: '1.5', fontSize: '15px' }}>
+                                                {selectedProduct.description}
+                                            </p>
                                         </div>
+                                    )}
+
+                                    <div style={{ display: 'flex', gap: '6px', marginTop: 'auto' }}>
+                                        {selectedProduct.is_negotiable && selectedProduct.seller_id !== user?.id && (
+                                            <motion.button
+                                                whileTap={{ scale: 0.95 }}
+                                                onClick={() => {
+                                                    if (!user) return navigate('/auth');
+                                                    setShowOfferModal(true);
+                                                    setOfferAmount(selectedProduct.price.toString());
+                                                }}
+                                                style={{
+                                                    flex: 0.8,
+                                                    background: 'rgba(255,255,255,0.05)',
+                                                    color: 'white',
+                                                    height: '56px',
+                                                    borderRadius: '16px',
+                                                    fontWeight: '900',
+                                                    border: '1px solid rgba(255,255,255,0.1)'
+                                                }}
+                                            >
+                                                🤝 OFERTA
+                                            </motion.button>
+                                        )}
+
+                                        <motion.button
+                                            whileTap={{ scale: 0.95 }}
+                                            onClick={async () => {
+                                                setAddingToCart(selectedProduct.id);
+                                                await addToCart({ ...selectedProduct } as any);
+                                                setTimeout(() => setAddingToCart(null), 1500);
+                                            }}
+                                            disabled={selectedProduct.seller_id === user?.id}
+                                            style={{
+                                                width: '56px',
+                                                height: '56px',
+                                                background: 'rgba(255,255,255,0.05)',
+                                                color: addingToCart === selectedProduct.id ? 'var(--secondary)' : 'white',
+                                                borderRadius: '16px',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                border: '1px solid rgba(255,255,255,0.1)'
+                                            }}
+                                        >
+                                            {addingToCart === selectedProduct.id ? <CheckCircle2 size={24} /> : <Plus size={24} />}
+                                        </motion.button>
+
+                                        <motion.button
+                                            whileTap={{ scale: 0.95 }}
+                                            onClick={async () => {
+                                                if (!user) return navigate('/auth');
+                                                setBuying(true);
+                                                await addToCart({ ...selectedProduct } as any);
+                                                setSelectedProduct(null);
+                                                navigate('/checkout');
+                                            }}
+                                            disabled={buying || selectedProduct?.seller_id === user?.id}
+                                            className="btn-primary"
+                                            style={{ flex: 2, width: 'auto' }}
+                                        >
+                                            <ShoppingCart size={20} />
+                                            {buying ? '...' : 'COMPRAR'}
+                                        </motion.button>
                                     </div>
-                                </motion.div>
-                            ))
-                        ) : (
-                            <div style={{ color: 'var(--text-dim)', fontSize: '14px', padding: '20px 0', width: '100%', textAlign: 'center' }}>No hay productos destacados aún.</div>
-                        )}
-                    </div>
-                </div>
+                                </div>
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+
+                <AnimatePresence>
+                    {showOfferModal && selectedProduct && (
+                        <div style={{
+                            position: 'fixed',
+                            inset: 0,
+                            zIndex: 3000,
+                            display: 'flex',
+                            alignItems: 'flex-end',
+                            justifyContent: 'center'
+                        }}>
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                onClick={() => setShowOfferModal(false)}
+                                style={{
+                                    position: 'fixed',
+                                    inset: 0,
+                                    background: 'rgba(0,0,0,0.4)',
+                                    backdropFilter: 'blur(10px)'
+                                }}
+                            />
+                            <motion.div
+                                initial={{ y: '100%' }}
+                                animate={{ y: 0 }}
+                                exit={{ y: '100%' }}
+                                style={{
+                                    width: '100%',
+                                    maxWidth: 'var(--app-max-width)',
+                                    background: 'var(--primary)',
+                                    borderTopLeftRadius: '32px',
+                                    borderTopRightRadius: '32px',
+                                    padding: '30px 25px calc(110px + env(safe-area-inset-bottom)) 25px',
+                                    position: 'relative',
+                                    boxShadow: '0 -10px 40px rgba(0,0,0,0.5)',
+                                    border: '1px solid rgba(255,255,255,0.05)'
+                                }}
+                            >
+                                {!offerSuccess ? (
+                                    <>
+                                        <div style={{ display: 'flex', gap: '20px', marginBottom: '25px' }}>
+                                            <img
+                                                src={selectedProduct.image_url || ''}
+                                                style={{ width: '80px', height: '80px', borderRadius: '16px', objectFit: 'cover' }}
+                                                alt=""
+                                            />
+                                            <div>
+                                                <h3 style={{ fontSize: '20px', fontWeight: '900', color: 'white' }}>Nueva Oferta</h3>
+                                                <p style={{ fontSize: '14px', color: 'var(--text-dim)' }}>{selectedProduct.name}</p>
+                                            </div>
+                                        </div>
+
+                                        <div style={{ marginBottom: '20px' }}>
+                                            <label style={{ display: 'block', fontSize: '11px', fontWeight: '900', color: 'var(--text-dim)', textTransform: 'uppercase', marginBottom: '10px' }}>Tu propuesta</label>
+                                            <div style={{ position: 'relative' }}>
+                                                <span style={{ position: 'absolute', left: '20px', top: '50%', transform: 'translateY(-50%)', fontWeight: '900', color: 'var(--secondary)', fontSize: '20px' }}>$</span>
+                                                <input
+                                                    type="text"
+                                                    inputMode="numeric"
+                                                    value={offerAmount ? new Intl.NumberFormat('es-CO').format(parseInt(offerAmount.replace(/\D/g, '') || '0')) : ''}
+                                                    onChange={(e) => setOfferAmount(e.target.value.replace(/\D/g, ''))}
+                                                    style={{
+                                                        width: '100%',
+                                                        background: 'rgba(255,255,255,0.03)',
+                                                        border: '1px solid rgba(255,255,255,0.1)',
+                                                        borderRadius: '20px',
+                                                        padding: '20px 20px 20px 45px',
+                                                        color: 'white',
+                                                        fontSize: '28px',
+                                                        fontWeight: '900',
+                                                        outline: 'none'
+                                                    }}
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div style={{ display: 'flex', gap: '15px' }}>
+                                            <motion.button
+                                                whileTap={{ scale: 0.95 }}
+                                                onClick={() => setShowOfferModal(false)}
+                                                style={{
+                                                    flex: 1,
+                                                    padding: '18px',
+                                                    borderRadius: '20px',
+                                                    background: 'rgba(255,255,255,0.05)',
+                                                    border: '1px solid rgba(255,255,255,0.1)',
+                                                    color: 'white',
+                                                    fontWeight: '800'
+                                                }}
+                                            >
+                                                CANCELAR
+                                            </motion.button>
+                                            <motion.button
+                                                whileTap={{ scale: 0.95 }}
+                                                disabled={sendingOffer || !offerAmount}
+                                                onClick={async () => {
+                                                    setSendingOffer(true);
+                                                    try {
+                                                        const { error } = await supabase
+                                                            .from('offers')
+                                                            .insert([{
+                                                                product_id: selectedProduct.id,
+                                                                buyer_id: user?.id,
+                                                                seller_id: selectedProduct.seller_id,
+                                                                amount: parseFloat(offerAmount),
+                                                                status: 'pending'
+                                                            }]);
+                                                        if (error) throw error;
+                                                        setOfferSuccess(true);
+                                                        setTimeout(() => {
+                                                            setOfferSuccess(false);
+                                                            setShowOfferModal(false);
+                                                            setSelectedProduct(null);
+                                                        }, 2000);
+                                                    } catch (err) {
+                                                        console.error(err);
+                                                    } finally {
+                                                        setSendingOffer(false);
+                                                    }
+                                                }}
+                                                className="btn-primary"
+                                                style={{ flex: 2, width: 'auto' }}
+                                            >
+                                                {sendingOffer ? 'ENVIANDO...' : 'ENVIAR OFERTA'}
+                                            </motion.button>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <div style={{ textAlign: 'center', padding: '40px 0' }}>
+                                        <CheckCircle2 size={40} color="var(--secondary)" style={{ margin: '0 auto 25px' }} />
+                                        <h3 style={{ fontSize: '24px', fontWeight: '900', color: 'white' }}>¡Propuesta Enviada!</h3>
+                                    </div>
+                                )}
+                            </motion.div>
+                        </div>
+                    )}
+                </AnimatePresence>
 
 
                 {/* Featured Caddies / Tournaments */}

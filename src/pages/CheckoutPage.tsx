@@ -232,13 +232,13 @@ const CheckoutPage: React.FC = () => {
                 title: '¡Compra exitosa!',
                 message: `Tu pedido por $${new Intl.NumberFormat('es-CO').format(totalAmount)} ha sido confirmado.`,
                 type: 'order_new',
-                link: '/shop?tab=myorders'
+                link: '/?tab=myorders'
             }]);
 
             setIsSuccess(true);
             setTimeout(() => {
                 clearCart();
-                navigate('/shop');
+                navigate('/');
             }, 3000);
 
         } catch (err: any) {
@@ -353,7 +353,7 @@ const CheckoutPage: React.FC = () => {
                             if (isReservation) {
                                 navigate('/green-fee', { state: { tab: 'reservations' } });
                             } else {
-                                navigate('/shop?tab=myorders');
+                                navigate('/?tab=myorders');
                             }
                         }}
                         style={{
@@ -373,7 +373,7 @@ const CheckoutPage: React.FC = () => {
                     <button
                         onClick={() => {
                             clearCart();
-                            navigate('/shop');
+                            navigate('/');
                         }}
                         style={{
                             background: 'rgba(255,255,255,0.05)',

@@ -635,7 +635,7 @@ const MyStore: React.FC = () => {
                         title,
                         message,
                         type: 'offer_update',
-                        link: '/shop?tab=myorders', // Link to shop Compras tab
+                        link: '/?tab=myorders', // Link to home Compras tab
                     });
                 }
             }

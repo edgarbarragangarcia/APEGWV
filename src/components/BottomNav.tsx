@@ -1,13 +1,12 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Home, ShoppingBag, Calendar, Ticket, PlayCircle } from 'lucide-react';
+import { Home, Calendar, Ticket, PlayCircle } from 'lucide-react';
 
 const BottomNav: React.FC = () => {
     const navItems = [
         { path: '/', icon: Home, label: 'Inicio' },
         { path: '/play-mode', icon: PlayCircle, label: 'Jugar' },
         { path: '/green-fee', icon: Ticket, label: 'Green Fee' },
-        { path: '/shop', icon: ShoppingBag, label: 'Marketplace' },
         { path: '/tournaments', icon: Calendar, label: 'Eventos' },
     ];
 

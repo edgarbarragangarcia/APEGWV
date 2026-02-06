@@ -67,7 +67,7 @@ const CartPage: React.FC = () => {
                     <PageHeader noMargin title="Mi Carrito" />
                 </div>
                 <div style={styles.scrollContainer}>
-                    <EmptyCartView onNavigate={() => navigate('/shop')} />
+                    <EmptyCartView onNavigate={() => navigate('/')} />
                 </div>
             </div>
         );

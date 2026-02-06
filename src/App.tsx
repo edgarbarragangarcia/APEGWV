@@ -9,7 +9,6 @@ import './index.css';
 
 import Home from './pages/Home';
 import Round from './pages/Round';
-import Shop from './pages/Shop';
 import Tournaments from './pages/Tournaments';
 import Profile from './pages/Profile';
 import Auth from './pages/Auth';
@@ -113,7 +112,7 @@ const AppContent: React.FC = () => {
       {session && <Navbar />}
 
       <main
-        className={`${session ? "page-content container" : ""} ${isFixedPage ? 'round-page-content' : ''}`}
+        className={`${session ? "page-content container" : ""} ${isFixedPage ? 'round-page-content' : ''} `}
         style={!session ? { flex: 1, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', padding: 0, margin: 0 } : { flex: 1, overflow: isFixedPage ? 'hidden' : 'auto' }}
       >
         <Routes>
@@ -133,7 +132,6 @@ const AppContent: React.FC = () => {
               <Route path="/green-fee" element={<GreenFee />} />
               <Route path="/green-fee/:courseId" element={<CourseReservation />} />
               <Route path="/my-reservations" element={<MyReservations />} />
-              <Route path="/shop" element={<Shop />} />
               <Route path="/tournaments" element={<Tournaments />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/settings" element={<Settings />} />
