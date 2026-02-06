@@ -19,6 +19,7 @@ const Home: React.FC = () => {
     const [activeTab, setActiveTab] = React.useState('Todo');
     const { user } = useAuth();
     const { addToCart } = useCart();
+    const carouselRef = React.useRef<HTMLDivElement>(null);
     const [myOrders, setMyOrders] = React.useState<any[]>([]);
     const [ordersLoading, setOrdersLoading] = React.useState(false);
     const [selectedProduct, setSelectedProduct] = React.useState<any>(null);
@@ -38,6 +39,25 @@ const Home: React.FC = () => {
         if (tab === 'myorders') {
             setViewTab('myorders');
         }
+    }, []);
+
+    // Auto-scroll for featured carousel
+    useEffect(() => {
+        const interval = setInterval(() => {
+            if (carouselRef.current) {
+                const container = carouselRef.current;
+                const scrollAmount = container.clientWidth * 0.8; // Move 80% of width
+                const maxScroll = container.scrollWidth - container.clientWidth;
+
+                if (container.scrollLeft >= maxScroll - 10) {
+                    container.scrollTo({ left: 0, behavior: 'smooth' });
+                } else {
+                    container.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+                }
+            }
+        }, 4000); // Every 4 seconds
+
+        return () => clearInterval(interval);
     }, []);
 
     useEffect(() => {
@@ -89,7 +109,7 @@ const Home: React.FC = () => {
         return url;
     };
 
-    const categories = ['Todo', 'Bolas', 'Ropa', 'Accesorios', 'Zapatos'];
+    const categories = ['Todo', 'Bolas', 'Palos', 'Ropa', 'Zapatos', 'Accesorios', 'Guantes', 'Gorras'];
 
     const filteredProducts = featuredProducts.filter(product => {
         const matchesCategory = activeTab === 'Todo' ||
@@ -179,15 +199,18 @@ const Home: React.FC = () => {
                 </div>
 
                 {/* Featured Carousel */}
-                <div style={{
-                    marginTop: '0px',
-                    marginBottom: '0px',
-                    overflowX: 'auto',
-                    scrollSnapType: 'x mandatory',
-                    WebkitOverflowScrolling: 'touch',
-                    scrollbarWidth: 'none',
-                    msOverflowStyle: 'none'
-                }}>
+                <div
+                    ref={carouselRef}
+                    style={{
+                        marginTop: '0px',
+                        marginBottom: '0px',
+                        overflowX: 'auto',
+                        scrollSnapType: 'x mandatory',
+                        WebkitOverflowScrolling: 'touch',
+                        scrollbarWidth: 'none',
+                        msOverflowStyle: 'none'
+                    }}
+                >
                     <div style={{
                         display: 'flex',
                         gap: '12px',

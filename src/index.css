@@ -200,11 +200,9 @@ button {
 
 /* Layout Classes */
 .container {
-  max-width: var(--app-max-width);
-  /* Mobile optimal width */
-  margin: 0 auto;
-  padding: 0 20px;
   width: 100%;
+  margin: 0;
+  padding: 0;
 }
 
 .flex-center {

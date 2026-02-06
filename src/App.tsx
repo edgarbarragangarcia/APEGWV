@@ -37,6 +37,9 @@ import BallsPage from './pages/BallsPage';
 import ClothingPage from './pages/ClothingPage';
 import AccessoriesPage from './pages/AccessoriesPage';
 import ShoesPage from './pages/ShoesPage';
+import ClubsPage from './pages/ClubsPage';
+import GlovesPage from './pages/GlovesPage';
+import CapsPage from './pages/CapsPage';
 import { useOnlineStatus } from './hooks/useOnlineStatus';
 import OfflineOverlay from './components/OfflineOverlay';
 import { setupPushNotifications } from './services/PushManager';
@@ -155,6 +158,9 @@ const AppContent: React.FC = () => {
               <Route path="/category/ropa" element={<ClothingPage />} />
               <Route path="/category/accesorios" element={<AccessoriesPage />} />
               <Route path="/category/zapatos" element={<ShoesPage />} />
+              <Route path="/category/palos" element={<ClubsPage />} />
+              <Route path="/category/guantes" element={<GlovesPage />} />
+              <Route path="/category/gorras" element={<CapsPage />} />
               <Route path="/notifications" element={<NotificationsPage />} />
               <Route path="/auth" element={<Navigate to="/" replace />} />
               <Route path="*" element={<Navigate to="/" replace />} />
