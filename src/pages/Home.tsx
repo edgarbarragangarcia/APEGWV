@@ -152,7 +152,14 @@ const Home: React.FC = () => {
                         {categories.map(tab => (
                             <button
                                 key={tab}
-                                onClick={() => setActiveTab(tab)}
+                                onClick={() => {
+                                    if (tab === 'Todo') {
+                                        setActiveTab(tab);
+                                    } else {
+                                        const route = tab.toLowerCase().replace(' ', '-');
+                                        navigate(`/category/${route}`);
+                                    }
+                                }}
                                 style={{
                                     padding: '6px 14px',
                                     borderRadius: '20px',

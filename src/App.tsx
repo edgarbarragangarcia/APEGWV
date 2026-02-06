@@ -33,6 +33,10 @@ import TournamentManager from './pages/TournamentManager';
 import TournamentParticipants from './pages/TournamentParticipants';
 import CheckoutPage from './pages/CheckoutPage';
 import PaymentMethodsPage from './pages/PaymentMethodsPage';
+import BallsPage from './pages/BallsPage';
+import ClothingPage from './pages/ClothingPage';
+import AccessoriesPage from './pages/AccessoriesPage';
+import ShoesPage from './pages/ShoesPage';
 import { useOnlineStatus } from './hooks/useOnlineStatus';
 import OfflineOverlay from './components/OfflineOverlay';
 import { setupPushNotifications } from './services/PushManager';
@@ -147,6 +151,10 @@ const AppContent: React.FC = () => {
               <Route path="/cart" element={<CartPage />} />
               <Route path="/checkout" element={<CheckoutPage />} />
               <Route path="/payment-methods" element={<PaymentMethodsPage />} />
+              <Route path="/category/bolas" element={<BallsPage />} />
+              <Route path="/category/ropa" element={<ClothingPage />} />
+              <Route path="/category/accesorios" element={<AccessoriesPage />} />
+              <Route path="/category/zapatos" element={<ShoesPage />} />
               <Route path="/notifications" element={<NotificationsPage />} />
               <Route path="/auth" element={<Navigate to="/" replace />} />
               <Route path="*" element={<Navigate to="/" replace />} />
