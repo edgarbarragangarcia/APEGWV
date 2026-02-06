@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ChevronRight, Bookmark, Check } from 'lucide-react';
 import PageHeader from '../components/PageHeader';
+import PageHero from '../components/PageHero';
 import UserSearch from '../components/UserSearch';
 import { useProfile } from '../hooks/useProfile';
 import { supabase } from '../services/SupabaseManager';
@@ -128,18 +129,11 @@ const CreateGroup: React.FC = () => {
 
     return (
         <div style={{
-            position: 'fixed',
-            top: '0',
-            left: '0',
-            right: '0',
-            bottom: '0',
-            width: '100%',
-            maxWidth: 'var(--app-max-width)',
-            margin: '0 auto',
             overflow: 'hidden',
             background: 'var(--primary)',
             zIndex: 500
         }} className="animate-fade">
+            <PageHero image="https://images.unsplash.com/photo-1593113598332-cd288d649433?q=80&w=2070&auto=format&fit=crop" />
 
             {/* Success Overlay */}
             {showSuccess && (
@@ -212,7 +206,7 @@ const CreateGroup: React.FC = () => {
                 right: '0',
                 width: '100%',
                 zIndex: 900,
-                background: 'var(--primary)',
+                background: 'transparent',
                 paddingLeft: '20px',
                 paddingRight: '20px',
                 pointerEvents: 'auto'

@@ -12,6 +12,7 @@ import {
     Camera as CameraIcon
 } from 'lucide-react';
 import PageHeader from '../components/PageHeader';
+import PageHero from '../components/PageHero';
 
 const Settings: React.FC = () => {
     const navigate = useNavigate();
@@ -165,6 +166,7 @@ const Settings: React.FC = () => {
             overflow: 'hidden',
             background: 'var(--primary)'
         }}>
+            <PageHero image="https://images.unsplash.com/photo-1596733430284-f7437764b1a9?q=80&w=2070&auto=format&fit=crop" />
             <div style={{
                 position: 'absolute',
                 top: 'var(--header-offset-top)',
@@ -172,7 +174,7 @@ const Settings: React.FC = () => {
                 right: '0',
                 width: '100%',
                 zIndex: 900,
-                background: 'var(--primary)',
+                background: 'transparent',
                 paddingLeft: '20px',
                 paddingRight: '20px',
                 pointerEvents: 'auto'

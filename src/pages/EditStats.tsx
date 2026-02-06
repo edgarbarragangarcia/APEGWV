@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../services/SupabaseManager';
-import { Save, Loader2, ArrowLeft } from 'lucide-react';
+import { Save, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import PageHeader from '../components/PageHeader';
+import PageHero from '../components/PageHero';
 
 
 const EditStats: React.FC = () => {
@@ -84,76 +86,107 @@ const EditStats: React.FC = () => {
     }
 
     return (
-        <div className="animate-fade">
-            <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '30px' }}>
-                <button onClick={() => navigate('/profile')} style={{ background: 'none', border: 'none', color: 'var(--text)' }}>
-                    <ArrowLeft size={24} />
-                </button>
-                <h1 style={{ fontSize: '24px', fontWeight: '900', margin: 0, color: 'white' }}>
-                    Editar <span style={{ color: 'var(--secondary)' }}>Estadísticas</span>
-                </h1>
+        <div className="animate-fade" style={{
+            overflow: 'hidden',
+            background: 'var(--primary)',
+            position: 'fixed',
+            inset: 0
+        }}>
+            <PageHero image="https://images.unsplash.com/photo-1593113598332-cd288d649433?q=80&w=2070&auto=format&fit=crop" />
+
+            {/* Header Fijo */}
+            <div style={{
+                position: 'absolute',
+                top: 'var(--header-offset-top)',
+                left: '0',
+                right: '0',
+                width: '100%',
+                zIndex: 900,
+                background: 'transparent',
+                paddingLeft: '20px',
+                paddingRight: '20px',
+                pointerEvents: 'auto'
+            }}>
+                <PageHeader
+                    noMargin
+                    title="Editar Estadísticas"
+                    onBack={() => navigate('/profile')}
+                />
             </div>
 
-            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                <div className="form-group">
-                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', color: 'var(--text-dim)' }}>
-                        Promedio de Golpes (Avg Score)
-                    </label>
-                    <input
-                        type="number"
-                        step="0.1"
-                        className="glass"
-                        style={{ width: '100%', padding: '15px', borderRadius: '12px', border: 'none', color: 'var(--text)' }}
-                        value={formData.average_score}
-                        onChange={e => setFormData({ ...formData, average_score: e.target.value })}
-                    />
-                </div>
+            {/* Area de Scroll */}
+            <div style={{
+                position: 'absolute',
+                top: 'calc(var(--header-offset-top) + 78px)',
+                left: '0',
+                right: '0',
+                bottom: 0,
+                overflowY: 'auto',
+                padding: '0 20px 40px 20px',
+                overflowX: 'hidden'
+            }}>
 
-                <div className="form-group">
-                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', color: 'var(--text-dim)' }}>
-                        Promedio de Putts
-                    </label>
-                    <input
-                        type="number"
-                        step="0.1"
-                        className="glass"
-                        style={{ width: '100%', padding: '15px', borderRadius: '12px', border: 'none', color: 'var(--text)' }}
-                        value={formData.putts_avg}
-                        onChange={e => setFormData({ ...formData, putts_avg: e.target.value })}
-                    />
-                </div>
+                <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                    <div className="form-group">
+                        <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', color: 'var(--text-dim)' }}>
+                            Promedio de Golpes (Avg Score)
+                        </label>
+                        <input
+                            type="number"
+                            step="0.1"
+                            className="glass"
+                            style={{ width: '100%', padding: '15px', borderRadius: '12px', border: 'none', color: 'var(--text)' }}
+                            value={formData.average_score}
+                            onChange={e => setFormData({ ...formData, average_score: e.target.value })}
+                        />
+                    </div>
 
-                <div className="form-group">
-                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', color: 'var(--text-dim)' }}>
-                        Fairways acertados (%)
-                    </label>
-                    <input
-                        type="number"
-                        step="0.1"
-                        max="100"
-                        className="glass"
-                        style={{ width: '100%', padding: '15px', borderRadius: '12px', border: 'none', color: 'var(--text)' }}
-                        value={formData.fairways_hit_rate}
-                        onChange={e => setFormData({ ...formData, fairways_hit_rate: e.target.value })}
-                    />
-                </div>
+                    <div className="form-group">
+                        <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', color: 'var(--text-dim)' }}>
+                            Promedio de Putts
+                        </label>
+                        <input
+                            type="number"
+                            step="0.1"
+                            className="glass"
+                            style={{ width: '100%', padding: '15px', borderRadius: '12px', border: 'none', color: 'var(--text)' }}
+                            value={formData.putts_avg}
+                            onChange={e => setFormData({ ...formData, putts_avg: e.target.value })}
+                        />
+                    </div>
 
-                <button
-                    type="submit"
-                    className="primary-button"
-                    disabled={saving}
-                    style={{
-                        marginTop: '20px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '10px'
-                    }}
-                >
-                    {saving ? <Loader2 className="animate-spin" size={20} /> : <Save size={20} />}
-                    {saving ? 'Guardando...' : 'Guardar Estadísticas'}
-                </button>
-            </form>
+                    <div className="form-group">
+                        <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', color: 'var(--text-dim)' }}>
+                            Fairways acertados (%)
+                        </label>
+                        <input
+                            type="number"
+                            step="0.1"
+                            max="100"
+                            className="glass"
+                            style={{ width: '100%', padding: '15px', borderRadius: '12px', border: 'none', color: 'var(--text)' }}
+                            value={formData.fairways_hit_rate}
+                            onChange={e => setFormData({ ...formData, fairways_hit_rate: e.target.value })}
+                        />
+                    </div>
+
+                    <button
+                        type="submit"
+                        className="primary-button"
+                        disabled={saving}
+                        style={{
+                            marginTop: '20px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '10px'
+                        }}
+                    >
+                        {saving ? <Loader2 className="animate-spin" size={20} /> : <Save size={20} />}
+                        {saving ? 'Guardando...' : 'Guardar Estadísticas'}
+                    </button>
+                </form>
+            </div>
         </div>
     );
 };

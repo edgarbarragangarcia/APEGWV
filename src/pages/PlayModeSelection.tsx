@@ -4,6 +4,7 @@ import { User, Users, ChevronRight, BarChart3 } from 'lucide-react';
 import PageHeader from '../components/PageHeader';
 import { supabase } from '../services/SupabaseManager';
 import { COLOMBIAN_COURSES } from '../data/courses';
+import PageHero from '../components/PageHero';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const PlayModeSelection: React.FC = () => {
@@ -190,6 +191,7 @@ const PlayModeSelection: React.FC = () => {
             background: 'var(--primary)',
             zIndex: 500
         }} className="animate-fade">
+            <PageHero image="https://images.unsplash.com/photo-1596733430284-f7437764b1a9?q=80&w=2070&auto=format&fit=crop" />
 
             {/* Header Fijo */}
             <div style={{
@@ -199,7 +201,7 @@ const PlayModeSelection: React.FC = () => {
                 right: '0',
                 width: '100%',
                 zIndex: 900,
-                background: 'var(--primary)',
+                background: 'transparent',
                 paddingLeft: '20px',
                 paddingRight: '20px',
                 pointerEvents: 'auto'

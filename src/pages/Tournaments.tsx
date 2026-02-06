@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Calendar, Users, MapPin, Search, UserPlus, Trophy, X, Gift } from 'lucide-react';
 import Card from '../components/Card';
 import PageHeader from '../components/PageHeader';
+import PageHero from '../components/PageHero';
 import { supabase } from '../services/SupabaseManager';
 import Skeleton from '../components/Skeleton';
 import { useAuth } from '../context/AuthContext';
@@ -188,6 +189,7 @@ const Tournaments: React.FC = () => {
             overflow: 'hidden',
             background: 'var(--primary)'
         }}>
+            <PageHero image="https://images.unsplash.com/photo-1592919016381-801648a8f10b?q=80&w=2070&auto=format&fit=crop" />
             {/* Header Fijo - Eventos */}
             <div style={{
                 position: 'absolute',
@@ -196,7 +198,7 @@ const Tournaments: React.FC = () => {
                 right: '0',
                 width: '100%',
                 zIndex: 900,
-                background: 'var(--primary)',
+                background: 'transparent',
                 paddingBottom: '20px',
                 paddingLeft: '20px',
                 paddingRight: '20px',

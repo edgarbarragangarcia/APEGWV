@@ -3,6 +3,7 @@ import { supabase, optimizeImage } from '../services/SupabaseManager';
 import { Save, Loader2, Camera, Trash2, Upload, MapPin, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import PageHeader from '../components/PageHeader';
+import PageHero from '../components/PageHero';
 import { useProfile, useUpdateProfile } from '../hooks/useProfile';
 import { useAuth } from '../context/AuthContext';
 import AddressModal from '../components/AddressModal';
@@ -109,6 +110,7 @@ const EditProfile: React.FC = () => {
 
     return (
         <div className="animate-fade" style={styles.pageContainer}>
+            <PageHero image="https://images.unsplash.com/photo-1593113598332-cd288d649433?q=80&w=2070&auto=format&fit=crop" />
             <div style={styles.headerArea}>
                 <PageHeader noMargin title="Editar Perfil" onBack={() => navigate('/profile')} />
             </div>
@@ -267,7 +269,7 @@ const styles = {
         paddingTop: 'var(--header-offset-top)'
     },
     headerArea: {
-        flexShrink: 0, zIndex: 10, background: 'var(--primary)', padding: '0 20px'
+        flexShrink: 0, zIndex: 10, background: 'transparent', padding: '0 20px'
     },
     scrollArea: {
         flex: 1, overflowY: 'auto' as 'auto',

@@ -4,6 +4,7 @@ import { supabase } from '../services/SupabaseManager';
 import { Plus, Trophy, Trash2, Calendar, Loader2, CheckCircle2, Pencil, Users, ChevronDown } from 'lucide-react';
 import Card from '../components/Card';
 import Skeleton from '../components/Skeleton';
+import PageHero from '../components/PageHero';
 import { useAuth } from '../context/AuthContext';
 
 interface Tournament {
@@ -458,12 +459,11 @@ const TournamentManager: React.FC = () => {
             display: 'flex',
             flexDirection: 'column',
             overflow: 'hidden',
-            zIndex: 900,
-            paddingTop: '80px', // Push content below global navbar
-            paddingBottom: 'var(--nav-height)'
+            zIndex: 900
         }}>
+            <PageHero image="https://images.unsplash.com/photo-1535131749006-b7f58c99034b?q=80&w=2070&auto=format&fit=crop" />
             {/* Fixed Title Header */}
-            <div style={{ flexShrink: 0, zIndex: 10, background: 'var(--primary)', padding: '0 20px 20px 20px', textAlign: 'center' }}>
+            <div style={{ flexShrink: 0, zIndex: 10, background: 'transparent', padding: '0 20px 20px 20px', paddingTop: 'var(--header-offset-top)', textAlign: 'center' }}>
                 <span style={{
                     fontSize: '11px',
                     fontWeight: '900',
@@ -488,7 +488,7 @@ const TournamentManager: React.FC = () => {
             <div style={{
                 flex: 1,
                 overflowY: 'auto',
-                padding: '0 20px 20px 20px',
+                padding: '0 20px calc(var(--nav-height) + 20px) 20px',
                 display: 'flex',
                 flexDirection: 'column',
                 WebkitOverflowScrolling: 'touch',

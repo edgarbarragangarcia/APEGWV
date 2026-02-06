@@ -13,6 +13,7 @@ import Card from '../components/Card';
 import StoreOnboarding from '../components/StoreOnboarding';
 import Skeleton from '../components/Skeleton';
 import PageHeader from '../components/PageHeader';
+import PageHero from '../components/PageHero';
 import { useAuth } from '../context/AuthContext';
 
 import type { Database } from '../types/database.types';
@@ -756,6 +757,7 @@ const MyStore: React.FC = () => {
             overflow: 'hidden',
             zIndex: 500
         }} className="animate-fade">
+            <PageHero image="https://images.unsplash.com/photo-1593113630400-ea4288922497?q=80&w=2070&auto=format&fit=crop" />
 
             <div style={{
                 position: 'absolute',
@@ -764,7 +766,7 @@ const MyStore: React.FC = () => {
                 right: '0',
                 width: '100%',
                 zIndex: 900,
-                background: 'linear-gradient(180deg, var(--primary) 0%, var(--primary) 98%, transparent 100%)',
+                background: 'transparent',
                 padding: '0 20px 10px 20px',
                 pointerEvents: 'auto'
             }}>

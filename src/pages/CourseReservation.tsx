@@ -4,6 +4,7 @@ import { MapPin, ChevronRight, CheckCircle2, Loader2 } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '../services/SupabaseManager';
 import PageHeader from '../components/PageHeader';
+import PageHero from '../components/PageHero';
 
 const CourseReservation: React.FC = () => {
     const navigate = useNavigate();
@@ -178,14 +179,11 @@ const CourseReservation: React.FC = () => {
 
     return (
         <div className="animate-fade" style={{
-            position: 'fixed',
-            inset: 0,
-            width: '100%',
-            maxWidth: 'var(--app-max-width)',
-            margin: '0 auto',
             overflow: 'hidden',
-            background: 'var(--primary)'
+            background: 'var(--primary)',
+            zIndex: 900
         }}>
+            <PageHero />
             {/* Header Fijo */}
             <div style={{
                 position: 'absolute',
@@ -194,7 +192,7 @@ const CourseReservation: React.FC = () => {
                 right: '0',
                 width: '100%',
                 zIndex: 900,
-                background: 'var(--primary)',
+                background: 'transparent',
                 paddingLeft: '20px',
                 paddingRight: '20px',
                 pointerEvents: 'auto'

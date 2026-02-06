@@ -8,6 +8,7 @@ import { useProfile } from '../hooks/useProfile';
 import { useFeaturedProducts, useUpcomingTournaments } from '../hooks/useHomeData';
 import PageHeader from '../components/PageHeader';
 import { useCart } from '../context/CartContext';
+import PageHero from '../components/PageHero';
 
 const Home: React.FC = () => {
     const navigate = useNavigate();
@@ -134,32 +135,7 @@ const Home: React.FC = () => {
             width: '100%',
             overflow: 'hidden'
         }}>
-            {/* Hero Background Image */}
-            <div style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                height: '420px',
-                zIndex: 0,
-                overflow: 'hidden'
-            }}>
-                <img
-                    src="/images/briceno18.png"
-                    alt="Hero Background"
-                    style={{
-                        width: '100%',
-                        height: '100%',
-                        objectFit: 'cover',
-                        opacity: 0.6
-                    }}
-                />
-                <div style={{
-                    position: 'absolute',
-                    inset: 0,
-                    background: 'linear-gradient(to bottom, rgba(14, 47, 31, 0.4) 0%, rgba(14, 47, 31, 0.8) 70%, var(--primary) 100%)'
-                }} />
-            </div>
+            <PageHero image="/images/briceno18.png" />
 
             {/* Header y Stats Fijos */}
             <div style={{

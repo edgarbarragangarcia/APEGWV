@@ -9,6 +9,7 @@ import { useGeoLocation } from '../hooks/useGeoLocation';
 import { supabase } from '../services/SupabaseManager';
 import { useAuth } from '../context/AuthContext';
 import { useProfile } from '../hooks/useProfile';
+import PageHero from '../components/PageHero';
 
 const CourseSelection: React.FC = () => {
     const navigate = useNavigate();
@@ -156,15 +157,16 @@ const CourseSelection: React.FC = () => {
             margin: '0 auto',
             overflow: 'hidden'
         }} className="animate-fade">
+            <PageHero image="https://images.unsplash.com/photo-1596733430284-f7437764b1a9?q=80&w=2070&auto=format&fit=crop" />
             {/* Header Fijo */}
             <div style={{
                 position: 'absolute',
-                top: 'calc(env(safe-area-inset-top) + 87px)',
+                top: 'var(--header-offset-top)',
                 left: '0',
                 right: '0',
                 width: '100%',
                 zIndex: 900,
-                background: 'linear-gradient(180deg, var(--primary) 0%, var(--primary) 90%, transparent 100%)',
+                background: 'transparent',
                 paddingTop: '10px',
                 paddingBottom: '20px',
                 paddingLeft: '20px',
@@ -248,10 +250,10 @@ const CourseSelection: React.FC = () => {
             {/* Main Content Scroll Area */}
             <div style={{
                 position: 'absolute',
-                top: 'calc(env(safe-area-inset-top) + 310px)',
+                top: 'calc(var(--header-offset-top) + 220px)',
                 left: '0',
                 right: '0',
-                bottom: 'calc(var(--nav-height))',
+                bottom: 'calc(var(--nav-height) + 20px)',
                 overflowY: 'auto',
                 overflowX: 'hidden',
                 padding: '0 20px 20px 20px'
@@ -358,7 +360,7 @@ const CourseSelection: React.FC = () => {
                     )}
                 </div>
             </div>
-        </div>
+        </div >
     );
 };
 

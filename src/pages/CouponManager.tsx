@@ -5,6 +5,7 @@ import { Plus, Ticket, Trash2, Loader2, CheckCircle2, Copy } from 'lucide-react'
 import Card from '../components/Card';
 import Skeleton from '../components/Skeleton';
 import PageHeader from '../components/PageHeader';
+import PageHero from '../components/PageHero';
 
 interface Coupon {
     id: string;
@@ -141,18 +142,17 @@ const CouponManager: React.FC = () => {
             display: 'flex',
             flexDirection: 'column',
             overflow: 'hidden',
-            zIndex: 900,
-            paddingTop: '80px',
-            paddingBottom: 'var(--nav-height)'
+            zIndex: 900
         }}>
-            <div style={{ flexShrink: 0, zIndex: 10, background: 'var(--primary)', padding: '0 20px' }}>
+            <PageHero image="https://images.unsplash.com/photo-1593113598332-cd288d649433?q=80&w=2070&auto=format&fit=crop" />
+            <div style={{ flexShrink: 0, zIndex: 10, background: 'transparent', padding: '0 20px', paddingTop: 'var(--header-offset-top)' }}>
                 <PageHeader title="Generar Cupones" onBack={() => navigate('/my-events')} />
             </div>
 
             <div style={{
                 flex: 1,
                 overflowY: 'auto',
-                padding: '0 20px 20px 20px',
+                padding: '0 20px calc(var(--nav-height) + 20px) 20px',
                 display: 'flex',
                 flexDirection: 'column',
                 WebkitOverflowScrolling: 'touch',

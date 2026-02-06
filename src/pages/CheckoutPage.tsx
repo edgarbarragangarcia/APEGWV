@@ -10,6 +10,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '../context/CartContext';
 import { supabase } from '../services/SupabaseManager';
 import CardInput from '../components/CardInput';
+import PageHero from '../components/PageHero';
 
 interface PaymentMethod {
     id: string;
@@ -394,192 +395,246 @@ const CheckoutPage: React.FC = () => {
 
     return (
         <div className="animate-fade" style={{
-            padding: '20px',
-            paddingBottom: '40px',
-            maxWidth: 'var(--app-max-width)',
-            margin: '0 auto'
+            overflow: 'hidden',
+            background: 'var(--primary)',
+            position: 'fixed',
+            inset: 0
         }}>
-            {/* Error Message Overlay */}
-            <AnimatePresence>
-                {/* Replaced native alert with UI error */}
-            </AnimatePresence>
-            {isProcessing && (
-                <div style={{
-                    position: 'fixed',
-                    inset: 0,
-                    background: 'rgba(0,0,0,0.8)',
-                    zIndex: 9999,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexDirection: 'column',
-                    gap: '15px'
-                }}>
-                    <Loader2 className="animate-spin" size={40} color="var(--secondary)" />
-                    <span style={{ color: 'white', fontWeight: '700' }}>Procesando pedido...</span>
-                </div>
-            )}
+            <PageHero />
 
-            <PageHeader
-                noMargin
-                title={isReservation ? "Confirmar Reserva" : "Finalizar Compra"}
-                onBack={() => step === 1 ? navigate(-1) : isReservation ? navigate(-1) : setStep(1)}
-            />
-
-            {/* Error Banner */}
-            {/* Added explicit error display */}
-            {/* Note: I will inject the error state definition and usage in the next step properly at the top of the component and here */}
-            {/* For now, let's just make sure the state is defined. Wait, I should do this in a multi_replace to handle both state definition and render. */}
-
-            {/* ABORTING single replace to switch to multi_replace for cleaner state insertion */}
-
-            {/* Re-rendering original content to restart with multi_replace */}
-            <div style={{ display: 'flex', gap: '8px', marginBottom: '30px', opacity: isReservation ? 0 : 1 }}>
-                <div style={{ flex: 1, height: '4px', background: 'var(--secondary)', borderRadius: '2px' }} />
-                <div style={{ flex: 1, height: '4px', background: step === 2 ? 'var(--secondary)' : 'rgba(255,b255,b255,0.1)', borderRadius: '2px', transition: '0.3s' }} />
+            {/* Header Fijo */}
+            <div style={{
+                position: 'absolute',
+                top: 'var(--header-offset-top)',
+                left: '0',
+                right: '0',
+                width: '100%',
+                zIndex: 900,
+                background: 'transparent',
+                paddingLeft: '20px',
+                paddingRight: '20px',
+                pointerEvents: 'auto'
+            }}>
+                <PageHeader
+                    noMargin
+                    title={isReservation ? "Confirmar Reserva" : "Finalizar Compra"}
+                    onBack={() => step === 1 ? navigate(-1) : isReservation ? navigate(-1) : setStep(1)}
+                />
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                {step === 1 ? (
-                    <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                            <h3 style={{ fontSize: '18px', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                <MapPin size={20} color="var(--secondary)" /> Datos de Envío
-                            </h3>
-                            <button
-                                onClick={() => navigate('/profile/edit')}
-                                style={{
-                                    background: 'none',
-                                    border: 'none',
-                                    color: 'var(--secondary)',
-                                    fontSize: '13px',
-                                    fontWeight: '700',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '5px'
-                                }}
-                            >
-                                <Edit3 size={14} /> EDITAR
-                            </button>
-                        </div>
+            {/* Area de Scroll */}
+            <div style={{
+                position: 'absolute',
+                top: 'calc(var(--header-offset-top) + 78px)',
+                left: '0',
+                right: '0',
+                bottom: 0,
+                overflowY: 'auto',
+                padding: '0 20px 40px 20px',
+                overflowX: 'hidden'
+            }}>
 
-                        <div className="glass" style={{ padding: '20px', borderRadius: '20px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                            {shipping.address ? (
-                                <>
-                                    <div style={{ display: 'flex', gap: '15px' }}>
-                                        <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                                            <User size={20} color="var(--text-dim)" />
-                                        </div>
-                                        <div>
-                                            <p style={{ fontSize: '12px', color: 'var(--text-dim)', fontWeight: '600', marginBottom: '2px' }}>NOMBRE</p>
-                                            <p style={{ fontSize: '15px', color: 'white', fontWeight: '600' }}>{shipping.name}</p>
-                                        </div>
-                                    </div>
+                {/* Error Banner */}
+                {/* Added explicit error display */}
+                {/* Note: I will inject the error state definition and usage in the next step properly at the top of the component and here */}
+                {/* For now, let's just make sure the state is defined. Wait, I should do this in a multi_replace to handle both state definition and render. */}
 
-                                    <div style={{ display: 'flex', gap: '15px' }}>
-                                        <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                                            <Phone size={20} color="var(--text-dim)" />
-                                        </div>
-                                        <div>
-                                            <p style={{ fontSize: '12px', color: 'var(--text-dim)', fontWeight: '600', marginBottom: '2px' }}>TELÉFONO</p>
-                                            <p style={{ fontSize: '15px', color: 'white', fontWeight: '600' }}>{shipping.phone}</p>
-                                        </div>
-                                    </div>
+                {/* ABORTING single replace to switch to multi_replace for cleaner state insertion */}
 
-                                    <div style={{ display: 'flex', gap: '15px' }}>
-                                        <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                                            <MapPin size={20} color="var(--text-dim)" />
-                                        </div>
-                                        <div style={{ flex: 1 }}>
-                                            <p style={{ fontSize: '12px', color: 'var(--text-dim)', fontWeight: '600', marginBottom: '2px' }}>DIRECCIÓN DE ENTREGA</p>
-                                            <p style={{ fontSize: '15px', color: 'white', fontWeight: '600', lineHeight: '1.4' }}>{shipping.address}</p>
-                                        </div>
-                                    </div>
-                                </>
-                            ) : (
-                                <div style={{ textAlign: 'center', padding: '20px 0' }}>
-                                    <AlertCircle size={32} color="var(--secondary)" style={{ marginBottom: '10px', opacity: 0.8 }} />
-                                    <h4 style={{ fontWeight: '700', marginBottom: '5px' }}>Faltan datos de envío</h4>
-                                    <p style={{ fontSize: '14px', color: 'var(--text-dim)', marginBottom: '20px' }}>Necesitamos tu dirección para poder entregarte el pedido.</p>
-                                    <button
-                                        onClick={() => navigate('/profile/edit')}
-                                        className="btn-secondary"
-                                        style={{ width: 'auto', display: 'inline-flex', padding: '10px 20px' }}
-                                    >
-                                        Completar mi Perfil
-                                    </button>
-                                </div>
-                            )}
-                        </div>
+                {/* Re-rendering original content to restart with multi_replace */}
+                <div style={{ display: 'flex', gap: '8px', marginBottom: '30px', opacity: isReservation ? 0 : 1 }}>
+                    <div style={{ flex: 1, height: '4px', background: 'var(--secondary)', borderRadius: '2px' }} />
+                    <div style={{ flex: 1, height: '4px', background: step === 2 ? 'var(--secondary)' : 'rgba(255,b255,b255,0.1)', borderRadius: '2px', transition: '0.3s' }} />
+                </div>
 
-                        {shipping.address && (
-                            <button
-                                onClick={() => setStep(2)}
-                                disabled={!shipping.address || !shipping.name}
-                                style={{
-                                    width: '100%',
-                                    background: 'white',
-                                    color: 'black',
-                                    padding: '18px',
-                                    borderRadius: '16px',
-                                    fontWeight: '900',
-                                    marginTop: '30px',
-                                    border: 'none',
-                                    opacity: (!shipping.address || !shipping.name) ? 0.5 : 1
-                                }}
-                            >
-                                CONFIRMAR Y CONTINUAR
-                            </button>
-                        )}
-                    </motion.div>
-                ) : (
-                    <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                            <h3 style={{ fontSize: '18px', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                <CreditCard size={20} color="var(--secondary)" /> Pago Seguro
-                            </h3>
-                            {selectedMethodId === 'new' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                    {step === 1 ? (
+                        <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                                <h3 style={{ fontSize: '18px', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                    <MapPin size={20} color="var(--secondary)" /> Datos de Envío
+                                </h3>
                                 <button
-                                    onClick={runScanAnimation}
+                                    onClick={() => navigate('/profile/edit')}
                                     style={{
-                                        background: 'rgba(163, 230, 53, 0.1)',
-                                        border: '1px solid var(--secondary)',
+                                        background: 'none',
+                                        border: 'none',
                                         color: 'var(--secondary)',
-                                        padding: '8px 12px',
-                                        borderRadius: '10px',
-                                        fontSize: '12px',
+                                        fontSize: '13px',
                                         fontWeight: '700',
                                         display: 'flex',
                                         alignItems: 'center',
-                                        gap: '6px'
+                                        gap: '5px'
                                     }}
                                 >
-                                    <Camera size={14} /> ESCANEAR
+                                    <Edit3 size={14} /> EDITAR
+                                </button>
+                            </div>
+
+                            <div className="glass" style={{ padding: '20px', borderRadius: '20px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                                {shipping.address ? (
+                                    <>
+                                        <div style={{ display: 'flex', gap: '15px' }}>
+                                            <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                                <User size={20} color="var(--text-dim)" />
+                                            </div>
+                                            <div>
+                                                <p style={{ fontSize: '12px', color: 'var(--text-dim)', fontWeight: '600', marginBottom: '2px' }}>NOMBRE</p>
+                                                <p style={{ fontSize: '15px', color: 'white', fontWeight: '600' }}>{shipping.name}</p>
+                                            </div>
+                                        </div>
+
+                                        <div style={{ display: 'flex', gap: '15px' }}>
+                                            <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                                <Phone size={20} color="var(--text-dim)" />
+                                            </div>
+                                            <div>
+                                                <p style={{ fontSize: '12px', color: 'var(--text-dim)', fontWeight: '600', marginBottom: '2px' }}>TELÉFONO</p>
+                                                <p style={{ fontSize: '15px', color: 'white', fontWeight: '600' }}>{shipping.phone}</p>
+                                            </div>
+                                        </div>
+
+                                        <div style={{ display: 'flex', gap: '15px' }}>
+                                            <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                                <MapPin size={20} color="var(--text-dim)" />
+                                            </div>
+                                            <div style={{ flex: 1 }}>
+                                                <p style={{ fontSize: '12px', color: 'var(--text-dim)', fontWeight: '600', marginBottom: '2px' }}>DIRECCIÓN DE ENTREGA</p>
+                                                <p style={{ fontSize: '15px', color: 'white', fontWeight: '600', lineHeight: '1.4' }}>{shipping.address}</p>
+                                            </div>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <div style={{ textAlign: 'center', padding: '20px 0' }}>
+                                        <AlertCircle size={32} color="var(--secondary)" style={{ marginBottom: '10px', opacity: 0.8 }} />
+                                        <h4 style={{ fontWeight: '700', marginBottom: '5px' }}>Faltan datos de envío</h4>
+                                        <p style={{ fontSize: '14px', color: 'var(--text-dim)', marginBottom: '20px' }}>Necesitamos tu dirección para poder entregarte el pedido.</p>
+                                        <button
+                                            onClick={() => navigate('/profile/edit')}
+                                            className="btn-secondary"
+                                            style={{ width: 'auto', display: 'inline-flex', padding: '10px 20px' }}
+                                        >
+                                            Completar mi Perfil
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+
+                            {shipping.address && (
+                                <button
+                                    onClick={() => setStep(2)}
+                                    disabled={!shipping.address || !shipping.name}
+                                    style={{
+                                        width: '100%',
+                                        background: 'white',
+                                        color: 'black',
+                                        padding: '18px',
+                                        borderRadius: '16px',
+                                        fontWeight: '900',
+                                        marginTop: '30px',
+                                        border: 'none',
+                                        opacity: (!shipping.address || !shipping.name) ? 0.5 : 1
+                                    }}
+                                >
+                                    CONFIRMAR Y CONTINUAR
                                 </button>
                             )}
-                        </div>
-
-                        {/* Loading Skeleton */}
-                        {loadingMethods && (
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                                {[...Array(2)].map((_, i) => (
-                                    <div key={i} className="animate-pulse" style={{
-                                        height: '60px',
-                                        background: 'rgba(255,255,255,0.05)',
-                                        borderRadius: '16px'
-                                    }} />
-                                ))}
+                        </motion.div>
+                    ) : (
+                        <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                                <h3 style={{ fontSize: '18px', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                    <CreditCard size={20} color="var(--secondary)" /> Pago Seguro
+                                </h3>
+                                {selectedMethodId === 'new' && (
+                                    <button
+                                        onClick={runScanAnimation}
+                                        style={{
+                                            background: 'rgba(163, 230, 53, 0.1)',
+                                            border: '1px solid var(--secondary)',
+                                            color: 'var(--secondary)',
+                                            padding: '8px 12px',
+                                            borderRadius: '10px',
+                                            fontSize: '12px',
+                                            fontWeight: '700',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '6px'
+                                        }}
+                                    >
+                                        <Camera size={14} /> ESCANEAR
+                                    </button>
+                                )}
                             </div>
-                        )}
 
-                        {/* Saved Methods List */}
-                        {!loadingMethods && savedMethods.length > 0 && (
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '25px' }}>
-                                <p style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text-dim)', marginBottom: '5px' }}>Tus tarjetas guardadas</p>
-                                {savedMethods.map((method) => (
+                            {/* Loading Skeleton */}
+                            {loadingMethods && (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                                    {[...Array(2)].map((_, i) => (
+                                        <div key={i} className="animate-pulse" style={{
+                                            height: '60px',
+                                            background: 'rgba(255,255,255,0.05)',
+                                            borderRadius: '16px'
+                                        }} />
+                                    ))}
+                                </div>
+                            )}
+
+                            {/* Saved Methods List */}
+                            {!loadingMethods && savedMethods.length > 0 && (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '25px' }}>
+                                    <p style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text-dim)', marginBottom: '5px' }}>Tus tarjetas guardadas</p>
+                                    {savedMethods.map((method) => (
+                                        <div
+                                            key={method.id}
+                                            onClick={() => setSelectedMethodId(method.id)}
+                                            style={{
+                                                padding: '15px 20px',
+                                                borderRadius: '16px',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '15px',
+                                                cursor: 'pointer',
+                                                background: selectedMethodId === method.id ? 'rgba(163, 230, 53, 0.1)' : 'rgba(255,255,255,0.05)',
+                                                border: selectedMethodId === method.id ? '1px solid var(--secondary)' : '1px solid rgba(255,255,255,0.1)',
+                                                transition: '0.2s'
+                                            }}
+                                        >
+                                            <div style={{
+                                                width: '40px',
+                                                height: '28px',
+                                                background: 'rgba(255,255,255,0.1)',
+                                                borderRadius: '4px',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                fontSize: '8px',
+                                                fontWeight: '900'
+                                            }}>
+                                                {method.card_type.toUpperCase()}
+                                            </div>
+                                            <div style={{ flex: 1 }}>
+                                                <p style={{ fontWeight: '700', fontSize: '14px' }}>•••• {method.last_four}</p>
+                                                <p style={{ fontSize: '11px', color: 'var(--text-dim)' }}>{method.card_type}</p>
+                                            </div>
+                                            <div style={{
+                                                width: '20px',
+                                                height: '20px',
+                                                borderRadius: '50%',
+                                                border: '2px solid',
+                                                borderColor: selectedMethodId === method.id ? 'var(--secondary)' : 'rgba(255,255,255,0.2)',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                padding: '3px'
+                                            }}>
+                                                {selectedMethodId === method.id && <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: 'var(--secondary)' }} />}
+                                            </div>
+                                        </div>
+                                    ))}
+
                                     <div
-                                        key={method.id}
-                                        onClick={() => setSelectedMethodId(method.id)}
+                                        onClick={() => setSelectedMethodId('new')}
                                         style={{
                                             padding: '15px 20px',
                                             borderRadius: '16px',
@@ -587,8 +642,8 @@ const CheckoutPage: React.FC = () => {
                                             alignItems: 'center',
                                             gap: '15px',
                                             cursor: 'pointer',
-                                            background: selectedMethodId === method.id ? 'rgba(163, 230, 53, 0.1)' : 'rgba(255,255,255,0.05)',
-                                            border: selectedMethodId === method.id ? '1px solid var(--secondary)' : '1px solid rgba(255,255,255,0.1)',
+                                            background: selectedMethodId === 'new' ? 'rgba(163, 230, 53, 0.1)' : 'rgba(255,255,255,0.05)',
+                                            border: selectedMethodId === 'new' ? '1px solid var(--secondary)' : '1px solid rgba(255,255,255,0.1)',
                                             transition: '0.2s'
                                         }}
                                     >
@@ -599,196 +654,150 @@ const CheckoutPage: React.FC = () => {
                                             borderRadius: '4px',
                                             display: 'flex',
                                             alignItems: 'center',
-                                            justifyContent: 'center',
-                                            fontSize: '8px',
-                                            fontWeight: '900'
+                                            justifyContent: 'center'
                                         }}>
-                                            {method.card_type.toUpperCase()}
+                                            <Plus size={16} />
                                         </div>
-                                        <div style={{ flex: 1 }}>
-                                            <p style={{ fontWeight: '700', fontSize: '14px' }}>•••• {method.last_four}</p>
-                                            <p style={{ fontSize: '11px', color: 'var(--text-dim)' }}>{method.card_type}</p>
-                                        </div>
-                                        <div style={{
-                                            width: '20px',
-                                            height: '20px',
-                                            borderRadius: '50%',
-                                            border: '2px solid',
-                                            borderColor: selectedMethodId === method.id ? 'var(--secondary)' : 'rgba(255,255,255,0.2)',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            padding: '3px'
-                                        }}>
-                                            {selectedMethodId === method.id && <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: 'var(--secondary)' }} />}
-                                        </div>
+                                        <span style={{ fontWeight: '700', fontSize: '14px' }}>Usar otra tarjeta</span>
                                     </div>
-                                ))}
+                                </div>
+                            )}
 
-                                <div
-                                    onClick={() => setSelectedMethodId('new')}
+                            {!loadingMethods && selectedMethodId === 'new' && (
+                                <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }}>
+                                    <CardInput onComplete={() => { }} />
+                                </motion.div>
+                            )}
+
+                            <div style={{ marginTop: '30px' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
+                                    <span style={{ color: 'var(--text-dim)' }}>Subtotal</span>
+                                    <span>$ {new Intl.NumberFormat('es-CO').format(totalAmount)}</span>
+                                </div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px', fontSize: '20px', fontWeight: '900' }}>
+                                    <span>Total</span>
+                                    <span style={{ color: 'var(--secondary)' }}>$ {new Intl.NumberFormat('es-CO').format(totalAmount)}</span>
+                                </div>
+
+                                <button
+                                    onClick={handlePlaceOrder}
+                                    disabled={isProcessing}
                                     style={{
-                                        padding: '15px 20px',
-                                        borderRadius: '16px',
+                                        width: '100%',
+                                        background: 'var(--secondary)',
+                                        color: 'var(--primary)',
+                                        padding: '20px',
+                                        borderRadius: '18px',
+                                        fontWeight: '900',
+                                        fontSize: '16px',
+                                        border: 'none',
+                                        boxShadow: '0 8px 30px rgba(163, 230, 53, 0.3)',
                                         display: 'flex',
                                         alignItems: 'center',
-                                        gap: '15px',
-                                        cursor: 'pointer',
-                                        background: selectedMethodId === 'new' ? 'rgba(163, 230, 53, 0.1)' : 'rgba(255,255,255,0.05)',
-                                        border: selectedMethodId === 'new' ? '1px solid var(--secondary)' : '1px solid rgba(255,255,255,0.1)',
-                                        transition: '0.2s'
+                                        justifyContent: 'center',
+                                        gap: '12px'
                                     }}
                                 >
-                                    <div style={{
-                                        width: '40px',
-                                        height: '28px',
-                                        background: 'rgba(255,255,255,0.1)',
-                                        borderRadius: '4px',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center'
-                                    }}>
-                                        <Plus size={16} />
-                                    </div>
-                                    <span style={{ fontWeight: '700', fontSize: '14px' }}>Usar otra tarjeta</span>
-                                </div>
+                                    {isProcessing ? (
+                                        <Loader2 className="animate-spin" size={24} />
+                                    ) : (
+                                        <>PAGAR AHORA</>
+                                    )}
+                                </button>
                             </div>
-                        )}
-
-                        {!loadingMethods && selectedMethodId === 'new' && (
-                            <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }}>
-                                <CardInput onComplete={() => { }} />
-                            </motion.div>
-                        )}
-
-                        <div style={{ marginTop: '30px' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
-                                <span style={{ color: 'var(--text-dim)' }}>Subtotal</span>
-                                <span>$ {new Intl.NumberFormat('es-CO').format(totalAmount)}</span>
-                            </div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px', fontSize: '20px', fontWeight: '900' }}>
-                                <span>Total</span>
-                                <span style={{ color: 'var(--secondary)' }}>$ {new Intl.NumberFormat('es-CO').format(totalAmount)}</span>
-                            </div>
-
-                            <button
-                                onClick={handlePlaceOrder}
-                                disabled={isProcessing}
-                                style={{
-                                    width: '100%',
-                                    background: 'var(--secondary)',
-                                    color: 'var(--primary)',
-                                    padding: '20px',
-                                    borderRadius: '18px',
-                                    fontWeight: '900',
-                                    fontSize: '16px',
-                                    border: 'none',
-                                    boxShadow: '0 8px 30px rgba(163, 230, 53, 0.3)',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    gap: '12px'
-                                }}
-                            >
-                                {isProcessing ? (
-                                    <Loader2 className="animate-spin" size={24} />
-                                ) : (
-                                    <>PAGAR AHORA</>
-                                )}
-                            </button>
-                        </div>
-                    </motion.div>
-                )}
-            </div>
-
-            {/* Card Scanner Overlay Simulation */}
-            <AnimatePresence>
-                {showScanner && (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        style={{
-                            position: 'fixed',
-                            inset: 0,
-                            background: 'black',
-                            zIndex: 1000,
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            justifyContent: 'center'
-                        }}
-                    >
-                        <div style={{
-                            width: '80%',
-                            aspectRatio: '1.6',
-                            border: '2px solid var(--secondary)',
-                            borderRadius: '20px',
-                            position: 'relative',
-                            overflow: 'hidden',
-                            boxShadow: '0 0 50px rgba(163, 230, 53, 0.5)'
-                        }}>
-                            <motion.div
-                                animate={{ top: ['0%', '100%', '0%'] }}
-                                transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
-                                style={{
-                                    position: 'absolute',
-                                    left: 0,
-                                    right: 0,
-                                    height: '2px',
-                                    background: 'var(--secondary)',
-                                    boxShadow: '0 0 15px var(--secondary)'
-                                }}
-                            />
-                            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(rgba(0,0,0,0), rgba(163, 230, 53, 0.1))' }} />
-                        </div>
-                        <p style={{ marginTop: '30px', fontWeight: '700', color: 'var(--secondary)', letterSpacing: '2px' }}>ESCANEANDO TARJETA...</p>
-                        <Scan size={32} color="var(--secondary)" className="animate-pulse" style={{ marginTop: '20px' }} />
-                    </motion.div>
-                )}
-            </AnimatePresence>
-
-            <div style={{ padding: '30px 0', display: 'flex', justifyContent: 'center' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', opacity: 0.4 }}>
-                    <ShieldCheck size={16} />
-                    <span style={{ fontSize: '11px', fontWeight: '700' }}>PAGO SEGURO CIFRADO</span>
+                        </motion.div>
+                    )}
                 </div>
-            </div>
-            {/* Error Banner */}
-            <AnimatePresence>
-                {error && (
-                    <motion.div
-                        initial={{ opacity: 0, y: -20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
-                        style={{
-                            position: 'fixed',
-                            top: '20px',
-                            left: '20px',
-                            right: '20px',
-                            zIndex: 10000,
-                            background: '#ef4444',
-                            color: 'white',
-                            padding: '15px',
-                            borderRadius: '12px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '12px',
-                            boxShadow: '0 10px 30px rgba(239, 68, 68, 0.3)'
-                        }}
-                    >
-                        <AlertCircle size={24} />
-                        <div style={{ flex: 1 }}>
-                            <p style={{ fontWeight: '700', fontSize: '14px' }}>Error</p>
-                            <p style={{ fontSize: '12px' }}>{error}</p>
-                        </div>
-                        <button onClick={() => setError(null)} style={{ background: 'none', border: 'none', color: 'white' }}>
-                            <X size={20} />
-                        </button>
-                    </motion.div>
-                )}
-            </AnimatePresence>
 
+                {/* Card Scanner Overlay Simulation */}
+                <AnimatePresence>
+                    {showScanner && (
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            style={{
+                                position: 'fixed',
+                                inset: 0,
+                                background: 'black',
+                                zIndex: 1000,
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                justifyContent: 'center'
+                            }}
+                        >
+                            <div style={{
+                                width: '80%',
+                                aspectRatio: '1.6',
+                                border: '2px solid var(--secondary)',
+                                borderRadius: '20px',
+                                position: 'relative',
+                                overflow: 'hidden',
+                                boxShadow: '0 0 50px rgba(163, 230, 53, 0.5)'
+                            }}>
+                                <motion.div
+                                    animate={{ top: ['0%', '100%', '0%'] }}
+                                    transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+                                    style={{
+                                        position: 'absolute',
+                                        left: 0,
+                                        right: 0,
+                                        height: '2px',
+                                        background: 'var(--secondary)',
+                                        boxShadow: '0 0 15px var(--secondary)'
+                                    }}
+                                />
+                                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(rgba(0,0,0,0), rgba(163, 230, 53, 0.1))' }} />
+                            </div>
+                            <p style={{ marginTop: '30px', fontWeight: '700', color: 'var(--secondary)', letterSpacing: '2px' }}>ESCANEANDO TARJETA...</p>
+                            <Scan size={32} color="var(--secondary)" className="animate-pulse" style={{ marginTop: '20px' }} />
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+
+                <div style={{ padding: '30px 0', display: 'flex', justifyContent: 'center' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', opacity: 0.4 }}>
+                        <ShieldCheck size={16} />
+                        <span style={{ fontSize: '11px', fontWeight: '700' }}>PAGO SEGURO CIFRADO</span>
+                    </div>
+                </div>
+                {/* Error Banner */}
+                <AnimatePresence>
+                    {error && (
+                        <motion.div
+                            initial={{ opacity: 0, y: -20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -20 }}
+                            style={{
+                                position: 'fixed',
+                                top: '20px',
+                                left: '20px',
+                                right: '20px',
+                                zIndex: 10000,
+                                background: '#ef4444',
+                                color: 'white',
+                                padding: '15px',
+                                borderRadius: '12px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '12px',
+                                boxShadow: '0 10px 30px rgba(239, 68, 68, 0.3)'
+                            }}
+                        >
+                            <AlertCircle size={24} />
+                            <div style={{ flex: 1 }}>
+                                <p style={{ fontWeight: '700', fontSize: '14px' }}>Error</p>
+                                <p style={{ fontSize: '12px' }}>{error}</p>
+                            </div>
+                            <button onClick={() => setError(null)} style={{ background: 'none', border: 'none', color: 'white' }}>
+                                <X size={20} />
+                            </button>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+
+            </div>
         </div>
     );
 };

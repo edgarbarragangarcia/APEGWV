@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import type { Database } from '../types/database.types';
 import PageHeader from '../components/PageHeader';
+import PageHero from '../components/PageHero';
 import { useAuth } from '../context/AuthContext';
 
 type Profile = Database['public']['Tables']['profiles']['Row'];
@@ -61,6 +62,7 @@ const Profile: React.FC = () => {
 
     return (
         <div className="animate-fade" style={styles.pageContainer}>
+            <PageHero image="https://images.unsplash.com/photo-1593113598332-cd288d649433?q=80&w=2070&auto=format&fit=crop" />
             <div style={styles.headerArea}>
                 <PageHeader noMargin title="Mi Perfil" onBack={() => navigate('/')} />
             </div>
@@ -195,17 +197,16 @@ const styles = {
         position: 'fixed' as 'fixed', inset: 0,
         background: 'var(--primary)',
         display: 'flex', flexDirection: 'column' as 'column',
-        overflow: 'hidden', zIndex: 900,
-        paddingTop: 'var(--header-offset-top)',
-        paddingBottom: 'var(--nav-height)'
+        overflow: 'hidden', zIndex: 900
     },
     headerArea: {
-        flexShrink: 0, zIndex: 10, background: 'var(--primary)', padding: '0 20px'
+        flexShrink: 0, zIndex: 10, background: 'transparent', padding: '0 20px',
+        paddingTop: 'var(--header-offset-top)'
     },
     contentContainer: {
         flex: 1,
         display: 'flex', flexDirection: 'column' as 'column',
-        padding: '0 20px 15px 20px',
+        padding: '0 20px calc(var(--nav-height) + 15px) 20px',
         overflowY: 'auto' as 'auto', // Allow scroll only if screen is extremely small
         WebkitOverflowScrolling: 'touch' as 'touch',
         gap: '10px' // Reduced gap

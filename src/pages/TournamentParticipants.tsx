@@ -3,6 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../services/SupabaseManager';
 import { User, Trophy, Calendar, Users, ChevronLeft } from 'lucide-react';
 import Skeleton from '../components/Skeleton';
+import PageHero from '../components/PageHero';
+import PageHeader from '../components/PageHeader';
 
 
 interface Participant {
@@ -81,26 +83,40 @@ const TournamentParticipants: React.FC = () => {
             display: 'flex',
             flexDirection: 'column',
             overflow: 'hidden',
-            zIndex: 2000,
-            paddingTop: 'calc(env(safe-area-inset-top) + 20px)',
-            paddingBottom: 'var(--nav-height)'
+            zIndex: 900
         }}>
+            <PageHero image="https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?q=80&w=2070&auto=format&fit=crop" />
             {/* Header */}
-            <div style={{ flexShrink: 0, padding: '0 20px 20px 20px', display: 'flex', alignItems: 'center', gap: '15px' }}>
-                <button
-                    onClick={() => navigate(-1)}
-                    style={{ background: 'rgba(255,255,255,0.05)', border: 'none', borderRadius: '12px', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}
-                >
-                    <ChevronLeft size={24} />
-                </button>
-                <div style={{ flex: 1, overflow: 'hidden' }}>
-                    <p style={{ color: 'var(--secondary)', fontSize: '11px', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '1px' }}>PARTICIPANTES</p>
-                    <h1 style={{ fontSize: '20px', fontWeight: '900', color: 'white', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{tournamentName || 'Cargando...'}</h1>
-                </div>
+            <div style={{
+                position: 'absolute',
+                top: 'var(--header-offset-top)',
+                left: '0',
+                right: '0',
+                width: '100%',
+                zIndex: 900,
+                background: 'transparent',
+                paddingLeft: '20px',
+                paddingRight: '20px',
+                pointerEvents: 'auto'
+            }}>
+                <PageHeader
+                    noMargin
+                    title="Participantes"
+                    subtitle={tournamentName || 'Cargando...'}
+                    onBack={() => navigate(-1)}
+                />
             </div>
 
-            {/* Content */}
-            <div style={{ flex: 1, overflowY: 'auto', padding: '0 20px 20px 20px', display: 'flex', flexDirection: 'column' }}>
+            <div style={{
+                position: 'absolute',
+                top: 'calc(var(--header-offset-top) + 78px)',
+                left: '0',
+                right: '0',
+                bottom: 'calc(var(--nav-height))',
+                overflowY: 'auto',
+                padding: '0 20px 40px 20px',
+                overflowX: 'hidden'
+            }}>
 
                 {loading ? (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
@@ -232,7 +248,7 @@ const TournamentParticipants: React.FC = () => {
                     </div>
                 )}
             </div>
-        </div>
+        </div >
     );
 };
 

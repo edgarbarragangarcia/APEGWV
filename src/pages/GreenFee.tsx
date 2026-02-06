@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { MapPin, ChevronRight, Star, Filter, LayoutGrid, Ticket } from 'lucide-react';
 import Card from '../components/Card';
 import PageHeader from '../components/PageHeader';
+import PageHero from '../components/PageHero';
 import MyReservations from './MyReservations';
 import { supabase } from '../services/SupabaseManager';
 
@@ -84,6 +85,7 @@ const GreenFee: React.FC = () => {
             overflow: 'hidden',
             zIndex: 500
         }} className="animate-fade">
+            <PageHero image="https://images.unsplash.com/photo-1535131749006-b7f58c99034b?q=80&w=2070&auto=format&fit=crop" />
 
             {/* Header Fijo - Green Fees */}
             <div style={{
@@ -93,7 +95,7 @@ const GreenFee: React.FC = () => {
                 right: '0',
                 width: '100%',
                 zIndex: 900,
-                background: 'var(--primary)',
+                background: 'transparent',
                 paddingBottom: '0px',
                 paddingLeft: '20px',
                 paddingRight: '20px',
@@ -191,17 +193,6 @@ const GreenFee: React.FC = () => {
                     </div>
                 )}
 
-                {/* Translucent fade transition at the bottom of the fixed section */}
-                <div style={{
-                    position: 'absolute',
-                    bottom: '-20px',
-                    left: '0',
-                    right: '0',
-                    height: '20px',
-                    background: 'linear-gradient(to bottom, var(--primary), transparent)',
-                    pointerEvents: 'none',
-                    zIndex: 901
-                }} />
             </div>
 
             {/* Área de Scroll */}

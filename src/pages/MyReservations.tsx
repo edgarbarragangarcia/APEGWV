@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../services/SupabaseManager';
 import Card from '../components/Card';
 import { Calendar, Clock, MapPin } from 'lucide-react';
+import PageHeader from '../components/PageHeader';
+import PageHero from '../components/PageHero';
 
 interface Reservation {
     id: string;
@@ -57,8 +59,10 @@ const MyReservations: React.FC<MyReservationsProps> = ({ onRequestSwitchTab }) =
         );
     }
 
-    return (
-        <div style={{ paddingBottom: '20px' }}>
+    const isTab = !!onRequestSwitchTab;
+
+    const content = (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
             {reservations.length === 0 ? (
                 <div style={{ textAlign: 'center', marginTop: '50px', color: 'var(--text-dim)' }}>
                     <Calendar size={48} style={{ marginBottom: '15px', opacity: 0.5 }} />
@@ -79,124 +83,171 @@ const MyReservations: React.FC<MyReservationsProps> = ({ onRequestSwitchTab }) =
                     </button>
                 </div>
             ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                    {reservations.map((res) => (
-                        <Card key={res.id} style={{ padding: 0, overflow: 'hidden', border: 'none' }}>
+                reservations.map((res) => (
+                    <Card key={res.id} style={{ padding: 0, overflow: 'hidden', border: 'none' }}>
+                        <div style={{
+                            position: 'relative',
+                            height: '120px',
+                            background: 'linear-gradient(45deg, var(--primary), #1a2e23)'
+                        }}>
+                            <img
+                                src={(res as any).golf_courses?.image_url || '/images/briceno18.png'}
+                                alt={(res as any).golf_courses?.name}
+                                style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.6 }}
+                            />
                             <div style={{
-                                position: 'relative',
-                                height: '120px',
-                                background: 'linear-gradient(45deg, var(--primary), #1a2e23)'
+                                position: 'absolute',
+                                inset: 0,
+                                padding: '20px',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                justifyContent: 'flex-end',
+                                background: 'linear-gradient(to top, var(--primary), transparent)'
                             }}>
-                                <img
-                                    src={(res as any).golf_courses?.image_url || '/images/briceno18.png'}
-                                    alt={(res as any).golf_courses?.name}
-                                    style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.6 }}
-                                />
                                 <div style={{
                                     position: 'absolute',
-                                    inset: 0,
-                                    padding: '20px',
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    justifyContent: 'flex-end',
-                                    background: 'linear-gradient(to top, var(--primary), transparent)'
+                                    top: '15px',
+                                    right: '15px',
+                                    background: 'rgba(163, 230, 53, 0.2)',
+                                    color: 'var(--secondary)',
+                                    padding: '5px 12px',
+                                    borderRadius: '10px',
+                                    fontSize: '11px',
+                                    fontWeight: '800',
+                                    textTransform: 'uppercase',
+                                    backdropFilter: 'blur(4px)'
                                 }}>
+                                    {res.status === 'confirmed' ? 'Confirmada' : 'Pendiente'}
+                                </div>
+                                <h3 style={{ fontSize: '20px', fontWeight: '800', color: 'white', marginBottom: '2px' }}>
+                                    {(res as any).golf_courses?.name || 'Reserva de Green Fee'}
+                                </h3>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '13px', color: 'rgba(255,255,255,0.7)' }}>
+                                    <MapPin size={12} />
+                                    <span>{(res as any).golf_courses?.location || 'Bogotá, COL'}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style={{ padding: '20px' }}>
+                            <div style={{
+                                display: 'grid',
+                                gridTemplateColumns: '1fr 1fr',
+                                gap: '15px',
+                                marginBottom: '15px'
+                            }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                                     <div style={{
-                                        position: 'absolute',
-                                        top: '15px',
-                                        right: '15px',
-                                        background: 'rgba(163, 230, 53, 0.2)',
-                                        color: 'var(--secondary)',
-                                        padding: '5px 12px',
+                                        width: '36px',
+                                        height: '36px',
                                         borderRadius: '10px',
-                                        fontSize: '11px',
-                                        fontWeight: '800',
-                                        textTransform: 'uppercase',
-                                        backdropFilter: 'blur(4px)'
+                                        background: 'rgba(255,255,255,0.05)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center'
                                     }}>
-                                        {res.status === 'confirmed' ? 'Confirmada' : 'Pendiente'}
+                                        <Calendar size={18} color="var(--secondary)" />
                                     </div>
-                                    <h3 style={{ fontSize: '20px', fontWeight: '800', color: 'white', marginBottom: '2px' }}>
-                                        {(res as any).golf_courses?.name || 'Reserva de Green Fee'}
-                                    </h3>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '13px', color: 'rgba(255,255,255,0.7)' }}>
-                                        <MapPin size={12} />
-                                        <span>{(res as any).golf_courses?.location || 'Bogotá, COL'}</span>
+                                    <div>
+                                        <div style={{ fontSize: '10px', color: 'var(--text-dim)', textTransform: 'uppercase', fontWeight: '700' }}>Fecha</div>
+                                        <div style={{ fontSize: '14px', fontWeight: '700' }}>
+                                            {(() => {
+                                                const [y, m, d] = res.reservation_date.split('-').map(Number);
+                                                return new Date(y, m - 1, d).toLocaleDateString('es-CO', { day: 'numeric', month: 'short' });
+                                            })()}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                    <div style={{
+                                        width: '36px',
+                                        height: '36px',
+                                        borderRadius: '10px',
+                                        background: 'rgba(255,255,255,0.05)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center'
+                                    }}>
+                                        <Clock size={18} color="var(--secondary)" />
+                                    </div>
+                                    <div>
+                                        <div style={{ fontSize: '10px', color: 'var(--text-dim)', textTransform: 'uppercase', fontWeight: '700' }}>Hora</div>
+                                        <div style={{ fontSize: '14px', fontWeight: '700' }}>{res.time}</div>
                                     </div>
                                 </div>
                             </div>
 
-                            <div style={{ padding: '20px' }}>
-                                <div style={{
-                                    display: 'grid',
-                                    gridTemplateColumns: '1fr 1fr',
-                                    gap: '15px',
-                                    marginBottom: '15px'
-                                }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                        <div style={{
-                                            width: '36px',
-                                            height: '36px',
-                                            borderRadius: '10px',
-                                            background: 'rgba(255,255,255,0.05)',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center'
-                                        }}>
-                                            <Calendar size={18} color="var(--secondary)" />
-                                        </div>
-                                        <div>
-                                            <div style={{ fontSize: '10px', color: 'var(--text-dim)', textTransform: 'uppercase', fontWeight: '700' }}>Fecha</div>
-                                            <div style={{ fontSize: '14px', fontWeight: '700' }}>
-                                                {(() => {
-                                                    const [y, m, d] = res.reservation_date.split('-').map(Number);
-                                                    return new Date(y, m - 1, d).toLocaleDateString('es-CO', { day: 'numeric', month: 'short' });
-                                                })()}
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                        <div style={{
-                                            width: '36px',
-                                            height: '36px',
-                                            borderRadius: '10px',
-                                            background: 'rgba(255,255,255,0.05)',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center'
-                                        }}>
-                                            <Clock size={18} color="var(--secondary)" />
-                                        </div>
-                                        <div>
-                                            <div style={{ fontSize: '10px', color: 'var(--text-dim)', textTransform: 'uppercase', fontWeight: '700' }}>Hora</div>
-                                            <div style={{ fontSize: '14px', fontWeight: '700' }}>{res.time}</div>
-                                        </div>
-                                    </div>
+                            <div style={{
+                                borderTop: '1px solid rgba(255,255,255,0.05)',
+                                paddingTop: '15px',
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center'
+                            }}>
+                                <div style={{ fontSize: '13px', color: 'var(--text-dim)' }}>
+                                    1 Jugador
                                 </div>
-
-                                <div style={{
-                                    borderTop: '1px solid rgba(255,255,255,0.05)',
-                                    paddingTop: '15px',
-                                    display: 'flex',
-                                    justifyContent: 'space-between',
-                                    alignItems: 'center'
-                                }}>
-                                    <div style={{ fontSize: '13px', color: 'var(--text-dim)' }}>
-                                        1 Jugador
-                                    </div>
-                                    <div style={{ fontSize: '16px', fontWeight: '800', color: 'var(--secondary)' }}>
-                                        {new Intl.NumberFormat('es-CO', {
-                                            style: 'currency',
-                                            currency: 'COP',
-                                            maximumFractionDigits: 0
-                                        }).format(res.price || 0)}
-                                    </div>
+                                <div style={{ fontSize: '16px', fontWeight: '800', color: 'var(--secondary)' }}>
+                                    {new Intl.NumberFormat('es-CO', {
+                                        style: 'currency',
+                                        currency: 'COP',
+                                        maximumFractionDigits: 0
+                                    }).format(res.price || 0)}
                                 </div>
                             </div>
-                        </Card>
-                    ))}
-                </div>
+                        </div>
+                    </Card>
+                ))
             )}
+        </div>
+    );
+
+    if (isTab) {
+        return <div style={{ paddingBottom: '20px' }}>{content}</div>;
+    }
+
+    return (
+        <div className="animate-fade" style={{
+            overflow: 'hidden',
+            background: 'var(--primary)',
+            position: 'fixed',
+            inset: 0
+        }}>
+            <PageHero />
+
+            {/* Header Fijo */}
+            <div style={{
+                position: 'absolute',
+                top: 'var(--header-offset-top)',
+                left: '0',
+                right: '0',
+                width: '100%',
+                zIndex: 900,
+                background: 'transparent',
+                paddingLeft: '20px',
+                paddingRight: '20px',
+                pointerEvents: 'auto'
+            }}>
+                <PageHeader
+                    noMargin
+                    title="Mis Reservas"
+                    onBack={() => navigate(-1)}
+                />
+            </div>
+
+            {/* Area de Scroll */}
+            <div style={{
+                position: 'absolute',
+                top: 'calc(var(--header-offset-top) + 78px)',
+                left: '0',
+                right: '0',
+                bottom: 'calc(var(--nav-height))',
+                overflowY: 'auto',
+                padding: '0 20px 40px 20px',
+                overflowX: 'hidden'
+            }}>
+                {content}
+            </div>
         </div>
     );
 };

@@ -13,9 +13,16 @@ const Navbar: React.FC = () => {
     const videoRef = React.useRef<HTMLVideoElement>(null);
 
     const location = useLocation();
+    const transparentRoutes = [
+        '/', '/green-fee', '/tournaments', '/profile', '/round', '/play-mode',
+        '/friend-selection', '/create-group', '/select-course', '/my-store',
+        '/my-reservations', '/settings', '/rounds', '/cart', '/checkout',
+        '/my-events', '/my-coupons', '/notifications'
+    ];
     const isCategoryPage = location.pathname.includes('/category/');
-    const isHomePage = location.pathname === '/';
-    const isTransparentNavbar = isCategoryPage || isHomePage;
+    const isTransparentNavbar = isCategoryPage || transparentRoutes.some(route =>
+        location.pathname === route || location.pathname.startsWith(route + '/')
+    );
 
     useEffect(() => {
         const video = videoRef.current;

@@ -3,6 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '../services/SupabaseManager';
 import { ArrowLeft, Save, Loader2 } from 'lucide-react';
 import Card from '../components/Card';
+import PageHeader from '../components/PageHeader';
+import PageHero from '../components/PageHero';
 
 interface Round {
     id: string;
@@ -79,61 +81,53 @@ const EditRound: React.FC = () => {
     if (!round) return null;
 
     return (
-        <div className="animate-fade">
-            <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '30px' }}>
-                <button onClick={() => navigate('/rounds')} style={{ background: 'none', border: 'none', color: 'var(--text)' }}>
-                    <ArrowLeft size={24} />
-                </button>
-                <h1 style={{ fontSize: '24px', margin: 0 }}>Editar Ronda</h1>
+        <div className="animate-fade" style={{
+            overflow: 'hidden',
+            background: 'var(--primary)'
+        }}>
+            <PageHero image="https://images.unsplash.com/photo-1596733430284-f7437764b1a9?q=80&w=2070&auto=format&fit=crop" />
+
+            {/* Header Fijo */}
+            <div style={{
+                position: 'absolute',
+                top: 'var(--header-offset-top)',
+                left: '0',
+                right: '0',
+                width: '100%',
+                zIndex: 900,
+                background: 'transparent',
+                paddingLeft: '20px',
+                paddingRight: '20px',
+                pointerEvents: 'auto'
+            }}>
+                <PageHeader
+                    noMargin
+                    title="Editar Ronda"
+                    onBack={() => navigate('/rounds')}
+                />
             </div>
 
-            <form onSubmit={handleSave}>
-                <Card>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                        <div>
-                            <label style={{ display: 'block', fontSize: '12px', color: 'var(--text-dim)', marginBottom: '8px' }}>NOMBRE DEL CAMPO</label>
-                            <input
-                                type="text"
-                                value={round.course_name}
-                                onChange={(e) => setRound({ ...round, course_name: e.target.value })}
-                                style={{
-                                    width: '100%',
-                                    background: 'rgba(255,b255,b255,0.05)',
-                                    border: '1px solid rgba(255,b255,b255,0.1)',
-                                    borderRadius: '10px',
-                                    padding: '12px',
-                                    color: 'white',
-                                    fontSize: '14px'
-                                }}
-                                required
-                            />
-                        </div>
+            {/* Area de Scroll */}
+            <div style={{
+                position: 'absolute',
+                top: 'calc(var(--header-offset-top) + 78px)',
+                left: '0',
+                right: '0',
+                bottom: 0,
+                overflowY: 'auto',
+                padding: '0 20px 40px 20px',
+                overflowX: 'hidden'
+            }}>
 
-                        <div>
-                            <label style={{ display: 'block', fontSize: '12px', color: 'var(--text-dim)', marginBottom: '8px' }}>UBICACIÓN</label>
-                            <input
-                                type="text"
-                                value={round.course_location || ''}
-                                onChange={(e) => setRound({ ...round, course_location: e.target.value || null })}
-                                style={{
-                                    width: '100%',
-                                    background: 'rgba(255,b255,b255,0.05)',
-                                    border: '1px solid rgba(255,b255,b255,0.1)',
-                                    borderRadius: '10px',
-                                    padding: '12px',
-                                    color: 'white',
-                                    fontSize: '14px'
-                                }}
-                            />
-                        </div>
-
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                <form onSubmit={handleSave}>
+                    <Card>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                             <div>
-                                <label style={{ display: 'block', fontSize: '12px', color: 'var(--text-dim)', marginBottom: '8px' }}>FECHA</label>
+                                <label style={{ display: 'block', fontSize: '12px', color: 'var(--text-dim)', marginBottom: '8px' }}>NOMBRE DEL CAMPO</label>
                                 <input
-                                    type="date"
-                                    value={round.date_played.split('T')[0]}
-                                    onChange={(e) => setRound({ ...round, date_played: e.target.value })}
+                                    type="text"
+                                    value={round.course_name}
+                                    onChange={(e) => setRound({ ...round, course_name: e.target.value })}
                                     style={{
                                         width: '100%',
                                         background: 'rgba(255,b255,b255,0.05)',
@@ -146,12 +140,13 @@ const EditRound: React.FC = () => {
                                     required
                                 />
                             </div>
+
                             <div>
-                                <label style={{ display: 'block', fontSize: '12px', color: 'var(--text-dim)', marginBottom: '8px' }}>SCORE TOTAL</label>
+                                <label style={{ display: 'block', fontSize: '12px', color: 'var(--text-dim)', marginBottom: '8px' }}>UBICACIÓN</label>
                                 <input
-                                    type="number"
-                                    value={round.total_score || ''}
-                                    onChange={(e) => setRound({ ...round, total_score: parseInt(e.target.value) || null })}
+                                    type="text"
+                                    value={round.course_location || ''}
+                                    onChange={(e) => setRound({ ...round, course_location: e.target.value || null })}
                                     style={{
                                         width: '100%',
                                         background: 'rgba(255,b255,b255,0.05)',
@@ -161,74 +156,112 @@ const EditRound: React.FC = () => {
                                         color: 'white',
                                         fontSize: '14px'
                                     }}
-                                    required
                                 />
+                            </div>
+
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '12px', color: 'var(--text-dim)', marginBottom: '8px' }}>FECHA</label>
+                                    <input
+                                        type="date"
+                                        value={round.date_played.split('T')[0]}
+                                        onChange={(e) => setRound({ ...round, date_played: e.target.value })}
+                                        style={{
+                                            width: '100%',
+                                            background: 'rgba(255,b255,b255,0.05)',
+                                            border: '1px solid rgba(255,b255,b255,0.1)',
+                                            borderRadius: '10px',
+                                            padding: '12px',
+                                            color: 'white',
+                                            fontSize: '14px'
+                                        }}
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '12px', color: 'var(--text-dim)', marginBottom: '8px' }}>SCORE TOTAL</label>
+                                    <input
+                                        type="number"
+                                        value={round.total_score || ''}
+                                        onChange={(e) => setRound({ ...round, total_score: parseInt(e.target.value) || null })}
+                                        style={{
+                                            width: '100%',
+                                            background: 'rgba(255,b255,b255,0.05)',
+                                            border: '1px solid rgba(255,b255,b255,0.1)',
+                                            borderRadius: '10px',
+                                            padding: '12px',
+                                            color: 'white',
+                                            fontSize: '14px'
+                                        }}
+                                        required
+                                    />
+                                </div>
+                            </div>
+
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '12px', color: 'var(--text-dim)', marginBottom: '8px' }}>FRONT 9</label>
+                                    <input
+                                        type="number"
+                                        value={round.first_nine_score || ''}
+                                        onChange={(e) => setRound({ ...round, first_nine_score: parseInt(e.target.value) || null })}
+                                        style={{
+                                            width: '100%',
+                                            background: 'rgba(255,b255,b255,0.05)',
+                                            border: '1px solid rgba(255,b255,b255,0.1)',
+                                            borderRadius: '10px',
+                                            padding: '12px',
+                                            color: 'white',
+                                            fontSize: '14px'
+                                        }}
+                                    />
+                                </div>
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '12px', color: 'var(--text-dim)', marginBottom: '8px' }}>BACK 9</label>
+                                    <input
+                                        type="number"
+                                        value={round.second_nine_score || ''}
+                                        onChange={(e) => setRound({ ...round, second_nine_score: parseInt(e.target.value) || null })}
+                                        style={{
+                                            width: '100%',
+                                            background: 'rgba(255,b255,b255,0.05)',
+                                            border: '1px solid rgba(255,b255,b255,0.1)',
+                                            borderRadius: '10px',
+                                            padding: '12px',
+                                            color: 'white',
+                                            fontSize: '14px'
+                                        }}
+                                    />
+                                </div>
                             </div>
                         </div>
+                    </Card>
 
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
-                            <div>
-                                <label style={{ display: 'block', fontSize: '12px', color: 'var(--text-dim)', marginBottom: '8px' }}>FRONT 9</label>
-                                <input
-                                    type="number"
-                                    value={round.first_nine_score || ''}
-                                    onChange={(e) => setRound({ ...round, first_nine_score: parseInt(e.target.value) || null })}
-                                    style={{
-                                        width: '100%',
-                                        background: 'rgba(255,b255,b255,0.05)',
-                                        border: '1px solid rgba(255,b255,b255,0.1)',
-                                        borderRadius: '10px',
-                                        padding: '12px',
-                                        color: 'white',
-                                        fontSize: '14px'
-                                    }}
-                                />
-                            </div>
-                            <div>
-                                <label style={{ display: 'block', fontSize: '12px', color: 'var(--text-dim)', marginBottom: '8px' }}>BACK 9</label>
-                                <input
-                                    type="number"
-                                    value={round.second_nine_score || ''}
-                                    onChange={(e) => setRound({ ...round, second_nine_score: parseInt(e.target.value) || null })}
-                                    style={{
-                                        width: '100%',
-                                        background: 'rgba(255,b255,b255,0.05)',
-                                        border: '1px solid rgba(255,b255,b255,0.1)',
-                                        borderRadius: '10px',
-                                        padding: '12px',
-                                        color: 'white',
-                                        fontSize: '14px'
-                                    }}
-                                />
-                            </div>
-                        </div>
-                    </div>
-                </Card>
-
-                <button
-                    type="submit"
-                    disabled={saving}
-                    style={{
-                        width: '100%',
-                        background: 'var(--secondary)',
-                        color: 'var(--primary)',
-                        padding: '16px',
-                        borderRadius: '12px',
-                        fontWeight: '700',
-                        fontSize: '16px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '10px',
-                        border: 'none',
-                        cursor: 'pointer',
-                        marginTop: '10px'
-                    }}
-                >
-                    {saving ? <Loader2 className="animate-spin" size={20} /> : <Save size={20} />}
-                    {saving ? 'Guardando...' : 'Guardar Cambios'}
-                </button>
-            </form>
+                    <button
+                        type="submit"
+                        disabled={saving}
+                        style={{
+                            width: '100%',
+                            background: 'var(--secondary)',
+                            color: 'var(--primary)',
+                            padding: '16px',
+                            borderRadius: '12px',
+                            fontWeight: '700',
+                            fontSize: '16px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '10px',
+                            border: 'none',
+                            cursor: 'pointer',
+                            marginTop: '10px'
+                        }}
+                    >
+                        {saving ? <Loader2 className="animate-spin" size={20} /> : <Save size={20} />}
+                        {saving ? 'Guardando...' : 'Guardar Cambios'}
+                    </button>
+                </form>
+            </div>
         </div>
     );
 };

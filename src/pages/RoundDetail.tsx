@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import Card from '../components/Card';
 import PageHeader from '../components/PageHeader';
+import PageHero from '../components/PageHero';
 
 interface Round extends Omit<RoundData, 'course_location' | 'status'> {
     id: string;
@@ -129,14 +130,10 @@ const RoundDetail: React.FC = () => {
 
     return (
         <div className="animate-fade" style={{
-            position: 'fixed',
-            inset: 0,
-            width: '100%',
-            maxWidth: 'var(--app-max-width)',
-            margin: '0 auto',
             overflow: 'hidden',
             background: 'var(--primary)'
         }}>
+            <PageHero image="https://images.unsplash.com/photo-1596733430284-f7437764b1a9?q=80&w=2070&auto=format&fit=crop" />
             {/* Header Fijo */}
             <div style={{
                 position: 'absolute',
@@ -145,7 +142,7 @@ const RoundDetail: React.FC = () => {
                 right: '0',
                 width: '100%',
                 zIndex: 900,
-                background: 'var(--primary)',
+                background: 'transparent',
                 paddingLeft: '20px',
                 paddingRight: '20px',
                 pointerEvents: 'auto'

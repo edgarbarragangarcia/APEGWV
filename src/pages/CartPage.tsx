@@ -9,6 +9,7 @@ import { motion } from 'framer-motion';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import Card from '../components/Card';
+import PageHero from '../components/PageHero';
 
 const CartPage: React.FC = () => {
     const navigate = useNavigate();
@@ -63,6 +64,7 @@ const CartPage: React.FC = () => {
     if (cartItems.length === 0) {
         return (
             <div className="animate-fade" style={styles.pageContainer}>
+                <PageHero image="https://images.unsplash.com/photo-1593113598332-cd288d649433?q=80&w=2070&auto=format&fit=crop" />
                 <div style={styles.headerContainer}>
                     <PageHeader noMargin title="Mi Carrito" />
                 </div>
@@ -75,6 +77,7 @@ const CartPage: React.FC = () => {
 
     return (
         <div className="animate-fade" style={styles.pageContainer}>
+            <PageHero image="https://images.unsplash.com/photo-1593113598332-cd288d649433?q=80&w=2070&auto=format&fit=crop" />
             <div style={styles.headerContainer}>
                 <PageHeader noMargin title="Mi Carrito" />
             </div>
@@ -337,16 +340,16 @@ const styles = {
     },
     headerContainer: {
         position: 'absolute' as 'absolute',
-        top: 'calc(env(safe-area-inset-top) + 87px)',
+        top: 'var(--header-offset-top)',
         left: '0', right: '0', width: '100%',
-        zIndex: 900, background: 'var(--primary)',
+        zIndex: 900, background: 'transparent',
         paddingLeft: '20px', paddingRight: '20px',
         pointerEvents: 'auto' as 'auto'
     },
     scrollContainer: {
         position: 'absolute' as 'absolute',
-        top: 'calc(env(safe-area-inset-top) + 165px)',
-        left: '0', right: '0', bottom: 'calc(var(--nav-height))',
+        top: 'calc(var(--header-offset-top) + 78px)',
+        left: '0', right: '0', bottom: 'calc(var(--nav-height) + 20px)',
         overflowY: 'auto' as 'auto',
         padding: '0 20px 20px 20px',
         overflowX: 'hidden' as 'hidden'
