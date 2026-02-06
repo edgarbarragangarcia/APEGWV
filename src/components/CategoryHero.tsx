@@ -15,10 +15,10 @@ const CategoryHero: React.FC<CategoryHeroProps> = ({ title, subtitle, image, pro
 
     return (
         <div style={{
-            position: 'sticky',
+            position: 'absolute',
             top: 0,
-            marginTop: 'calc(-1 * var(--header-offset-top))',
-            width: '100%',
+            left: 0,
+            right: 0,
             height: '400px',
             zIndex: 0,
             overflow: 'hidden',
@@ -30,10 +30,7 @@ const CategoryHero: React.FC<CategoryHeroProps> = ({ title, subtitle, image, pro
                 transition={{ duration: 0.8 }}
                 style={{
                     position: 'absolute',
-                    top: 1,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
+                    inset: 0,
                     zIndex: 0
                 }}
             >
@@ -44,7 +41,7 @@ const CategoryHero: React.FC<CategoryHeroProps> = ({ title, subtitle, image, pro
                         width: '100%',
                         height: '100%',
                         objectFit: 'cover',
-                        objectPosition: 'top',
+                        objectPosition: 'center',
                         filter: 'brightness(0.7)',
                         display: image ? 'block' : 'none'
                     }}
@@ -55,30 +52,31 @@ const CategoryHero: React.FC<CategoryHeroProps> = ({ title, subtitle, image, pro
                 <div style={{
                     position: 'absolute',
                     inset: 0,
-                    background: 'linear-gradient(to bottom, rgba(14, 47, 31, 0.1) 0%, rgba(14, 47, 31, 0.9) 100%)',
+                    background: 'linear-gradient(to bottom, rgba(14, 47, 31, 0.4) 0%, rgba(14, 47, 31, 0.8) 70%, var(--primary) 100%)',
                 }} />
             </motion.div>
 
-            {/* Back Button specifically for Home */}
+            {/* Back Button - Positioned to handle safe areas if needed, but simple for now */}
             <motion.button
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
                 onClick={() => navigate('/')}
                 style={{
                     position: 'absolute',
-                    top: 'calc(var(--safe-top) + 20px)',
-                    right: '24px',
-                    zIndex: 20,
-                    width: '32px',
-                    height: '32px',
+                    top: 'calc(var(--header-offset-top) + 12px)',
+                    right: '20px',
+                    zIndex: 2000,
+                    width: '36px',
+                    height: '36px',
                     borderRadius: '50%',
                     background: 'rgba(255, 255, 255, 0.1)',
                     backdropFilter: 'blur(10px)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    border: '1px solid rgba(255, 255, 255, 0.15)',
-                    color: 'white'
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    color: 'white',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
                 }}
             >
                 <ArrowLeft size={18} />
@@ -87,9 +85,9 @@ const CategoryHero: React.FC<CategoryHeroProps> = ({ title, subtitle, image, pro
             {/* Content */}
             <div style={{
                 position: 'absolute',
-                top: 'calc(var(--safe-top) + 80px)',
-                left: '24px',
-                right: '24px',
+                top: 'calc(var(--header-offset-top) + 85px)',
+                left: '20px',
+                right: '20px',
                 zIndex: 5
             }}>
                 <motion.div
@@ -104,32 +102,32 @@ const CategoryHero: React.FC<CategoryHeroProps> = ({ title, subtitle, image, pro
                             color: 'var(--primary)',
                             padding: '4px 12px',
                             borderRadius: '100px',
-                            fontSize: '11px',
-                            fontWeight: '800',
+                            fontSize: '10px',
+                            fontWeight: '900',
                             textTransform: 'uppercase',
                             letterSpacing: '1px',
-                            marginBottom: '12px',
+                            marginBottom: '10px',
                             boxShadow: '0 4px 15px rgba(163, 230, 53, 0.4)'
                         }}>
                             {productCount} {productCount === 1 ? 'Producto' : 'Productos'}
                         </span>
                     )}
                     <h1 style={{
-                        fontSize: '52px',
+                        fontSize: '48px',
                         fontWeight: '900',
                         color: 'white',
                         lineHeight: '0.9',
-                        marginBottom: '12px',
+                        marginBottom: '10px',
                         letterSpacing: '-2px'
                     }}>
                         {title}
                     </h1>
                     <p style={{
-                        fontSize: '16px',
-                        color: 'rgba(255, 255, 255, 0.8)',
-                        maxWidth: '80%',
-                        fontWeight: '400',
-                        lineHeight: '1.4'
+                        fontSize: '15px',
+                        color: 'rgba(255, 255, 255, 0.9)',
+                        maxWidth: '85%',
+                        fontWeight: '500',
+                        lineHeight: '1.3'
                     }}>
                         {subtitle}
                     </p>
