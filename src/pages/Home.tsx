@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Heart, ChevronRight, ShoppingCart, Search, ShoppingBag, Loader2, Plus, CheckCircle2, ArrowLeft } from 'lucide-react';
+import { Heart, ChevronRight, ShoppingCart, Loader2, Plus, CheckCircle2, ArrowLeft } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../services/SupabaseManager';
 import { useProfile } from '../hooks/useProfile';
@@ -17,7 +17,6 @@ const Home: React.FC = () => {
 
     const [viewTab, setViewTab] = React.useState<'marketplace' | 'myorders'>('marketplace');
     const [activeTab, setActiveTab] = React.useState('Todo');
-    const [searchQuery, setSearchQuery] = React.useState('');
     const { user } = useAuth();
     const { addToCart } = useCart();
     const [myOrders, setMyOrders] = React.useState<any[]>([]);
@@ -96,11 +95,9 @@ const Home: React.FC = () => {
         const matchesCategory = activeTab === 'Todo' ||
             (product.category || '').toLowerCase() === activeTab.toLowerCase();
 
-        const matchesSearch = (product.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-            (product.category || '').toLowerCase().includes(searchQuery.toLowerCase());
-
-        return matchesCategory && matchesSearch;
+        return matchesCategory;
     });
+
 
 
 
@@ -138,130 +135,190 @@ const Home: React.FC = () => {
 
                 {/* Stats cards removed as per user request */}
 
-                {/* Marketplace Navigation and Filters - Now Static */}
-                <div style={{ marginTop: '5px' }}>
-                    {/* Shop-style Tabs */}
+                {/* Category Filters - Now Static */}
+                <div style={{
+                    marginTop: '12px',
+                    marginBottom: '12px'
+                }}>
+                    {/* Category Filters */}
                     <div style={{
                         display: 'flex',
-                        background: 'rgba(255,255,255,0.05)',
-                        padding: '4px',
-                        borderRadius: '16px',
-                        marginBottom: '12px',
-                        gap: '4px'
+                        gap: '8px',
+                        overflowX: 'auto',
+                        paddingBottom: '8px',
+                        scrollbarWidth: 'none',
+                        width: '100%'
                     }}>
-                        <button
-                            onClick={() => setViewTab('marketplace')}
-                            style={{
-                                flex: 1,
-                                padding: '10px',
-                                borderRadius: '12px',
-                                border: 'none',
-                                background: viewTab === 'marketplace' ? 'var(--secondary)' : 'transparent',
-                                color: viewTab === 'marketplace' ? 'var(--primary)' : 'var(--text-dim)',
-                                fontWeight: '700',
-                                fontSize: '11px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                gap: '4px',
-                                cursor: 'pointer',
-                                transition: 'all 0.3s ease'
-                            }}
-                        >
-                            <ShoppingBag size={14} /> Marketplace
-                        </button>
-                        <button
-                            onClick={() => setViewTab('myorders')}
-                            style={{
-                                flex: 1,
-                                padding: '10px',
-                                borderRadius: '12px',
-                                border: 'none',
-                                background: viewTab === 'myorders' ? 'var(--secondary)' : 'transparent',
-                                color: viewTab === 'myorders' ? 'var(--primary)' : 'var(--text-dim)',
-                                fontWeight: '700',
-                                fontSize: '11px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                gap: '4px',
-                                cursor: 'pointer',
-                                transition: 'all 0.3s ease'
-                            }}
-                        >
-                            <ShoppingCart size={14} /> Compras
-                        </button>
+                        {categories.map(tab => (
+                            <button
+                                key={tab}
+                                onClick={() => setActiveTab(tab)}
+                                style={{
+                                    padding: '6px 14px',
+                                    borderRadius: '20px',
+                                    background: activeTab === tab ? 'var(--secondary)' : 'rgba(255,255,255,0.05)',
+                                    color: activeTab === tab ? 'var(--primary)' : 'white',
+                                    fontSize: '11px',
+                                    fontWeight: '600',
+                                    border: '1px solid ' + (activeTab === tab ? 'var(--secondary)' : 'rgba(255,255,255,0.1)'),
+                                    whiteSpace: 'nowrap',
+                                    transition: 'all 0.3s ease'
+                                }}
+                            >
+                                {tab}
+                            </button>
+                        ))}
                     </div>
-
-                    {viewTab === 'marketplace' && (
-                        <>
-                            {/* Search Bar */}
-                            <div style={{
-                                marginBottom: '12px',
-                                padding: '10px 16px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '10px',
-                                background: 'rgba(255,255,255,0.06)',
-                                borderRadius: '18px',
-                                border: 'none'
-                            }}>
-                                <Search size={16} color="var(--text-dim)" />
-                                <input
-                                    type="text"
-                                    placeholder="¿Qué estás buscando?"
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                    style={{
-                                        background: 'none',
-                                        border: 'none',
-                                        color: 'white',
-                                        width: '100%',
-                                        outline: 'none',
-                                        fontSize: '14px'
-                                    }}
-                                />
-                            </div>
-
-                            {/* Category Filters */}
-                            <div style={{
-                                display: 'flex',
-                                gap: '8px',
-                                overflowX: 'auto',
-                                paddingBottom: '8px',
-                                scrollbarWidth: 'none',
-                                width: '100%',
-                                marginBottom: '5px'
-                            }}>
-                                {categories.map(tab => (
-                                    <button
-                                        key={tab}
-                                        onClick={() => setActiveTab(tab)}
-                                        style={{
-                                            padding: '6px 14px',
-                                            borderRadius: '20px',
-                                            background: activeTab === tab ? 'var(--secondary)' : 'rgba(255,255,255,0.05)',
-                                            color: activeTab === tab ? 'var(--primary)' : 'white',
-                                            fontSize: '11px',
-                                            fontWeight: '600',
-                                            border: '1px solid ' + (activeTab === tab ? 'var(--secondary)' : 'rgba(255,255,255,0.1)'),
-                                            whiteSpace: 'nowrap',
-                                            transition: 'all 0.3s ease'
-                                        }}
-                                    >
-                                        {tab}
-                                    </button>
-                                ))}
-                            </div>
-                        </>
-                    )}
                 </div>
+
+                {/* Featured Carousel */}
+                <div style={{
+                    marginTop: '0px',
+                    marginBottom: '12px',
+                    overflowX: 'auto',
+                    scrollSnapType: 'x mandatory',
+                    WebkitOverflowScrolling: 'touch',
+                    scrollbarWidth: 'none',
+                    msOverflowStyle: 'none'
+                }}>
+                    <div style={{
+                        display: 'flex',
+                        gap: '12px',
+                        paddingBottom: '8px'
+                    }}>
+                        {/* Featured Card 1 */}
+                        <motion.div
+                            whileTap={{ scale: 0.98 }}
+                            style={{
+                                minWidth: '280px',
+                                height: '140px',
+                                borderRadius: '20px',
+                                background: 'linear-gradient(135deg, rgba(163, 230, 53, 0.15) 0%, rgba(163, 230, 53, 0.05) 100%)',
+                                border: '1px solid rgba(163, 230, 53, 0.2)',
+                                padding: '20px',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                justifyContent: 'space-between',
+                                position: 'relative',
+                                overflow: 'hidden',
+                                scrollSnapAlign: 'start',
+                                cursor: 'pointer'
+                            }}
+                        >
+                            {/* Decorative gradient orb */}
+                            <div style={{
+                                position: 'absolute',
+                                top: '-30px',
+                                right: '-30px',
+                                width: '120px',
+                                height: '120px',
+                                borderRadius: '50%',
+                                background: 'radial-gradient(circle, rgba(163, 230, 53, 0.2) 0%, transparent 70%)',
+                                filter: 'blur(20px)'
+                            }} />
+
+                            <div style={{ position: 'relative', zIndex: 1 }}>
+                                <div style={{
+                                    fontSize: '10px',
+                                    fontWeight: '900',
+                                    color: 'var(--secondary)',
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.1em',
+                                    marginBottom: '8px'
+                                }}>
+                                    🎉 Oferta Especial
+                                </div>
+                                <h3 style={{
+                                    fontSize: '16px',
+                                    fontWeight: '900',
+                                    color: 'white',
+                                    margin: 0,
+                                    marginBottom: '6px',
+                                    lineHeight: 1.2
+                                }}>
+                                    Hasta 30% OFF en equipamiento
+                                </h3>
+                                <p style={{
+                                    fontSize: '11px',
+                                    color: 'rgba(255,255,255,0.7)',
+                                    margin: 0,
+                                    lineHeight: 1.4
+                                }}>
+                                    Descubre las mejores ofertas del mes
+                                </p>
+                            </div>
+                        </motion.div>
+
+                        {/* Featured Card 2 */}
+                        <motion.div
+                            whileTap={{ scale: 0.98 }}
+                            style={{
+                                minWidth: '280px',
+                                height: '140px',
+                                borderRadius: '20px',
+                                background: 'linear-gradient(135deg, rgba(212, 175, 55, 0.15) 0%, rgba(212, 175, 55, 0.05) 100%)',
+                                border: '1px solid rgba(212, 175, 55, 0.2)',
+                                padding: '20px',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                justifyContent: 'space-between',
+                                position: 'relative',
+                                overflow: 'hidden',
+                                scrollSnapAlign: 'start',
+                                cursor: 'pointer'
+                            }}
+                        >
+                            <div style={{
+                                position: 'absolute',
+                                top: '-30px',
+                                right: '-30px',
+                                width: '120px',
+                                height: '120px',
+                                borderRadius: '50%',
+                                background: 'radial-gradient(circle, rgba(212, 175, 55, 0.2) 0%, transparent 70%)',
+                                filter: 'blur(20px)'
+                            }} />
+
+                            <div style={{ position: 'relative', zIndex: 1 }}>
+                                <div style={{
+                                    fontSize: '10px',
+                                    fontWeight: '900',
+                                    color: 'var(--accent)',
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.1em',
+                                    marginBottom: '8px'
+                                }}>
+                                    ⭐ Premium
+                                </div>
+                                <h3 style={{
+                                    fontSize: '16px',
+                                    fontWeight: '900',
+                                    color: 'white',
+                                    margin: 0,
+                                    marginBottom: '6px',
+                                    lineHeight: 1.2
+                                }}>
+                                    Colección Exclusiva
+                                </h3>
+                                <p style={{
+                                    fontSize: '11px',
+                                    color: 'rgba(255,255,255,0.7)',
+                                    margin: 0,
+                                    lineHeight: 1.4
+                                }}>
+                                    Acceso anticipado a nuevos productos
+                                </p>
+                            </div>
+                        </motion.div>
+                    </div>
+                </div>
+
             </div>
 
             {/* Blur fade effect at bottom of fixed header */}
             <div style={{
                 position: 'absolute',
-                top: viewTab === 'marketplace' ? 'calc(var(--header-offset-top) + 205px)' : 'calc(var(--header-offset-top) + 115px)',
+                top: 'calc(var(--header-offset-top) + 280px)',
                 left: '0',
                 right: '0',
                 height: '20px',
@@ -275,7 +332,7 @@ const Home: React.FC = () => {
             {/* Area de Scroll para el resto del contenido */}
             <div style={{
                 position: 'absolute',
-                top: viewTab === 'marketplace' ? 'calc(var(--header-offset-top) + 215px)' : 'calc(var(--header-offset-top) + 125px)',
+                top: 'calc(var(--header-offset-top) + 290px)',
                 left: '0',
                 right: '0',
                 bottom: 'calc(var(--nav-height) + 5px)',
