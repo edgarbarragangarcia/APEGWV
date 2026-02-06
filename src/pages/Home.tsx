@@ -181,7 +181,7 @@ const Home: React.FC = () => {
                 {/* Featured Carousel */}
                 <div style={{
                     marginTop: '0px',
-                    marginBottom: '12px',
+                    marginBottom: '0px',
                     overflowX: 'auto',
                     scrollSnapType: 'x mandatory',
                     WebkitOverflowScrolling: 'touch',
@@ -325,7 +325,7 @@ const Home: React.FC = () => {
             {/* Blur fade effect at bottom of fixed header */}
             <div style={{
                 position: 'absolute',
-                top: 'calc(var(--header-offset-top) + 280px)',
+                top: 'calc(var(--header-offset-top) + 260px)',
                 left: '0',
                 right: '0',
                 height: '20px',
@@ -339,12 +339,12 @@ const Home: React.FC = () => {
             {/* Area de Scroll para el resto del contenido */}
             <div style={{
                 position: 'absolute',
-                top: 'calc(var(--header-offset-top) + 290px)',
+                top: 'calc(var(--header-offset-top) + 270px)',
                 left: '0',
                 right: '0',
                 bottom: 'calc(var(--nav-height) + 5px)',
                 overflowY: 'auto',
-                padding: '0 20px 20px 20px',
+                padding: '10px 20px 20px 20px',
                 overflowX: 'hidden'
             }}>
 

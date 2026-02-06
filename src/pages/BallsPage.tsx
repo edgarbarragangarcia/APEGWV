@@ -57,7 +57,7 @@ const BallsPage: React.FC = () => {
                 right: '0',
                 bottom: 'calc(var(--nav-height) + 5px)',
                 overflowY: 'auto',
-                padding: '0 20px 20px 20px',
+                padding: '10px 20px 20px 20px',
                 overflowX: 'hidden'
             }}>
                 {/* Products Grid */}
