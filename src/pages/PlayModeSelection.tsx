@@ -1,12 +1,11 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, Users, ChevronRight, BarChart3, X, Trophy, Target, History, Loader2 } from 'lucide-react';
+import { User, Users, ChevronRight, BarChart3, X, History } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import PageHeader from '../components/PageHeader';
 import { supabase } from '../services/SupabaseManager';
 import { COLOMBIAN_COURSES } from '../data/courses';
 import PageHero from '../components/PageHero';
-import logo from '../assets/logo_apeg.png';
 
 const PlayModeSelection: React.FC = () => {
     const navigate = useNavigate();
@@ -15,8 +14,6 @@ const PlayModeSelection: React.FC = () => {
     const [recentRounds, setRecentRounds] = React.useState<any[]>([]);
     const [isLoadingStats, setIsLoadingStats] = React.useState(true);
     const [selectedRound, setSelectedRound] = React.useState<any>(null);
-    const [roundDetails, setRoundDetails] = React.useState<any[]>([]);
-    const [isLoadingDetails, setIsLoadingDetails] = React.useState(false);
 
     React.useEffect(() => {
         // Check if user just finished a game - if so, clear the flag and don't redirect
@@ -154,31 +151,9 @@ const PlayModeSelection: React.FC = () => {
 
     }, [navigate]);
 
-    const fetchRoundDetails = async (roundId: string) => {
-        setIsLoadingDetails(true);
-        try {
-            const { data, error } = await supabase
-                .from('round_holes')
-                .select('*')
-                .eq('round_id', roundId)
-                .order('hole_number', { ascending: true });
-
-            if (error) throw error;
-            setRoundDetails(data || []);
-        } catch (err) {
-            console.error('Error fetching round details:', err);
-        } finally {
-            setIsLoadingDetails(false);
-        }
-    };
-
     const handleRoundClick = (round: any) => {
         setSelectedRound(round);
-        fetchRoundDetails(round.id);
     };
-
-    // const handleResumeRound was here
-    // const handleDiscardRound was here
 
     const modes = [
         {
@@ -304,39 +279,34 @@ const PlayModeSelection: React.FC = () => {
                         </div>
                     </div>
 
-                    {/* Recent Rounds Mini List - Only shows when loaded and has data */}
+                    {/* Recent Rounds Trigger - Replaces the full list as per user request */}
                     {!isLoadingStats && recentRounds.length > 0 && (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '4px' }}>
-                            <div style={{ fontSize: '11px', fontWeight: '700', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>Últimos Juegos</div>
-                            {recentRounds.map((round) => {
-                                return (
-                                    <motion.div
-                                        key={round.id}
-                                        whileTap={{ scale: 0.98 }}
-                                        onClick={() => handleRoundClick(round)}
-                                        style={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'space-between',
-                                            padding: '12px 16px',
-                                            background: 'rgba(255,255,255,0.03)',
-                                            borderRadius: '16px',
-                                            border: '1px solid rgba(255,255,255,0.05)',
-                                            cursor: 'pointer'
-                                        }}
-                                    >
-                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                                            <span style={{ fontSize: '13px', fontWeight: '700', color: 'white' }}>{round.course_name || 'Campo desconocido'}</span>
-                                            <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>{new Date(round.date_played).toLocaleDateString()}</span>
-                                        </div>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                            <span style={{ fontSize: '16px', fontWeight: '900', color: 'var(--secondary)' }}>{round.total_score}</span>
-                                            <ChevronRight size={14} color="rgba(255,255,255,0.2)" />
-                                        </div>
-                                    </motion.div>
-                                );
-                            })}
-                        </div>
+                        <motion.div
+                            whileTap={{ scale: 0.98 }}
+                            onClick={() => handleRoundClick(recentRounds[0])}
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                padding: '16px 20px',
+                                background: 'rgba(255,255,255,0.05)',
+                                borderRadius: '24px',
+                                border: '1px solid rgba(255,255,255,0.1)',
+                                cursor: 'pointer',
+                                marginTop: '8px'
+                            }}
+                        >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'rgba(163, 230, 53, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    <History size={18} color="var(--secondary)" />
+                                </div>
+                                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                    <span style={{ fontSize: '13px', fontWeight: '800', color: 'white' }}>Ver Últimos Juegos</span>
+                                    <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontWeight: '600' }}>{recentRounds[0].course_name} • {new Date(recentRounds[0].date_played).toLocaleDateString()}</span>
+                                </div>
+                            </div>
+                            <ChevronRight size={16} color="rgba(255,255,255,0.3)" />
+                        </motion.div>
                     )}
                 </div>
 
@@ -516,28 +486,12 @@ const PlayModeSelection: React.FC = () => {
                                 overflowY: 'auto'
                             }}
                         >
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
-                                <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-                                    <div style={{
-                                        width: '48px',
-                                        height: '48px',
-                                        background: 'rgba(255,255,255,0.05)',
-                                        borderRadius: '16px',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        border: '1px solid rgba(255,255,255,0.1)'
-                                    }}>
-                                        <img src={logo} alt="APEG" style={{ width: '80%', height: '80%', objectFit: 'contain' }} />
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                    <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(163, 230, 53, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                        <History size={20} color="var(--secondary)" />
                                     </div>
-                                    <div>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2px' }}>
-                                            <History size={14} color="var(--secondary)" />
-                                            <span style={{ fontSize: '12px', fontWeight: '800', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '1px' }}>Ficha del Juego</span>
-                                        </div>
-                                        <h2 style={{ fontSize: '22px', fontWeight: '900', color: 'white', letterSpacing: '-0.5px' }}>{selectedRound.course_name}</h2>
-                                        <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.4)', marginTop: '2px' }}>{new Date(selectedRound.date_played).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</p>
-                                    </div>
+                                    <h2 style={{ fontSize: '20px', fontWeight: '800', color: 'white' }}>Últimos Juegos</h2>
                                 </div>
                                 <motion.button
                                     whileTap={{ scale: 0.9 }}
@@ -558,127 +512,66 @@ const PlayModeSelection: React.FC = () => {
                                 </motion.button>
                             </div>
 
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px', marginBottom: '30px' }}>
-                                <div style={{ background: 'rgba(255,255,255,0.03)', padding: '16px', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                    <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(163, 230, 53, 0.1)', display: 'flex', alignItems: 'center', justifySelf: 'center', justifyContent: 'center' }}>
-                                        <Trophy size={20} color="var(--secondary)" />
-                                    </div>
-                                    <div>
-                                        <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontWeight: '700', textTransform: 'uppercase' }}>Score Total</div>
-                                        <div style={{ fontSize: '18px', fontWeight: '900', color: 'white' }}>{selectedRound.total_score}</div>
-                                    </div>
-                                </div>
-                                <div style={{ background: 'rgba(255,255,255,0.03)', padding: '16px', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                    <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(212, 175, 55, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                        <Target size={20} color="var(--accent)" />
-                                    </div>
-                                    <div>
-                                        <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontWeight: '700', textTransform: 'uppercase' }}>Hoyos</div>
-                                        <div style={{ fontSize: '18px', fontWeight: '900', color: 'white' }}>{roundDetails.length || '--'}</div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {isLoadingDetails ? (
-                                <div style={{ padding: '60px 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
-                                    <Loader2 className="animate-spin" color="var(--secondary)" size={32} />
-                                    <span style={{ fontSize: '14px', color: 'rgba(255,255,255,0.4)', fontWeight: '600' }}>Cargando resultados...</span>
-                                </div>
-                            ) : roundDetails.length > 0 ? (
-                                <div style={{ background: 'rgba(0,0,0,0.2)', borderRadius: '24px', padding: '10px', border: '1px solid rgba(255,255,255,0.03)' }}>
-                                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                                        <thead>
-                                            <tr>
-                                                <th style={{ textAlign: 'center', padding: '12px', color: 'rgba(255,255,255,0.3)', fontSize: '10px', textTransform: 'uppercase', fontWeight: '800' }}>Hoyo</th>
-                                                <th style={{ textAlign: 'center', padding: '12px', color: 'rgba(255,255,255,0.3)', fontSize: '10px', textTransform: 'uppercase', fontWeight: '800' }}>Par</th>
-                                                <th style={{ textAlign: 'center', padding: '12px', color: 'rgba(255,255,255,0.3)', fontSize: '10px', textTransform: 'uppercase', fontWeight: '800' }}>Score</th>
-                                                <th style={{ textAlign: 'center', padding: '12px', color: 'rgba(255,255,255,0.3)', fontSize: '10px', textTransform: 'uppercase', fontWeight: '800' }}>Rel.</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {roundDetails.map((hole) => {
-                                                const diff = hole.score - hole.par;
-                                                const diffColor = diff < 0 ? '#60a5fa' : diff > 0 ? '#ef4444' : 'rgba(255,255,255,0.5)';
-                                                return (
-                                                    <tr key={hole.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.02)' }}>
-                                                        <td style={{ textAlign: 'center', padding: '14px', fontWeight: '800', color: 'white' }}>{hole.hole_number}</td>
-                                                        <td style={{ textAlign: 'center', padding: '14px', color: 'rgba(255,255,255,0.4)' }}>{hole.par}</td>
-                                                        <td style={{ textAlign: 'center', padding: '14px', fontWeight: '900', fontSize: '16px', color: 'var(--secondary)' }}>{hole.score}</td>
-                                                        <td style={{ textAlign: 'center', padding: '14px', fontWeight: '700', fontSize: '12px', color: diffColor }}>
-                                                            {diff === 0 ? 'E' : diff > 0 ? `+${diff}` : diff}
-                                                        </td>
-                                                    </tr>
-                                                );
-                                            })}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            ) : (
-                                <div style={{ padding: '40px 20px', textAlign: 'center', background: 'rgba(255,255,255,0.02)', borderRadius: '24px', border: '1px dashed rgba(255,255,255,0.1)' }}>
-                                    <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '14px' }}>No hay detalles de hoyos registrados para este juego.</p>
-                                </div>
-                            )}
-
-                            {/* Section for other games to address "en esta deben estar los juegos" */}
-                            {!isLoadingDetails && recentRounds.length > 1 && (
-                                <div style={{ marginTop: '40px', borderTop: '1px solid rgba(255, 255, 255, 0.1)', paddingTop: '24px', paddingBottom: '20px' }}>
-                                    <div style={{ fontSize: '11px', fontWeight: '800', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '16px' }}>Otros Juegos Recientes</div>
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                                        {recentRounds.filter(r => r.id !== selectedRound.id).map((round) => (
-                                            <motion.div
-                                                key={round.id}
-                                                whileTap={{ scale: 0.98 }}
-                                                onClick={() => {
-                                                    setSelectedRound(round);
-                                                    fetchRoundDetails(round.id);
-                                                }}
-                                                style={{
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'space-between',
-                                                    padding: '12px 16px',
-                                                    background: 'rgba(255,255,255,0.03)',
-                                                    borderRadius: '16px',
-                                                    border: '1px solid rgba(255,255,255,0.05)',
-                                                    cursor: 'pointer'
-                                                }}
-                                            >
-                                                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                                                    <span style={{ fontSize: '13px', fontWeight: '700', color: 'white' }}>{round.course_name || 'Campo desconocido'}</span>
-                                                    <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>{new Date(round.date_played).toLocaleDateString()}</span>
-                                                </div>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                    <span style={{ fontSize: '16px', fontWeight: '900', color: 'var(--secondary)' }}>{round.total_score}</span>
-                                                    <ChevronRight size={14} color="rgba(255,255,255,0.2)" />
-                                                </div>
-                                            </motion.div>
-                                        ))}
-                                    </div>
-
-                                    <motion.button
-                                        whileTap={{ scale: 0.95 }}
-                                        onClick={() => navigate('/rounds')}
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                {recentRounds.map((round) => (
+                                    <motion.div
+                                        key={round.id}
+                                        whileTap={{ scale: 0.98 }}
+                                        onClick={() => navigate(`/rounds/${round.id}`)}
                                         style={{
-                                            width: '100%',
-                                            marginTop: '20px',
-                                            padding: '16px',
-                                            background: 'rgba(255,255,255,0.05)',
-                                            borderRadius: '20px',
-                                            border: '1px solid rgba(255,255,255,0.1)',
-                                            color: 'white',
-                                            fontSize: '13px',
-                                            fontWeight: '800',
                                             display: 'flex',
                                             alignItems: 'center',
-                                            justifyContent: 'center',
-                                            gap: '8px'
+                                            justifyContent: 'space-between',
+                                            padding: '16px 20px',
+                                            background: 'rgba(255,255,255,0.03)',
+                                            borderRadius: '24px',
+                                            border: '1px solid rgba(255,255,255,0.05)',
+                                            cursor: 'pointer'
                                         }}
                                     >
-                                        Ver Historial Completo
-                                        <ChevronRight size={14} />
-                                    </motion.button>
-                                </div>
-                            )}
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                            <span style={{ fontSize: '15px', fontWeight: '800', color: 'white' }}>{round.course_name || 'Campo desconocido'}</span>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', fontWeight: '600' }}>{new Date(round.date_played).toLocaleDateString()}</span>
+                                                {round.status === 'completed' && (
+                                                    <span style={{ fontSize: '10px', background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', padding: '2px 6px', borderRadius: '4px', fontWeight: '700' }}>FINALIZADO</span>
+                                                )}
+                                            </div>
+                                        </div>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                            <div style={{ textAlign: 'right' }}>
+                                                <div style={{ fontSize: '18px', fontWeight: '900', color: 'var(--secondary)' }}>{round.total_score}</div>
+                                                <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.3)', fontWeight: '700', textTransform: 'uppercase' }}>Score</div>
+                                            </div>
+                                            <ChevronRight size={18} color="rgba(255,255,255,0.2)" />
+                                        </div>
+                                    </motion.div>
+                                ))}
+                            </div>
+
+                            <motion.button
+                                whileTap={{ scale: 0.95 }}
+                                onClick={() => navigate('/rounds')}
+                                style={{
+                                    width: '100%',
+                                    marginTop: '32px',
+                                    padding: '18px',
+                                    background: 'var(--secondary)',
+                                    borderRadius: '24px',
+                                    border: 'none',
+                                    color: 'var(--primary)',
+                                    fontSize: '15px',
+                                    fontWeight: '900',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '10px',
+                                    boxShadow: '0 10px 20px rgba(163, 230, 53, 0.2)'
+                                }}
+                            >
+                                Ver Historial Completo
+                                <ChevronRight size={18} />
+                            </motion.button>
                         </motion.div>
                     </>
                 )}
