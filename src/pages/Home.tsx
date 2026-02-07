@@ -119,6 +119,58 @@ const Home: React.FC = () => {
         return matchesCategory;
     });
 
+    const promotions = [
+        {
+            badge: "🎉 Oferta Especial",
+            title: "Hasta 30% OFF en equipamiento",
+            subtitle: "Descubre las mejores ofertas del mes",
+            image: "/images/promos/clubs.png",
+            color: "rgba(163, 230, 53, 0.4)"
+        },
+        {
+            badge: "⭐ Premium",
+            title: "Colección Exclusiva",
+            subtitle: "Acceso anticipado a productos elite",
+            image: "/images/promos/apparel.png",
+            color: "rgba(212, 175, 55, 0.4)"
+        },
+        {
+            badge: "⚡ Flash Sale",
+            title: "Bolas Titliest Pro V1",
+            subtitle: "20% de descuento adicional hoy",
+            image: "/images/promos/balls.png",
+            color: "rgba(59, 130, 246, 0.4)"
+        },
+        {
+            badge: "👟 Nuevo Ingreso",
+            title: "Calzado Performance 2024",
+            subtitle: "Tracción avanzada para tu juego",
+            image: "/images/promos/shoes.png",
+            color: "rgba(236, 72, 153, 0.4)"
+        },
+        {
+            badge: "🎒 Accesorios Elite",
+            title: "Bolsas de Cuero Hand-made",
+            subtitle: "Estilo y funcionalidad premium",
+            image: "/images/promos/bags.png",
+            color: "rgba(139, 92, 246, 0.4)"
+        },
+        {
+            badge: "⛳ Reservas VIP",
+            title: "Campos Signature",
+            subtitle: "Los mejores campos a tu alcance",
+            image: "/images/promos/course.png",
+            color: "rgba(16, 185, 129, 0.4)"
+        },
+        {
+            badge: "🆕 Nueva Temporada",
+            title: "Guantes de Piel Natural",
+            subtitle: "Siente cada golpe con precisión",
+            image: "/images/promos/clubs.png", // Reusing image for 7th
+            color: "rgba(245, 158, 11, 0.4)"
+        }
+    ];
+
 
 
 
@@ -227,130 +279,84 @@ const Home: React.FC = () => {
                         paddingLeft: '20px',
                         paddingRight: '20px'
                     }}>
-                        {/* Featured Card 1 */}
-                        <motion.div
-                            whileTap={{ scale: 0.98 }}
-                            style={{
-                                minWidth: '280px',
-                                height: '90px',
-                                borderRadius: '20px',
-                                background: 'linear-gradient(135deg, rgba(163, 230, 53, 0.15) 0%, rgba(163, 230, 53, 0.05) 100%)',
-                                border: '1px solid rgba(163, 230, 53, 0.2)',
-                                padding: '12px',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                justifyContent: 'center',
-                                position: 'relative',
-                                overflow: 'hidden',
-                                scrollSnapAlign: 'start',
-                                cursor: 'pointer'
-                            }}
-                        >
-                            {/* Decorative gradient orb */}
-                            <div style={{
-                                position: 'absolute',
-                                top: '-30px',
-                                right: '-30px',
-                                width: '120px',
-                                height: '120px',
-                                borderRadius: '50%',
-                                background: 'radial-gradient(circle, rgba(163, 230, 53, 0.2) 0%, transparent 70%)',
-                                filter: 'blur(20px)'
-                            }} />
-
-                            <div style={{ position: 'relative', zIndex: 1 }}>
+                        {promotions.map((promo, idx) => (
+                            <motion.div
+                                key={idx}
+                                whileTap={{ scale: 0.98 }}
+                                style={{
+                                    minWidth: '280px',
+                                    height: '90px',
+                                    borderRadius: '20px',
+                                    background: `linear-gradient(135deg, ${promo.color} 0%, rgba(0,0,0,0.6) 100%)`,
+                                    border: '1px solid rgba(255,255,255,0.1)',
+                                    padding: '12px',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    justifyContent: 'center',
+                                    position: 'relative',
+                                    overflow: 'hidden',
+                                    scrollSnapAlign: 'start',
+                                    cursor: 'pointer'
+                                }}
+                            >
+                                {/* Background Image */}
                                 <div style={{
-                                    fontSize: '10px',
-                                    fontWeight: '900',
-                                    color: 'var(--secondary)',
-                                    textTransform: 'uppercase',
-                                    letterSpacing: '0.1em',
-                                    marginBottom: '8px'
+                                    position: 'absolute',
+                                    inset: 0,
+                                    zIndex: 0,
+                                    opacity: 0.5
                                 }}>
-                                    🎉 Oferta Especial
+                                    <img
+                                        src={promo.image}
+                                        alt=""
+                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                    />
+                                    <div style={{
+                                        position: 'absolute',
+                                        inset: 0,
+                                        background: `linear-gradient(to right, ${promo.color.replace('0.4', '0.8')} 0%, transparent 70%)`,
+                                    }} />
                                 </div>
-                                <h3 style={{
-                                    fontSize: '16px',
-                                    fontWeight: '900',
-                                    color: 'white',
-                                    margin: 0,
-                                    marginBottom: '6px',
-                                    lineHeight: 1.2
-                                }}>
-                                    Hasta 30% OFF en equipamiento
-                                </h3>
-                                <p style={{
-                                    fontSize: '11px',
-                                    color: 'rgba(255,255,255,0.7)',
-                                    margin: 0,
-                                    lineHeight: 1.4
-                                }}>
-                                    Descubre las mejores ofertas del mes
-                                </p>
-                            </div>
-                        </motion.div>
 
-                        {/* Featured Card 2 */}
-                        <motion.div
-                            whileTap={{ scale: 0.98 }}
-                            style={{
-                                minWidth: '280px',
-                                height: '90px',
-                                borderRadius: '20px',
-                                background: 'linear-gradient(135deg, rgba(212, 175, 55, 0.15) 0%, rgba(212, 175, 55, 0.05) 100%)',
-                                border: '1px solid rgba(212, 175, 55, 0.2)',
-                                padding: '12px',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                justifyContent: 'center',
-                                position: 'relative',
-                                overflow: 'hidden',
-                                scrollSnapAlign: 'start',
-                                cursor: 'pointer'
-                            }}
-                        >
-                            <div style={{
-                                position: 'absolute',
-                                top: '-30px',
-                                right: '-30px',
-                                width: '120px',
-                                height: '120px',
-                                borderRadius: '50%',
-                                background: 'radial-gradient(circle, rgba(212, 175, 55, 0.2) 0%, transparent 70%)',
-                                filter: 'blur(20px)'
-                            }} />
-
-                            <div style={{ position: 'relative', zIndex: 1 }}>
-                                <div style={{
-                                    fontSize: '10px',
-                                    fontWeight: '900',
-                                    color: 'var(--accent)',
-                                    textTransform: 'uppercase',
-                                    letterSpacing: '0.1em',
-                                    marginBottom: '8px'
-                                }}>
-                                    ⭐ Premium
+                                <div style={{ position: 'relative', zIndex: 1 }}>
+                                    <div style={{
+                                        fontSize: '9px',
+                                        fontWeight: '900',
+                                        color: 'white',
+                                        textTransform: 'uppercase',
+                                        letterSpacing: '0.1em',
+                                        marginBottom: '4px',
+                                        background: 'rgba(0,0,0,0.3)',
+                                        alignSelf: 'flex-start',
+                                        padding: '2px 6px',
+                                        borderRadius: '4px',
+                                        display: 'inline-block'
+                                    }}>
+                                        {promo.badge}
+                                    </div>
+                                    <h3 style={{
+                                        fontSize: '15px',
+                                        fontWeight: '900',
+                                        color: 'white',
+                                        margin: 0,
+                                        marginBottom: '2px',
+                                        lineHeight: 1.2,
+                                        textShadow: '0 2px 4px rgba(0,0,0,0.5)'
+                                    }}>
+                                        {promo.title}
+                                    </h3>
+                                    <p style={{
+                                        fontSize: '10px',
+                                        color: 'rgba(255,255,255,0.9)',
+                                        margin: 0,
+                                        lineHeight: 1.2,
+                                        textShadow: '0 1px 2px rgba(0,0,0,0.5)'
+                                    }}>
+                                        {promo.subtitle}
+                                    </p>
                                 </div>
-                                <h3 style={{
-                                    fontSize: '16px',
-                                    fontWeight: '900',
-                                    color: 'white',
-                                    margin: 0,
-                                    marginBottom: '6px',
-                                    lineHeight: 1.2
-                                }}>
-                                    Colección Exclusiva
-                                </h3>
-                                <p style={{
-                                    fontSize: '11px',
-                                    color: 'rgba(255,255,255,0.7)',
-                                    margin: 0,
-                                    lineHeight: 1.4
-                                }}>
-                                    Acceso anticipado a nuevos productos
-                                </p>
-                            </div>
-                        </motion.div>
+                            </motion.div>
+                        ))}
                     </div>
                 </div>
 
