@@ -232,11 +232,11 @@ const Home: React.FC = () => {
                             whileTap={{ scale: 0.98 }}
                             style={{
                                 minWidth: '280px',
-                                height: '140px',
+                                height: '110px',
                                 borderRadius: '20px',
                                 background: 'linear-gradient(135deg, rgba(163, 230, 53, 0.15) 0%, rgba(163, 230, 53, 0.05) 100%)',
                                 border: '1px solid rgba(163, 230, 53, 0.2)',
-                                padding: '20px',
+                                padding: '16px',
                                 display: 'flex',
                                 flexDirection: 'column',
                                 justifyContent: 'space-between',
@@ -295,11 +295,11 @@ const Home: React.FC = () => {
                             whileTap={{ scale: 0.98 }}
                             style={{
                                 minWidth: '280px',
-                                height: '140px',
+                                height: '110px',
                                 borderRadius: '20px',
                                 background: 'linear-gradient(135deg, rgba(212, 175, 55, 0.15) 0%, rgba(212, 175, 55, 0.05) 100%)',
                                 border: '1px solid rgba(212, 175, 55, 0.2)',
-                                padding: '20px',
+                                padding: '16px',
                                 display: 'flex',
                                 flexDirection: 'column',
                                 justifyContent: 'space-between',
@@ -360,7 +360,7 @@ const Home: React.FC = () => {
             {/* Area de Scroll para el resto del contenido */}
             <div style={{
                 position: 'absolute',
-                top: 'calc(var(--header-offset-top) + 270px)',
+                top: 'calc(var(--header-offset-top) + 240px)',
                 left: '0',
                 right: '0',
                 bottom: 'calc(var(--nav-height) + 5px)',
