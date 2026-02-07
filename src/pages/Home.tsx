@@ -1,9 +1,9 @@
 import React, { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Heart, ChevronRight, ShoppingCart, Loader2, Plus, CheckCircle2, ArrowLeft } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { supabase } from '../services/SupabaseManager';
+import { supabase, optimizeImage } from '../services/SupabaseManager';
 import { useProfile } from '../hooks/useProfile';
 import { useFeaturedProducts, useUpcomingTournaments } from '../hooks/useHomeData';
 import PageHeader from '../components/PageHeader';
@@ -12,6 +12,7 @@ import PageHero from '../components/PageHero';
 
 const Home: React.FC = () => {
     const navigate = useNavigate();
+    const { id: productId } = useParams();
     const { data: profile } = useProfile();
     const { data: featuredProducts = [] } = useFeaturedProducts(10); // Fetch more for filtering
     const { data: tournaments = [] } = useUpcomingTournaments(3);
@@ -40,7 +41,34 @@ const Home: React.FC = () => {
         if (tab === 'myorders') {
             setViewTab('myorders');
         }
-    }, []);
+    }, [location.search]);
+
+    // Handle initial product from URL
+    useEffect(() => {
+        if (productId && featuredProducts.length > 0) {
+            const product = featuredProducts.find(p => p.id === productId);
+            if (product) {
+                setSelectedProduct(product);
+            } else {
+                // Fetch product if not in featured
+                const fetchProduct = async () => {
+                    const { data } = await supabase.from('products').select('*').eq('id', productId).single();
+                    if (data) setSelectedProduct(data);
+                };
+                fetchProduct();
+            }
+        }
+    }, [productId, featuredProducts]);
+
+    const handleProductSelect = (product: any) => {
+        setSelectedProduct(product);
+        window.history.pushState({}, '', `/product/${product.id}`);
+    };
+
+    const handleCloseProduct = () => {
+        setSelectedProduct(null);
+        window.history.pushState({}, '', '/');
+    };
 
     // Auto-scroll for featured carousel
     useEffect(() => {
@@ -103,13 +131,6 @@ const Home: React.FC = () => {
     }, [user, viewTab]);
 
 
-    const optimizeImage = (url: string | null | undefined, options: { width: number, height: number }) => {
-        if (!url) return '';
-        if (url.includes('supabase.co')) {
-            return `${url}?width=${options.width}&height=${options.height}&resize=contain`;
-        }
-        return url;
-    };
 
     const categories = ['Todo', 'Bolas', 'Palos', 'Ropa', 'Zapatos', 'Accesorios', 'Guantes', 'Gorras'];
 
@@ -481,7 +502,7 @@ const Home: React.FC = () => {
                                             gridColumn: isBig ? '1' : '2',
                                             height: '100%'
                                         }}
-                                        onClick={() => setSelectedProduct(product)}
+                                        onClick={() => handleProductSelect(product)}
                                     >
                                         <div style={{
                                             position: 'relative',
@@ -492,7 +513,7 @@ const Home: React.FC = () => {
                                             background: 'rgba(0,0,0,0.2)',
                                         }}>
                                             <motion.img
-                                                src={product.image_url || 'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?auto=format&fit=crop&q=80&w=800'}
+                                                src={optimizeImage(product.image_url, { width: 500, height: 500 })}
                                                 alt={product.name}
                                                 onError={(e) => {
                                                     const target = e.target as HTMLImageElement;
@@ -755,17 +776,113 @@ const Home: React.FC = () => {
                                 flexDirection: 'column',
                                 overflow: 'hidden'
                             }}>
-                                <div style={{ position: 'relative', height: '60vh', width: '100%', flexShrink: 0 }}>
-                                    <img
-                                        src={optimizeImage(selectedProduct.image_url, { width: 600, height: 800 })}
-                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                        alt={selectedProduct.name}
-                                    />
+                                <div style={{
+                                    position: 'relative',
+                                    height: '50vh',
+                                    width: '100%',
+                                    flexShrink: 0,
+                                    background: 'linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    padding: '20px',
+                                    overflow: 'hidden'
+                                }}>
+                                    {/* Ambient Glow Background */}
                                     <div style={{
                                         position: 'absolute',
-                                        inset: 0,
-                                        background: 'linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, transparent 30%, transparent 70%, var(--primary) 100%)'
+                                        width: '150%',
+                                        height: '150%',
+                                        background: 'radial-gradient(circle at center, rgba(163, 230, 53, 0.05) 0%, transparent 60%)',
+                                        zIndex: 0,
+                                        filter: 'blur(40px)'
                                     }} />
+
+                                    {/* The Image Container */}
+                                    <motion.div
+                                        initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                                        style={{
+                                            position: 'relative',
+                                            width: '100%',
+                                            height: '100%',
+                                            maxWidth: '350px',
+                                            borderRadius: '32px',
+                                            overflow: 'hidden',
+                                            boxShadow: '0 20px 50px rgba(0,0,0,0.5)',
+                                            border: '1px solid rgba(255,255,255,0.1)',
+                                            zIndex: 5,
+                                            background: 'var(--primary-light)'
+                                        }}
+                                    >
+                                        <motion.img
+                                            src={optimizeImage(selectedProduct.image_url, { width: 800, height: 1000 })}
+                                            style={{
+                                                width: '100%',
+                                                height: '100%',
+                                                objectFit: 'cover',
+                                            }}
+                                            alt={selectedProduct.name}
+                                            onError={(e) => {
+                                                const target = e.target as HTMLImageElement;
+                                                target.src = 'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?auto=format&fit=crop&q=80&w=800';
+                                            }}
+                                        />
+
+                                        {/* Dynamic Gradient Overlay */}
+                                        <div style={{
+                                            position: 'absolute',
+                                            inset: 0,
+                                            background: 'linear-gradient(to top, rgba(0,0,0,0.4) 0%, transparent 40%)',
+                                            zIndex: 2
+                                        }} />
+                                    </motion.div>
+
+                                    {/* Header Action Buttons Overlay */}
+                                    <div style={{
+                                        position: 'absolute',
+                                        top: '20px',
+                                        left: '20px',
+                                        right: '20px',
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        zIndex: 10
+                                    }}>
+                                        <button
+                                            onClick={handleCloseProduct}
+                                            style={{
+                                                width: '44px',
+                                                height: '44px',
+                                                borderRadius: '50%',
+                                                background: 'rgba(0,0,0,0.3)',
+                                                backdropFilter: 'blur(10px)',
+                                                border: '1px solid rgba(255,255,255,0.1)',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                color: 'white'
+                                            }}
+                                        >
+                                            <ArrowLeft size={20} />
+                                        </button>
+
+                                        <button
+                                            style={{
+                                                width: '44px',
+                                                height: '44px',
+                                                borderRadius: '50%',
+                                                background: 'rgba(0,0,0,0.3)',
+                                                backdropFilter: 'blur(10px)',
+                                                border: '1px solid rgba(255,255,255,0.1)',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                color: 'white'
+                                            }}
+                                        >
+                                            <Heart size={20} />
+                                        </button>
+                                    </div>
                                 </div>
 
                                 <div style={{
@@ -775,41 +892,19 @@ const Home: React.FC = () => {
                                     borderTopLeftRadius: '24px',
                                     borderTopRightRadius: '24px',
                                     marginTop: '-50px',
-                                    padding: '15px 18px calc(var(--nav-height) + 40px)',
+                                    padding: '15px 18px 40px',
                                     zIndex: 5,
                                     display: 'flex',
                                     flexDirection: 'column',
                                     overflow: 'hidden'
                                 }}>
                                     <div style={{
-                                        width: '32px',
-                                        height: '3px',
-                                        background: 'rgba(255,255,255,0.1)',
+                                        width: '40px',
+                                        height: '4px',
+                                        background: 'rgba(255,255,255,0.15)',
                                         borderRadius: '2px',
-                                        margin: '-6px auto 12px'
+                                        margin: '0 auto 20px'
                                     }} />
-
-                                    <button
-                                        onClick={() => setSelectedProduct(null)}
-                                        style={{
-                                            background: 'rgba(255,255,255,0.08)',
-                                            backdropFilter: 'blur(10px)',
-                                            border: '1px solid rgba(255,255,255,0.1)',
-                                            width: '32px',
-                                            height: '32px',
-                                            borderRadius: '50%',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            color: 'white',
-                                            cursor: 'pointer',
-                                            marginBottom: '10px',
-                                            marginLeft: 'auto',
-                                            marginRight: 'auto'
-                                        }}
-                                    >
-                                        <ArrowLeft size={18} strokeWidth={2.5} />
-                                    </button>
 
                                     <div style={{ marginBottom: '10px' }}>
                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
@@ -828,9 +923,89 @@ const Home: React.FC = () => {
                                         <h2 style={{ fontSize: '24px', fontWeight: '900', marginBottom: '4px', color: 'white' }}>
                                             {selectedProduct.name}
                                         </h2>
-                                        <p style={{ fontSize: '28px', fontWeight: '900', color: 'var(--secondary)', margin: 0 }}>
-                                            $ {new Intl.NumberFormat('es-CO').format(selectedProduct.price)}
-                                        </p>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: '15px', flexWrap: 'wrap' }}>
+                                            <p style={{ fontSize: '28px', fontWeight: '900', color: 'var(--secondary)', margin: 0 }}>
+                                                $ {new Intl.NumberFormat('es-CO').format(selectedProduct.price)}
+                                            </p>
+
+                                            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                                {selectedProduct.is_negotiable && selectedProduct.seller_id !== user?.id && (
+                                                    <motion.button
+                                                        whileTap={{ scale: 0.95 }}
+                                                        onClick={() => {
+                                                            if (!user) return navigate('/auth');
+                                                            setShowOfferModal(true);
+                                                            setOfferAmount(selectedProduct.price.toString());
+                                                        }}
+                                                        style={{
+                                                            background: 'rgba(255,255,255,0.05)',
+                                                            color: 'white',
+                                                            height: '46px',
+                                                            padding: '0 15px',
+                                                            borderRadius: '14px',
+                                                            fontWeight: '800',
+                                                            fontSize: '12px',
+                                                            border: '1px solid rgba(255,255,255,0.1)',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            gap: '6px'
+                                                        }}
+                                                    >
+                                                        🤝 OFERTA
+                                                    </motion.button>
+                                                )}
+
+                                                <motion.button
+                                                    whileTap={{ scale: 0.95 }}
+                                                    onClick={async () => {
+                                                        setAddingToCart(selectedProduct.id);
+                                                        await addToCart({ ...selectedProduct } as any);
+                                                        setTimeout(() => setAddingToCart(null), 1500);
+                                                    }}
+                                                    disabled={selectedProduct.seller_id === user?.id}
+                                                    style={{
+                                                        width: '46px',
+                                                        height: '46px',
+                                                        background: 'rgba(255,255,255,0.05)',
+                                                        color: addingToCart === selectedProduct.id ? 'var(--secondary)' : 'white',
+                                                        borderRadius: '14px',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        border: '1px solid rgba(255,255,255,0.1)'
+                                                    }}
+                                                >
+                                                    {addingToCart === selectedProduct.id ? <CheckCircle2 size={20} /> : <Plus size={20} />}
+                                                </motion.button>
+
+                                                <motion.button
+                                                    whileTap={{ scale: 0.95 }}
+                                                    onClick={async () => {
+                                                        if (!user) return navigate('/auth');
+                                                        setBuying(true);
+                                                        await addToCart({ ...selectedProduct } as any);
+                                                        setSelectedProduct(null);
+                                                        navigate('/checkout');
+                                                    }}
+                                                    disabled={buying || selectedProduct?.seller_id === user?.id}
+                                                    className="btn-primary"
+                                                    style={{
+                                                        height: '46px',
+                                                        padding: '0 20px',
+                                                        borderRadius: '14px',
+                                                        fontSize: '13px',
+                                                        fontWeight: '900',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: '8px',
+                                                        width: 'auto'
+                                                    }}
+                                                >
+                                                    <ShoppingCart size={18} />
+                                                    {buying ? '...' : 'COMPRAR'}
+                                                </motion.button>
+                                            </div>
+                                        </div>
                                     </div>
 
                                     {selectedProduct.description && (
@@ -841,69 +1016,6 @@ const Home: React.FC = () => {
                                         </div>
                                     )}
 
-                                    <div style={{ display: 'flex', gap: '6px', marginTop: 'auto' }}>
-                                        {selectedProduct.is_negotiable && selectedProduct.seller_id !== user?.id && (
-                                            <motion.button
-                                                whileTap={{ scale: 0.95 }}
-                                                onClick={() => {
-                                                    if (!user) return navigate('/auth');
-                                                    setShowOfferModal(true);
-                                                    setOfferAmount(selectedProduct.price.toString());
-                                                }}
-                                                style={{
-                                                    flex: 0.8,
-                                                    background: 'rgba(255,255,255,0.05)',
-                                                    color: 'white',
-                                                    height: '56px',
-                                                    borderRadius: '16px',
-                                                    fontWeight: '900',
-                                                    border: '1px solid rgba(255,255,255,0.1)'
-                                                }}
-                                            >
-                                                🤝 OFERTA
-                                            </motion.button>
-                                        )}
-
-                                        <motion.button
-                                            whileTap={{ scale: 0.95 }}
-                                            onClick={async () => {
-                                                setAddingToCart(selectedProduct.id);
-                                                await addToCart({ ...selectedProduct } as any);
-                                                setTimeout(() => setAddingToCart(null), 1500);
-                                            }}
-                                            disabled={selectedProduct.seller_id === user?.id}
-                                            style={{
-                                                width: '56px',
-                                                height: '56px',
-                                                background: 'rgba(255,255,255,0.05)',
-                                                color: addingToCart === selectedProduct.id ? 'var(--secondary)' : 'white',
-                                                borderRadius: '16px',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                border: '1px solid rgba(255,255,255,0.1)'
-                                            }}
-                                        >
-                                            {addingToCart === selectedProduct.id ? <CheckCircle2 size={24} /> : <Plus size={24} />}
-                                        </motion.button>
-
-                                        <motion.button
-                                            whileTap={{ scale: 0.95 }}
-                                            onClick={async () => {
-                                                if (!user) return navigate('/auth');
-                                                setBuying(true);
-                                                await addToCart({ ...selectedProduct } as any);
-                                                setSelectedProduct(null);
-                                                navigate('/checkout');
-                                            }}
-                                            disabled={buying || selectedProduct?.seller_id === user?.id}
-                                            className="btn-primary"
-                                            style={{ flex: 2, width: 'auto' }}
-                                        >
-                                            <ShoppingCart size={20} />
-                                            {buying ? '...' : 'COMPRAR'}
-                                        </motion.button>
-                                    </div>
                                 </div>
                             </div>
                         </motion.div>

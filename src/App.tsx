@@ -134,6 +134,7 @@ const AppContent: React.FC = () => {
           ) : (
             <>
               <Route path="/" element={<Home />} />
+              <Route path="/product/:id" element={<Home />} />
               <Route path="/round" element={<Round />} />
               <Route path="/play-mode" element={<PlayModeSelection />} />
               <Route path="/friend-selection" element={<FriendSelection />} />

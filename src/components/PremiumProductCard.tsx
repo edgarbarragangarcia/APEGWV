@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { ShoppingCart, Star, Heart } from 'lucide-react';
 import type { Product } from '../services/SupabaseManager';
+import { optimizeImage } from '../services/SupabaseManager';
 
 interface PremiumProductCardProps {
     product: Product;
@@ -27,7 +28,8 @@ const PremiumProductCard: React.FC<PremiumProductCardProps> = ({ product, onAddT
                 display: 'flex',
                 flexDirection: 'column',
                 cursor: 'pointer',
-                WebkitTapHighlightColor: 'transparent'
+                WebkitTapHighlightColor: 'transparent',
+                height: '100%'
             }}
         >
             {/* Image Container */}
@@ -35,19 +37,39 @@ const PremiumProductCard: React.FC<PremiumProductCardProps> = ({ product, onAddT
                 position: 'relative',
                 width: '100%',
                 aspectRatio: '1',
-                overflow: 'hidden',
-                background: 'rgba(255,255,255,0.02)'
+                padding: '12px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: 1
             }}>
-                <img
-                    src={product.image_url || 'https://via.placeholder.com/400x400?text=Golf+Product'}
-                    alt={product.name}
-                    style={{
-                        width: '100%',
-                        height: '100%',
-                        objectFit: 'cover',
-                        transition: 'transform 0.5s ease'
-                    }}
-                />
+                <div style={{
+                    position: 'relative',
+                    width: '100%',
+                    height: '100%',
+                    borderRadius: '24px',
+                    overflow: 'hidden',
+                    background: 'rgba(255,255,255,0.03)',
+                    border: '1px solid rgba(255,255,255,0.05)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                }}>
+                    <img
+                        src={optimizeImage(product.image_url, { width: 400, height: 400 })}
+                        alt={product.name}
+                        style={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover',
+                            transition: 'transform 0.5s ease'
+                        }}
+                        onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.src = 'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?auto=format&fit=crop&q=80&w=400';
+                        }}
+                    />
+                </div>
 
                 {/* Heart Icon Overlay */}
                 <div style={{

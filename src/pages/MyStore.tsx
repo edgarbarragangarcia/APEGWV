@@ -346,7 +346,7 @@ const MyStore: React.FC = () => {
 
             const fileExt = file.name.split('.').pop();
             const fileName = `${user.id}/${Math.random()}.${fileExt}`;
-            const filePath = `products/${fileName}`;
+            const filePath = `${fileName}`;
 
             const { error: uploadError } = await supabase.storage
                 .from('products')
@@ -942,7 +942,15 @@ const MyStore: React.FC = () => {
                                     <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Foto del Producto</label>
                                     <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9', borderRadius: '15px', overflow: 'hidden', background: 'rgba(255,255,255,0.05)', border: '1px dashed var(--glass-border)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
                                         {formData.image_url ? (
-                                            <img src={formData.image_url} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                            <img
+                                                src={optimizeImage(formData.image_url, { width: 600, height: 600 })}
+                                                alt="Preview"
+                                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                                onError={(e) => {
+                                                    const target = e.target as HTMLImageElement;
+                                                    target.src = 'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?auto=format&fit=crop&q=80&w=400';
+                                                }}
+                                            />
                                         ) : (
                                             <div style={{ textAlign: 'center' }}>
                                                 <Camera size={32} color="var(--text-dim)" style={{ marginBottom: '8px' }} />
@@ -1289,9 +1297,13 @@ const MyStore: React.FC = () => {
                                                             border: '1px solid rgba(255,255,255,0.1)'
                                                         }}>
                                                             <img
-                                                                src={optimizeImage(product.image_url, { width: 200, height: 200 }) || ''}
+                                                                src={optimizeImage(product.image_url, { width: 200, height: 200 })}
                                                                 style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                                                 alt={product.name}
+                                                                onError={(e) => {
+                                                                    const target = e.target as HTMLImageElement;
+                                                                    target.src = 'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?auto=format&fit=crop&q=80&w=200';
+                                                                }}
                                                             />
                                                         </div>
                                                         <div style={{
@@ -1464,7 +1476,15 @@ const MyStore: React.FC = () => {
 
                                         <div style={{ display: 'flex', gap: '15px', marginBottom: '20px', alignItems: 'center' }}>
                                             <div style={{ position: 'relative' }}>
-                                                <img src={optimizeImage(order.product?.image_url, { width: 150, height: 150 })} style={{ width: '65px', height: '65px', borderRadius: '16px', objectFit: 'cover', border: '1px solid rgba(255,255,255,0.1)' }} alt="" />
+                                                <img
+                                                    src={optimizeImage(order.product?.image_url, { width: 150, height: 150 })}
+                                                    style={{ width: '65px', height: '65px', borderRadius: '16px', objectFit: 'cover', border: '1px solid rgba(255,255,255,0.1)' }}
+                                                    alt=""
+                                                    onError={(e) => {
+                                                        const target = e.target as HTMLImageElement;
+                                                        target.src = 'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?auto=format&fit=crop&q=80&w=200';
+                                                    }}
+                                                />
                                                 <div style={{ position: 'absolute', bottom: '-5px', right: '-5px', background: 'var(--secondary)', width: '22px', height: '22px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #0e2f1f' }}>
                                                     <Package size={10} color="var(--primary)" />
                                                 </div>
@@ -1695,7 +1715,15 @@ const MyStore: React.FC = () => {
 
                                         <div style={{ display: 'flex', gap: '15px', marginBottom: '20px', alignItems: 'center' }}>
                                             <div style={{ position: 'relative' }}>
-                                                <img src={optimizeImage(offer.product?.image_url, { width: 150, height: 150 }) || ''} style={{ width: '65px', height: '65px', borderRadius: '16px', objectFit: 'cover', border: '1px solid rgba(255,255,255,0.1)' }} alt="" />
+                                                <img
+                                                    src={optimizeImage(offer.product?.image_url, { width: 150, height: 150 }) || ''}
+                                                    style={{ width: '65px', height: '65px', borderRadius: '16px', objectFit: 'cover', border: '1px solid rgba(255,255,255,0.1)' }}
+                                                    alt=""
+                                                    onError={(e) => {
+                                                        const target = e.target as HTMLImageElement;
+                                                        target.src = 'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?auto=format&fit=crop&q=80&w=200';
+                                                    }}
+                                                />
                                                 <div style={{ position: 'absolute', bottom: '-5px', right: '-5px', background: '#3b82f6', width: '22px', height: '22px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #0e2f1f' }}>
                                                     <Handshake size={10} color="white" />
                                                 </div>

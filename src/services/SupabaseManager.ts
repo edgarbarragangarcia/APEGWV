@@ -57,17 +57,24 @@ export interface Notification {
  * Optimizes a Supabase storage URL by applying transformations (resize, quality, format).
  * Falls back to the original URL if it's not a Supabase storage URL or if transformation isn't supported.
  */
-export const optimizeImage = (url: string | null | undefined, _options: { width?: number; height?: number; quality?: number; resize?: 'cover' | 'contain' | 'fill' } = {}) => {
+export const optimizeImage = (url: string | null | undefined, options: { width?: number; height?: number; quality?: number; resize?: 'cover' | 'contain' | 'fill' } = {}) => {
     if (!url) return '';
+
+    // If it's a relative path, assume it's from the products bucket
+    if (url && !url.startsWith('http') && !url.startsWith('blob:') && !url.startsWith('data:')) {
+        const { data } = supabase.storage.from('products').getPublicUrl(url);
+        url = data.publicUrl;
+    }
 
     // NOTE: Supabase Image Transformation is a paid feature (Pro plan).
     // If you are on a Free plan, the /render/image endpoint will return an error or a broken image.
-    // For now, we return the original URL to ensure reliability. 
-    // You can uncomment the logic below if you have a Pro plan enabled.
+    // For now, we only use the transformation if explicitly requested and we detect we might be on Pro (not easily detectable, so we'll be careful)
 
-    /*
-    if (url.includes('supabase.co/storage/v1/object/public/')) {
-        const { width = 500, height, quality = 80, resize = 'cover' } = options;
+    // If the URL is already a public storage URL and we want to optimize it
+    if (url.includes('supabase.co/storage/v1/object/public/') && (options.width || options.height)) {
+        // Only uncomment/use if you have Supabase Pro Plan enabled
+        /*
+        const { width, height, quality = 80, resize = 'cover' } = options;
         const renderUrl = url.replace('/storage/v1/object/public/', '/storage/v1/render/image/public/');
         const params = new URLSearchParams();
         if (width) params.append('width', width.toString());
@@ -76,8 +83,8 @@ export const optimizeImage = (url: string | null | undefined, _options: { width?
         params.append('resize', resize);
         params.append('format', 'webp');
         return `${renderUrl}?${params.toString()}`;
+        */
     }
-    */
 
     return url;
 };
