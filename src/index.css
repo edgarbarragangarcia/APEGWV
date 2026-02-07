@@ -310,10 +310,9 @@ button:active {
 
 /* Play Mode Grid Utility */
 .play-mode-grid {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  gap: 15px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
   min-height: 0;
 }
 

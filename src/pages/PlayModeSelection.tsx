@@ -337,7 +337,6 @@ const PlayModeSelection: React.FC = () => {
                                     navigate(mode.path);
                                 }}
                                 style={{
-                                    flex: '0 0 auto',
                                     position: 'relative',
                                     borderRadius: '24px',
                                     padding: '2px',
@@ -347,6 +346,7 @@ const PlayModeSelection: React.FC = () => {
                                     alignItems: 'stretch',
                                     cursor: 'pointer',
                                     transition: 'background 0.3s ease',
+                                    height: '100%', // Ensure grid items stretch
                                 }}
                             >
                                 {/* THE ANIMATED BORDER: A rotating gradient behind the card */}
@@ -375,11 +375,11 @@ const PlayModeSelection: React.FC = () => {
                                     overflow: 'hidden'
                                 }}>
                                     <div style={{
-                                        padding: '24px',
+                                        padding: '16px',
                                         display: 'flex',
                                         flexDirection: 'column',
                                         height: '100%',
-                                        gap: '16px'
+                                        gap: '12px'
                                     }}>
                                         <div style={{
                                             width: '40px',
@@ -396,10 +396,10 @@ const PlayModeSelection: React.FC = () => {
                                         </div>
 
                                         <div style={{ flex: 1 }}>
-                                            <h3 style={{ fontSize: '18px', fontWeight: '900', color: '#fff', marginBottom: '4px', letterSpacing: '-0.5px' }}>
+                                            <h3 style={{ fontSize: '15px', fontWeight: '900', color: '#fff', marginBottom: '2px', letterSpacing: '-0.3px' }}>
                                                 {mode.title}
                                             </h3>
-                                            <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontWeight: '600', lineHeight: '1.4' }}>
+                                            <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.3)', fontWeight: '600', lineHeight: '1.2' }}>
                                                 {mode.description}
                                             </p>
                                         </div>
