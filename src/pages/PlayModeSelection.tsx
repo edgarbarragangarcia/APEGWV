@@ -148,7 +148,7 @@ const PlayModeSelection: React.FC = () => {
 
                 const { data: rounds } = await supabase
                     .from('rounds')
-                    .select('id, course_name, total_score, date_played, status')
+                    .select('id, course_name, total_score, date_played, status, round_holes(score)')
                     .eq('user_id', user.id)
                     .order('date_played', { ascending: false })
                     .limit(5);
@@ -306,7 +306,7 @@ const PlayModeSelection: React.FC = () => {
                             }}
                         >
                             <div style={{ fontSize: '16px', fontWeight: '900', color: recentRounds.length > 0 ? 'var(--secondary)' : 'white' }}>
-                                {isLoadingStats ? '0' : (stats?.total_rounds || '0')}
+                                {isLoadingStats ? '--' : (stats?.total_rounds || '--')}
                             </div>
                             <div style={{ fontSize: '8px', color: recentRounds.length > 0 ? 'var(--secondary)' : 'rgba(255,255,255,0.4)', fontWeight: '600', textTransform: 'uppercase', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
                                 Rondas {recentRounds.length > 0 && (
@@ -523,7 +523,12 @@ const PlayModeSelection: React.FC = () => {
                                         </div>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                                             <div style={{ textAlign: 'right' }}>
-                                                <div style={{ fontSize: '18px', fontWeight: '900', color: 'var(--secondary)' }}>{round.total_score}</div>
+                                                <div style={{ fontSize: '18px', fontWeight: '900', color: 'var(--secondary)' }}>
+                                                    {round.status === 'completed'
+                                                        ? round.total_score
+                                                        : (round.round_holes?.reduce((acc: number, h: any) => acc + (h.score || 0), 0) || 0)
+                                                    }
+                                                </div>
                                                 <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.3)', fontWeight: '700', textTransform: 'uppercase' }}>Score</div>
                                             </div>
                                             <ChevronRight size={18} color="rgba(255,255,255,0.2)" />

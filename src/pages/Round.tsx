@@ -93,6 +93,7 @@ const Round: React.FC = () => {
     });
     const [groupMembers, setGroupMembers] = React.useState<any[]>([]);
     const [groupScores, setGroupScores] = React.useState<Record<string, number>>({});
+    const [groupCurrentHoles, setGroupCurrentHoles] = React.useState<Record<string, number>>({});
     const [isLeaderboardOpen, setIsLeaderboardOpen] = React.useState(false);
     const [currentUserId, setCurrentUserId] = React.useState<string | null>(null);
     const hasNavigatedRef = React.useRef(false);
@@ -225,17 +226,29 @@ const Round: React.FC = () => {
                 // 2. Initial fetch of scores for all members in this group
                 const { data: rounds, error: rErr } = await supabase
                     .from('rounds')
-                    .select('id, user_id, round_holes(score)')
+                    .select('id, user_id, round_holes(score, hole_number)')
                     .eq('group_id', groupId);
 
                 if (rErr) throw rErr;
 
                 const scores: Record<string, number> = {};
+                const currentHoles: Record<string, number> = {};
+
                 rounds?.forEach(r => {
+                    // Calculate total score
                     const total = r.round_holes?.reduce((acc: number, h: any) => acc + (h.score || 0), 0) || 0;
                     scores[r.user_id] = total;
+
+                    // Calculate max hole played
+                    if (r.round_holes && r.round_holes.length > 0) {
+                        const playedHoles = r.round_holes.map((h: any) => h.hole_number);
+                        currentHoles[r.user_id] = Math.max(...playedHoles);
+                    } else {
+                        currentHoles[r.user_id] = 1; // Default to hole 1
+                    }
                 });
                 setGroupScores(scores);
+                setGroupCurrentHoles(currentHoles);
             } catch (err) {
                 console.error('Error fetching group leaderboard:', err);
             }
@@ -764,9 +777,24 @@ const Round: React.FC = () => {
                                                         </div>
                                                     )}
                                                 </div>
-                                                <span style={{ color: 'white', fontWeight: '600', fontSize: '12px' }}>
-                                                    {member.profiles?.full_name?.split(' ')[0]} {member.user_id === currentUserId ? '(Tú)' : ''}
-                                                </span>
+                                                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                                    <span style={{ color: 'white', fontWeight: '600', fontSize: '12px' }}>
+                                                        {member.profiles?.full_name?.split(' ')[0]} {member.user_id === currentUserId ? '(Tú)' : ''}
+                                                    </span>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                                        <span style={{
+                                                            fontSize: '8px',
+                                                            background: 'rgba(163, 230, 53, 0.15)',
+                                                            color: 'var(--secondary)',
+                                                            padding: '1px 6px',
+                                                            borderRadius: '6px',
+                                                            fontWeight: '900',
+                                                            textTransform: 'uppercase'
+                                                        }}>
+                                                            Hoyo {groupCurrentHoles[member.user_id] || 1}
+                                                        </span>
+                                                    </div>
+                                                </div>
                                             </div>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                                                 <div style={{ textAlign: 'right' }}>
