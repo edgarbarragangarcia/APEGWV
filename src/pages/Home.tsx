@@ -800,7 +800,7 @@ const Home: React.FC = () => {
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
-                                    padding: '140px 20px 40px 20px',
+                                    padding: '60px 20px 30px 20px',
                                     overflow: 'hidden'
                                 }}>
                                     {/* Ambient Glow Background */}
@@ -919,7 +919,7 @@ const Home: React.FC = () => {
                                     background: 'var(--primary)',
                                     borderTopLeftRadius: '24px',
                                     borderTopRightRadius: '24px',
-                                    marginTop: '-50px',
+                                    marginTop: '-20px',
                                     padding: '15px 18px 40px',
                                     zIndex: 5,
                                     display: 'flex',
