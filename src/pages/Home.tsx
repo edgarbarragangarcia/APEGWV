@@ -63,44 +63,45 @@ const Home: React.FC = () => {
 
     useEffect(() => {
         if (user && viewTab === 'myorders') {
-            const fetchOrders = async () => {
+            const fetchOrdersAndOffers = async () => {
                 setOrdersLoading(true);
                 try {
-                    const { data, error } = await supabase
-                        .from('orders')
-                        .select('*, product:products(*)')
-                        .eq('buyer_id', user.id)
-                        .order('created_at', { ascending: false })
-                        .limit(5);
+                    const [ordersRes, offersRes] = await Promise.all([
+                        supabase
+                            .from('orders')
+                            .select(`
+                                *,
+                                order_items (
+                                    *,
+                                    product:products (*)
+                                )
+                            `)
+                            .eq('buyer_id', user.id)
+                            .order('created_at', { ascending: false }),
+                        supabase
+                            .from('offers')
+                            .select('*, product:products(*)')
+                            .eq('buyer_id', user.id)
+                            .order('created_at', { ascending: false })
+                    ]);
 
-                    if (error) throw error;
-                    setMyOrders(data || []);
+                    if (ordersRes.data) {
+                        setMyOrders(ordersRes.data.map((order: any) => ({
+                            ...order,
+                            product: order.order_items?.[0]?.product
+                        })));
+                    }
+                    if (offersRes.data) setMyOffers(offersRes.data);
                 } catch (err) {
-                    console.error('Error fetching orders:', err);
+                    console.error('Error fetching orders/offers:', err);
                 } finally {
                     setOrdersLoading(false);
                 }
             };
-
-            const fetchOffers = async () => {
-                try {
-                    const { data, error } = await supabase
-                        .from('offers')
-                        .select('*, product:products(*)')
-                        .eq('buyer_id', user.id)
-                        .order('created_at', { ascending: false });
-
-                    if (error) throw error;
-                    setMyOffers(data || []);
-                } catch (err) {
-                    console.error('Error fetching offers:', err);
-                }
-            };
-
-            fetchOrders();
-            fetchOffers();
+            fetchOrdersAndOffers();
         }
     }, [user, viewTab]);
+
 
     const optimizeImage = (url: string | null | undefined, options: { width: number, height: number }) => {
         if (!url) return '';
@@ -491,8 +492,16 @@ const Home: React.FC = () => {
                                             background: 'rgba(0,0,0,0.2)',
                                         }}>
                                             <motion.img
-                                                src={product.image_url || undefined}
+                                                src={product.image_url || 'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?auto=format&fit=crop&q=80&w=800'}
                                                 alt={product.name}
+                                                onError={(e) => {
+                                                    const target = e.target as HTMLImageElement;
+                                                    const cat = (product.category || '').toLowerCase();
+                                                    if (cat.includes('bol')) target.src = 'https://images.unsplash.com/photo-1593111774240-d529f12cf4bb?auto=format&fit=crop&q=80&w=800';
+                                                    else if (cat.includes('zap')) target.src = 'https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?auto=format&fit=crop&q=80&w=800';
+                                                    else if (cat.includes('guant')) target.src = 'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?auto=format&fit=crop&q=80&w=800';
+                                                    else target.src = 'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?auto=format&fit=crop&q=80&w=800';
+                                                }}
                                                 whileHover={{ scale: 1.05 }}
                                                 transition={{ type: 'tween', duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
                                                 style={{
