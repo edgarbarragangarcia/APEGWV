@@ -54,3 +54,25 @@ export const useUserRoundCount = (userId?: string) => {
         enabled: !!userId,
     });
 };
+
+export const useCategories = () => {
+    return useQuery({
+        queryKey: ['products', 'categories'],
+        queryFn: async () => {
+            const { data, error } = await supabase
+                .from('products')
+                .select('category')
+                .not('category', 'is', null);
+
+            if (error) throw error;
+
+            // Get unique categories, capitalize first letter, and sort
+            const uniqueCategories = Array.from(new Set(data.map(p => p.category)))
+                .map(cat => cat.charAt(0).toUpperCase() + cat.slice(1).toLowerCase())
+                .sort();
+
+            return ['Todo', ...uniqueCategories];
+        },
+        staleTime: 1000 * 60 * 60, // 1 hora
+    });
+};

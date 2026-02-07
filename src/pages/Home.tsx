@@ -1,11 +1,11 @@
 import React, { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { Heart, ChevronRight, ShoppingCart, Loader2, Plus, CheckCircle2, ArrowLeft } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { supabase, optimizeImage } from '../services/SupabaseManager';
 import { useProfile } from '../hooks/useProfile';
-import { useFeaturedProducts, useUpcomingTournaments } from '../hooks/useHomeData';
+import { useFeaturedProducts, useUpcomingTournaments, useCategories } from '../hooks/useHomeData';
 import { useLikes } from '../hooks/useLikes';
 import PageHeader from '../components/PageHeader';
 import { useCart } from '../context/CartContext';
@@ -13,6 +13,7 @@ import PageHero from '../components/PageHero';
 
 const Home: React.FC = () => {
     const navigate = useNavigate();
+    const location = useLocation();
     const { id: productId } = useParams();
     const { data: profile } = useProfile();
     const { data: featuredProducts = [] } = useFeaturedProducts(10); // Fetch more for filtering
@@ -134,7 +135,7 @@ const Home: React.FC = () => {
 
 
 
-    const categories = ['Todo', 'Bolas', 'Palos', 'Ropa', 'Zapatos', 'Accesorios', 'Guantes', 'Gorras'];
+    const { data: categories = ['Todo'] } = useCategories();
 
     const filteredProducts = featuredProducts.filter(product => {
         const matchesCategory = activeTab === 'Todo' ||

@@ -111,28 +111,33 @@ const NotificationsPage: React.FC = () => {
 
     return (
         <div className="animate-fade" style={{
-            overflow: 'hidden',
-            background: 'var(--primary)'
+            position: 'absolute',
+            top: '0',
+            left: '0',
+            right: '0',
+            bottom: '0',
+            width: '100%',
+            overflow: 'hidden'
         }}>
-            <PageHero image="https://images.unsplash.com/photo-1596733430284-f7437764b1a9?q=80&w=2070&auto=format&fit=crop" />
+            <PageHero image="https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?q=80&w=2070&auto=format&fit=crop" />
+
             {/* Header Fijo */}
             <div style={{
                 position: 'absolute',
                 top: 'var(--header-offset-top)',
                 left: '0',
                 right: '0',
-                width: '100%',
                 zIndex: 900,
                 background: 'transparent',
-                paddingLeft: '20px',
-                paddingRight: '20px',
-                pointerEvents: 'auto'
+                paddingBottom: '5px'
             }}>
-                <PageHeader
-                    noMargin
-                    title="Notificaciones"
-                    subtitle={unreadCount > 0 ? `${unreadCount} nuevas` : undefined}
-                />
+                <div style={{ padding: '0 20px' }}>
+                    <PageHeader
+                        noMargin
+                        title="Notificaciones"
+                        subtitle={unreadCount > 0 ? `${unreadCount} nuevas` : undefined}
+                    />
+                </div>
 
                 {notifications.length > 0 && (
                     <motion.div
@@ -141,7 +146,8 @@ const NotificationsPage: React.FC = () => {
                         style={{
                             display: 'flex',
                             gap: '10px',
-                            marginTop: '5px'
+                            marginTop: '5px',
+                            padding: '0 20px'
                         }}
                     >
                         <motion.button
@@ -195,13 +201,13 @@ const NotificationsPage: React.FC = () => {
             {/* Area de Scroll */}
             <div style={{
                 position: 'absolute',
-                top: notifications.length > 0 ? 'calc(var(--header-offset-top) + 110px)' : 'calc(var(--header-offset-top) + 60px)',
+                top: notifications.length > 0 ? 'calc(var(--header-offset-top) + 120px)' : 'calc(var(--header-offset-top) + 70px)',
                 left: '0',
                 right: '0',
-                bottom: 'calc(var(--nav-height))',
+                bottom: 'calc(var(--nav-height) + 10px)',
                 overflowY: 'auto',
                 overflowX: 'hidden',
-                padding: '0 20px 40px 20px',
+                padding: '10px 20px 40px 20px',
                 transition: 'top 0.3s ease'
             }}>
 

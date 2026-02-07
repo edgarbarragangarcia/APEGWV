@@ -9,7 +9,7 @@ interface NotificationContextType {
     markAllAsRead: () => Promise<void>;
     deleteNotification: (id: string) => Promise<void>;
     deleteAllNotifications: () => Promise<void>;
-    addNotification: (notification: Omit<Notification, 'id' | 'created_at' | 'read'>) => Promise<void>;
+    addNotification: (notification: Omit<Notification, 'id' | 'created_at' | 'read' | 'user_id'>) => Promise<void>;
 }
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
@@ -52,27 +52,32 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
                         filter: `user_id=eq.${userId}`
                     },
                     (payload) => {
+                        console.log('🔔 Notificación en tiempo real:', payload);
                         if (payload.eventType === 'INSERT') {
                             setNotifications(prev => [payload.new as Notification, ...prev]);
                         } else if (payload.eventType === 'UPDATE') {
                             setNotifications(prev => prev.map(n => n.id === payload.new.id ? payload.new as Notification : n));
                         } else if (payload.eventType === 'DELETE') {
-                            setNotifications(prev => prev.filter(n => n.id === payload.old.id));
+                            setNotifications(prev => prev.filter(n => n.id !== payload.old.id));
                         }
                     }
                 )
                 .subscribe((status) => {
-                    if (status === 'SUBSCRIBED') {
-                        console.log('🔔 Notificaciones: Suscrito con éxito');
-                    } else if (status === 'TIMED_OUT') {
-                        console.warn('🔔 Notificaciones: Tiempo de espera agotado');
-                    } else if (status === 'CHANNEL_ERROR') {
-                        console.warn('🔔 Notificaciones: Error en el canal (reintentando...)');
-                    }
+                    console.log(`🔔 Notificaciones Status (${userId}):`, status);
                 });
         };
 
+        // Check current session on mount
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            if (session) {
+                console.log('🔔 Notificaciones: Sesión detectada al montar');
+                fetchNotifications();
+                subscribe(session.user.id);
+            }
+        });
+
         const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+            console.log('🔔 Auth Event:', event);
             if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session) {
                 fetchNotifications();
                 subscribe(session.user.id);
@@ -144,7 +149,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
         }
     };
 
-    const addNotification = async (notificationData: Omit<Notification, 'id' | 'created_at' | 'read'>) => {
+    const addNotification = async (notificationData: Omit<Notification, 'id' | 'created_at' | 'read' | 'user_id'>) => {
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) return;
 
