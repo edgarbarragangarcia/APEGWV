@@ -271,43 +271,24 @@ const PlayModeSelection: React.FC = () => {
                             </div>
                             <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.4)', fontWeight: '600', textTransform: 'uppercase' }}>Promedio</div>
                         </div>
-                        <div style={{ textAlign: 'center' }}>
-                            <div style={{ fontSize: 'clamp(16px, 4vw, 20px)', fontWeight: '900', color: 'white' }}>
-                                {isLoadingStats ? '0' : (stats?.total_rounds || '0')}
-                            </div>
-                            <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.4)', fontWeight: '600', textTransform: 'uppercase' }}>Rondas</div>
-                        </div>
-                    </div>
-
-                    {/* Recent Rounds Trigger - Replaces the full list as per user request */}
-                    {!isLoadingStats && recentRounds.length > 0 && (
                         <motion.div
-                            whileTap={{ scale: 0.98 }}
-                            onClick={() => handleRoundClick(recentRounds[0])}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => recentRounds.length > 0 && handleRoundClick(recentRounds[0])}
                             style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'space-between',
-                                padding: '16px 20px',
-                                background: 'rgba(255,255,255,0.05)',
-                                borderRadius: '24px',
-                                border: '1px solid rgba(255,255,255,0.1)',
-                                cursor: 'pointer',
-                                marginTop: '8px'
+                                textAlign: 'center',
+                                cursor: recentRounds.length > 0 ? 'pointer' : 'default',
+                                position: 'relative'
                             }}
                         >
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'rgba(163, 230, 53, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                    <History size={18} color="var(--secondary)" />
-                                </div>
-                                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                    <span style={{ fontSize: '13px', fontWeight: '800', color: 'white' }}>Ver Últimos Juegos</span>
-                                    <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontWeight: '600' }}>{recentRounds[0].course_name} • {new Date(recentRounds[0].date_played).toLocaleDateString()}</span>
-                                </div>
+                            <div style={{ fontSize: 'clamp(16px, 4vw, 20px)', fontWeight: '900', color: recentRounds.length > 0 ? 'var(--secondary)' : 'white' }}>
+                                {isLoadingStats ? '0' : (stats?.total_rounds || '0')}
                             </div>
-                            <ChevronRight size={16} color="rgba(255,255,255,0.3)" />
+                            <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.4)', fontWeight: '600', textTransform: 'uppercase', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                                Rondas {recentRounds.length > 0 && <History size={8} />}
+                            </div>
                         </motion.div>
-                    )}
+                    </div>
+
                 </div>
 
                 {/* Mode Title Separator */}

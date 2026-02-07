@@ -130,14 +130,23 @@ const RoundDetail: React.FC = () => {
 
     return (
         <div className="animate-fade" style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            width: '100%',
+            maxWidth: 'var(--app-max-width)',
+            margin: '0 auto',
             overflow: 'hidden',
-            background: 'var(--primary)'
+            background: 'var(--primary)',
+            zIndex: 501
         }}>
             <PageHero image="https://images.unsplash.com/photo-1596733430284-f7437764b1a9?q=80&w=2070&auto=format&fit=crop" />
             {/* Header Fijo */}
             <div style={{
                 position: 'absolute',
-                top: 'var(--header-offset-top)',
+                top: 'calc(env(safe-area-inset-top) + 85px)',
                 left: '0',
                 right: '0',
                 width: '100%',
@@ -158,7 +167,7 @@ const RoundDetail: React.FC = () => {
             {/* Área de Scroll */}
             <div style={{
                 position: 'absolute',
-                top: 'calc(var(--header-offset-top) + 78px)',
+                top: 'calc(env(safe-area-inset-top) + 160px)',
                 left: '0',
                 right: '0',
                 bottom: 0,

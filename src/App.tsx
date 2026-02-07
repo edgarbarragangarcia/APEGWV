@@ -103,7 +103,8 @@ const AppContent: React.FC = () => {
   const isRoundPage = location.pathname === '/round';
   const isNotificationsPage = location.pathname === '/notifications';
   const isPlayFlow = ['/play-mode', '/friend-selection', '/create-group'].includes(location.pathname);
-  const isFixedPage = isRoundPage || isNotificationsPage || isPlayFlow;
+  const isRoundDetail = location.pathname.startsWith('/rounds/');
+  const isFixedPage = isRoundPage || isNotificationsPage || isPlayFlow || isRoundDetail;
 
   return (
     <div
