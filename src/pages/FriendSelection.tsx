@@ -19,6 +19,7 @@ const FriendSelection: React.FC = () => {
     const [showSuccess, setShowSuccess] = useState(false);
 
     useEffect(() => {
+        console.log('FriendSelection MOUNTED');
         fetchSavedGroups();
 
         // Subscribe to real-time changes
@@ -146,9 +147,17 @@ const FriendSelection: React.FC = () => {
     return (
         <>
             <div style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                height: '100%',
+                width: '100%',
+                maxWidth: 'var(--app-max-width)',
+                margin: '0 auto',
                 overflow: 'hidden',
                 background: 'var(--primary)',
-                zIndex: 500
             }} className="animate-fade">
                 <PageHero image="https://images.unsplash.com/photo-1593113598332-cd288d649433?q=80&w=2070&auto=format&fit=crop" />
 
@@ -248,45 +257,46 @@ const FriendSelection: React.FC = () => {
                     padding: '0 20px 20px 20px',
                     display: 'flex',
                     flexDirection: 'column',
-                    gap: '20px'
+                    gap: '20px',
+                    zIndex: 10
                 }}>
-
-                    {/* Botón Agregar Grupo - Apple Elite Style */}
+                    {/* Botón Agregar Grupo - Apple Elite Style Compact */}
                     <motion.button
                         whileTap={{ scale: 0.96 }}
                         onClick={() => navigate('/create-group')}
                         style={{
                             width: '100%',
-                            background: 'linear-gradient(135deg, rgba(163, 230, 53, 0.12) 0%, rgba(163, 230, 53, 0.06) 100%)',
-                            backdropFilter: 'blur(16px)',
-                            WebkitBackdropFilter: 'blur(16px)',
-                            border: '1px solid rgba(163, 230, 53, 0.25)',
-                            borderRadius: '32px',
-                            padding: '20px 24px',
+                            background: 'linear-gradient(135deg, rgba(163, 230, 53, 0.08) 0%, rgba(163, 230, 53, 0.04) 100%)',
+                            backdropFilter: 'blur(20px)',
+                            WebkitBackdropFilter: 'blur(20px)',
+                            border: '1px solid rgba(163, 230, 53, 0.2)',
+                            borderRadius: '24px',
+                            padding: '12px 18px',
                             display: 'flex',
                             alignItems: 'center',
-                            gap: '20px',
+                            gap: '14px',
                             cursor: 'pointer',
                             color: 'var(--secondary)',
                             WebkitTapHighlightColor: 'transparent',
-                            boxShadow: '0 12px 40px rgba(0,0,0,0.2)',
+                            boxShadow: '0 8px 30px rgba(0,0,0,0.15)',
                         }}
                     >
                         <div style={{
-                            width: '52px',
-                            height: '52px',
-                            borderRadius: '18px',
+                            width: '42px',
+                            height: '42px',
+                            borderRadius: '14px',
                             background: 'var(--secondary)',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            boxShadow: '0 8px 20px rgba(163, 230, 53, 0.3)'
+                            boxShadow: '0 4px 15px rgba(163, 230, 53, 0.25)',
+                            flexShrink: 0
                         }}>
-                            <Plus size={28} color="var(--primary)" strokeWidth={3} />
+                            <Plus size={22} color="var(--primary)" strokeWidth={3} />
                         </div>
                         <div style={{ textAlign: 'left' }}>
-                            <span style={{ display: 'block', fontSize: '19px', fontWeight: '900', letterSpacing: '-0.7px', color: '#fff' }}>Nuevo Grupo</span>
-                            <span style={{ display: 'block', fontSize: '13px', color: 'rgba(255,255,255,0.45)', fontWeight: '600' }}>Inicia una nueva partida</span>
+                            <span style={{ display: 'block', fontSize: '16px', fontWeight: '900', letterSpacing: '-0.4px', color: '#fff' }}>Nuevo Grupo</span>
+                            <span style={{ display: 'block', fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontWeight: '600' }}>Inicia una nueva partida</span>
                         </div>
                     </motion.button>
 

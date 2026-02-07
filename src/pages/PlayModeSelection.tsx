@@ -180,7 +180,7 @@ const PlayModeSelection: React.FC = () => {
 
     return (
         <div style={{
-            position: 'fixed',
+            position: 'absolute',
             top: '0',
             left: '0',
             right: '0',
@@ -327,7 +327,7 @@ const PlayModeSelection: React.FC = () => {
                     </div>
                 ) : (
                     // UI normal de selección de modo con Grid Responsivo
-                    <div className="play-mode-grid">
+                    <div className="play-mode-grid" style={{ pointerEvents: 'auto' }}>
                         {modes.map((mode) => (
                             <motion.div
                                 key={mode.id}
@@ -339,19 +339,14 @@ const PlayModeSelection: React.FC = () => {
                                 style={{
                                     flex: '0 0 auto',
                                     position: 'relative',
-                                    borderRadius: '28px',
+                                    borderRadius: '24px',
                                     padding: '2px',
                                     overflow: 'hidden',
                                     background: 'rgba(255, 255, 255, 0.05)',
                                     display: 'flex',
                                     alignItems: 'stretch',
-                                    justifyContent: 'stretch',
                                     cursor: 'pointer',
                                     transition: 'background 0.3s ease',
-                                    minHeight: '0',
-                                    zIndex: 10,
-                                    pointerEvents: 'auto',
-                                    touchAction: 'manipulation'
                                 }}
                             >
                                 {/* THE ANIMATED BORDER: A rotating gradient behind the card */}
@@ -361,81 +356,54 @@ const PlayModeSelection: React.FC = () => {
                                     left: '-50%',
                                     width: '200%',
                                     height: '200%',
-                                    background: 'conic-gradient(from 0deg, transparent 0deg, transparent 120deg, #e2e8f0 180deg, transparent 240deg, transparent 360deg)',
+                                    background: `conic-gradient(from 0deg at 50% 50%, transparent 0%, ${mode.accent} 25%, transparent 50%, ${mode.accent} 75%, transparent 100%)`,
                                     animation: 'border-run 6s linear infinite',
+                                    opacity: 0.3,
                                     zIndex: 0
                                 }} />
 
-                                {/* THE CARD CONTENT: Sits inside the border */}
+                                {/* Internal Grid Content */}
                                 <div style={{
                                     position: 'relative',
+                                    flex: 1,
+                                    background: 'rgba(14, 47, 31, 0.98)',
+                                    borderRadius: '22px', // Slightly smaller than parent to show border
+                                    margin: '1px',
                                     zIndex: 1,
-                                    width: '100%',
-                                    height: '100%',
-                                    background: 'rgba(10, 25, 15, 0.95)',
-                                    borderRadius: '26px',
-                                    padding: '16px',
                                     display: 'flex',
                                     flexDirection: 'column',
-                                    justifyContent: 'space-between',
-                                    gap: '4px',
-                                    backdropFilter: 'blur(20px)'
+                                    overflow: 'hidden'
                                 }}>
-                                    {/* Static Silver Inner Border for extra sharpness */}
                                     <div style={{
-                                        position: 'absolute',
-                                        inset: 0,
-                                        borderRadius: '26px',
-                                        border: '1px solid rgba(255,255,255,0.05)',
-                                        pointerEvents: 'none'
-                                    }} />
-
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                        padding: '24px',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        height: '100%',
+                                        gap: '16px'
+                                    }}>
                                         <div style={{
-                                            width: '32px',
-                                            height: '32px',
-                                            borderRadius: '10px',
-                                            background: 'rgba(255,255,255,0.03)',
-                                            border: '1px solid rgba(255,255,255,0.1)',
+                                            width: '40px',
+                                            height: '40px',
+                                            borderRadius: '12px',
+                                            background: `linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%)`,
                                             display: 'flex',
                                             alignItems: 'center',
                                             justifyContent: 'center',
-                                            position: 'relative',
-                                            zIndex: 1
+                                            color: mode.color,
+                                            border: '1px solid rgba(255,255,255,0.08)'
                                         }}>
-                                            <mode.icon size={16} color={mode.color} strokeWidth={2.5} />
+                                            <mode.icon size={20} />
                                         </div>
 
-                                        <div style={{ position: 'relative', zIndex: 1 }}>
-                                            <h3 style={{
-                                                fontSize: '16px',
-                                                fontWeight: '900',
-                                                color: 'white',
-                                                marginBottom: '2px',
-                                                letterSpacing: '-0.02em',
-                                                lineHeight: '1.2'
-                                            }}>
+                                        <div style={{ flex: 1 }}>
+                                            <h3 style={{ fontSize: '18px', fontWeight: '900', color: '#fff', marginBottom: '4px', letterSpacing: '-0.5px' }}>
                                                 {mode.title}
                                             </h3>
-                                            <p style={{
-                                                fontSize: '11px',
-                                                color: 'rgba(255,255,255,0.5)',
-                                                lineHeight: '1.3',
-                                                maxWidth: '100%',
-                                                fontWeight: '400'
-                                            }}>
+                                            <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontWeight: '600', lineHeight: '1.4' }}>
                                                 {mode.description}
                                             </p>
                                         </div>
-                                    </div>
 
-                                    <div style={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'flex-start',
-                                        zIndex: 1,
-                                        marginTop: '4px'
-                                    }}>
                                         <div style={{
                                             display: 'flex',
                                             alignItems: 'center',

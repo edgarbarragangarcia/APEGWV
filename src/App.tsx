@@ -122,7 +122,7 @@ const AppContent: React.FC = () => {
 
       <main
         className={`${session ? "page-content container" : ""} ${isFixedPage ? 'round-page-content' : ''} `}
-        style={!session ? { flex: 1, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', padding: 0, margin: 0 } : { flex: 1, overflow: isFixedPage ? 'hidden' : 'auto' }}
+        style={!session ? { flex: 1, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', padding: 0, margin: 0 } : { flex: 1, overflow: isFixedPage ? 'hidden' : 'auto', position: 'relative' }}
       >
         <Routes>
           {!session ? (
