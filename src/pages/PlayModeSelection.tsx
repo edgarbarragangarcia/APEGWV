@@ -277,15 +277,38 @@ const PlayModeSelection: React.FC = () => {
                             style={{
                                 textAlign: 'center',
                                 cursor: recentRounds.length > 0 ? 'pointer' : 'default',
-                                position: 'relative'
+                                position: 'relative',
+                                padding: '8px',
+                                borderRadius: '16px',
+                                background: recentRounds.length > 0 ? 'rgba(163, 230, 53, 0.05)' : 'transparent',
+                                border: recentRounds.length > 0 ? '1px solid rgba(163, 230, 53, 0.1)' : '1px solid transparent',
+                                transition: 'all 0.3s ease'
                             }}
                         >
                             <div style={{ fontSize: 'clamp(16px, 4vw, 20px)', fontWeight: '900', color: recentRounds.length > 0 ? 'var(--secondary)' : 'white' }}>
                                 {isLoadingStats ? '0' : (stats?.total_rounds || '0')}
                             </div>
-                            <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.4)', fontWeight: '600', textTransform: 'uppercase', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
-                                Rondas {recentRounds.length > 0 && <History size={8} />}
+                            <div style={{ fontSize: '9px', color: recentRounds.length > 0 ? 'var(--secondary)' : 'rgba(255,255,255,0.4)', fontWeight: '600', textTransform: 'uppercase', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                                Rondas {recentRounds.length > 0 && (
+                                    <motion.div
+                                        animate={{ scale: [1, 1.2, 1] }}
+                                        transition={{ duration: 2, repeat: Infinity }}
+                                    >
+                                        <History size={10} />
+                                    </motion.div>
+                                )}
                             </div>
+                            {recentRounds.length > 0 && (
+                                <div style={{
+                                    fontSize: '7px',
+                                    color: 'rgba(163, 230, 53, 0.5)',
+                                    fontWeight: '800',
+                                    marginTop: '2px',
+                                    letterSpacing: '0.5px'
+                                }}>
+                                    VER RECIENTES
+                                </div>
+                            )}
                         </motion.div>
                     </div>
 
@@ -530,29 +553,6 @@ const PlayModeSelection: React.FC = () => {
                                 ))}
                             </div>
 
-                            <motion.button
-                                whileTap={{ scale: 0.95 }}
-                                onClick={() => navigate('/rounds')}
-                                style={{
-                                    width: '100%',
-                                    marginTop: '32px',
-                                    padding: '18px',
-                                    background: 'var(--secondary)',
-                                    borderRadius: '24px',
-                                    border: 'none',
-                                    color: 'var(--primary)',
-                                    fontSize: '15px',
-                                    fontWeight: '900',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    gap: '10px',
-                                    boxShadow: '0 10px 20px rgba(163, 230, 53, 0.2)'
-                                }}
-                            >
-                                Ver Historial Completo
-                                <ChevronRight size={18} />
-                            </motion.button>
                         </motion.div>
                     </>
                 )}
