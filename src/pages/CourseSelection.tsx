@@ -22,7 +22,10 @@ const CourseSelection: React.FC = () => {
 
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedZone, setSelectedZone] = useState<string>('Todas');
-    const [weatherData, setWeatherData] = useState<Record<string, WeatherData>>({});
+    const [weatherData, setWeatherData] = useState<Record<string, WeatherData>>(() => {
+        const saved = localStorage.getItem('cache_weather');
+        return saved ? JSON.parse(saved) : {};
+    });
     const [isCreatingGroup, setIsCreatingGroup] = useState(false);
 
     const zones = ['Todas', 'Bogotá', 'Antioquia', 'Valle', 'Costa', 'Santanderes', 'Eje Cafetero', 'Centro'];
@@ -59,16 +62,23 @@ const CourseSelection: React.FC = () => {
 
     useEffect(() => {
         const loadWeather = async () => {
-            const weatherMap: Record<string, WeatherData> = {};
-            for (const course of COLOMBIAN_COURSES.slice(0, 10)) {
-                try {
+            try {
+                const promises = COLOMBIAN_COURSES.slice(0, 10).map(async (course) => {
                     const data = await fetchWeather(course.lat, course.lon);
-                    weatherMap[course.id] = data;
-                } catch (e) {
-                    console.error(e);
-                }
+                    return { id: course.id, data };
+                });
+
+                const results = await Promise.all(promises);
+                const weatherMap: Record<string, WeatherData> = { ...weatherData };
+                results.forEach(res => {
+                    weatherMap[res.id] = res.data;
+                });
+
+                setWeatherData(weatherMap);
+                localStorage.setItem('cache_weather', JSON.stringify(weatherMap));
+            } catch (e) {
+                console.error('Error loading weather:', e);
             }
-            setWeatherData(weatherMap);
         };
         loadWeather();
     }, []);

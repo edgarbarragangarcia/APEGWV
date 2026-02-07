@@ -13,7 +13,10 @@ const FriendSelection: React.FC = () => {
     const navigate = useNavigate();
     const { data: profile } = useProfile();
     const { error: showError } = useToast();
-    const [savedGroups, setSavedGroups] = useState<any[]>([]);
+    const [savedGroups, setSavedGroups] = useState<any[]>(() => {
+        const saved = localStorage.getItem('cache_saved_groups');
+        return saved ? JSON.parse(saved) : [];
+    });
     const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
     const [groupToDelete, setGroupToDelete] = useState<string | null>(null);
     const [showSuccess, setShowSuccess] = useState(false);
@@ -70,6 +73,7 @@ const FriendSelection: React.FC = () => {
 
             if (!error && data) {
                 setSavedGroups(data);
+                localStorage.setItem('cache_saved_groups', JSON.stringify(data));
             }
         } catch (err) {
             console.error('Error fetching saved groups:', err);

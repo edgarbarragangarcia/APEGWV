@@ -10,9 +10,18 @@ import PageHero from '../components/PageHero';
 const PlayModeSelection: React.FC = () => {
     const navigate = useNavigate();
     const [hasActiveRound, setHasActiveRound] = React.useState(false);
-    const [stats, setStats] = React.useState<any>(null);
-    const [recentRounds, setRecentRounds] = React.useState<any[]>([]);
-    const [isLoadingStats, setIsLoadingStats] = React.useState(true);
+
+    // Quick load from cache for "rapidisimo" feel
+    const [stats, setStats] = React.useState<any>(() => {
+        const saved = localStorage.getItem('cache_user_stats');
+        return saved ? JSON.parse(saved) : null;
+    });
+    const [recentRounds, setRecentRounds] = React.useState<any[]>(() => {
+        const saved = localStorage.getItem('cache_recent_rounds');
+        return saved ? JSON.parse(saved) : [];
+    });
+
+    const [isLoadingStats, setIsLoadingStats] = React.useState(!stats);
     const [selectedRound, setSelectedRound] = React.useState<any>(null);
 
     React.useEffect(() => {
@@ -49,7 +58,8 @@ const PlayModeSelection: React.FC = () => {
         // Check for active group invitations/memberships in Supabase
         const checkActiveGroup = async () => {
             try {
-                const { data: { user } } = await supabase.auth.getUser();
+                const { data: { session } } = await supabase.auth.getSession();
+                const user = session?.user;
                 if (!user) return;
 
                 // Find groups I belong to that are NOT completed
@@ -120,7 +130,8 @@ const PlayModeSelection: React.FC = () => {
         // Fetch user stats and recent rounds
         const fetchDashboardData = async () => {
             try {
-                const { data: { user } } = await supabase.auth.getUser();
+                const { data: { session } } = await supabase.auth.getSession();
+                const user = session?.user;
                 if (!user) return;
 
                 // Fetch Profile Stats
@@ -130,7 +141,10 @@ const PlayModeSelection: React.FC = () => {
                     .eq('id', user.id)
                     .single();
 
-                if (profile) setStats(profile);
+                if (profile) {
+                    setStats(profile);
+                    localStorage.setItem('cache_user_stats', JSON.stringify(profile));
+                }
 
                 const { data: rounds } = await supabase
                     .from('rounds')
@@ -139,7 +153,10 @@ const PlayModeSelection: React.FC = () => {
                     .order('date_played', { ascending: false })
                     .limit(5);
 
-                if (rounds) setRecentRounds(rounds);
+                if (rounds) {
+                    setRecentRounds(rounds);
+                    localStorage.setItem('cache_recent_rounds', JSON.stringify(rounds));
+                }
             } catch (err) {
                 console.error('Error fetching dashboard data:', err);
             } finally {
