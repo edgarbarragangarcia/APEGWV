@@ -41,6 +41,7 @@ import ShoesPage from './pages/ShoesPage';
 import ClubsPage from './pages/ClubsPage';
 import GlovesPage from './pages/GlovesPage';
 import CapsPage from './pages/CapsPage';
+import CommunityPage from './pages/CommunityPage';
 import { useOnlineStatus } from './hooks/useOnlineStatus';
 import OfflineOverlay from './components/OfflineOverlay';
 import { setupPushNotifications } from './services/PushManager';
@@ -142,6 +143,7 @@ const AppContent: React.FC = () => {
               <Route path="/green-fee/:courseId" element={<CourseReservation />} />
               <Route path="/my-reservations" element={<MyReservations />} />
               <Route path="/tournaments" element={<Tournaments />} />
+              <Route path="/community" element={<CommunityPage />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/my-store" element={<MyStore />} />
