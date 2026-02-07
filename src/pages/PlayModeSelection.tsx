@@ -226,7 +226,7 @@ const PlayModeSelection: React.FC = () => {
                 padding: '0 20px 40px 20px',
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '20px'
+                gap: '24px'
             }}>
                 {/* User Stats Dashboard - Fixed position with Skeleton */}
                 <div
@@ -254,24 +254,28 @@ const PlayModeSelection: React.FC = () => {
                     </div>
 
                     {/* Stats Grid */}
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
+                    <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(3, 1fr)',
+                        gap: '8px'
+                    }}>
                         <div style={{ textAlign: 'center' }}>
-                            <div style={{ fontSize: '20px', fontWeight: '900', color: 'white' }}>
+                            <div style={{ fontSize: 'clamp(16px, 4vw, 20px)', fontWeight: '900', color: 'white' }}>
                                 {isLoadingStats ? '--' : (stats?.best_score || '--')}
                             </div>
-                            <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', fontWeight: '600', textTransform: 'uppercase' }}>Mejor Score</div>
+                            <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.4)', fontWeight: '600', textTransform: 'uppercase' }}>Mejor Score</div>
                         </div>
                         <div style={{ textAlign: 'center', borderLeft: '1px solid rgba(255,255,255,0.05)', borderRight: '1px solid rgba(255,255,255,0.05)' }}>
-                            <div style={{ fontSize: '20px', fontWeight: '900', color: 'white' }}>
+                            <div style={{ fontSize: 'clamp(16px, 4vw, 20px)', fontWeight: '900', color: 'white' }}>
                                 {isLoadingStats ? '--' : (stats?.average_score || '--')}
                             </div>
-                            <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', fontWeight: '600', textTransform: 'uppercase' }}>Promedio</div>
+                            <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.4)', fontWeight: '600', textTransform: 'uppercase' }}>Promedio</div>
                         </div>
                         <div style={{ textAlign: 'center' }}>
-                            <div style={{ fontSize: '20px', fontWeight: '900', color: 'white' }}>
+                            <div style={{ fontSize: 'clamp(16px, 4vw, 20px)', fontWeight: '900', color: 'white' }}>
                                 {isLoadingStats ? '0' : (stats?.total_rounds || '0')}
                             </div>
-                            <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', fontWeight: '600', textTransform: 'uppercase' }}>Rondas</div>
+                            <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.4)', fontWeight: '600', textTransform: 'uppercase' }}>Rondas</div>
                         </div>
                     </div>
 
@@ -307,7 +311,7 @@ const PlayModeSelection: React.FC = () => {
                 </div>
 
                 {/* Mode Title Separator */}
-                <div style={{ fontSize: '12px', fontWeight: '800', color: 'rgba(255,255,255,0.2)', textTransform: 'uppercase', letterSpacing: '2px', marginLeft: '4px', marginTop: '10px' }}>Selecciona tu modo</div>
+                <div style={{ fontSize: '11px', fontWeight: '800', color: 'rgba(255,255,255,0.2)', textTransform: 'uppercase', letterSpacing: '2px', marginLeft: '4px' }}>Selecciona tu modo</div>
 
                 {hasActiveRound ? (
                     // Redirecting...
@@ -315,8 +319,13 @@ const PlayModeSelection: React.FC = () => {
                         <p>Reanudando partida...</p>
                     </div>
                 ) : (
-                    // UI normal de selección de modo
-                    <>
+                    // UI normal de selección de modo con Grid Responsivo
+                    <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+                        gap: '20px',
+                        width: '100%'
+                    }}>
                         {modes.map((mode) => (
                             <div
                                 key={mode.id}
@@ -352,11 +361,13 @@ const PlayModeSelection: React.FC = () => {
                                     position: 'relative',
                                     zIndex: 1,
                                     width: '100%',
+                                    height: '100%',
                                     background: 'rgba(10, 25, 15, 0.95)',
-                                    borderRadius: '30px', // Slightly smaller than outer to fit inside
-                                    padding: '30px',
+                                    borderRadius: '30px',
+                                    padding: 'clamp(20px, 5vw, 30px)',
                                     display: 'flex',
                                     flexDirection: 'column',
+                                    justifyContent: 'space-between',
                                     gap: '15px',
                                     backdropFilter: 'blur(20px)'
                                 }}>
@@ -369,68 +380,57 @@ const PlayModeSelection: React.FC = () => {
                                         pointerEvents: 'none'
                                     }} />
 
-                                    {/* Background Glows */}
-                                    <div style={{
-                                        position: 'absolute',
-                                        top: '-40%',
-                                        right: '-20%',
-                                        width: '180px',
-                                        height: '180px',
-                                        background: mode.color,
-                                        filter: 'blur(80px)',
-                                        opacity: 0.1,
-                                        zIndex: -1
-                                    }} />
-
-                                    <div style={{
-                                        width: '48px',
-                                        height: '48px',
-                                        borderRadius: '14px',
-                                        background: 'rgba(255,255,255,0.03)',
-                                        border: '1px solid rgba(255,255,255,0.1)',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        position: 'relative',
-                                        zIndex: 1
-                                    }}>
-                                        <mode.icon size={22} color={mode.color} strokeWidth={2.5} />
-                                    </div>
-
-                                    <div style={{ position: 'relative', zIndex: 1 }}>
-                                        <h3 style={{
-                                            fontSize: '22px',
-                                            fontWeight: '900',
-                                            color: 'white',
-                                            marginBottom: '4px',
-                                            letterSpacing: '-0.02em'
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                                        <div style={{
+                                            width: '44px',
+                                            height: '44px',
+                                            borderRadius: '12px',
+                                            background: 'rgba(255,255,255,0.03)',
+                                            border: '1px solid rgba(255,255,255,0.1)',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            position: 'relative',
+                                            zIndex: 1
                                         }}>
-                                            {mode.title}
-                                        </h3>
-                                        <p style={{
-                                            fontSize: '14px',
-                                            color: 'rgba(255,255,255,0.5)',
-                                            lineHeight: '1.5',
-                                            maxWidth: '94%',
-                                            fontWeight: '400'
-                                        }}>
-                                            {mode.description}
-                                        </p>
+                                            <mode.icon size={20} color={mode.color} strokeWidth={2.5} />
+                                        </div>
+
+                                        <div style={{ position: 'relative', zIndex: 1 }}>
+                                            <h3 style={{
+                                                fontSize: 'clamp(20px, 4vw, 22px)',
+                                                fontWeight: '900',
+                                                color: 'white',
+                                                marginBottom: '4px',
+                                                letterSpacing: '-0.02em',
+                                                lineHeight: '1.2'
+                                            }}>
+                                                {mode.title}
+                                            </h3>
+                                            <p style={{
+                                                fontSize: 'clamp(13px, 3.5vw, 14px)',
+                                                color: 'rgba(255,255,255,0.5)',
+                                                lineHeight: '1.5',
+                                                maxWidth: '100%',
+                                                fontWeight: '400'
+                                            }}>
+                                                {mode.description}
+                                            </p>
+                                        </div>
                                     </div>
 
                                     <div style={{
                                         display: 'flex',
                                         alignItems: 'center',
-                                        justifyContent: 'space-between',
-                                        marginTop: '10px',
+                                        justifyContent: 'flex-start',
                                         zIndex: 1
                                     }}>
                                         <div style={{
                                             display: 'flex',
                                             alignItems: 'center',
                                             gap: '6px',
-                                            background: 'rgba(255,255,255,0.05)',
-                                            padding: '6px 14px',
+                                            background: 'rgba(255,255,255,0.08)',
+                                            padding: '8px 16px',
                                             borderRadius: '100px',
                                             color: 'white',
                                             fontSize: '12px',
@@ -443,7 +443,7 @@ const PlayModeSelection: React.FC = () => {
                                 </div>
                             </div>
                         ))}
-                    </>
+                    </div>
                 )}
             </div>
         </div>
