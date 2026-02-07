@@ -40,15 +40,16 @@ const CommunityPage: React.FC = () => {
             {/* Content Area */}
             <div style={{
                 position: 'absolute',
-                top: 'calc(var(--header-offset-top) + 120px)',
+                top: 'calc(var(--header-offset-top) + 80px)',
                 left: '0',
                 right: '0',
-                bottom: 'calc(var(--nav-height) + 20px)',
+                bottom: 'calc(var(--nav-height) + 10px)',
                 overflowY: 'auto',
-                padding: '20px',
+                padding: '20px 20px 100px 20px',
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '20px'
+                gap: '20px',
+                zIndex: 10
             }}>
 
                 {/* Instagram Card */}
