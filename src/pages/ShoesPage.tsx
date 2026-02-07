@@ -34,13 +34,12 @@ const ShoesPage: React.FC = () => {
                 title="Zapatos"
                 subtitle="Comodidad y estabilidad superior para que camines con confianza cada hoyo."
                 image="/heros/golf_shoes_hero_1770415202682.png"
-                productCount={shoeProducts.length}
             />
 
             {/* Area de Scroll */}
             <div style={{
                 position: 'absolute',
-                top: 'calc(var(--header-offset-top) + 280px)',
+                top: 'calc(var(--header-offset-top) + 200px)',
                 left: '0',
                 right: '0',
                 bottom: 0,

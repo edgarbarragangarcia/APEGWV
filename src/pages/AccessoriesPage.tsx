@@ -34,13 +34,12 @@ const AccessoriesPage: React.FC = () => {
                 title="Accesorios"
                 subtitle="Los detalles que marcan la diferencia. Todo lo que necesitas para complementar tu equipo."
                 image="/heros/golf_accessories_hero_1770415216840.png"
-                productCount={accessoryProducts.length}
             />
 
             {/* Area de Scroll */}
             <div style={{
                 position: 'absolute',
-                top: 'calc(var(--header-offset-top) + 280px)',
+                top: 'calc(var(--header-offset-top) + 200px)',
                 left: '0',
                 right: '0',
                 bottom: 0,

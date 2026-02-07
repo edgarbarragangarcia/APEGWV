@@ -328,7 +328,7 @@ const PlayModeSelection: React.FC = () => {
                                 style={{
                                     flex: 1, // Llenar espacio disponible
                                     position: 'relative',
-                                    borderRadius: '32px',
+                                    borderRadius: '28px',
                                     padding: '2px', // This creates the "border width"
                                     overflow: 'hidden',
                                     background: 'rgba(255, 255, 255, 0.05)', // Fallback
@@ -360,28 +360,28 @@ const PlayModeSelection: React.FC = () => {
                                     width: '100%',
                                     height: '100%',
                                     background: 'rgba(10, 25, 15, 0.95)',
-                                    borderRadius: '30px',
-                                    padding: 'clamp(20px, 5vw, 30px)',
+                                    borderRadius: '26px',
+                                    padding: '20px',
                                     display: 'flex',
                                     flexDirection: 'column',
                                     justifyContent: 'space-between',
-                                    gap: '15px',
+                                    gap: '10px',
                                     backdropFilter: 'blur(20px)'
                                 }}>
                                     {/* Static Silver Inner Border for extra sharpness */}
                                     <div style={{
                                         position: 'absolute',
                                         inset: 0,
-                                        borderRadius: '30px',
+                                        borderRadius: '26px',
                                         border: '1px solid rgba(255,255,255,0.05)',
                                         pointerEvents: 'none'
                                     }} />
 
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                                         <div style={{
-                                            width: '44px',
-                                            height: '44px',
-                                            borderRadius: '12px',
+                                            width: '38px',
+                                            height: '38px',
+                                            borderRadius: '10px',
                                             background: 'rgba(255,255,255,0.03)',
                                             border: '1px solid rgba(255,255,255,0.1)',
                                             display: 'flex',
@@ -390,12 +390,12 @@ const PlayModeSelection: React.FC = () => {
                                             position: 'relative',
                                             zIndex: 1
                                         }}>
-                                            <mode.icon size={20} color={mode.color} strokeWidth={2.5} />
+                                            <mode.icon size={18} color={mode.color} strokeWidth={2.5} />
                                         </div>
 
                                         <div style={{ position: 'relative', zIndex: 1 }}>
                                             <h3 style={{
-                                                fontSize: 'clamp(20px, 4vw, 22px)',
+                                                fontSize: '18px',
                                                 fontWeight: '900',
                                                 color: 'white',
                                                 marginBottom: '4px',
@@ -405,9 +405,9 @@ const PlayModeSelection: React.FC = () => {
                                                 {mode.title}
                                             </h3>
                                             <p style={{
-                                                fontSize: 'clamp(13px, 3.5vw, 14px)',
+                                                fontSize: '13px',
                                                 color: 'rgba(255,255,255,0.5)',
-                                                lineHeight: '1.5',
+                                                lineHeight: '1.4',
                                                 maxWidth: '100%',
                                                 fontWeight: '400'
                                             }}>
@@ -427,14 +427,14 @@ const PlayModeSelection: React.FC = () => {
                                             alignItems: 'center',
                                             gap: '6px',
                                             background: 'rgba(255,255,255,0.08)',
-                                            padding: '8px 16px',
+                                            padding: '6px 14px',
                                             borderRadius: '100px',
                                             color: 'white',
-                                            fontSize: '12px',
+                                            fontSize: '11px',
                                             fontWeight: '700',
                                             border: '1px solid rgba(255,255,255,0.05)'
                                         }}>
-                                            Explorar <ChevronRight size={14} strokeWidth={3} />
+                                            Explorar <ChevronRight size={12} strokeWidth={3} />
                                         </div>
                                     </div>
                                 </div>

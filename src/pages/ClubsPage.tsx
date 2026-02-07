@@ -34,13 +34,12 @@ const ClubsPage: React.FC = () => {
                 title="Palos"
                 subtitle="El corazón de tu juego. Tecnología de vanguardia para alcanzar tu máximo potencial."
                 image="/heros/golf_clubs_hero_1770415175713.png"
-                productCount={clubProducts.length}
             />
 
             {/* Area de Scroll */}
             <div style={{
                 position: 'absolute',
-                top: 'calc(var(--header-offset-top) + 280px)',
+                top: 'calc(var(--header-offset-top) + 200px)',
                 left: '0',
                 right: '0',
                 bottom: 0,

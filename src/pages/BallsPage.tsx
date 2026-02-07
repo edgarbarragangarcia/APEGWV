@@ -34,13 +34,12 @@ const BallsPage: React.FC = () => {
                 title="Bolas"
                 subtitle="Encuentra la bola perfecta para tu nivel de juego y maximiza tu distancia."
                 image="/heros/golf_balls_hero_1770415163307.png"
-                productCount={ballProducts.length}
             />
 
             {/* Area de Scroll */}
             <div style={{
                 position: 'absolute',
-                top: 'calc(var(--header-offset-top) + 280px)',
+                top: 'calc(var(--header-offset-top) + 200px)',
                 left: '0',
                 right: '0',
                 bottom: 0,

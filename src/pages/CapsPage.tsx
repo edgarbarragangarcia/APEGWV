@@ -34,13 +34,12 @@ const CapsPage: React.FC = () => {
                 title="Gorras"
                 subtitle="El toque final de tu outfit. Estilo clásico y moderno para protegerte con elegancia."
                 image="/heros/golf_accessories_hero_1770415216840.png"
-                productCount={capProducts.length}
             />
 
             {/* Area de Scroll */}
             <div style={{
                 position: 'absolute',
-                top: 'calc(var(--header-offset-top) + 280px)',
+                top: 'calc(var(--header-offset-top) + 200px)',
                 left: '0',
                 right: '0',
                 bottom: 0,

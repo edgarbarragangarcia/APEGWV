@@ -34,13 +34,12 @@ const GlovesPage: React.FC = () => {
                 title="Guantes"
                 subtitle="El contacto perfecto. Piel premium para una sensación y agarre inigualables."
                 image="/heros/golf_gloves_hero_1770415231000.png"
-                productCount={gloveProducts.length}
             />
 
             {/* Area de Scroll */}
             <div style={{
                 position: 'absolute',
-                top: 'calc(var(--header-offset-top) + 280px)',
+                top: 'calc(var(--header-offset-top) + 200px)',
                 left: '0',
                 right: '0',
                 bottom: 0,

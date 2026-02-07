@@ -34,13 +34,12 @@ const ClothingPage: React.FC = () => {
                 title="Ropa"
                 subtitle="Estilo y rendimiento en el campo con nuestra colección exclusiva de prendas técnicas."
                 image="/heros/golf_apparel_hero_1770415189416.png"
-                productCount={clothingProducts.length}
             />
 
             {/* Area de Scroll */}
             <div style={{
                 position: 'absolute',
-                top: 'calc(var(--header-offset-top) + 280px)',
+                top: 'calc(var(--header-offset-top) + 200px)',
                 left: '0',
                 right: '0',
                 bottom: 0,

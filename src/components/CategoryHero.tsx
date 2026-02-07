@@ -84,7 +84,7 @@ const CategoryHero: React.FC<CategoryHeroProps> = ({ title, subtitle, image }) =
             {/* Content */}
             <div style={{
                 position: 'absolute',
-                top: 'calc(var(--header-offset-top) + 85px)',
+                top: 'calc(var(--header-offset-top) + 20px)',
                 left: '20px',
                 right: '20px',
                 zIndex: 5
