@@ -5,7 +5,7 @@ import type { GolfCourse } from '../data/courses';
 import { supabase } from '../services/SupabaseManager';
 import { useGeoLocation } from '../hooks/useGeoLocation';
 import { fetchWeather, type WeatherData } from '../services/WeatherService';
-import { Wind, Navigation, Trophy, Award } from 'lucide-react';
+import { Wind, Navigation, Trophy, Award, Thermometer, Droplets, Sun, CloudRain } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { COLOMBIAN_COURSES } from '../data/courses';
 const getWindDirection = (degrees?: number) => {
@@ -87,7 +87,6 @@ const Round: React.FC = () => {
         return saved ? JSON.parse(saved) : {};
     });
     const [isSaving, setIsSaving] = React.useState(false);
-    const { location: userPos } = useGeoLocation();
     const [roundId, setRoundId] = React.useState<string | null>(() => {
         const saved = localStorage.getItem('round_id');
         return saved || null;
@@ -880,48 +879,99 @@ const Round: React.FC = () => {
                 </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr 1fr', gap: '8px', marginBottom: '8px', flexShrink: 0 }}>
-                <div className="glass" style={{ padding: '8px', textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                    <div style={{ fontSize: '10px', color: 'var(--text-dim)', marginBottom: '2px' }}>FRONT</div>
-                    <div style={{ fontSize: '16px', fontWeight: '900', color: 'white' }}>
-                        {(userPos && holeData.find((h: any) => h.hole_number === currentHole)?.lat)
-                            ? Math.round((calculateDistance(holeData.find((h: any) => h.hole_number === currentHole).lat, holeData.find((h: any) => h.hole_number === currentHole).lon) || 0) - 15)
-                            : '---'}
+            {/* Weather Dashboard - Replaces Distance boxes */}
+            <div style={{ marginBottom: '8px', flexShrink: 0 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
+                    <div className="glass" style={{
+                        padding: '12px 8px',
+                        textAlign: 'center',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: '4px',
+                        background: 'rgba(255, 255, 255, 0.03)'
+                    }}>
+                        <Thermometer size={16} color="var(--secondary)" />
+                        <div style={{ fontSize: '9px', color: 'var(--text-dim)', textTransform: 'uppercase', fontWeight: '800' }}>Temp</div>
+                        <div style={{ fontSize: '15px', fontWeight: '900', color: 'white' }}>{weather?.temp ?? '--'}°</div>
+                        <div style={{ fontSize: '8px', color: 'rgba(255,255,255,0.5)', fontWeight: '600', textTransform: 'capitalize' }}>{weather?.condition || 'Despejado'}</div>
+                    </div>
+
+                    <div className="glass" style={{
+                        padding: '12px 8px',
+                        textAlign: 'center',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: '4px',
+                        background: 'rgba(255, 255, 255, 0.03)'
+                    }}>
+                        <Droplets size={16} color="#60a5fa" />
+                        <div style={{ fontSize: '9px', color: 'var(--text-dim)', textTransform: 'uppercase', fontWeight: '800' }}>Hum</div>
+                        <div style={{ fontSize: '15px', fontWeight: '900', color: 'white' }}>{weather?.humidity ?? '--'}%</div>
+                    </div>
+
+                    <div className="glass" style={{
+                        padding: '12px 8px',
+                        textAlign: 'center',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: '4px',
+                        background: 'rgba(255, 255, 255, 0.03)'
+                    }}>
+                        <Sun size={16} color="#f59e0b" />
+                        <div style={{ fontSize: '9px', color: 'var(--text-dim)', textTransform: 'uppercase', fontWeight: '800' }}>UV</div>
+                        <div style={{ fontSize: '15px', fontWeight: '900', color: 'white' }}>{weather?.uvIndex ?? '--'}</div>
+                    </div>
+
+                    <div className="glass" style={{
+                        padding: '12px 8px',
+                        textAlign: 'center',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: '4px',
+                        background: 'rgba(255, 255, 255, 0.03)'
+                    }}>
+                        <CloudRain size={16} color="#38bdf8" />
+                        <div style={{ fontSize: '9px', color: 'var(--text-dim)', textTransform: 'uppercase', fontWeight: '800' }}>Lluvia</div>
+                        <div style={{ fontSize: '15px', fontWeight: '900', color: 'white' }}>{weather?.precipitation ?? '0'}mm</div>
                     </div>
                 </div>
 
-                <div className="glass" style={{ padding: '8px', textAlign: 'center', position: 'relative', border: '1px solid rgba(163, 230, 53, 0.3)', background: 'rgba(163, 230, 53, 0.05)' }}>
-                    <div style={{ fontSize: '10px', color: 'var(--secondary)', fontWeight: '700', marginBottom: '2px' }}>DISTANCIA</div>
-                    <div style={{ fontSize: '32px', fontWeight: '900', color: 'white', lineHeight: '1' }}>{distanceToHole || '---'}</div>
-                    <div style={{ fontSize: '8px', color: 'var(--secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
-                        <div style={{ width: '4px', height: '4px', borderRadius: '50%', background: 'var(--secondary)', animation: 'pulse 2s infinite' }}></div>
-                        m
+                <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '8px', marginTop: '8px' }}>
+                    <div className="glass" style={{
+                        padding: '10px 15px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        background: 'rgba(255, 255, 255, 0.03)'
+                    }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <Wind size={18} color="var(--secondary)" />
+                            <div style={{ textAlign: 'left' }}>
+                                <div style={{ fontSize: '9px', color: 'var(--text-dim)', textTransform: 'uppercase', fontWeight: '800' }}>Viento</div>
+                                <div style={{ fontSize: '14px', fontWeight: '900', color: 'white' }}>
+                                    {weather?.wind ? `${weather.wind} km/h` : '--'} {getWindDirection(weather?.windDirection)}
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                </div>
 
-                <div className="glass" style={{ padding: '8px', textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                    <div style={{ fontSize: '10px', color: 'var(--text-dim)', marginBottom: '2px' }}>BACK</div>
-                    <div style={{ fontSize: '16px', fontWeight: '900', color: 'white' }}>
-                        {(userPos && holeData.find((h: any) => h.hole_number === currentHole)?.lat)
-                            ? Math.round((calculateDistance(holeData.find((h: any) => h.hole_number === currentHole).lat, holeData.find((h: any) => h.hole_number === currentHole).lon) || 0) + 15)
-                            : '---'}
-                    </div>
-                </div>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '8px', flexShrink: 0 }}>
-                <div className="glass" style={{ padding: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <Wind size={14} color="var(--secondary)" />
-                    <div>
-                        <div style={{ fontSize: '8px', color: 'var(--text-dim)', textTransform: 'uppercase' }}>VIENTO</div>
-                        <div style={{ fontSize: '12px', fontWeight: '800', color: 'white' }}>{weather?.wind ? `${Math.round(weather.wind * 3.6)} km/h` : '12 km/h'}</div>
-                    </div>
-                </div>
-                <div className="glass" style={{ padding: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <Navigation size={14} color="var(--secondary)" />
-                    <div>
-                        <div style={{ fontSize: '8px', color: 'var(--text-dim)', textTransform: 'uppercase' }}>PALO</div>
-                        <div style={{ fontSize: '12px', fontWeight: '800', color: 'white' }}>{getClubRecommendation(distanceToHole || 0)}</div>
+                    <div className="glass" style={{
+                        padding: '10px 15px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px',
+                        background: 'rgba(163, 230, 53, 0.08)',
+                        border: '1px solid rgba(163, 230, 53, 0.2)'
+                    }}>
+                        <Navigation size={18} color="var(--secondary)" />
+                        <div style={{ textAlign: 'left' }}>
+                            <div style={{ fontSize: '9px', color: 'var(--secondary)', textTransform: 'uppercase', fontWeight: '800' }}>Palo Sugerido</div>
+                            <div style={{ fontSize: '14px', fontWeight: '900', color: 'white' }}>{getClubRecommendation(distanceToHole || 0)}</div>
+                        </div>
                     </div>
                 </div>
             </div>

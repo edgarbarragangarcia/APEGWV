@@ -186,10 +186,9 @@ const Tournaments: React.FC = () => {
             width: '100%',
             maxWidth: 'var(--app-max-width)',
             margin: '0 auto',
-            overflow: 'hidden',
-            background: 'var(--primary)'
+            overflow: 'hidden'
         }}>
-            <PageHero image="https://images.unsplash.com/photo-1592919016381-801648a8f10b?q=80&w=2070&auto=format&fit=crop" />
+            <PageHero image="/images/briceno18.png" />
             {/* Header Fijo - Eventos */}
             <div style={{
                 position: 'absolute',

@@ -9,6 +9,9 @@ export interface WeatherData {
     wind: number;
     windDirection?: number;
     humidity: number;
+    uvIndex?: number;
+    precipitation?: number;
+    feelsLike?: number;
 }
 
 // Mapa simple de códigos WMO a condiciones locales
@@ -26,10 +29,15 @@ const getConditionFromWMO = (code: number) => {
 export const fetchWeather = async (lat: number, lon: number): Promise<WeatherData> => {
     try {
         const response = await fetch(
-            `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,wind_direction_10m,weather_code&wind_speed_unit=kmh`
+            `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,wind_direction_10m&hourly=uv_index&timezone=auto&forecast_days=1`
         );
         const data = await response.json();
         const current = data.current;
+        const hourly = data.hourly;
+
+        // Get UV index for current hour
+        const currentHour = new Date().getHours();
+        const uvIndex = hourly?.uv_index ? hourly.uv_index[currentHour] : undefined;
         const weatherInfo = getConditionFromWMO(current.weather_code);
 
         return {
@@ -39,7 +47,10 @@ export const fetchWeather = async (lat: number, lon: number): Promise<WeatherDat
             icon: weatherInfo.icon,
             wind: Math.round(current.wind_speed_10m),
             windDirection: current.wind_direction_10m,
-            humidity: current.relative_humidity_2m
+            humidity: current.relative_humidity_2m,
+            feelsLike: Math.round(current.apparent_temperature),
+            precipitation: current.precipitation,
+            uvIndex: uvIndex
         };
     } catch (error) {
         console.error('Error fetching weather:', error);

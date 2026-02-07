@@ -219,12 +219,17 @@ const GreenFee: React.FC = () => {
                                     onClick={() => course.available && navigate(`/green-fee/${course.id}`)}
                                     style={{ padding: 0, overflow: 'hidden', border: 'none', position: 'relative' }}
                                 >
-                                    <div style={{ height: '200px', position: 'relative' }}>
+                                    <div style={{ height: '140px', position: 'relative' }}>
                                         <img
                                             src={course.image}
                                             alt={course.name}
                                             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                         />
+                                        <div style={{
+                                            position: 'absolute',
+                                            top: 0, left: 0, right: 0, bottom: 0,
+                                            background: 'linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.8) 100%)'
+                                        }} />
                                         <div style={{
                                             position: 'absolute',
                                             top: '15px',
@@ -237,10 +242,14 @@ const GreenFee: React.FC = () => {
                                             alignItems: 'center',
                                             gap: '4px',
                                             fontSize: '12px',
-                                            fontWeight: '600'
+                                            fontWeight: '600',
+                                            border: '1px solid rgba(255,255,255,0.1)'
                                         }}>
                                             <Star size={12} fill="#FACC15" color="#FACC15" />
                                             <span>{course.rating}</span>
+                                        </div>
+                                        <div style={{ position: 'absolute', bottom: '15px', left: '20px', right: '20px' }}>
+                                            <h3 style={{ fontSize: '22px', fontWeight: '900', color: 'white', lineHeight: '1.1' }}>{course.name}</h3>
                                         </div>
                                         {!course.available && (
                                             <div style={{
@@ -265,32 +274,28 @@ const GreenFee: React.FC = () => {
                                         )}
                                     </div>
 
-                                    <div style={{ padding: '20px' }}>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
-                                            <div>
-                                                <h3 style={{ fontSize: '18px', fontWeight: '700', marginBottom: '4px' }}>{course.name}</h3>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--text-dim)', fontSize: '12px' }}>
-                                                    <MapPin size={12} />
-                                                    <span>{course.city} • {course.location}</span>
-                                                </div>
+                                    <div style={{ padding: '16px 20px' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: 'var(--text-dim)', fontWeight: '500' }}>
+                                                <MapPin size={14} color="var(--secondary)" />
+                                                <span>{course.city} • {course.location}</span>
                                             </div>
-                                            {/* Price removed as per user request */}
-                                        </div>
 
-                                        {course.available && (
-                                            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '15px' }}>
+                                            {course.available && (
                                                 <span style={{
-                                                    fontSize: '13px',
-                                                    fontWeight: '600',
+                                                    fontSize: '12px',
+                                                    fontWeight: '800',
                                                     color: 'var(--secondary)',
                                                     display: 'flex',
                                                     alignItems: 'center',
-                                                    gap: '5px'
+                                                    gap: '4px',
+                                                    textTransform: 'uppercase',
+                                                    letterSpacing: '0.5px'
                                                 }}>
-                                                    Ver Disponibilidad <ChevronRight size={16} />
+                                                    Reservar <ChevronRight size={14} />
                                                 </span>
-                                            </div>
-                                        )}
+                                            )}
+                                        </div>
                                     </div>
                                 </Card>
                             ))
