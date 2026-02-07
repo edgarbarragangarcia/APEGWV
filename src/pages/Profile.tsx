@@ -138,6 +138,19 @@ const Profile: React.FC = () => {
                                 <InfoRow icon={Mail} text={profile?.email} />
                                 <InfoRow icon={Phone} text={profile?.phone || 'No configurado'} />
                                 <InfoRow icon={MapPin} text={profile?.address || 'No configurada'} />
+
+                                <div style={{ height: '1px', background: 'rgba(255,255,255,0.05)', margin: '5px 0' }} />
+
+                                <ClickableInfoRow
+                                    icon={Settings}
+                                    label="Configuración del Sistema"
+                                    onClick={() => navigate('/settings')}
+                                />
+                                <ClickableInfoRow
+                                    icon={CreditCard}
+                                    label="Métodos de Pago"
+                                    onClick={() => navigate('/payment-methods')}
+                                />
                             </div>
                         </motion.div>
                     )}
@@ -145,14 +158,9 @@ const Profile: React.FC = () => {
 
                 {/* Main Menu - Flex container to fit screen */}
                 <div style={styles.menuContainer}>
-                    <MenuButton icon={Settings} label="Configuración del Sistema" onClick={() => navigate('/settings')} />
                     <MenuButton icon={Store} label="Mi Marketplace APEG" onClick={() => navigate('/my-store')} />
                     <MenuButton icon={Trophy} label="Mis Eventos Organizados" onClick={() => navigate('/my-events')} />
                     <MenuButton icon={Ticket} label="Mis Cupones" onClick={() => navigate('/my-coupons')} />
-                    <MenuButton icon={CreditCard} label="Métodos de Pago" onClick={() => navigate('/payment-methods')} />
-
-                    {/* Spacer to push Logout to bottom if space permits */}
-                    <div style={{ flex: 1 }} />
 
                     <button
                         onClick={handleLogout}
@@ -161,8 +169,11 @@ const Profile: React.FC = () => {
                         style={styles.logoutButton}
                     >
                         <LogOut size={16} strokeWidth={3} />
-                        <span>{loggingOut ? 'Saliendo...' : 'Cerrar Sesión'}</span>
+                        <span>{loggingOut ? 'SALIR' : 'CERRAR SESIÓN'}</span>
                     </button>
+
+                    {/* Spacer to maintain layout if needed */}
+                    <div style={{ flex: 1, minHeight: '20px' }} />
                 </div>
             </div>
         </div>
@@ -182,12 +193,34 @@ const MenuButton = ({ icon: Icon, label, onClick }: any) => (
 );
 
 const InfoRow = ({ icon: Icon, text }: any) => (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-        <Icon size={12} color="var(--text-dim)" />
-        <span style={{ fontSize: '11px', color: 'white', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '2px 0' }}>
+        <Icon size={14} color="var(--text-dim)" />
+        <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.8)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {text}
         </span>
     </div>
+);
+
+const ClickableInfoRow = ({ icon: Icon, label, onClick }: any) => (
+    <button
+        onClick={onClick}
+        style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            width: '100%',
+            padding: '8px 0',
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer'
+        }}
+    >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <Icon size={14} color="var(--secondary)" />
+            <span style={{ fontSize: '13px', fontWeight: '600', color: 'white' }}>{label}</span>
+        </div>
+        <ChevronRight size={14} color="var(--text-dim)" />
+    </button>
 );
 
 // --- Styles ---
@@ -219,7 +252,7 @@ const styles = {
     },
     profileHeader: {
         display: 'flex', flexDirection: 'column' as 'column', alignItems: 'center',
-        marginBottom: '5px', flexShrink: 0
+        marginBottom: '5px', marginTop: '30px', flexShrink: 0
     },
     avatarWrapper: {
         position: 'relative' as 'relative', marginBottom: '5px'
@@ -275,13 +308,20 @@ const styles = {
         gap: '8px', border: '1px solid rgba(255,255,255,0.03)'
     },
     logoutButton: {
-        marginTop: 'auto', padding: '14px', // Reduced from 16
+        marginTop: '15px',
+        marginBottom: '10px',
+        marginLeft: 'auto',
+        marginRight: 'auto',
+        padding: '12px 28px',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        gap: '10px', color: '#ff6b6b', width: '100%',
+        gap: '10px', color: '#ff6b6b',
+        width: 'fit-content', // Makes it look more round/pill
         border: '1px solid rgba(255, 107, 107, 0.2)',
-        background: 'rgba(255, 107, 107, 0.05)', borderRadius: '14px',
-        fontWeight: '900', fontSize: '12px',
-        textTransform: 'uppercase' as 'uppercase', letterSpacing: '1px'
+        background: 'rgba(255, 107, 107, 0.05)',
+        borderRadius: '30px', // Pill shape
+        fontWeight: '900', fontSize: '11px',
+        textTransform: 'uppercase' as 'uppercase',
+        letterSpacing: '1px'
     }
 };
 

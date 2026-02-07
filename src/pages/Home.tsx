@@ -141,18 +141,20 @@ const Home: React.FC = () => {
             <div style={{
                 position: 'absolute',
                 top: 'var(--header-offset-top)',
-                left: '20px',
-                right: '20px',
+                left: '0',
+                right: '0',
                 zIndex: 900,
                 background: 'transparent',
                 paddingBottom: '5px'
             }}>
-                <PageHeader
-                    noMargin
-                    showBack={false}
-                    title={`Hola, ${profile?.full_name?.split(' ')[0] || 'Golfista'}`}
-                    subtitle="¿Listo para tu próxima victoria en el campo?"
-                />
+                <div style={{ padding: '0 20px' }}>
+                    <PageHeader
+                        noMargin
+                        showBack={false}
+                        title={`Hola, ${profile?.full_name?.split(' ')[0] || 'Golfista'}`}
+                        subtitle="¿Listo para tu próxima victoria en el campo?"
+                    />
+                </div>
 
                 {/* Stats cards removed as per user request */}
 
@@ -167,8 +169,12 @@ const Home: React.FC = () => {
                         gap: '8px',
                         overflowX: 'auto',
                         paddingBottom: '8px',
+                        paddingLeft: '20px',
+                        paddingRight: '20px',
                         scrollbarWidth: 'none',
-                        width: '100%'
+                        width: '100%',
+                        WebkitMaskImage: 'linear-gradient(to right, transparent, black 20px, black calc(100% - 20px), transparent)',
+                        maskImage: 'linear-gradient(to right, transparent, black 20px, black calc(100% - 20px), transparent)'
                     }}>
                         {categories.map(tab => (
                             <button
@@ -209,13 +215,17 @@ const Home: React.FC = () => {
                         scrollSnapType: 'x mandatory',
                         WebkitOverflowScrolling: 'touch',
                         scrollbarWidth: 'none',
-                        msOverflowStyle: 'none'
+                        msOverflowStyle: 'none',
+                        WebkitMaskImage: 'linear-gradient(to right, transparent, black 20px, black calc(100% - 20px), transparent)',
+                        maskImage: 'linear-gradient(to right, transparent, black 20px, black calc(100% - 20px), transparent)'
                     }}
                 >
                     <div style={{
                         display: 'flex',
                         gap: '12px',
-                        paddingBottom: '8px'
+                        paddingBottom: '8px',
+                        paddingLeft: '20px',
+                        paddingRight: '20px'
                     }}>
                         {/* Featured Card 1 */}
                         <motion.div
