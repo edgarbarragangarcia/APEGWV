@@ -5,7 +5,7 @@ import PageHeader from '../components/PageHeader';
 import { supabase } from '../services/SupabaseManager';
 import { COLOMBIAN_COURSES } from '../data/courses';
 import PageHero from '../components/PageHero';
-import { motion, AnimatePresence } from 'framer-motion';
+// import { motion } from 'framer-motion';
 
 const PlayModeSelection: React.FC = () => {
     const navigate = useNavigate();
@@ -228,80 +228,83 @@ const PlayModeSelection: React.FC = () => {
                 flexDirection: 'column',
                 gap: '20px'
             }}>
-                {/* User Stats Dashboard */}
-                <AnimatePresence>
-                    {!isLoadingStats && stats && (
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            style={{
-                                background: 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%)',
-                                borderRadius: '32px',
-                                padding: '24px',
-                                border: '1px solid rgba(255,255,255,0.08)',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                gap: '20px'
-                            }}
-                        >
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                    <BarChart3 size={18} color="var(--secondary)" />
-                                    <span style={{ fontSize: '14px', fontWeight: '800', color: 'white', textTransform: 'uppercase', letterSpacing: '1px' }}>Dashboard Personal</span>
-                                </div>
-                                <div style={{ background: 'rgba(163, 230, 53, 0.1)', padding: '4px 12px', borderRadius: '100px', border: '1px solid rgba(163, 230, 53, 0.2)' }}>
-                                    <span style={{ fontSize: '12px', fontWeight: '700', color: 'var(--secondary)' }}>HCP: {stats.handicap || 'N/A'}</span>
-                                </div>
-                            </div>
+                {/* User Stats Dashboard - Fixed position with Skeleton */}
+                <div
+                    style={{
+                        background: 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%)',
+                        borderRadius: '32px',
+                        padding: '24px',
+                        border: '1px solid rgba(255,255,255,0.08)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '20px',
+                        minHeight: '135px'
+                    }}
+                >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <BarChart3 size={18} color="var(--secondary)" />
+                            <span style={{ fontSize: '14px', fontWeight: '800', color: 'white', textTransform: 'uppercase', letterSpacing: '1px' }}>Dashboard Personal</span>
+                        </div>
+                        <div style={{ background: 'rgba(163, 230, 53, 0.1)', padding: '4px 12px', borderRadius: '100px', border: '1px solid rgba(163, 230, 53, 0.2)' }}>
+                            <span style={{ fontSize: '12px', fontWeight: '700', color: 'var(--secondary)' }}>
+                                HCP: {isLoadingStats ? '...' : (stats?.handicap || 'N/A')}
+                            </span>
+                        </div>
+                    </div>
 
-                            {/* Stats Grid */}
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
-                                <div style={{ textAlign: 'center' }}>
-                                    <div style={{ fontSize: '20px', fontWeight: '900', color: 'white' }}>{stats.best_score || '--'}</div>
-                                    <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', fontWeight: '600', textTransform: 'uppercase' }}>Mejor Score</div>
-                                </div>
-                                <div style={{ textAlign: 'center', borderLeft: '1px solid rgba(255,255,255,0.05)', borderRight: '1px solid rgba(255,255,255,0.05)' }}>
-                                    <div style={{ fontSize: '20px', fontWeight: '900', color: 'white' }}>{stats.average_score || '--'}</div>
-                                    <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', fontWeight: '600', textTransform: 'uppercase' }}>Promedio</div>
-                                </div>
-                                <div style={{ textAlign: 'center' }}>
-                                    <div style={{ fontSize: '20px', fontWeight: '900', color: 'white' }}>{stats.total_rounds || '0'}</div>
-                                    <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', fontWeight: '600', textTransform: 'uppercase' }}>Rondas</div>
-                                </div>
+                    {/* Stats Grid */}
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
+                        <div style={{ textAlign: 'center' }}>
+                            <div style={{ fontSize: '20px', fontWeight: '900', color: 'white' }}>
+                                {isLoadingStats ? '--' : (stats?.best_score || '--')}
                             </div>
+                            <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', fontWeight: '600', textTransform: 'uppercase' }}>Mejor Score</div>
+                        </div>
+                        <div style={{ textAlign: 'center', borderLeft: '1px solid rgba(255,255,255,0.05)', borderRight: '1px solid rgba(255,255,255,0.05)' }}>
+                            <div style={{ fontSize: '20px', fontWeight: '900', color: 'white' }}>
+                                {isLoadingStats ? '--' : (stats?.average_score || '--')}
+                            </div>
+                            <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', fontWeight: '600', textTransform: 'uppercase' }}>Promedio</div>
+                        </div>
+                        <div style={{ textAlign: 'center' }}>
+                            <div style={{ fontSize: '20px', fontWeight: '900', color: 'white' }}>
+                                {isLoadingStats ? '0' : (stats?.total_rounds || '0')}
+                            </div>
+                            <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', fontWeight: '600', textTransform: 'uppercase' }}>Rondas</div>
+                        </div>
+                    </div>
 
-                            {/* Recent Rounds Mini List */}
-                            {recentRounds.length > 0 && (
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '4px' }}>
-                                    <div style={{ fontSize: '11px', fontWeight: '700', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>Últimos Juegos</div>
-                                    {recentRounds.map((round) => {
-                                        const course = COLOMBIAN_COURSES.find(c => c.id === round.course_id);
-                                        return (
-                                            <div key={round.id} style={{
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'space-between',
-                                                padding: '12px 16px',
-                                                background: 'rgba(255,255,255,0.03)',
-                                                borderRadius: '16px',
-                                                border: '1px solid rgba(255,255,255,0.05)'
-                                            }}>
-                                                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                                                    <span style={{ fontSize: '13px', fontWeight: '700', color: 'white' }}>{course?.name || 'Campo desconocido'}</span>
-                                                    <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>{new Date(round.date).toLocaleDateString()}</span>
-                                                </div>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                    <span style={{ fontSize: '16px', fontWeight: '900', color: 'var(--secondary)' }}>{round.score}</span>
-                                                    <ChevronRight size={14} color="rgba(255,255,255,0.2)" />
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            )}
-                        </motion.div>
+                    {/* Recent Rounds Mini List - Only shows when loaded and has data */}
+                    {!isLoadingStats && recentRounds.length > 0 && (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '4px' }}>
+                            <div style={{ fontSize: '11px', fontWeight: '700', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>Últimos Juegos</div>
+                            {recentRounds.map((round) => {
+                                const course = COLOMBIAN_COURSES.find(c => c.id === round.course_id);
+                                return (
+                                    <div key={round.id} style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'space-between',
+                                        padding: '12px 16px',
+                                        background: 'rgba(255,255,255,0.03)',
+                                        borderRadius: '16px',
+                                        border: '1px solid rgba(255,255,255,0.05)'
+                                    }}>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                                            <span style={{ fontSize: '13px', fontWeight: '700', color: 'white' }}>{course?.name || 'Campo desconocido'}</span>
+                                            <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>{new Date(round.date).toLocaleDateString()}</span>
+                                        </div>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            <span style={{ fontSize: '16px', fontWeight: '900', color: 'var(--secondary)' }}>{round.score}</span>
+                                            <ChevronRight size={14} color="rgba(255,255,255,0.2)" />
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
                     )}
-                </AnimatePresence>
+                </div>
 
                 {/* Mode Title Separator */}
                 <div style={{ fontSize: '12px', fontWeight: '800', color: 'rgba(255,255,255,0.2)', textTransform: 'uppercase', letterSpacing: '2px', marginLeft: '4px', marginTop: '10px' }}>Selecciona tu modo</div>
@@ -380,9 +383,9 @@ const PlayModeSelection: React.FC = () => {
                                     }} />
 
                                     <div style={{
-                                        width: '64px',
-                                        height: '64px',
-                                        borderRadius: '20px',
+                                        width: '48px',
+                                        height: '48px',
+                                        borderRadius: '14px',
                                         background: 'rgba(255,255,255,0.03)',
                                         border: '1px solid rgba(255,255,255,0.1)',
                                         display: 'flex',
@@ -391,24 +394,24 @@ const PlayModeSelection: React.FC = () => {
                                         position: 'relative',
                                         zIndex: 1
                                     }}>
-                                        <mode.icon size={30} color={mode.color} strokeWidth={2} />
+                                        <mode.icon size={22} color={mode.color} strokeWidth={2.5} />
                                     </div>
 
                                     <div style={{ position: 'relative', zIndex: 1 }}>
                                         <h3 style={{
-                                            fontSize: '24px',
+                                            fontSize: '22px',
                                             fontWeight: '900',
                                             color: 'white',
-                                            marginBottom: '6px',
-                                            letterSpacing: '-0.025em'
+                                            marginBottom: '4px',
+                                            letterSpacing: '-0.02em'
                                         }}>
                                             {mode.title}
                                         </h3>
                                         <p style={{
-                                            fontSize: '15px',
+                                            fontSize: '14px',
                                             color: 'rgba(255,255,255,0.5)',
-                                            lineHeight: '1.4',
-                                            maxWidth: '90%',
+                                            lineHeight: '1.5',
+                                            maxWidth: '94%',
                                             fontWeight: '400'
                                         }}>
                                             {mode.description}
@@ -418,14 +421,24 @@ const PlayModeSelection: React.FC = () => {
                                     <div style={{
                                         display: 'flex',
                                         alignItems: 'center',
-                                        gap: '6px',
-                                        color: 'white',
-                                        fontSize: '13px',
-                                        fontWeight: '700',
-                                        marginTop: '8px',
+                                        justifyContent: 'space-between',
+                                        marginTop: '10px',
                                         zIndex: 1
                                     }}>
-                                        Explorar <ChevronRight size={16} strokeWidth={3} />
+                                        <div style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '6px',
+                                            background: 'rgba(255,255,255,0.05)',
+                                            padding: '6px 14px',
+                                            borderRadius: '100px',
+                                            color: 'white',
+                                            fontSize: '12px',
+                                            fontWeight: '700',
+                                            border: '1px solid rgba(255,255,255,0.05)'
+                                        }}>
+                                            Explorar <ChevronRight size={14} strokeWidth={3} />
+                                        </div>
                                     </div>
                                 </div>
                             </div>
