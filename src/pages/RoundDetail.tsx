@@ -142,7 +142,7 @@ const RoundDetail: React.FC = () => {
             background: 'var(--primary)',
             zIndex: 501
         }}>
-            <PageHero image="https://images.unsplash.com/photo-1596733430284-f7437764b1a9?q=80&w=2070&auto=format&fit=crop" />
+            <PageHero image="https://images.unsplash.com/photo-1535131749006-b7f58c99034b?q=80&w=2070&auto=format&fit=crop" />
             {/* Header Fijo */}
             <div style={{
                 position: 'absolute',
@@ -150,7 +150,7 @@ const RoundDetail: React.FC = () => {
                 left: '0',
                 right: '0',
                 width: '100%',
-                zIndex: 900,
+                zIndex: 1100,
                 background: 'transparent',
                 paddingLeft: '20px',
                 paddingRight: '20px',
@@ -160,7 +160,7 @@ const RoundDetail: React.FC = () => {
                     noMargin
                     title={round.course_name}
                     subtitle={`${round.course_location || ''} • ${new Date(round.date_played).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}`}
-                    onBack={() => navigate('/rounds')}
+                    onBack={() => navigate(-1)}
                 />
             </div>
 
