@@ -181,7 +181,9 @@ const CourseReservation: React.FC = () => {
         <div className="animate-fade" style={{
             overflow: 'hidden',
             background: 'var(--primary)',
-            zIndex: 900
+            zIndex: 900,
+            position: 'fixed',
+            inset: 0
         }}>
             <PageHero />
             {/* Header Fijo */}
