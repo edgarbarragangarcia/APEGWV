@@ -131,12 +131,11 @@ const PlayModeSelection: React.FC = () => {
 
                 if (profile) setStats(profile);
 
-                // Fetch Recent Rounds
                 const { data: rounds } = await supabase
                     .from('rounds')
-                    .select('id, course_id, score, date, status')
+                    .select('id, course_name, total_score, date_played, status')
                     .eq('user_id', user.id)
-                    .order('date', { ascending: false })
+                    .order('date_played', { ascending: false })
                     .limit(3);
 
                 if (rounds) setRecentRounds(rounds);
@@ -188,10 +187,9 @@ const PlayModeSelection: React.FC = () => {
             maxWidth: 'var(--app-max-width)',
             margin: '0 auto',
             overflow: 'hidden',
-            background: 'var(--primary)',
             zIndex: 500
         }} className="animate-fade">
-            <PageHero image="https://images.unsplash.com/photo-1596733430284-f7437764b1a9?q=80&w=2070&auto=format&fit=crop" />
+            <PageHero image="/images/briceno18.png" />
 
             {/* Header Fijo */}
             <div style={{
@@ -217,7 +215,7 @@ const PlayModeSelection: React.FC = () => {
             {/* Area de Contenido - Flexbox Vertical sin Scroll */}
             <div style={{
                 position: 'absolute',
-                top: 'calc(var(--header-offset-top) + 20px)',
+                top: 'calc(var(--header-offset-top) + 90px)',
                 left: '0',
                 right: '0',
                 bottom: 'calc(var(--nav-height) + 10px)',
@@ -284,7 +282,6 @@ const PlayModeSelection: React.FC = () => {
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '4px' }}>
                             <div style={{ fontSize: '11px', fontWeight: '700', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>Últimos Juegos</div>
                             {recentRounds.map((round) => {
-                                const course = COLOMBIAN_COURSES.find(c => c.id === round.course_id);
                                 return (
                                     <div key={round.id} style={{
                                         display: 'flex',
@@ -296,11 +293,11 @@ const PlayModeSelection: React.FC = () => {
                                         border: '1px solid rgba(255,255,255,0.05)'
                                     }}>
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                                            <span style={{ fontSize: '13px', fontWeight: '700', color: 'white' }}>{course?.name || 'Campo desconocido'}</span>
-                                            <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>{new Date(round.date).toLocaleDateString()}</span>
+                                            <span style={{ fontSize: '13px', fontWeight: '700', color: 'white' }}>{round.course_name || 'Campo desconocido'}</span>
+                                            <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>{new Date(round.date_played).toLocaleDateString()}</span>
                                         </div>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                            <span style={{ fontSize: '16px', fontWeight: '900', color: 'var(--secondary)' }}>{round.score}</span>
+                                            <span style={{ fontSize: '16px', fontWeight: '900', color: 'var(--secondary)' }}>{round.total_score}</span>
                                             <ChevronRight size={14} color="rgba(255,255,255,0.2)" />
                                         </div>
                                     </div>
@@ -326,7 +323,7 @@ const PlayModeSelection: React.FC = () => {
                                 key={mode.id}
                                 onClick={() => navigate(mode.path)}
                                 style={{
-                                    flex: 1, // Llenar espacio disponible
+                                    flex: '0 0 auto', // No expandir, usar altura de contenido
                                     position: 'relative',
                                     borderRadius: '28px',
                                     padding: '2px', // This creates the "border width"
@@ -361,11 +358,11 @@ const PlayModeSelection: React.FC = () => {
                                     height: '100%',
                                     background: 'rgba(10, 25, 15, 0.95)',
                                     borderRadius: '26px',
-                                    padding: '20px',
+                                    padding: '16px',
                                     display: 'flex',
                                     flexDirection: 'column',
                                     justifyContent: 'space-between',
-                                    gap: '10px',
+                                    gap: '4px',
                                     backdropFilter: 'blur(20px)'
                                 }}>
                                     {/* Static Silver Inner Border for extra sharpness */}
@@ -377,10 +374,10 @@ const PlayModeSelection: React.FC = () => {
                                         pointerEvents: 'none'
                                     }} />
 
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                                         <div style={{
-                                            width: '38px',
-                                            height: '38px',
+                                            width: '32px',
+                                            height: '32px',
                                             borderRadius: '10px',
                                             background: 'rgba(255,255,255,0.03)',
                                             border: '1px solid rgba(255,255,255,0.1)',
@@ -390,24 +387,24 @@ const PlayModeSelection: React.FC = () => {
                                             position: 'relative',
                                             zIndex: 1
                                         }}>
-                                            <mode.icon size={18} color={mode.color} strokeWidth={2.5} />
+                                            <mode.icon size={16} color={mode.color} strokeWidth={2.5} />
                                         </div>
 
                                         <div style={{ position: 'relative', zIndex: 1 }}>
                                             <h3 style={{
-                                                fontSize: '18px',
+                                                fontSize: '16px',
                                                 fontWeight: '900',
                                                 color: 'white',
-                                                marginBottom: '4px',
+                                                marginBottom: '2px',
                                                 letterSpacing: '-0.02em',
                                                 lineHeight: '1.2'
                                             }}>
                                                 {mode.title}
                                             </h3>
                                             <p style={{
-                                                fontSize: '13px',
+                                                fontSize: '11px',
                                                 color: 'rgba(255,255,255,0.5)',
-                                                lineHeight: '1.4',
+                                                lineHeight: '1.3',
                                                 maxWidth: '100%',
                                                 fontWeight: '400'
                                             }}>
@@ -420,21 +417,22 @@ const PlayModeSelection: React.FC = () => {
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'flex-start',
-                                        zIndex: 1
+                                        zIndex: 1,
+                                        marginTop: '4px'
                                     }}>
                                         <div style={{
                                             display: 'flex',
                                             alignItems: 'center',
                                             gap: '6px',
                                             background: 'rgba(255,255,255,0.08)',
-                                            padding: '6px 14px',
+                                            padding: '4px 10px',
                                             borderRadius: '100px',
                                             color: 'white',
-                                            fontSize: '11px',
+                                            fontSize: '10px',
                                             fontWeight: '700',
                                             border: '1px solid rgba(255,255,255,0.05)'
                                         }}>
-                                            Explorar <ChevronRight size={12} strokeWidth={3} />
+                                            Explorar <ChevronRight size={10} strokeWidth={3} />
                                         </div>
                                     </div>
                                 </div>

@@ -199,7 +199,6 @@ const Tournaments: React.FC = () => {
                 width: '100%',
                 zIndex: 900,
                 background: 'transparent',
-                paddingBottom: '20px',
                 paddingLeft: '20px',
                 paddingRight: '20px',
                 pointerEvents: 'auto'
@@ -292,7 +291,7 @@ const Tournaments: React.FC = () => {
             {/* Scrollable Content Area */}
             <div style={{
                 position: 'absolute',
-                top: 'calc(var(--header-offset-top) + 210px)',
+                top: 'calc(var(--header-offset-top) + 190px)',
                 left: '0',
                 right: '0',
                 bottom: 'var(--nav-height)',

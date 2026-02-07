@@ -157,7 +157,7 @@ const MyStore: React.FC = () => {
         try {
             const { data: userOrders, error } = await supabase
                 .from('orders')
-                .select('id, created_at, status, total_amount, tracking_number, tracking_provider, product:products!orders_product_id_fkey(name, image_url), buyer:profiles!orders_buyer_id_fkey(full_name, id_photo_url, phone)')
+                .select('id, created_at, status, total_amount, tracking_number, product:products!orders_product_id_fkey(name, image_url), buyer:profiles!orders_buyer_id_fkey(full_name, id_photo_url, phone)')
                 .eq('seller_id', userId)
                 .order('created_at', { ascending: false });
 
@@ -186,7 +186,7 @@ const MyStore: React.FC = () => {
         try {
             const { data: userOffers, error: offersError } = await supabase
                 .from('offers')
-                .select('id, created_at, status, amount, buyer_id, product:products(id, name, image_url, price)')
+                .select('id, created_at, status, buyer_id, product:products(id, name, image_url, price)')
 
                 .eq('seller_id', userId)
                 .order('created_at', { ascending: false });
@@ -557,14 +557,13 @@ const MyStore: React.FC = () => {
                 .from('orders')
                 .update({
                     tracking_number: trackingNum,
-                    tracking_provider: provider,
                     status: 'Enviado',
                     updated_at: new Date().toISOString()
                 })
                 .eq('id', orderId);
 
             if (error) throw error;
-            setOrders(orders.map(o => o.id === orderId ? { ...o, tracking_number: trackingNum, tracking_provider: provider, status: 'Enviado' } : o));
+            setOrders(orders.map(o => o.id === orderId ? { ...o, tracking_number: trackingNum, status: 'Enviado' } : o));
             setEditingTrackingId(null);
         } catch (err) {
             console.error('Error updating tracking:', err);
