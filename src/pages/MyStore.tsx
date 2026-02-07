@@ -130,7 +130,7 @@ const MyStore: React.FC = () => {
         }));
     };
 
-    const categories = ['Ropa', 'Accesorios', 'Bolas', 'Zapatos', 'Grips', 'Otros'];
+    const categories = ['Ropa', 'Accesorios', 'Bolas', 'Zapatos', 'Palos', 'Guantes', 'Gorras', 'Otros'];
 
     const handleScanComplete = (trackingNumber: string, provider?: string) => {
         if (scanningOrderId) {

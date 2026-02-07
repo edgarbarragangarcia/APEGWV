@@ -214,31 +214,31 @@ const PlayModeSelection: React.FC = () => {
                 />
             </div>
 
-            {/* Area de Scroll */}
+            {/* Area de Contenido - Flexbox Vertical sin Scroll */}
             <div style={{
                 position: 'absolute',
-                top: 'calc(var(--header-offset-top) + 80px)',
+                top: 'calc(var(--header-offset-top) + 20px)',
                 left: '0',
                 right: '0',
-                bottom: 'calc(var(--nav-height))',
-                overflowY: 'auto',
-                overflowX: 'hidden',
-                padding: '0 20px 40px 20px',
+                bottom: 'calc(var(--nav-height) + 10px)',
+                overflow: 'hidden', // NO SCROLL
+                padding: '0 20px 20px 20px',
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '24px'
+                gap: '16px'
             }}>
                 {/* User Stats Dashboard - Fixed position with Skeleton */}
                 <div
                     style={{
+                        flexShrink: 0, // No encoger el dashboard
                         background: 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%)',
                         borderRadius: '32px',
                         padding: '24px',
                         border: '1px solid rgba(255,255,255,0.08)',
                         display: 'flex',
                         flexDirection: 'column',
-                        gap: '20px',
-                        minHeight: '135px'
+                        gap: '16px',
+                        minHeight: 'auto'
                     }}
                 >
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -311,7 +311,7 @@ const PlayModeSelection: React.FC = () => {
                 </div>
 
                 {/* Mode Title Separator */}
-                <div style={{ fontSize: '11px', fontWeight: '800', color: 'rgba(255,255,255,0.2)', textTransform: 'uppercase', letterSpacing: '2px', marginLeft: '4px' }}>Selecciona tu modo</div>
+                <div style={{ flexShrink: 0, fontSize: '11px', fontWeight: '800', color: 'rgba(255,255,255,0.2)', textTransform: 'uppercase', letterSpacing: '2px', marginLeft: '4px' }}>Selecciona tu modo</div>
 
                 {hasActiveRound ? (
                     // Redirecting...
@@ -320,17 +320,13 @@ const PlayModeSelection: React.FC = () => {
                     </div>
                 ) : (
                     // UI normal de selección de modo con Grid Responsivo
-                    <div style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-                        gap: '20px',
-                        width: '100%'
-                    }}>
+                    <div className="play-mode-grid">
                         {modes.map((mode) => (
                             <div
                                 key={mode.id}
                                 onClick={() => navigate(mode.path)}
                                 style={{
+                                    flex: 1, // Llenar espacio disponible
                                     position: 'relative',
                                     borderRadius: '32px',
                                     padding: '2px', // This creates the "border width"
@@ -340,7 +336,8 @@ const PlayModeSelection: React.FC = () => {
                                     alignItems: 'stretch',
                                     justifyContent: 'stretch',
                                     cursor: 'pointer',
-                                    transition: 'all 0.3s ease'
+                                    transition: 'all 0.3s ease',
+                                    minHeight: '0' // Permitir encogimiento flex
                                 }}
                                 className="active:scale-[0.97]"
                             >

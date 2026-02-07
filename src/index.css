@@ -308,11 +308,27 @@ button:active {
   animation: fadeUp 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
 }
 
+/* Play Mode Grid Utility */
+.play-mode-grid {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: 15px;
+  min-height: 0;
+}
+
 @media (min-width: 768px) {
   .page-content {
     padding-bottom: 40px;
     padding-left: calc(260px);
     /* Sidebar width on desktop */
+  }
+
+  .play-mode-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    flex: none;
+    height: 100%;
   }
 }
 

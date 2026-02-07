@@ -7,10 +7,9 @@ interface CategoryHeroProps {
     title: string;
     subtitle: string;
     image: string;
-    productCount?: number;
 }
 
-const CategoryHero: React.FC<CategoryHeroProps> = ({ title, subtitle, image, productCount }) => {
+const CategoryHero: React.FC<CategoryHeroProps> = ({ title, subtitle, image }) => {
     const navigate = useNavigate();
 
     return (
@@ -95,23 +94,7 @@ const CategoryHero: React.FC<CategoryHeroProps> = ({ title, subtitle, image, pro
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2 }}
                 >
-                    {productCount !== undefined && (
-                        <span style={{
-                            display: 'inline-block',
-                            background: 'var(--secondary)',
-                            color: 'var(--primary)',
-                            padding: '4px 12px',
-                            borderRadius: '100px',
-                            fontSize: '10px',
-                            fontWeight: '900',
-                            textTransform: 'uppercase',
-                            letterSpacing: '1px',
-                            marginBottom: '10px',
-                            boxShadow: '0 4px 15px rgba(163, 230, 53, 0.4)'
-                        }}>
-                            {productCount} {productCount === 1 ? 'Producto' : 'Productos'}
-                        </span>
-                    )}
+
                     <h1 style={{
                         fontSize: '48px',
                         fontWeight: '900',
