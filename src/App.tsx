@@ -1,3 +1,4 @@
+// Trigger redeploy: 2026-02-07T01:19:30
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Navbar from './components/Navbar';
