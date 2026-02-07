@@ -67,7 +67,10 @@ export const useCategories = () => {
             if (error) throw error;
 
             // Get unique categories, capitalize first letter, and sort
-            const uniqueCategories = Array.from(new Set(data.map(p => p.category)))
+            const uniqueCategories = Array.from(new Set(data
+                .map(p => p.category)
+                .filter((cat): cat is string => cat !== null))
+            )
                 .map(cat => cat.charAt(0).toUpperCase() + cat.slice(1).toLowerCase())
                 .sort();
 

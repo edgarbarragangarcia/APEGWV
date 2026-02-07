@@ -13,7 +13,7 @@ export interface Profile {
     email: string | null;
     phone: string | null;
     address: string | null;
-    updated_at: string | null;
+    updated_at: string;
     // Add other fields as necessary
 }
 

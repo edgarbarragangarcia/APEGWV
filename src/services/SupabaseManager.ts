@@ -19,15 +19,15 @@ export interface UserProfile {
 export interface Product {
     id: string;
     name: string;
-    description: string;
+    description: string | null;
     price: number;
-    category: string;
-    image_url: string;
+    category: string | null;
+    image_url: string | null;
     seller_id?: string | null;
-    condition: string;
+    condition?: string;
     created_at?: string | null;
     status?: string | null;
-    is_negotiable?: boolean;
+    is_negotiable?: boolean | null;
     negotiating_buyer_id?: string | null;
     negotiation_expires_at?: string | null;
 }

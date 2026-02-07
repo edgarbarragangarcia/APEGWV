@@ -1155,7 +1155,7 @@ const Home: React.FC = () => {
                                                                 product_id: selectedProduct.id,
                                                                 buyer_id: user?.id,
                                                                 seller_id: selectedProduct.seller_id,
-                                                                amount: parseFloat(offerAmount),
+                                                                offer_amount: parseFloat(offerAmount),
                                                                 status: 'pending'
                                                             }]);
                                                         if (error) throw error;

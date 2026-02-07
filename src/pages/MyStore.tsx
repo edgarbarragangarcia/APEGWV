@@ -20,7 +20,7 @@ import type { Database } from '../types/database.types';
 
 type SellerProfile = Database['public']['Tables']['seller_profiles']['Row'];
 type Product = Database['public']['Tables']['products']['Row'];
-type Order = Pick<Database['public']['Tables']['orders']['Row'], 'id' | 'created_at' | 'status' | 'total_amount' | 'tracking_number' | 'tracking_provider'> & {
+type Order = Pick<Database['public']['Tables']['orders']['Row'], 'id' | 'created_at' | 'status' | 'total_amount' | 'tracking_number' | 'shipping_provider'> & {
     seller_net_amount?: number;
     shipping_address?: string;
     buyer_name?: string;
@@ -28,7 +28,7 @@ type Order = Pick<Database['public']['Tables']['orders']['Row'], 'id' | 'created
     product: { name: string; image_url: string | null } | null;
     buyer: { full_name: string | null; id_photo_url: string | null; phone: string | null } | null;
 };
-type Offer = Pick<Database['public']['Tables']['offers']['Row'], 'id' | 'created_at' | 'status' | 'amount'> & {
+type Offer = Pick<Database['public']['Tables']['offers']['Row'], 'id' | 'created_at' | 'status' | 'offer_amount'> & {
     message?: string;
     buyer_id: string;
     counter_amount?: number;
@@ -159,7 +159,7 @@ const MyStore: React.FC = () => {
         try {
             const { data: userOrders, error } = await supabase
                 .from('orders')
-                .select('id, created_at, status, total_amount, tracking_number, product:products!orders_product_id_fkey(name, image_url), buyer:profiles!orders_buyer_id_fkey(full_name, id_photo_url, phone)')
+                .select('id, created_at, status, total_amount, tracking_number, shipping_provider, product:products!orders_product_id_fkey(name, image_url), buyer:profiles!orders_buyer_id_fkey(full_name, id_photo_url, phone)')
                 .eq('seller_id', userId)
                 .order('created_at', { ascending: false });
 
@@ -188,7 +188,7 @@ const MyStore: React.FC = () => {
         try {
             const { data: userOffers, error: offersError } = await supabase
                 .from('offers')
-                .select('id, created_at, status, buyer_id, product:products(id, name, image_url, price)')
+                .select('id, created_at, status, buyer_id, offer_amount, message, counter_amount, counter_message, product:products(id, name, image_url, price)')
 
                 .eq('seller_id', userId)
                 .order('created_at', { ascending: false });
@@ -578,13 +578,14 @@ const MyStore: React.FC = () => {
                 .from('orders')
                 .update({
                     tracking_number: trackingNum,
+                    shipping_provider: provider,
                     status: 'Enviado',
                     updated_at: new Date().toISOString()
                 })
                 .eq('id', orderId);
 
             if (error) throw error;
-            setOrders(orders.map(o => o.id === orderId ? { ...o, tracking_number: trackingNum, status: 'Enviado' } : o));
+            setOrders(orders.map(o => o.id === orderId ? { ...o, tracking_number: trackingNum, shipping_provider: provider, status: 'Enviado' } : o));
             setEditingTrackingId(null);
         } catch (err) {
             console.error('Error updating tracking:', err);
@@ -1557,7 +1558,7 @@ const MyStore: React.FC = () => {
                                                     <input
                                                         id={`provider-${order.id}`}
                                                         placeholder="Transportadora (Servientrega, Coordinadora...)"
-                                                        defaultValue={order.tracking_provider || ''}
+                                                        defaultValue={order.shipping_provider || ''}
                                                         style={{ width: '100%', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '12px', fontSize: '13px', color: 'white', outline: 'none' }}
                                                     />
                                                     <div style={{ display: 'flex', gap: '8px' }}>
@@ -1653,7 +1654,7 @@ const MyStore: React.FC = () => {
                                                     </div>
                                                     <div>
                                                         <p style={{ fontWeight: '800', color: '#10b981', fontSize: '14px' }}>Producto Enviado</p>
-                                                        <p style={{ fontSize: '12px', color: 'var(--text-dim)', fontWeight: '500' }}>{order.tracking_provider} • {order.tracking_number}</p>
+                                                        <p style={{ fontSize: '12px', color: 'var(--text-dim)', fontWeight: '500' }}>{order.shipping_provider} • {order.tracking_number}</p>
                                                     </div>
                                                 </div>
                                                 <button
@@ -1732,13 +1733,13 @@ const MyStore: React.FC = () => {
                                                 <h4 style={{ fontSize: '15px', fontWeight: '800', marginBottom: '6px' }}>{offer.product?.name}</h4>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                                                     <p style={{ fontSize: '18px', color: 'var(--secondary)', fontWeight: '900' }}>
-                                                        {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(offer.amount || 0)}
+                                                        {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(offer.offer_amount || 0)}
                                                     </p>
                                                     <p style={{ fontSize: '12px', color: 'var(--text-dim)', textDecoration: 'line-through', fontWeight: '600' }}>
                                                         {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(offer.product?.price || 0)}
                                                     </p>
                                                     <span style={{ fontSize: '10px', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', padding: '2px 6px', borderRadius: '4px', fontWeight: '800' }}>
-                                                        -{Math.round((1 - (offer.amount || 0) / (offer.product?.price || 1)) * 100)}%
+                                                        -{Math.round((1 - (offer.offer_amount || 0) / (offer.product?.price || 1)) * 100)}%
                                                     </span>
                                                 </div>
                                             </div>
@@ -1786,7 +1787,7 @@ const MyStore: React.FC = () => {
                                                         <button
                                                             onClick={() => {
                                                                 setSelectedOfferForCounter(offer);
-                                                                setCounterAmount(offer.amount.toString());
+                                                                setCounterAmount(offer.offer_amount.toString());
                                                                 setCounterMessage('');
                                                                 setShowCounterModal(true);
                                                             }}
@@ -2412,7 +2413,7 @@ const MyStore: React.FC = () => {
                             <div style={{ display: 'flex', background: 'rgba(255,255,255,0.03)', padding: '16px', borderRadius: '20px', marginBottom: '24px', gap: '16px', alignItems: 'center' }}>
                                 <div style={{ flex: 1 }}>
                                     <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)', fontWeight: '700', textTransform: 'uppercase' }}>Oferta Actual</span>
-                                    <div style={{ fontSize: '20px', fontWeight: '800', color: 'white' }}>${(selectedOfferForCounter?.amount || 0).toLocaleString()}</div>
+                                    <div style={{ fontSize: '20px', fontWeight: '800', color: 'white' }}>${(selectedOfferForCounter?.offer_amount || 0).toLocaleString()}</div>
                                 </div>
                                 <div style={{ width: '1px', height: '30px', background: 'rgba(255,255,255,0.1)' }} />
                                 <div style={{ flex: 1 }}>
