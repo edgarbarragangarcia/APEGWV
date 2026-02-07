@@ -126,7 +126,9 @@ const RoundDetail: React.FC = () => {
     }
 
     const totalPar = holes.reduce((sum, h) => sum + h.par, 0);
-    const scoreToPar = round.total_score - totalPar;
+    const calculatedScore = holes.reduce((acc, h) => acc + (h.score || 0), 0);
+    const displayScore = round.total_score > 0 ? round.total_score : calculatedScore;
+    const scoreToPar = displayScore - totalPar;
 
     return (
         <div className="animate-fade" style={{
@@ -180,7 +182,7 @@ const RoundDetail: React.FC = () => {
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', marginBottom: '20px' }}>
                     <Card style={{ marginBottom: 0, padding: '15px', textAlign: 'center' }}>
                         <div style={{ fontSize: '10px', color: 'var(--text-dim)', textTransform: 'uppercase', marginBottom: '5px' }}>Score Total</div>
-                        <div style={{ fontSize: '24px', fontWeight: '800', color: 'var(--secondary)' }}>{round.total_score}</div>
+                        <div style={{ fontSize: '24px', fontWeight: '800', color: 'var(--secondary)' }}>{displayScore}</div>
                         {totalPar > 0 && (
                             <div style={{ fontSize: '11px', color: scoreToPar > 0 ? '#ef4444' : '#10b981' }}>
                                 {scoreToPar > 0 ? '+' : ''}{scoreToPar} vs Par

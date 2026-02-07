@@ -20,6 +20,10 @@ const PlayModeSelection: React.FC = () => {
         const saved = localStorage.getItem('cache_recent_rounds');
         return saved ? JSON.parse(saved) : [];
     });
+    const [totalRoundsCount, setTotalRoundsCount] = React.useState<number>(() => {
+        const saved = localStorage.getItem('cache_total_rounds_count');
+        return saved ? parseInt(saved) : 0;
+    });
 
     const [isLoadingStats, setIsLoadingStats] = React.useState(!stats);
     const [selectedRound, setSelectedRound] = React.useState<any>(null);
@@ -156,6 +160,17 @@ const PlayModeSelection: React.FC = () => {
                 if (rounds) {
                     setRecentRounds(rounds);
                     localStorage.setItem('cache_recent_rounds', JSON.stringify(rounds));
+                }
+
+                // Fetch total rounds count directly from DB for accuracy
+                const { count, error: countError } = await supabase
+                    .from('rounds')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('user_id', user.id);
+
+                if (!countError && count !== null) {
+                    setTotalRoundsCount(count);
+                    localStorage.setItem('cache_total_rounds_count', count.toString());
                 }
             } catch (err) {
                 console.error('Error fetching dashboard data:', err);
@@ -306,7 +321,7 @@ const PlayModeSelection: React.FC = () => {
                             }}
                         >
                             <div style={{ fontSize: '16px', fontWeight: '900', color: recentRounds.length > 0 ? 'var(--secondary)' : 'white' }}>
-                                {isLoadingStats ? '--' : (stats?.total_rounds || '--')}
+                                {isLoadingStats ? '--' : (totalRoundsCount || '--')}
                             </div>
                             <div style={{ fontSize: '8px', color: recentRounds.length > 0 ? 'var(--secondary)' : 'rgba(255,255,255,0.4)', fontWeight: '600', textTransform: 'uppercase', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
                                 Rondas {recentRounds.length > 0 && (
