@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import { supabase, optimizeImage } from '../services/SupabaseManager';
 import { useProfile } from '../hooks/useProfile';
 import { useFeaturedProducts, useUpcomingTournaments } from '../hooks/useHomeData';
+import { useLikes } from '../hooks/useLikes';
 import PageHeader from '../components/PageHeader';
 import { useCart } from '../context/CartContext';
 import PageHero from '../components/PageHero';
@@ -32,6 +33,7 @@ const Home: React.FC = () => {
     const [addingToCart, setAddingToCart] = React.useState<string | null>(null);
     const [buying, setBuying] = React.useState(false);
     const [myOffers, setMyOffers] = React.useState<any[]>([]);
+    const { likedProducts, toggleLike } = useLikes();
 
 
     // Fetch profile and initial data
@@ -542,20 +544,33 @@ const Home: React.FC = () => {
                                                 zIndex: 1
                                             }} />
 
-                                            <div style={{
-                                                position: 'absolute',
-                                                top: '8px',
-                                                right: '8px',
-                                                background: 'rgba(0,0,0,0.3)',
-                                                backdropFilter: 'blur(12px)',
-                                                borderRadius: '50%',
-                                                padding: '6px',
-                                                display: 'flex',
-                                                border: '1px solid rgba(255,255,255,0.15)',
-                                                zIndex: 2
-                                            }}>
-                                                <Heart size={12} color="white" strokeWidth={2.5} />
-                                            </div>
+                                            <motion.div
+                                                whileTap={{ scale: 1.2 }}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    toggleLike(product.id);
+                                                }}
+                                                style={{
+                                                    position: 'absolute',
+                                                    top: '8px',
+                                                    right: '8px',
+                                                    background: 'rgba(0,0,0,0.3)',
+                                                    backdropFilter: 'blur(12px)',
+                                                    borderRadius: '50%',
+                                                    padding: '6px',
+                                                    zIndex: 2,
+                                                    border: '1px solid rgba(255,255,255,0.1)',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center'
+                                                }}
+                                            >
+                                                <Heart
+                                                    size={12}
+                                                    color={likedProducts.has(product.id) ? '#ef4444' : 'white'}
+                                                    fill={likedProducts.has(product.id) ? '#ef4444' : 'none'}
+                                                />
+                                            </motion.div>
 
                                             {/* Floating Info for Big Cards */}
                                             {isBig && (
@@ -778,14 +793,14 @@ const Home: React.FC = () => {
                             }}>
                                 <div style={{
                                     position: 'relative',
-                                    height: '50vh',
+                                    height: '60vh',
                                     width: '100%',
                                     flexShrink: 0,
                                     background: 'linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%)',
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
-                                    padding: '20px',
+                                    padding: '140px 20px 40px 20px',
                                     overflow: 'hidden'
                                 }}>
                                     {/* Ambient Glow Background */}
@@ -836,12 +851,42 @@ const Home: React.FC = () => {
                                             background: 'linear-gradient(to top, rgba(0,0,0,0.4) 0%, transparent 40%)',
                                             zIndex: 2
                                         }} />
+
+                                        {/* Heart Button INSIDE the photo container */}
+                                        <div style={{
+                                            position: 'absolute',
+                                            top: '15px',
+                                            right: '15px',
+                                            zIndex: 10
+                                        }}>
+                                            <motion.button
+                                                whileTap={{ scale: 0.9 }}
+                                                onClick={() => toggleLike(selectedProduct.id)}
+                                                style={{
+                                                    width: '40px',
+                                                    height: '40px',
+                                                    borderRadius: '50%',
+                                                    background: 'rgba(0,0,0,0.3)',
+                                                    backdropFilter: 'blur(10px)',
+                                                    border: '1px solid rgba(255,255,255,0.1)',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    color: likedProducts.has(selectedProduct.id) ? '#ef4444' : 'white'
+                                                }}
+                                            >
+                                                <Heart
+                                                    size={20}
+                                                    fill={likedProducts.has(selectedProduct.id) ? '#ef4444' : 'none'}
+                                                />
+                                            </motion.button>
+                                        </div>
                                     </motion.div>
 
                                     {/* Header Action Buttons Overlay */}
                                     <div style={{
                                         position: 'absolute',
-                                        top: '20px',
+                                        top: '40px',
                                         left: '20px',
                                         right: '20px',
                                         display: 'flex',
@@ -864,23 +909,6 @@ const Home: React.FC = () => {
                                             }}
                                         >
                                             <ArrowLeft size={20} />
-                                        </button>
-
-                                        <button
-                                            style={{
-                                                width: '44px',
-                                                height: '44px',
-                                                borderRadius: '50%',
-                                                background: 'rgba(0,0,0,0.3)',
-                                                backdropFilter: 'blur(10px)',
-                                                border: '1px solid rgba(255,255,255,0.1)',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                color: 'white'
-                                            }}
-                                        >
-                                            <Heart size={20} />
                                         </button>
                                     </div>
                                 </div>
