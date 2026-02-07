@@ -41,7 +41,7 @@ export const analyzeRound = async (roundData: RoundData): Promise<AIAnalysis> =>
 
         const model = genAI.getGenerativeModel({
             model: 'gemini-1.5-flash'
-        });
+        }, { apiVersion: 'v1' });
 
         const prompt = `
 Analiza esta ronda de golf y proporciona un análisis detallado en español:
@@ -151,7 +151,7 @@ const generateLocalAnalysis = (data: RoundData): AIAnalysis => {
 
 export const analyzeMultipleRounds = async (rounds: RoundData[]): Promise<string> => {
     try {
-        const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+        const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' }, { apiVersion: 'v1' });
 
         const prompt = `
 Analiza el progreso de este jugador de golf basándote en sus últimas ${rounds.length} rondas:
