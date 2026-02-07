@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { supabase, optimizeImage } from '../services/SupabaseManager';
-import { Save, Loader2, Camera, Trash2, Upload, MapPin, ChevronRight } from 'lucide-react';
+import { Save, Loader2, Camera, Trash2, Upload, MapPin, ChevronRight, CheckCircle2, X } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import PageHeader from '../components/PageHeader';
 import PageHero from '../components/PageHero';
@@ -27,6 +28,8 @@ const EditProfile: React.FC = () => {
     });
 
     const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
+    const [successMessage, setSuccessMessage] = useState({ title: '', message: '', type: 'success' as 'success' | 'error' });
 
     useEffect(() => {
         if (profile) {
@@ -72,7 +75,9 @@ const EditProfile: React.FC = () => {
 
         } catch (error) {
             console.error('Error uploading avatar:', error);
-            alert('Error al subir la imagen');
+            setSuccessMessage({ title: 'Error', message: 'No se pudo subir la imagen.', type: 'error' });
+            setShowSuccessModal(true);
+            setTimeout(() => setShowSuccessModal(false), 3000);
         } finally {
             setUploading(false);
         }
@@ -98,7 +103,9 @@ const EditProfile: React.FC = () => {
             navigate('/profile');
         } catch (error) {
             console.error('Error updating profile:', error);
-            alert('Error al guardar los cambios');
+            setSuccessMessage({ title: 'Error', message: 'No se pudieron guardar los cambios en tu perfil.', type: 'error' });
+            setShowSuccessModal(true);
+            setTimeout(() => setShowSuccessModal(false), 3000);
         } finally {
             setSaving(false);
         }
@@ -223,6 +230,47 @@ const EditProfile: React.FC = () => {
                     onConfirm={(addr) => setFormData(p => ({ ...p, address: addr }))}
                 />
             </div>
+
+            <AnimatePresence>
+                {showSuccessModal && (
+                    <div style={{ position: 'fixed', inset: 0, zIndex: 3000, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)' }}>
+                        <motion.div
+                            initial={{ scale: 0.8, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.8, opacity: 0 }}
+                            style={{
+                                background: 'rgba(30, 45, 30, 0.95)',
+                                borderRadius: '30px',
+                                padding: '40px 30px',
+                                textAlign: 'center',
+                                maxWidth: '85%',
+                                width: '320px',
+                                border: `1px solid ${successMessage.type === 'success' ? 'rgba(163, 230, 53, 0.3)' : 'rgba(239, 68, 68, 0.3)'}`
+                            }}
+                        >
+                            <div style={{
+                                width: '70px',
+                                height: '70px',
+                                borderRadius: '50%',
+                                background: successMessage.type === 'success' ? 'rgba(163, 230, 53, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                margin: '0 auto 20px',
+                                color: successMessage.type === 'success' ? 'var(--secondary)' : '#ef4444'
+                            }}>
+                                {successMessage.type === 'success' ? <CheckCircle2 size={40} /> : <X size={40} />}
+                            </div>
+                            <h2 style={{ fontSize: '24px', fontWeight: '900', color: 'white', marginBottom: '10px' }}>
+                                {successMessage.title}
+                            </h2>
+                            <p style={{ fontSize: '14px', color: 'rgba(255,255,255,0.7)', lineHeight: '1.4' }}>
+                                {successMessage.message}
+                            </p>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
         </div>
     );
 };

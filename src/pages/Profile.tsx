@@ -14,6 +14,7 @@ const Profile: React.FC = () => {
     const navigate = useNavigate();
     const { user } = useAuth();
     const [profile, setProfile] = useState<Profile | null>(null);
+    const [storeName, setStoreName] = useState<string | null>(null);
     const [loggingOut, setLoggingOut] = useState(false);
     const [showInfo, setShowInfo] = useState(false);
 
@@ -21,6 +22,7 @@ const Profile: React.FC = () => {
         const fetchUserData = async () => {
             if (!user) return;
             try {
+                // Fetch profile
                 const { data: profileData, error: profileError } = await supabase
                     .from('profiles')
                     .select('*')
@@ -29,8 +31,19 @@ const Profile: React.FC = () => {
 
                 if (profileError) throw profileError;
                 setProfile(profileData);
+
+                // Fetch store name from seller_profiles
+                const { data: sellerData, error: sellerError } = await supabase
+                    .from('seller_profiles')
+                    .select('store_name')
+                    .eq('user_id', user.id)
+                    .maybeSingle();
+
+                if (!sellerError && sellerData) {
+                    setStoreName(sellerData.store_name);
+                }
             } catch (err) {
-                console.error('Error fetching profile:', err);
+                console.error('Error fetching profile data:', err);
             }
         };
 
@@ -156,9 +169,12 @@ const Profile: React.FC = () => {
                     )}
                 </div>
 
-                {/* Main Menu - Flex container to fit screen */}
                 <div style={styles.menuContainer}>
-                    <MenuButton icon={Store} label="Mi Marketplace APEG" onClick={() => navigate('/my-store')} />
+                    <MenuButton
+                        icon={Store}
+                        label={storeName ? `Mi Marketplace ${storeName}` : "Mi Marketplace"}
+                        onClick={() => navigate('/my-store')}
+                    />
                     <MenuButton icon={Trophy} label="Mis Eventos Organizados" onClick={() => navigate('/my-events')} />
                     <MenuButton icon={Ticket} label="Mis Cupones" onClick={() => navigate('/my-coupons')} />
 

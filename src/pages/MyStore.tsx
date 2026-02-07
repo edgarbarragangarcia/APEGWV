@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useLocation } from 'react-router-dom';
 import { supabase, optimizeImage } from '../services/SupabaseManager';
 import {
@@ -81,6 +81,8 @@ const MyStore: React.FC = () => {
     const [counterMessage, setCounterMessage] = useState('');
     const [activeTab, setActiveTab] = useState<'products' | 'orders' | 'offers' | 'coupons' | 'profile'>('products');
     const [editingTrackingId, setEditingTrackingId] = useState<string | null>(null);
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
+    const [successMessage, setSuccessMessage] = useState({ title: '', message: '', type: 'success' as 'success' | 'error' });
 
 
 
@@ -359,7 +361,9 @@ const MyStore: React.FC = () => {
             setFormData(prev => ({ ...prev, image_url: publicUrl }));
         } catch (err) {
             console.error('Error uploading image:', err);
-            alert('Error al subir la imagen');
+            setSuccessMessage({ title: 'Error', message: 'Error al subir la imagen', type: 'error' });
+            setShowSuccessModal(true);
+            setTimeout(() => setShowSuccessModal(false), 3000);
         } finally {
             setUploading(false);
         }
@@ -370,15 +374,21 @@ const MyStore: React.FC = () => {
 
         // Input validation
         if (formData.name.length > 100) {
-            alert('El nombre del producto no puede exceder 100 caracteres');
+            setSuccessMessage({ title: 'Validación', message: 'El nombre del producto no puede exceder 100 caracteres', type: 'error' });
+            setShowSuccessModal(true);
+            setTimeout(() => setShowSuccessModal(false), 3000);
             return;
         }
         if (formData.description && formData.description.length > 500) {
-            alert('La descripción no puede exceder 500 caracteres');
+            setSuccessMessage({ title: 'Validación', message: 'La descripción no puede exceder 500 caracteres', type: 'error' });
+            setShowSuccessModal(true);
+            setTimeout(() => setShowSuccessModal(false), 3000);
             return;
         }
         if (parseFloat(formData.price) <= 0) {
-            alert('El precio debe ser mayor a 0');
+            setSuccessMessage({ title: 'Validación', message: 'El precio debe ser mayor a 0', type: 'error' });
+            setShowSuccessModal(true);
+            setTimeout(() => setShowSuccessModal(false), 3000);
             return;
         }
 
@@ -453,7 +463,9 @@ const MyStore: React.FC = () => {
             resetForm();
         } catch (err) {
             console.error('Error saving product:', err);
-            alert('Error al guardar el producto');
+            setSuccessMessage({ title: 'Error', message: 'No se pudo guardar el producto.', type: 'error' });
+            setShowSuccessModal(true);
+            setTimeout(() => setShowSuccessModal(false), 3000);
         } finally {
             setSaving(false);
         }
@@ -524,7 +536,9 @@ const MyStore: React.FC = () => {
             setDeleteModal({ isOpen: false, productId: null, productName: '' });
         } catch (err) {
             console.error('Error deleting product:', err);
-            alert('Error al eliminar');
+            setSuccessMessage({ title: 'Error', message: 'No se pudo eliminar el producto.', type: 'error' });
+            setShowSuccessModal(true);
+            setTimeout(() => setShowSuccessModal(false), 3000);
         }
     };
 
@@ -543,14 +557,21 @@ const MyStore: React.FC = () => {
             setOrders(orders.map(o => o.id === orderId ? { ...o, status: newStatus } : o));
         } catch (err) {
             console.error('Error updating order status:', err);
-            alert('Error al actualizar estado');
+            setSuccessMessage({ title: 'Error', message: 'Error al actualizar el estado del pedido.', type: 'error' });
+            setShowSuccessModal(true);
+            setTimeout(() => setShowSuccessModal(false), 3000);
         } finally {
             setUpdatingOrder(null);
         }
     };
 
     const updateTracking = async (orderId: string, trackingNum: string, provider: string) => {
-        if (!trackingNum || !provider) return alert('Por favor ingresa transportadora y guía');
+        if (!trackingNum || !provider) {
+            setSuccessMessage({ title: 'Faltan datos', message: 'Por favor ingresa transportadora y guía.', type: 'error' });
+            setShowSuccessModal(true);
+            setTimeout(() => setShowSuccessModal(false), 3000);
+            return;
+        }
         setUpdatingOrder(orderId);
         try {
             const { error } = await supabase
@@ -567,7 +588,9 @@ const MyStore: React.FC = () => {
             setEditingTrackingId(null);
         } catch (err) {
             console.error('Error updating tracking:', err);
-            alert('Error al actualizar guía');
+            setSuccessMessage({ title: 'Error', message: 'No se pudo actualizar la guía de seguimiento.', type: 'error' });
+            setShowSuccessModal(true);
+            setTimeout(() => setShowSuccessModal(false), 3000);
         } finally {
             setUpdatingOrder(null);
         }
@@ -645,7 +668,9 @@ const MyStore: React.FC = () => {
             if (navigator.vibrate) navigator.vibrate(50);
         } catch (err) {
             console.error('Error updating offer:', err);
-            alert('Error al actualizar la oferta');
+            setSuccessMessage({ title: 'Error', message: 'Hubo un problema al procesar la oferta.', type: 'error' });
+            setShowSuccessModal(true);
+            setTimeout(() => setShowSuccessModal(false), 3000);
         } finally {
             setUpdatingOffer(null);
         }
@@ -696,7 +721,9 @@ const MyStore: React.FC = () => {
             if (navigator.vibrate) navigator.vibrate(50);
         } catch (err) {
             console.error('Error saving coupon:', err);
-            alert('Error al guardar cupón');
+            setSuccessMessage({ title: 'Error', message: 'No se pudo guardar el cupón.', type: 'error' });
+            setShowSuccessModal(true);
+            setTimeout(() => setShowSuccessModal(false), 3000);
         } finally {
             setSaving(false);
         }
@@ -723,7 +750,9 @@ const MyStore: React.FC = () => {
             setCoupons(prev => prev.filter(c => c.id !== id));
         } catch (err) {
             console.error('Error deleting coupon:', err);
-            alert('Error al eliminar cupón');
+            setSuccessMessage({ title: 'Error', message: 'No se pudo eliminar el cupón.', type: 'error' });
+            setShowSuccessModal(true);
+            setTimeout(() => setShowSuccessModal(false), 3000);
         }
     };
 
@@ -1348,11 +1377,23 @@ const MyStore: React.FC = () => {
                                                                             .eq('id', product.id);
                                                                         if (error) throw error;
                                                                         setProducts(products.map(p => p.id === product.id ? { ...p, status: 'active' } : p));
-                                                                        alert('Producto publicado exitosamente!');
+                                                                        setSuccessMessage({
+                                                                            title: '¡Publicado!',
+                                                                            message: 'Tu producto ya está activo en el marketplace.',
+                                                                            type: 'success'
+                                                                        });
+                                                                        setShowSuccessModal(true);
+                                                                        setTimeout(() => setShowSuccessModal(false), 3000);
                                                                     }
                                                                 } catch (err) {
                                                                     console.error(err);
-                                                                    alert('Error al procesar el pago');
+                                                                    setSuccessMessage({
+                                                                        title: 'Error',
+                                                                        message: 'No se pudo procesar el pago o activar el producto.',
+                                                                        type: 'error'
+                                                                    });
+                                                                    setShowSuccessModal(true);
+                                                                    setTimeout(() => setShowSuccessModal(false), 3000);
                                                                 }
                                                             }}
                                                             style={{
@@ -2160,9 +2201,21 @@ const MyStore: React.FC = () => {
 
                                                     setSellerProfile(profileFormData);
                                                     setIsEditingProfile(false);
-                                                    alert('Perfil de tienda actualizado correctamente');
+                                                    setSuccessMessage({
+                                                        title: '¡Perfil Actualizado!',
+                                                        message: 'Los cambios en tu tienda se han guardado correctamente.',
+                                                        type: 'success'
+                                                    });
+                                                    setShowSuccessModal(true);
+                                                    setTimeout(() => setShowSuccessModal(false), 3000);
                                                 } catch (err: any) {
-                                                    alert('Error al actualizar: ' + err.message);
+                                                    setSuccessMessage({
+                                                        title: 'Error',
+                                                        message: 'No pudimos actualizar tu perfil: ' + err.message,
+                                                        type: 'error'
+                                                    });
+                                                    setShowSuccessModal(true);
+                                                    setTimeout(() => setShowSuccessModal(false), 4000);
                                                 } finally {
                                                     setSaving(false);
                                                 }
@@ -2428,6 +2481,47 @@ const MyStore: React.FC = () => {
                     />
                 )
             }
+
+            <AnimatePresence>
+                {showSuccessModal && (
+                    <div style={{ position: 'fixed', inset: 0, zIndex: 3000, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)' }}>
+                        <motion.div
+                            initial={{ scale: 0.8, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.8, opacity: 0 }}
+                            style={{
+                                background: 'rgba(30, 45, 30, 0.95)',
+                                borderRadius: '30px',
+                                padding: '40px 30px',
+                                textAlign: 'center',
+                                maxWidth: '85%',
+                                width: '320px',
+                                border: `1px solid ${successMessage.type === 'success' ? 'rgba(163, 230, 53, 0.3)' : 'rgba(239, 68, 68, 0.3)'}`
+                            }}
+                        >
+                            <div style={{
+                                width: '70px',
+                                height: '70px',
+                                borderRadius: '50%',
+                                background: successMessage.type === 'success' ? 'rgba(163, 230, 53, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                margin: '0 auto 20px',
+                                color: successMessage.type === 'success' ? 'var(--secondary)' : '#ef4444'
+                            }}>
+                                {successMessage.type === 'success' ? <CheckCircle2 size={40} /> : <X size={40} />}
+                            </div>
+                            <h2 style={{ fontSize: '24px', fontWeight: '900', color: 'white', marginBottom: '10px' }}>
+                                {successMessage.title}
+                            </h2>
+                            <p style={{ fontSize: '14px', color: 'rgba(255,255,255,0.7)', lineHeight: '1.4' }}>
+                                {successMessage.message}
+                            </p>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
         </div >
 
     );
