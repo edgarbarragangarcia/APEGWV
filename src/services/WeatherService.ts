@@ -11,6 +11,7 @@ export interface WeatherData {
     humidity: number;
     uvIndex?: number;
     precipitation?: number;
+    precipProb?: number;
     feelsLike?: number;
 }
 
@@ -29,7 +30,7 @@ const getConditionFromWMO = (code: number) => {
 export const fetchWeather = async (lat: number, lon: number): Promise<WeatherData> => {
     try {
         const response = await fetch(
-            `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m,wind_direction_10m&hourly=uv_index&timezone=auto&forecast_days=1`
+            `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,precipitation_probability,weather_code,wind_speed_10m,wind_direction_10m&hourly=uv_index&timezone=auto&forecast_days=1`
         );
         const data = await response.json();
         const current = data.current;
@@ -50,6 +51,7 @@ export const fetchWeather = async (lat: number, lon: number): Promise<WeatherDat
             humidity: current.relative_humidity_2m,
             feelsLike: Math.round(current.apparent_temperature),
             precipitation: current.precipitation,
+            precipProb: current.precipitation_probability,
             uvIndex: uvIndex
         };
     } catch (error) {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Search, MapPin, Wind, Droplets, Thermometer, ChevronRight, Navigation, ArrowLeft } from 'lucide-react';
+import { Search, MapPin, Wind, Droplets, Thermometer, ChevronRight, Navigation, ArrowLeft, CloudRain } from 'lucide-react';
 import { COLOMBIAN_COURSES } from '../data/courses';
 import type { GolfCourse } from '../data/courses';
 import { fetchWeather } from '../services/WeatherService';
@@ -315,6 +315,9 @@ const CourseSelection: React.FC = () => {
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '10px', color: 'var(--text-dim)', marginTop: '4px' }}>
                                                 <span style={{ display: 'flex', alignItems: 'center', gap: '2px' }}><Wind size={10} /> {weatherData[course.id].wind}k/h</span>
                                                 <span style={{ display: 'flex', alignItems: 'center', gap: '2px' }}><Droplets size={10} /> {weatherData[course.id].humidity}%</span>
+                                                <span style={{ display: 'flex', alignItems: 'center', gap: '2px', color: (weatherData[course.id].precipProb ?? 0) > 30 ? '#38bdf8' : 'inherit' }}>
+                                                    <CloudRain size={10} /> {weatherData[course.id].precipProb}%
+                                                </span>
                                             </div>
                                         </div>
                                     )}

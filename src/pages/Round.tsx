@@ -926,7 +926,7 @@ const Round: React.FC = () => {
                     </div>
 
                     <div className="glass" style={{
-                        padding: '12px 8px',
+                        padding: '12px 4px',
                         textAlign: 'center',
                         display: 'flex',
                         flexDirection: 'column',
@@ -936,7 +936,12 @@ const Round: React.FC = () => {
                     }}>
                         <CloudRain size={16} color="#38bdf8" />
                         <div style={{ fontSize: '9px', color: 'var(--text-dim)', textTransform: 'uppercase', fontWeight: '800' }}>Lluvia</div>
-                        <div style={{ fontSize: '15px', fontWeight: '900', color: 'white' }}>{weather?.precipitation ?? '0'}mm</div>
+                        <div style={{ fontSize: '13px', fontWeight: '900', color: 'white' }}>
+                            {weather?.precipitation ?? '0'}mm
+                        </div>
+                        <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.4)', fontWeight: '700' }}>
+                            {weather?.precipProb ?? '0'}% Prob.
+                        </div>
                     </div>
                 </div>
 
