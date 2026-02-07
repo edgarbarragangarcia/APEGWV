@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { ShoppingCart, Star, Heart } from 'lucide-react';
+import { useLikes } from '../hooks/useLikes';
 import type { Product } from '../services/SupabaseManager';
 import { optimizeImage } from '../services/SupabaseManager';
 
@@ -11,6 +12,8 @@ interface PremiumProductCardProps {
 }
 
 const PremiumProductCard: React.FC<PremiumProductCardProps> = ({ product, onAddToCart, onClick }) => {
+    const { likedProducts, toggleLike } = useLikes();
+    const isLiked = likedProducts.has(product.id);
     // Generate a pseudo-random rating for aesthetics
     const rating = 4 + (Math.floor(Math.random() * 10) / 10);
     const reviews = 10 + Math.floor(Math.random() * 50);
@@ -81,6 +84,7 @@ const PremiumProductCard: React.FC<PremiumProductCardProps> = ({ product, onAddT
                     <button
                         onClick={(e) => {
                             e.stopPropagation();
+                            toggleLike(product.id);
                         }}
                         style={{
                             width: '36px',
@@ -92,10 +96,10 @@ const PremiumProductCard: React.FC<PremiumProductCardProps> = ({ product, onAddT
                             alignItems: 'center',
                             justifyContent: 'center',
                             border: '1px solid rgba(255, 255, 255, 0.1)',
-                            color: 'white'
+                            color: isLiked ? '#ef4444' : 'white'
                         }}
                     >
-                        <Heart size={18} />
+                        <Heart size={18} fill={isLiked ? '#ef4444' : 'none'} />
                     </button>
                 </div>
 
