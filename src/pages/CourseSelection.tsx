@@ -152,10 +152,12 @@ const CourseSelection: React.FC = () => {
             left: '0',
             right: '0',
             bottom: '0',
+            height: '100%',
             width: '100%',
             maxWidth: 'var(--app-max-width)',
             margin: '0 auto',
-            overflow: 'hidden'
+            overflow: 'hidden',
+            background: 'var(--primary)'
         }} className="animate-fade">
             <PageHero image="https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?q=80&w=2070&auto=format&fit=crop" />
             {/* Header Fijo */}
@@ -256,7 +258,9 @@ const CourseSelection: React.FC = () => {
                 bottom: 'calc(var(--nav-height) + 20px)',
                 overflowY: 'auto',
                 overflowX: 'hidden',
-                padding: '0 20px 20px 20px'
+                padding: '0 20px 20px 20px',
+                zIndex: 1,
+                pointerEvents: 'auto'
             }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                     {permissionStatus === 'granted' && !location && showLocationLoading && (

@@ -23,6 +23,7 @@ const CreateGroup: React.FC = () => {
     const { data: profile } = useProfile();
     const { error: showError } = useToast();
     const [selectedFriends, setSelectedFriends] = useState<UserProfile[]>(groupToEdit?.members || []);
+
     const [groupName, setGroupName] = useState(groupToEdit?.name || '');
     const [saving, setSaving] = useState(false);
     const [showSuccess, setShowSuccess] = useState(false);
@@ -129,9 +130,17 @@ const CreateGroup: React.FC = () => {
 
     return (
         <div style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            height: '100%',
+            width: '100%',
+            maxWidth: 'var(--app-max-width)',
+            margin: '0 auto',
             overflow: 'hidden',
             background: 'var(--primary)',
-            zIndex: 500
         }} className="animate-fade">
             <PageHero image="https://images.unsplash.com/photo-1593113598332-cd288d649433?q=80&w=2070&auto=format&fit=crop" />
 
@@ -228,7 +237,9 @@ const CreateGroup: React.FC = () => {
                 bottom: 'calc(var(--nav-height))',
                 overflowY: 'auto',
                 overflowX: 'hidden',
-                padding: '0 20px 20px 20px'
+                padding: '0 20px 20px 20px',
+                zIndex: 1,
+                pointerEvents: 'auto'
             }}>
                 <div style={{
                     background: 'rgba(255, 255, 255, 0.03)',

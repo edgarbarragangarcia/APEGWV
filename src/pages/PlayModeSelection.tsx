@@ -403,21 +403,6 @@ const PlayModeSelection: React.FC = () => {
                                                 {mode.description}
                                             </p>
                                         </div>
-
-                                        <div style={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            gap: '6px',
-                                            background: 'rgba(255,255,255,0.08)',
-                                            padding: '4px 10px',
-                                            borderRadius: '100px',
-                                            color: 'white',
-                                            fontSize: '10px',
-                                            fontWeight: '700',
-                                            border: '1px solid rgba(255,255,255,0.05)'
-                                        }}>
-                                            Explorar <ChevronRight size={10} strokeWidth={3} />
-                                        </div>
                                     </div>
                                 </div>
                             </motion.div>

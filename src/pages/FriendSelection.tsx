@@ -19,7 +19,6 @@ const FriendSelection: React.FC = () => {
     const [showSuccess, setShowSuccess] = useState(false);
 
     useEffect(() => {
-        console.log('FriendSelection MOUNTED');
         fetchSavedGroups();
 
         // Subscribe to real-time changes
@@ -159,7 +158,7 @@ const FriendSelection: React.FC = () => {
                 overflow: 'hidden',
                 background: 'var(--primary)',
             }} className="animate-fade">
-                <PageHero image="https://images.unsplash.com/photo-1593113598332-cd288d649433?q=80&w=2070&auto=format&fit=crop" />
+                <PageHero height="320px" image="https://images.unsplash.com/photo-1593113598332-cd288d649433?q=80&w=2070&auto=format&fit=crop" />
 
                 {/* Success Overlay */}
                 {showSuccess && (
@@ -248,7 +247,7 @@ const FriendSelection: React.FC = () => {
                 {/* Area de Scroll */}
                 <div style={{
                     position: 'absolute',
-                    top: 'calc(var(--header-offset-top) + 80px)',
+                    top: 'calc(var(--header-offset-top) + 70px)',
                     left: '0',
                     right: '0',
                     bottom: 'calc(var(--nav-height))',
@@ -257,7 +256,7 @@ const FriendSelection: React.FC = () => {
                     padding: '0 20px 20px 20px',
                     display: 'flex',
                     flexDirection: 'column',
-                    gap: '20px',
+                    gap: '16px',
                     zIndex: 10
                 }}>
                     {/* Botón Agregar Grupo - Apple Elite Style Compact */}
@@ -266,37 +265,37 @@ const FriendSelection: React.FC = () => {
                         onClick={() => navigate('/create-group')}
                         style={{
                             width: '100%',
-                            background: 'linear-gradient(135deg, rgba(163, 230, 53, 0.08) 0%, rgba(163, 230, 53, 0.04) 100%)',
+                            background: 'rgba(255, 255, 255, 0.03)',
                             backdropFilter: 'blur(20px)',
                             WebkitBackdropFilter: 'blur(20px)',
-                            border: '1px solid rgba(163, 230, 53, 0.2)',
-                            borderRadius: '24px',
-                            padding: '12px 18px',
+                            border: '1px solid rgba(255, 255, 255, 0.08)',
+                            borderRadius: '20px',
+                            padding: '10px 16px',
                             display: 'flex',
                             alignItems: 'center',
-                            gap: '14px',
+                            gap: '12px',
                             cursor: 'pointer',
                             color: 'var(--secondary)',
                             WebkitTapHighlightColor: 'transparent',
-                            boxShadow: '0 8px 30px rgba(0,0,0,0.15)',
+                            boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
                         }}
                     >
                         <div style={{
-                            width: '42px',
-                            height: '42px',
-                            borderRadius: '14px',
+                            width: '36px',
+                            height: '36px',
+                            borderRadius: '12px',
                             background: 'var(--secondary)',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            boxShadow: '0 4px 15px rgba(163, 230, 53, 0.25)',
+                            boxShadow: '0 2px 8px rgba(163, 230, 53, 0.3)',
                             flexShrink: 0
                         }}>
-                            <Plus size={22} color="var(--primary)" strokeWidth={3} />
+                            <Plus size={18} color="var(--primary)" strokeWidth={3} />
                         </div>
                         <div style={{ textAlign: 'left' }}>
-                            <span style={{ display: 'block', fontSize: '16px', fontWeight: '900', letterSpacing: '-0.4px', color: '#fff' }}>Nuevo Grupo</span>
-                            <span style={{ display: 'block', fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontWeight: '600' }}>Inicia una nueva partida</span>
+                            <span style={{ display: 'block', fontSize: '15px', fontWeight: '900', letterSpacing: '-0.3px', color: '#fff' }}>Nuevo Grupo</span>
+                            <span style={{ display: 'block', fontSize: '10px', color: 'rgba(255,255,255,0.3)', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.2px' }}>Crear partida</span>
                         </div>
                     </motion.button>
 
@@ -313,39 +312,39 @@ const FriendSelection: React.FC = () => {
                                     whileTap={{ scale: 0.96 }}
                                     onClick={() => handleGroupClick(group)}
                                     style={{
-                                        background: 'rgba(255, 255, 255, 0.04)',
+                                        background: 'rgba(255, 255, 255, 0.03)',
                                         backdropFilter: 'blur(10px)',
                                         WebkitBackdropFilter: 'blur(10px)',
-                                        borderRadius: '30px',
-                                        padding: '22px',
-                                        border: '1px solid rgba(255, 255, 255, 0.07)',
+                                        borderRadius: '20px',
+                                        padding: '12px 16px',
+                                        border: '1px solid rgba(255, 255, 255, 0.06)',
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'space-between',
                                         cursor: 'pointer',
                                         position: 'relative',
-                                        boxShadow: '0 8px 32px rgba(0,0,0,0.1)'
+                                        boxShadow: '0 4px 15px rgba(0,0,0,0.05)'
                                     }}
                                 >
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '18px' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                                         <div style={{
-                                            width: '54px',
-                                            height: '54px',
-                                            borderRadius: '18px',
-                                            background: 'linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%)',
+                                            width: '38px',
+                                            height: '38px',
+                                            borderRadius: '12px',
+                                            background: 'rgba(255, 255, 255, 0.04)',
                                             display: 'flex',
                                             alignItems: 'center',
                                             justifyContent: 'center',
                                             color: 'var(--secondary)',
-                                            border: '1px solid rgba(255,255,255,0.08)'
+                                            border: '1px solid rgba(255, 255, 255, 0.06)'
                                         }}>
-                                            <Users size={26} strokeWidth={2.5} />
+                                            <Users size={18} strokeWidth={2.5} />
                                         </div>
                                         <div>
-                                            <h3 style={{ fontSize: '18px', fontWeight: '900', color: '#fff', marginBottom: '2px', letterSpacing: '-0.5px' }}>
+                                            <h3 style={{ fontSize: '15px', fontWeight: '900', color: '#fff', marginBottom: '0px', letterSpacing: '-0.4px' }}>
                                                 {group.name}
                                             </h3>
-                                            <p style={{ fontSize: '14px', color: 'rgba(255,255,255,0.4)', fontWeight: '600' }}>
+                                            <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)', fontWeight: '600' }}>
                                                 {group.members.length + 1} Jugadores
                                             </p>
                                         </div>
@@ -358,8 +357,8 @@ const FriendSelection: React.FC = () => {
                                                 style={{
                                                     background: 'rgba(255,255,255,0.05)',
                                                     border: 'none',
-                                                    padding: '10px',
-                                                    borderRadius: '12px',
+                                                    padding: '8px',
+                                                    borderRadius: '10px',
                                                     color: 'rgba(255,255,255,0.6)',
                                                     cursor: 'pointer',
                                                     display: 'flex',
@@ -368,15 +367,15 @@ const FriendSelection: React.FC = () => {
                                                     transition: 'all 0.2s'
                                                 }}
                                             >
-                                                <Pencil size={18} />
+                                                <Pencil size={16} />
                                             </button>
                                             <button
                                                 onClick={(e) => deleteGroup(group.id, e)}
                                                 style={{
                                                     background: 'rgba(239, 68, 68, 0.1)',
                                                     border: 'none',
-                                                    padding: '10px',
-                                                    borderRadius: '12px',
+                                                    padding: '8px',
+                                                    borderRadius: '10px',
                                                     color: '#ef4444',
                                                     cursor: 'pointer',
                                                     display: 'flex',
@@ -385,7 +384,7 @@ const FriendSelection: React.FC = () => {
                                                     transition: 'all 0.2s'
                                                 }}
                                             >
-                                                <Trash2 size={18} />
+                                                <Trash2 size={16} />
                                             </button>
                                         </div>
                                         <ChevronRight size={20} color="rgba(255,255,255,0.2)" />

@@ -102,7 +102,7 @@ const AppContent: React.FC = () => {
 
   const isRoundPage = location.pathname === '/round';
   const isNotificationsPage = location.pathname === '/notifications';
-  const isPlayFlow = ['/play-mode', '/friend-selection', '/create-group'].includes(location.pathname);
+  const isPlayFlow = ['/play-mode', '/friend-selection', '/create-group', '/select-course'].includes(location.pathname);
   const isRoundDetail = location.pathname.startsWith('/rounds/');
   const isFixedPage = isRoundPage || isNotificationsPage || isPlayFlow || isRoundDetail;
 
@@ -121,7 +121,7 @@ const AppContent: React.FC = () => {
       {session && <Navbar />}
 
       <main
-        className={`${session ? "page-content container" : ""} ${isFixedPage ? 'round-page-content' : ''} `}
+        className={`${session && !isFixedPage ? "page-content container" : ""} ${isRoundPage || isNotificationsPage || isRoundDetail ? 'round-page-content' : ''} `}
         style={!session ? { flex: 1, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', padding: 0, margin: 0 } : { flex: 1, overflow: isFixedPage ? 'hidden' : 'auto', position: 'relative' }}
       >
         <Routes>
