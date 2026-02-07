@@ -157,7 +157,7 @@ const CourseSelection: React.FC = () => {
             margin: '0 auto',
             overflow: 'hidden'
         }} className="animate-fade">
-            <PageHero image="https://images.unsplash.com/photo-1596733430284-f7437764b1a9?q=80&w=2070&auto=format&fit=crop" />
+            <PageHero image="https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?q=80&w=2070&auto=format&fit=crop" />
             {/* Header Fijo */}
             <div style={{
                 position: 'absolute',

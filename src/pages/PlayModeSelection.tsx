@@ -217,37 +217,40 @@ const PlayModeSelection: React.FC = () => {
             {/* Area de Contenido - Flexbox Vertical sin Scroll */}
             <div style={{
                 position: 'absolute',
-                top: 'calc(var(--header-offset-top) + 90px)',
+                top: 'calc(env(safe-area-inset-top) + 160px)',
                 left: '0',
                 right: '0',
-                bottom: 'calc(var(--nav-height) + 10px)',
-                overflow: 'hidden', // NO SCROLL
-                padding: '0 20px 20px 20px',
+                bottom: 'calc(55px + var(--safe-bottom) + 10px)',
+                overflowY: 'auto',
+                overflowX: 'hidden',
+                padding: '10px 20px 40px 20px',
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '16px'
+                gap: '16px',
+                zIndex: 1,
+                pointerEvents: 'auto'
             }}>
                 {/* User Stats Dashboard - Fixed position with Skeleton */}
                 <div
                     style={{
-                        flexShrink: 0, // No encoger el dashboard
+                        flexShrink: 0,
                         background: 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%)',
-                        borderRadius: '32px',
-                        padding: '24px',
+                        borderRadius: '24px',
+                        padding: '16px',
                         border: '1px solid rgba(255,255,255,0.08)',
                         display: 'flex',
                         flexDirection: 'column',
-                        gap: '16px',
+                        gap: '12px',
                         minHeight: 'auto'
                     }}
                 >
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <BarChart3 size={18} color="var(--secondary)" />
-                            <span style={{ fontSize: '14px', fontWeight: '800', color: 'white', textTransform: 'uppercase', letterSpacing: '1px' }}>Dashboard Personal</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <BarChart3 size={14} color="var(--secondary)" />
+                            <span style={{ fontSize: '11px', fontWeight: '800', color: 'white', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Dashboard Personal</span>
                         </div>
-                        <div style={{ background: 'rgba(163, 230, 53, 0.1)', padding: '4px 12px', borderRadius: '100px', border: '1px solid rgba(163, 230, 53, 0.2)' }}>
-                            <span style={{ fontSize: '12px', fontWeight: '700', color: 'var(--secondary)' }}>
+                        <div style={{ background: 'rgba(163, 230, 53, 0.1)', padding: '2px 8px', borderRadius: '100px', border: '1px solid rgba(163, 230, 53, 0.2)' }}>
+                            <span style={{ fontSize: '10px', fontWeight: '700', color: 'var(--secondary)' }}>
                                 HCP: {isLoadingStats ? '...' : (stats?.handicap || 'N/A')}
                             </span>
                         </div>
@@ -257,19 +260,19 @@ const PlayModeSelection: React.FC = () => {
                     <div style={{
                         display: 'grid',
                         gridTemplateColumns: 'repeat(3, 1fr)',
-                        gap: '8px'
+                        gap: '4px'
                     }}>
                         <div style={{ textAlign: 'center' }}>
-                            <div style={{ fontSize: 'clamp(16px, 4vw, 20px)', fontWeight: '900', color: 'white' }}>
+                            <div style={{ fontSize: '16px', fontWeight: '900', color: 'white' }}>
                                 {isLoadingStats ? '--' : (stats?.best_score || '--')}
                             </div>
-                            <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.4)', fontWeight: '600', textTransform: 'uppercase' }}>Mejor Score</div>
+                            <div style={{ fontSize: '8px', color: 'rgba(255,255,255,0.4)', fontWeight: '600', textTransform: 'uppercase' }}>Mejor Score</div>
                         </div>
                         <div style={{ textAlign: 'center', borderLeft: '1px solid rgba(255,255,255,0.05)', borderRight: '1px solid rgba(255,255,255,0.05)' }}>
-                            <div style={{ fontSize: 'clamp(16px, 4vw, 20px)', fontWeight: '900', color: 'white' }}>
+                            <div style={{ fontSize: '16px', fontWeight: '900', color: 'white' }}>
                                 {isLoadingStats ? '--' : (stats?.average_score || '--')}
                             </div>
-                            <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.4)', fontWeight: '600', textTransform: 'uppercase' }}>Promedio</div>
+                            <div style={{ fontSize: '8px', color: 'rgba(255,255,255,0.4)', fontWeight: '600', textTransform: 'uppercase' }}>Promedio</div>
                         </div>
                         <motion.div
                             whileTap={{ scale: 0.95 }}
@@ -278,32 +281,32 @@ const PlayModeSelection: React.FC = () => {
                                 textAlign: 'center',
                                 cursor: recentRounds.length > 0 ? 'pointer' : 'default',
                                 position: 'relative',
-                                padding: '8px',
-                                borderRadius: '16px',
+                                padding: '4px',
+                                borderRadius: '12px',
                                 background: recentRounds.length > 0 ? 'rgba(163, 230, 53, 0.05)' : 'transparent',
                                 border: recentRounds.length > 0 ? '1px solid rgba(163, 230, 53, 0.1)' : '1px solid transparent',
                                 transition: 'all 0.3s ease'
                             }}
                         >
-                            <div style={{ fontSize: 'clamp(16px, 4vw, 20px)', fontWeight: '900', color: recentRounds.length > 0 ? 'var(--secondary)' : 'white' }}>
+                            <div style={{ fontSize: '16px', fontWeight: '900', color: recentRounds.length > 0 ? 'var(--secondary)' : 'white' }}>
                                 {isLoadingStats ? '0' : (stats?.total_rounds || '0')}
                             </div>
-                            <div style={{ fontSize: '9px', color: recentRounds.length > 0 ? 'var(--secondary)' : 'rgba(255,255,255,0.4)', fontWeight: '600', textTransform: 'uppercase', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                            <div style={{ fontSize: '8px', color: recentRounds.length > 0 ? 'var(--secondary)' : 'rgba(255,255,255,0.4)', fontWeight: '600', textTransform: 'uppercase', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
                                 Rondas {recentRounds.length > 0 && (
                                     <motion.div
                                         animate={{ scale: [1, 1.2, 1] }}
                                         transition={{ duration: 2, repeat: Infinity }}
                                     >
-                                        <History size={10} />
+                                        <History size={8} />
                                     </motion.div>
                                 )}
                             </div>
                             {recentRounds.length > 0 && (
                                 <div style={{
-                                    fontSize: '7px',
+                                    fontSize: '6px',
                                     color: 'rgba(163, 230, 53, 0.5)',
                                     fontWeight: '800',
-                                    marginTop: '2px',
+                                    marginTop: '1px',
                                     letterSpacing: '0.5px'
                                 }}>
                                     VER RECIENTES
@@ -326,24 +329,30 @@ const PlayModeSelection: React.FC = () => {
                     // UI normal de selección de modo con Grid Responsivo
                     <div className="play-mode-grid">
                         {modes.map((mode) => (
-                            <div
+                            <motion.div
                                 key={mode.id}
-                                onClick={() => navigate(mode.path)}
+                                whileTap={{ scale: 0.97 }}
+                                onClick={() => {
+                                    console.log('Navigating to:', mode.path);
+                                    navigate(mode.path);
+                                }}
                                 style={{
-                                    flex: '0 0 auto', // No expandir, usar altura de contenido
+                                    flex: '0 0 auto',
                                     position: 'relative',
                                     borderRadius: '28px',
-                                    padding: '2px', // This creates the "border width"
+                                    padding: '2px',
                                     overflow: 'hidden',
-                                    background: 'rgba(255, 255, 255, 0.05)', // Fallback
+                                    background: 'rgba(255, 255, 255, 0.05)',
                                     display: 'flex',
                                     alignItems: 'stretch',
                                     justifyContent: 'stretch',
                                     cursor: 'pointer',
-                                    transition: 'all 0.3s ease',
-                                    minHeight: '0' // Permitir encogimiento flex
+                                    transition: 'background 0.3s ease',
+                                    minHeight: '0',
+                                    zIndex: 10,
+                                    pointerEvents: 'auto',
+                                    touchAction: 'manipulation'
                                 }}
-                                className="active:scale-[0.97]"
                             >
                                 {/* THE ANIMATED BORDER: A rotating gradient behind the card */}
                                 <div style={{
@@ -443,7 +452,7 @@ const PlayModeSelection: React.FC = () => {
                                         </div>
                                     </div>
                                 </div>
-                            </div>
+                            </motion.div>
                         ))}
                     </div>
                 )}
