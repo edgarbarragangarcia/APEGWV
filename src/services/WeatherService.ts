@@ -13,6 +13,7 @@ export interface WeatherData {
     precipitation?: number;
     precipProb?: number;
     feelsLike?: number;
+    weatherCode?: number;
 }
 
 // Mapa simple de códigos WMO a condiciones locales
@@ -33,6 +34,12 @@ export const fetchWeather = async (lat: number, lon: number): Promise<WeatherDat
             `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,precipitation_probability,weather_code,wind_speed_10m,wind_direction_10m&hourly=uv_index&timezone=auto&forecast_days=1`
         );
         const data = await response.json();
+
+        if (!data || !data.current) {
+            console.warn('Weather data incomplete:', data);
+            throw new Error('Incomplete weather data');
+        }
+
         const current = data.current;
         const hourly = data.hourly;
 
@@ -52,18 +59,24 @@ export const fetchWeather = async (lat: number, lon: number): Promise<WeatherDat
             feelsLike: Math.round(current.apparent_temperature),
             precipitation: current.precipitation,
             precipProb: current.precipitation_probability,
-            uvIndex: uvIndex
+            uvIndex: uvIndex,
+            weatherCode: current.weather_code
         };
     } catch (error) {
         console.error('Error fetching weather:', error);
-        // Fallback simple si falla la red
+        // Fallback simple si falla la red o API limit
         return {
             temp: 20,
             condition: 'Sin Datos',
             description: 'no disponible',
             icon: '03d',
             wind: 0,
-            humidity: 0
+            humidity: 0,
+            feelsLike: 20,
+            precipitation: 0,
+            precipProb: 0,
+            uvIndex: 0,
+            weatherCode: 0
         };
     }
 }
