@@ -159,6 +159,18 @@ const FriendSelection: React.FC = () => {
         if (!groupToDelete) return;
 
         try {
+            // Delete members first to avoid RLS cascade issues
+            const { error: membersError } = await supabase
+                .from('saved_group_members')
+                .delete()
+                .eq('group_id', groupToDelete);
+
+            if (membersError) {
+                console.error('Error deleting members:', membersError);
+                // Continue trying to delete group even if members deletion fails 
+                // (though logic suggests it might fail too if members exist)
+            }
+
             const { error } = await supabase
                 .from('saved_groups' as any)
                 .delete()
