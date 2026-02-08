@@ -44,7 +44,7 @@ import CapsPage from './pages/CapsPage';
 import CommunityPage from './pages/CommunityPage';
 import { useOnlineStatus } from './hooks/useOnlineStatus';
 import OfflineOverlay from './components/OfflineOverlay';
-import { setupPushNotifications } from './services/PushManager';
+
 
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { QueryProvider } from './context/QueryProvider';
@@ -87,11 +87,6 @@ const AppContent: React.FC = () => {
         }
       };
       checkOnboarding();
-
-      // Setup Push Notifications
-      setupPushNotifications(session.user.id).catch(err => {
-        console.warn('Push notification setup failed or not supported:', err);
-      });
     } else {
       setShowOnboarding(false);
     }

@@ -217,6 +217,18 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
             if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session) {
                 fetchNotifications();
                 subscribe(session.user.id);
+
+                // Check for pending device token
+                if (window.iOSPermissionStatuses?.deviceToken) {
+                    console.log('🔔 Found pending device token on login, saving...');
+                    saveDeviceToken(window.iOSPermissionStatuses.deviceToken);
+                } else if (window.iOSNative?.getDeviceToken) {
+                    const token = window.iOSNative.getDeviceToken();
+                    if (token) {
+                        console.log('🔔 Found pending device token (via getter) on login, saving...');
+                        saveDeviceToken(token);
+                    }
+                }
             } else if (event === 'SIGNED_OUT') {
                 setNotifications([]);
                 if (channel) {
