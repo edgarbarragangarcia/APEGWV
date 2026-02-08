@@ -72,18 +72,48 @@ const FriendSelection: React.FC = () => {
                 `);
 
             if (!error && data) {
-                setSavedGroups(data);
-                localStorage.setItem('cache_saved_groups', JSON.stringify(data));
+                console.log('Fetched saved groups RAW:', data);
+
+                // Manually fetch owner profiles to avoid complex join issues
+                const ownerIds = [...new Set(data.map((g: any) => g.owner_id))];
+                const { data: owners } = await supabase
+                    .from('profiles')
+                    .select('id, full_name, email, id_photo_url')
+                    .in('id', ownerIds as any[]);
+
+                const groupsWithOwners = data.map((g: any) => ({
+                    ...g,
+                    owner: owners?.find(o => o.id === g.owner_id) || null
+                }));
+
+                groupsWithOwners.forEach((g: any) => {
+                    console.log(`Group ${g.name} members:`, g.members);
+                    console.log(`Group ${g.name} owner:`, g.owner);
+                });
+
+                setSavedGroups(groupsWithOwners);
+                localStorage.setItem('cache_saved_groups', JSON.stringify(groupsWithOwners));
+            } else {
+                console.error('Error fetching saved groups:', error);
             }
         } catch (err) {
-            console.error('Error fetching saved groups:', err);
+            console.error('Error fetching saved groups caught:', err);
         }
     };
 
     const handleGroupClick = (group: any) => {
         // Prepare data for the next page
-        const allMembersProfiles = group.members.map((m: any) => m.profile).filter(Boolean);
-        // Exclude current user if they are in the list (though logic usually adds others)
+        let allMembersProfiles = group.members.map((m: any) => m.profile).filter(Boolean);
+
+        // Ensure owner is included in the list of "friends" if I am not the owner
+        if (group.owner && group.owner.id !== profile?.id) {
+            // Check if owner is already in list (unlikely but safe)
+            if (!allMembersProfiles.find((p: any) => p.id === group.owner.id)) {
+                allMembersProfiles.push(group.owner);
+            }
+        }
+
+        // Exclude current user if they are in the list
         const friendsOnly = allMembersProfiles.filter((p: any) => p.id !== profile?.id);
 
         navigate('/select-course', {
@@ -97,7 +127,15 @@ const FriendSelection: React.FC = () => {
     const editGroup = (group: any, e: React.MouseEvent) => {
         e.stopPropagation();
         // Prepare data for the edit page
-        const allMembersProfiles = group.members.map((m: any) => m.profile).filter(Boolean);
+        let allMembersProfiles = group.members.map((m: any) => m.profile).filter(Boolean);
+
+        // Ensure owner is included if I am not the owner
+        if (group.owner && group.owner.id !== profile?.id) {
+            if (!allMembersProfiles.find((p: any) => p.id === group.owner.id)) {
+                allMembersProfiles.push(group.owner);
+            }
+        }
+
         const friendsOnly = allMembersProfiles.filter((p: any) => p.id !== profile?.id);
 
         navigate('/create-group', {
