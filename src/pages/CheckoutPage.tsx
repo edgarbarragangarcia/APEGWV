@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
     MapPin, CreditCard,
-    ShieldCheck, Loader2, Camera, Scan,
-    CheckCircle2, Sparkles, Plus, X, AlertCircle, User, Phone, Edit3
+    ShieldCheck, Loader2,
+    CheckCircle2, Sparkles, Plus, X, AlertCircle, User, Phone, Edit3, Camera
 } from 'lucide-react';
 import PageHeader from '../components/PageHeader';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -11,6 +11,8 @@ import { useCart } from '../context/CartContext';
 import { supabase } from '../services/SupabaseManager';
 import CardInput from '../components/CardInput';
 import PageHero from '../components/PageHero';
+import CardScanner from '../components/CardScanner';
+import { encrypt } from '../services/EncryptionService';
 
 interface PaymentMethod {
     id: string;
@@ -18,6 +20,10 @@ interface PaymentMethod {
     card_type: string;
     is_default: boolean | null;
     user_id: string | null;
+    encrypted_number?: string;
+    encrypted_cvv?: string;
+    card_holder?: string;
+    expiry?: string;
 }
 
 const CheckoutPage: React.FC = () => {
@@ -39,6 +45,7 @@ const CheckoutPage: React.FC = () => {
     const [savedMethods, setSavedMethods] = useState<PaymentMethod[]>([]);
     // Initialize as null to indicate "not decided yet"
     const [selectedMethodId, setSelectedMethodId] = useState<string | 'new' | null>(null);
+    const [newCard, setNewCard] = useState<any>(null);
     const [loadingMethods, setLoadingMethods] = useState(true);
 
     const [shipping, setShipping] = useState({
@@ -91,7 +98,7 @@ const CheckoutPage: React.FC = () => {
         try {
             const { data, error } = await supabase
                 .from('payment_methods')
-                .select('*')
+                .select('id, last_four, card_type, is_default, card_holder, expiry, user_id')
                 .eq('user_id', userId);
 
             if (error) throw error;
@@ -114,23 +121,74 @@ const CheckoutPage: React.FC = () => {
     };
 
     const handlePlaceOrder = async () => {
-        // Input validation
-        if (!shipping.name || shipping.name.trim().length < 3) {
-            setError('Por favor ingresa un nombre válido (mínimo 3 caracteres)');
+        // Input validation - Only for actual orders, reservations use profile info or don't need shipping
+        if (!isReservation) {
+            if (!shipping.name || shipping.name.trim().length < 3) {
+                setError('Por favor ingresa un nombre válido (mínimo 3 caracteres)');
+                return;
+            }
+            if (!shipping.phone || !/^\d{7,10}$/.test(shipping.phone.replace(/\s/g, ''))) {
+                setError('Por favor ingresa un número de teléfono válido (7-10 dígitos)');
+                return;
+            }
+            if (!shipping.address || shipping.address.trim().length < 10) {
+                setError('Por favor ingresa una dirección completa (mínimo 10 caracteres)');
+                return;
+            }
+        }
+
+        // Validate payment method selection
+        if (!selectedMethodId) {
+            setError('Por favor selecciona un método de pago');
             return;
         }
-        if (!shipping.phone || !/^\d{7,10}$/.test(shipping.phone.replace(/\s/g, ''))) {
-            setError('Por favor ingresa un número de teléfono válido (7-10 dígitos)');
-            return;
-        }
-        if (!shipping.address || shipping.address.trim().length < 10) {
-            setError('Por favor ingresa una dirección completa (mínimo 10 caracteres)');
+
+        if (selectedMethodId === 'new' && !newCard) {
+            setError('Por favor completa todos los campos de la tarjeta');
             return;
         }
 
         setIsProcessing(true);
         setError(null);
         try {
+            // 1. Save New Payment Method if needed
+            if (selectedMethodId === 'new' && newCard) {
+                const lastFour = newCard.number.replace(/\s/g, '').slice(-4);
+                const cardType = newCard.number.startsWith('4') ? 'Visa' :
+                    newCard.number.startsWith('5') ? 'MasterCard' :
+                        newCard.number.startsWith('3') ? 'Amex' : 'Card';
+
+                // Encrypt sensitive data
+                const encryptedNumber = await encrypt(newCard.number.replace(/\s/g, ''), user.id);
+                const encryptedCVV = await encrypt(newCard.cvv, user.id);
+
+                const { error: methodError } = await supabase
+                    .from('payment_methods')
+                    .insert({
+                        user_id: user.id,
+                        last_four: lastFour,
+                        card_type: cardType,
+                        card_holder: newCard.name,
+                        expiry: newCard.expiry,
+                        encrypted_number: encryptedNumber,
+                        encrypted_cvv: encryptedCVV,
+                        is_default: savedMethods.length === 0
+                    } as any);
+
+                if (methodError) {
+                    console.error('Error saving payment method:', methodError);
+                    // PGRST204 or 42703 (undefined_column) means columns are missing in DB
+                    const isColumnError = methodError.code === 'PGRST204' || methodError.code === '42703' || methodError.message?.includes('column');
+
+                    if (!isColumnError) {
+                        throw methodError;
+                    } else {
+                        console.warn('Payment method not saved to DB because encrypted columns are missing.');
+                        setError('Nota: Tu tarjeta no se guardó permanentemente porque la base de datos necesita una actualización, pero procesaremos tu pedido actual.');
+                    }
+                }
+            }
+
             // Handle Reservation Payment
             if (isReservation) {
                 const { error } = await supabase.from('reservations').insert({
@@ -166,7 +224,7 @@ const CheckoutPage: React.FC = () => {
 
                 // Address logic
                 const fullAddress = shipping.city && !shipping.address.toLowerCase().includes(shipping.city.toLowerCase())
-                    ? `${shipping.address}, ${shipping.city}`
+                    ? `${shipping.address}, ${shipping.city} `
                     : shipping.address;
 
                 const { data: orderData, error: orderError } = await supabase.from('orders').insert({
@@ -256,9 +314,19 @@ const CheckoutPage: React.FC = () => {
 
     const runScanAnimation = () => {
         setShowScanner(true);
-        setTimeout(() => {
-            setShowScanner(false);
-        }, 3500);
+    };
+
+    const handleScanComplete = (data: { number: string; expiry: string }) => {
+        if (selectedMethodId === 'new') {
+            setNewCard((prev: any) => ({
+                ...prev,
+                number: data.number,
+                expiry: data.expiry || (prev?.expiry || '')
+            }));
+
+            // Trigger haptic feedback if available (handled in CardScanner, but added here for redundancy)
+            if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+        }
     };
 
     if (isSuccess) {
@@ -425,7 +493,7 @@ const CheckoutPage: React.FC = () => {
             {/* Area de Scroll */}
             <div style={{
                 position: 'absolute',
-                top: 'calc(var(--header-offset-top) + 78px)',
+                top: 'calc(var(--header-offset-top) + 50px)',
                 left: '0',
                 right: '0',
                 bottom: 0,
@@ -442,10 +510,12 @@ const CheckoutPage: React.FC = () => {
                 {/* ABORTING single replace to switch to multi_replace for cleaner state insertion */}
 
                 {/* Re-rendering original content to restart with multi_replace */}
-                <div style={{ display: 'flex', gap: '8px', marginBottom: '30px', opacity: isReservation ? 0 : 1 }}>
-                    <div style={{ flex: 1, height: '4px', background: 'var(--secondary)', borderRadius: '2px' }} />
-                    <div style={{ flex: 1, height: '4px', background: step === 2 ? 'var(--secondary)' : 'rgba(255,b255,b255,0.1)', borderRadius: '2px', transition: '0.3s' }} />
-                </div>
+                {!isReservation && (
+                    <div style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
+                        <div style={{ flex: 1, height: '4px', background: 'var(--secondary)', borderRadius: '2px' }} />
+                        <div style={{ flex: 1, height: '4px', background: step === 2 ? 'var(--secondary)' : 'rgba(255,255,255,0.1)', borderRadius: '2px', transition: '0.3s' }} />
+                    </div>
+                )}
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                     {step === 1 ? (
@@ -665,7 +735,7 @@ const CheckoutPage: React.FC = () => {
 
                             {!loadingMethods && selectedMethodId === 'new' && (
                                 <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }}>
-                                    <CardInput onComplete={() => { }} />
+                                    <CardInput onComplete={(data) => setNewCard(data)} data={newCard} />
                                 </motion.div>
                             )}
 
@@ -709,52 +779,12 @@ const CheckoutPage: React.FC = () => {
                     )}
                 </div>
 
-                {/* Card Scanner Overlay Simulation */}
-                <AnimatePresence>
-                    {showScanner && (
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            style={{
-                                position: 'fixed',
-                                inset: 0,
-                                background: 'black',
-                                zIndex: 1000,
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'center',
-                                justifyContent: 'center'
-                            }}
-                        >
-                            <div style={{
-                                width: '80%',
-                                aspectRatio: '1.6',
-                                border: '2px solid var(--secondary)',
-                                borderRadius: '20px',
-                                position: 'relative',
-                                overflow: 'hidden',
-                                boxShadow: '0 0 50px rgba(163, 230, 53, 0.5)'
-                            }}>
-                                <motion.div
-                                    animate={{ top: ['0%', '100%', '0%'] }}
-                                    transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
-                                    style={{
-                                        position: 'absolute',
-                                        left: 0,
-                                        right: 0,
-                                        height: '2px',
-                                        background: 'var(--secondary)',
-                                        boxShadow: '0 0 15px var(--secondary)'
-                                    }}
-                                />
-                                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(rgba(0,0,0,0), rgba(163, 230, 53, 0.1))' }} />
-                            </div>
-                            <p style={{ marginTop: '30px', fontWeight: '700', color: 'var(--secondary)', letterSpacing: '2px' }}>ESCANEANDO TARJETA...</p>
-                            <Scan size={32} color="var(--secondary)" className="animate-pulse" style={{ marginTop: '20px' }} />
-                        </motion.div>
-                    )}
-                </AnimatePresence>
+                {/* Card Scanner Implementation */}
+                <CardScanner
+                    isOpen={showScanner}
+                    onClose={() => setShowScanner(false)}
+                    onScanComplete={handleScanComplete}
+                />
 
                 <div style={{ padding: '30px 0', display: 'flex', justifyContent: 'center' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', opacity: 0.4 }}>

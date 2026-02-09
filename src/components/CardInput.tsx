@@ -11,15 +11,20 @@ interface CardData {
 
 interface CardInputProps {
     onComplete: (data: CardData) => void;
+    data?: CardData;
 }
 
-const CardInput: React.FC<CardInputProps> = ({ onComplete }) => {
-    const [card, setCard] = useState<CardData>({
+const CardInput: React.FC<CardInputProps> = ({ onComplete, data }) => {
+    const [card, setCard] = useState<CardData>(data || {
         number: '',
         name: '',
         expiry: '',
         cvv: ''
     });
+
+    React.useEffect(() => {
+        if (data) setCard(data);
+    }, [data]);
     const [isFlipped, setIsFlipped] = useState(false);
 
     const formatCardNumber = (value: string) => {

@@ -9,8 +9,9 @@ import PageHeader from '../components/PageHeader';
 import { motion } from 'framer-motion';
 import { supabase } from '../services/SupabaseManager';
 import Card from '../components/Card';
-import PageHero from '../components/PageHero';
 import CardInput from '../components/CardInput';
+import PageHero from '../components/PageHero';
+import { encrypt } from '../services/EncryptionService';
 
 interface PaymentMethod {
     id: string;
@@ -19,6 +20,8 @@ interface PaymentMethod {
     expiry: string;
     card_type: string;
     is_default: boolean | null;
+    encrypted_number?: string;
+    encrypted_cvv?: string;
 }
 
 const PaymentMethodsPage: React.FC = () => {
@@ -47,7 +50,7 @@ const PaymentMethodsPage: React.FC = () => {
         try {
             const { data, error } = await supabase
                 .from('payment_methods')
-                .select('*')
+                .select('id, last_four, card_type, is_default, card_holder, expiry')
                 .eq('user_id', userId)
                 .order('created_at', { ascending: false });
 
@@ -73,6 +76,10 @@ const PaymentMethodsPage: React.FC = () => {
             };
             const cardType = getCardType(cardData.number);
 
+            // Encrypt sensitive data
+            const encryptedNumber = await encrypt(cardData.number.replace(/\s/g, ''), user.id);
+            const encryptedCVV = await encrypt(cardData.cvv, user.id);
+
             const { data, error } = await supabase
                 .from('payment_methods')
                 .insert([{
@@ -81,8 +88,10 @@ const PaymentMethodsPage: React.FC = () => {
                     card_type: cardType,
                     card_holder: cardData.name,
                     expiry: cardData.expiry,
+                    encrypted_number: encryptedNumber,
+                    encrypted_cvv: encryptedCVV,
                     is_default: methods.length === 0 // First card is default
-                }])
+                }] as any)
                 .select()
                 .single();
 
@@ -91,9 +100,13 @@ const PaymentMethodsPage: React.FC = () => {
             setMethods([data as unknown as PaymentMethod, ...methods]);
             setShowAddForm(false);
             if (navigator.vibrate) navigator.vibrate(50);
-        } catch (err) {
+        } catch (err: any) {
             console.error('Error saving card:', err);
-            alert('Error al guardar la tarjeta');
+            if (err.code === 'PGRST204' || err.message?.includes('column')) {
+                alert('La base de datos no está actualizada. Por favor ejecuta el script SQL en Supabase para habilitar el guardado de tarjetas cifradas.');
+            } else {
+                alert('Error al guardar la tarjeta: ' + (err.message || 'Error desconocido'));
+            }
         } finally {
             setIsSaving(false);
         }

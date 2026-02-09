@@ -371,49 +371,47 @@ const MyReservations: React.FC<MyReservationsProps> = ({ onRequestSwitchTab }) =
     const modals = (
         <AnimatePresence>
             {showConfirmModal && (
-                <div style={{ position: 'fixed', inset: 0, zIndex: 2000, display: 'flex', alignItems: 'flex-start', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(10px)' }} onClick={() => setShowConfirmModal(false)}>
+                <div style={{
+                    position: 'fixed',
+                    inset: 0,
+                    zIndex: 2000,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    background: 'rgba(0,0,0,0.85)',
+                    backdropFilter: 'blur(8px)',
+                    padding: '20px'
+                }} onClick={() => setShowConfirmModal(false)}>
                     <motion.div
-                        initial={{ y: '-100%' }}
-                        animate={{ y: 0 }}
-                        exit={{ y: '-100%' }}
-                        transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.9 }}
                         onClick={(e) => e.stopPropagation()}
                         style={{
                             width: '100%',
-                            background: 'rgba(28, 28, 30, 0.98)',
-                            borderBottomLeftRadius: '30px',
-                            borderBottomRightRadius: '30px',
-                            padding: 'calc(40px + env(safe-area-inset-top)) 25px 30px',
+                            maxWidth: '320px',
+                            background: 'var(--primary)',
+                            borderRadius: '24px',
+                            padding: '30px 25px',
                             textAlign: 'center',
-                            borderBottom: '1px solid rgba(255,255,255,0.1)'
+                            border: '1px solid rgba(255,255,255,0.08)'
                         }}
                     >
-                        <div style={{
-                            width: '60px',
-                            height: '60px',
-                            borderRadius: '50%',
-                            background: 'rgba(248, 113, 113, 0.1)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            margin: '0 auto 20px'
-                        }}>
-                            <AlertCircle size={32} color="#f87171" />
-                        </div>
 
-                        <h2 style={{ fontSize: '22px', fontWeight: '900', color: 'white', marginBottom: '10px' }}>
-                            ¿Cancelar <span style={{ color: '#f87171' }}>Reserva</span>?
+                        <h2 style={{ fontSize: '20px', fontWeight: '900', color: 'white', marginBottom: '10px' }}>
+                            ¿Cancelar Reserva?
                         </h2>
-                        <p style={{ fontSize: '15px', color: 'rgba(255, 255, 255, 0.6)', marginBottom: '30px', lineHeight: '1.5' }}>
-                            Esta acción no se puede deshacer. Vas a cancelar tu salida en <strong>{(selectedRes as any)?.golf_courses?.name}</strong>.
+                        <p style={{ fontSize: '14px', color: 'var(--text-dim)', marginBottom: '25px', lineHeight: '1.5' }}>
+                            Perderás tu cupo en esta salida. ¿Estás seguro de continuar?
                         </p>
 
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                        <div style={{ display: 'flex', gap: '12px' }}>
                             <button
                                 onClick={() => setShowConfirmModal(false)}
                                 style={{
-                                    padding: '16px',
-                                    borderRadius: '16px',
+                                    flex: 1,
+                                    padding: '12px',
+                                    borderRadius: '15px',
                                     background: 'rgba(255,255,255,0.05)',
                                     color: 'white',
                                     fontWeight: '700',
@@ -426,15 +424,16 @@ const MyReservations: React.FC<MyReservationsProps> = ({ onRequestSwitchTab }) =
                                 onClick={handleCancel}
                                 disabled={isCancelling}
                                 style={{
-                                    padding: '16px',
-                                    borderRadius: '16px',
-                                    background: '#f87171',
+                                    flex: 1,
+                                    padding: '12px',
+                                    borderRadius: '15px',
+                                    background: '#ef4444',
                                     color: 'white',
-                                    fontWeight: '800',
+                                    fontWeight: '700',
                                     border: 'none'
                                 }}
                             >
-                                {isCancelling ? 'Cancelando...' : 'Sí, Cancelar'}
+                                {isCancelling ? 'Cancelando...' : 'Cancelar Cupo'}
                             </button>
                         </div>
                     </motion.div>
