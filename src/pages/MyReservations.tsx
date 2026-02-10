@@ -89,17 +89,30 @@ const MyReservations: React.FC<MyReservationsProps> = ({ onRequestSwitchTab }) =
     };
 
     const handleDelete = async () => {
-        if (!selectedRes) return;
+        if (!selectedRes) {
+            console.log('No reservation selected');
+            return;
+        }
 
-        setIsCancelling(true); // Reuse this state or create isDeleting
+        console.log('Attempting to delete reservation:', selectedRes.id);
+        setIsCancelling(true);
+
         try {
-            const { error } = await supabase
+            const { data, error } = await supabase
                 .from('reservations')
                 .delete()
-                .eq('id', selectedRes.id);
+                .eq('id', selectedRes.id)
+                .select();
 
-            if (error) throw error;
+            console.log('Delete response:', { data, error });
 
+            if (error) {
+                console.error('Supabase error:', error);
+                alert(`Error al eliminar: ${error.message}`);
+                throw error;
+            }
+
+            console.log('Reservation deleted successfully');
             setShowDeleteModal(false);
 
             // Refresh list
@@ -111,6 +124,7 @@ const MyReservations: React.FC<MyReservationsProps> = ({ onRequestSwitchTab }) =
 
         } catch (err) {
             console.error('Error deleting reservation:', err);
+            alert('Error al eliminar la reserva. Por favor intenta de nuevo.');
         } finally {
             setIsCancelling(false);
         }
