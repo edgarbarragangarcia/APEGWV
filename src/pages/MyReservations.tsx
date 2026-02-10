@@ -359,7 +359,8 @@ const MyReservations: React.FC<MyReservationsProps> = ({ onRequestSwitchTab }) =
                                                     position: 'relative'
                                                 }}>
                                                     <button
-                                                        onClick={() => {
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
                                                             setSelectedRes(res);
                                                             setShowDeleteModal(true);
                                                         }}
@@ -367,16 +368,23 @@ const MyReservations: React.FC<MyReservationsProps> = ({ onRequestSwitchTab }) =
                                                             position: 'absolute',
                                                             top: '12px',
                                                             right: '12px',
-                                                            background: 'none',
-                                                            border: 'none',
-                                                            color: 'var(--text-dim)',
-                                                            padding: '5px'
+                                                            width: '32px',
+                                                            height: '32px',
+                                                            borderRadius: '8px',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
+                                                            background: 'rgba(239, 68, 68, 0.15)',
+                                                            border: '1px solid rgba(239, 68, 68, 0.3)',
+                                                            color: '#ef4444',
+                                                            cursor: 'pointer',
+                                                            zIndex: 50
                                                         }}
                                                     >
                                                         <Trash2 size={16} />
                                                     </button>
 
-                                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', paddingRight: '30px' }}>
+                                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', paddingRight: '45px' }}>
                                                         <h4 style={{ fontSize: '14px', fontWeight: '700', color: 'white' }}>
                                                             {(res as any).golf_courses?.name || 'Green Fee'}
                                                         </h4>
