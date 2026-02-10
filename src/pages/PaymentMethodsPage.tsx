@@ -13,6 +13,8 @@ import CardInput from '../components/CardInput';
 import PageHero from '../components/PageHero';
 import { encrypt } from '../services/EncryptionService';
 
+
+
 interface PaymentMethod {
     id: string;
     card_holder: string;
@@ -31,6 +33,7 @@ const PaymentMethodsPage: React.FC = () => {
     const [showAddForm, setShowAddForm] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [user, setUser] = useState<any>(null);
+    const [scannedCard, setScannedCard] = useState<any>(null);
 
     useEffect(() => {
         const checkUser = async () => {
@@ -64,6 +67,33 @@ const PaymentMethodsPage: React.FC = () => {
     };
 
     // Handlers
+    const handleScan = async () => {
+        console.log("Attempting to start OCR scan...");
+        if (window.iOSNative && window.iOSNative.startOCR) {
+            try {
+                console.log("Calling window.iOSNative.startOCR()");
+                const data = await window.iOSNative.startOCR();
+                console.log("Scanned data received:", data);
+                if (data) {
+                    setScannedCard({
+                        number: data.number || '',
+                        expiry: data.expiry || '',
+                        name: data.name || ''
+                    });
+                    if (navigator.vibrate) navigator.vibrate(50);
+                } else {
+                    console.warn("OCR returned no data");
+                }
+            } catch (err) {
+                console.error("OCR Error in Web:", err);
+                alert("Error al escanear: " + err);
+            }
+        } else {
+            console.error("window.iOSNative.startOCR is not available");
+            alert("El escáner solo está disponible en la app nativa (iOS 16+). Si estás en la app, por favor reporta este error.");
+        }
+    };
+
     const handleAddCard = async (cardData: any) => {
         setIsSaving(true);
         try {
@@ -99,10 +129,46 @@ const PaymentMethodsPage: React.FC = () => {
 
             setMethods([data as unknown as PaymentMethod, ...methods]);
             setShowAddForm(false);
+            setScannedCard(null); // Reset scanned data
             if (navigator.vibrate) navigator.vibrate(50);
         } catch (err: any) {
             console.error('Error saving card:', err);
-            if (err.code === 'PGRST204' || err.message?.includes('column')) {
+            const isColumnError = err.code === 'PGRST204' || err.code === '42703' || err.message?.includes('column');
+
+            if (isColumnError) {
+                try {
+                    console.warn('Falling back to basic card save...');
+                    const lastFour = cardData.number.replace(/\s/g, '').slice(-4);
+                    const getCardType = (num: string) => {
+                        if (num.startsWith('4')) return 'Visa';
+                        if (num.startsWith('5')) return 'MasterCard';
+                        if (num.startsWith('3')) return 'Amex';
+                        return 'Card';
+                    };
+
+                    const { data, error } = await supabase
+                        .from('payment_methods')
+                        .insert([{
+                            user_id: user.id,
+                            last_four: lastFour,
+                            card_type: getCardType(cardData.number),
+                            card_holder: cardData.name || 'Sin nombre',
+                            expiry: cardData.expiry || '00/00',
+                            is_default: methods.length === 0
+                        }] as any)
+                        .select()
+                        .single();
+
+                    if (!error && data) {
+                        setMethods([data as unknown as PaymentMethod, ...methods]);
+                        setShowAddForm(false);
+                        setScannedCard(null);
+                        alert('Tarjeta guardada (sin cifrado debido a que la DB no está actualizada).');
+                        return;
+                    }
+                } catch (fallbackErr) {
+                    console.error('Fallback save failed:', fallbackErr);
+                }
                 alert('La base de datos no está actualizada. Por favor ejecuta el script SQL en Supabase para habilitar el guardado de tarjetas cifradas.');
             } else {
                 alert('Error al guardar la tarjeta: ' + (err.message || 'Error desconocido'));
@@ -279,12 +345,26 @@ const PaymentMethodsPage: React.FC = () => {
                     <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
                             <h3 style={{ fontSize: '18px', fontWeight: '800' }}>Nueva Tarjeta</h3>
-                            <div style={{ color: 'var(--secondary)', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: '700' }}>
-                                <Camera size={16} /> ESCÁNER ACTIVO
-                            </div>
+                            <button
+                                onClick={handleScan}
+                                style={{
+                                    color: 'var(--secondary)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '6px',
+                                    fontSize: '12px',
+                                    fontWeight: '700',
+                                    background: 'rgba(163, 230, 53, 0.1)',
+                                    border: '1px solid rgba(163, 230, 53, 0.2)',
+                                    padding: '6px 12px',
+                                    borderRadius: '8px'
+                                }}
+                            >
+                                <Camera size={16} /> ESCANEAR TARJETA
+                            </button>
                         </div>
 
-                        <CardInput onComplete={handleAddCard} />
+                        <CardInput onComplete={handleAddCard} data={scannedCard} />
 
                         <div style={{ marginTop: '30px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', opacity: 0.5 }}>

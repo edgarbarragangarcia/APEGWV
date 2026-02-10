@@ -176,15 +176,29 @@ const CheckoutPage: React.FC = () => {
                     } as any);
 
                 if (methodError) {
-                    console.error('Error saving payment method:', methodError);
+                    console.error('Error saving payment method (full):', methodError);
                     // PGRST204 or 42703 (undefined_column) means columns are missing in DB
                     const isColumnError = methodError.code === 'PGRST204' || methodError.code === '42703' || methodError.message?.includes('column');
 
-                    if (!isColumnError) {
-                        throw methodError;
+                    if (isColumnError) {
+                        console.warn('Falling back to basic payment method save (no encryption columns)...');
+                        // Try saving with card_holder & expiry (NOT NULL columns)
+                        const { error: fallbackError } = await supabase
+                            .from('payment_methods')
+                            .insert({
+                                user_id: user.id,
+                                last_four: lastFour,
+                                card_type: cardType,
+                                card_holder: newCard.name || 'Sin nombre',
+                                expiry: newCard.expiry || '00/00',
+                                is_default: savedMethods.length === 0
+                            } as any);
+
+                        if (fallbackError) {
+                            console.error('Fallback save also failed:', fallbackError);
+                        }
                     } else {
-                        console.warn('Payment method not saved to DB because encrypted columns are missing.');
-                        setError('Nota: Tu tarjeta no se guardó permanentemente porque la base de datos necesita una actualización, pero procesaremos tu pedido actual.');
+                        throw methodError;
                     }
                 }
             }

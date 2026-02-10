@@ -15,16 +15,26 @@ interface CardInputProps {
 }
 
 const CardInput: React.FC<CardInputProps> = ({ onComplete, data }) => {
-    const [card, setCard] = useState<CardData>(data || {
+    const [card, setCard] = useState<CardData>({
         number: '',
         name: '',
         expiry: '',
         cvv: ''
     });
 
+    // Update internal state when external data changes (e.g. from scanner)
     React.useEffect(() => {
-        if (data) setCard(data);
+        if (data) {
+            setCard(prev => ({
+                ...prev,
+                ...data,
+                // Keep existing CVV or name if not provided by scanner, but override if new data has it
+                name: data.name || prev.name,
+                cvv: data.cvv || prev.cvv
+            }));
+        }
     }, [data]);
+
     const [isFlipped, setIsFlipped] = useState(false);
 
     const formatCardNumber = (value: string) => {

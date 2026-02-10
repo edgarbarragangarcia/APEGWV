@@ -3,18 +3,7 @@ import { supabase } from '../services/SupabaseManager';
 import type { Notification } from '../services/SupabaseManager';
 
 // Declare iOS Native API
-declare global {
-    interface Window {
-        iOSNative?: {
-            requestNotifications: () => Promise<any>;
-            getDeviceToken: () => string | null;
-        };
-        iOSPermissionStatuses?: {
-            notifications?: string;
-            deviceToken?: string;
-        };
-    }
-}
+
 
 interface NotificationContextType {
     notifications: Notification[];
