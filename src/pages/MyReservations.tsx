@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../services/SupabaseManager';
 import Card from '../components/Card';
-import { Calendar, Clock, MapPin, AlertCircle, CheckCircle2, ChevronDown } from 'lucide-react';
+import { Calendar, Clock, MapPin, AlertCircle, CheckCircle2, ChevronDown, Trash2 } from 'lucide-react';
 import PageHeader from '../components/PageHeader';
 import PageHero from '../components/PageHero';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -87,6 +87,37 @@ const MyReservations: React.FC<MyReservationsProps> = ({ onRequestSwitchTab }) =
             setIsCancelling(false);
         }
     };
+
+    const handleDelete = async () => {
+        if (!selectedRes) return;
+
+        setIsCancelling(true); // Reuse this state or create isDeleting
+        try {
+            const { error } = await supabase
+                .from('reservations')
+                .delete()
+                .eq('id', selectedRes.id);
+
+            if (error) throw error;
+
+            setShowDeleteModal(false);
+
+            // Refresh list
+            await fetchReservations();
+            setSelectedRes(null);
+
+            // Optional: Show success toast or small notification
+            if (navigator.vibrate) navigator.vibrate(50);
+
+        } catch (err) {
+            console.error('Error deleting reservation:', err);
+        } finally {
+            setIsCancelling(false);
+        }
+    };
+
+    // Add state for delete modal
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
 
     if (loading) {
         return (
@@ -324,9 +355,28 @@ const MyReservations: React.FC<MyReservationsProps> = ({ onRequestSwitchTab }) =
                                                     border: '1px solid rgba(255,255,255,0.03)',
                                                     display: 'flex',
                                                     flexDirection: 'column',
-                                                    gap: '8px'
+                                                    gap: '8px',
+                                                    position: 'relative'
                                                 }}>
-                                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                                    <button
+                                                        onClick={() => {
+                                                            setSelectedRes(res);
+                                                            setShowDeleteModal(true);
+                                                        }}
+                                                        style={{
+                                                            position: 'absolute',
+                                                            top: '12px',
+                                                            right: '12px',
+                                                            background: 'none',
+                                                            border: 'none',
+                                                            color: 'var(--text-dim)',
+                                                            padding: '5px'
+                                                        }}
+                                                    >
+                                                        <Trash2 size={16} />
+                                                    </button>
+
+                                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', paddingRight: '30px' }}>
                                                         <h4 style={{ fontSize: '14px', fontWeight: '700', color: 'white' }}>
                                                             {(res as any).golf_courses?.name || 'Green Fee'}
                                                         </h4>
@@ -370,6 +420,7 @@ const MyReservations: React.FC<MyReservationsProps> = ({ onRequestSwitchTab }) =
 
     const modals = (
         <AnimatePresence>
+            {/* Modal Cancelación Cupo (Existente) */}
             {showConfirmModal && (
                 <div style={{
                     position: 'fixed',
@@ -434,6 +485,77 @@ const MyReservations: React.FC<MyReservationsProps> = ({ onRequestSwitchTab }) =
                                 }}
                             >
                                 {isCancelling ? 'Cancelando...' : 'Cancelar Cupo'}
+                            </button>
+                        </div>
+                    </motion.div>
+                </div>
+            )}
+
+            {/* Modal Eliminar del Historial (Nuevo) */}
+            {showDeleteModal && (
+                <div style={{
+                    position: 'fixed',
+                    inset: 0,
+                    zIndex: 2000,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    background: 'rgba(0,0,0,0.85)',
+                    backdropFilter: 'blur(8px)',
+                    padding: '20px'
+                }} onClick={() => setShowDeleteModal(false)}>
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.9 }}
+                        onClick={(e) => e.stopPropagation()}
+                        style={{
+                            width: '100%',
+                            maxWidth: '320px',
+                            background: 'var(--primary)',
+                            borderRadius: '24px',
+                            padding: '30px 25px',
+                            textAlign: 'center',
+                            border: '1px solid rgba(255,255,255,0.08)'
+                        }}
+                    >
+                        <Trash2 size={40} color="#ef4444" style={{ marginBottom: '15px', opacity: 0.8 }} />
+                        <h2 style={{ fontSize: '20px', fontWeight: '900', color: 'white', marginBottom: '10px' }}>
+                            ¿Eliminar del Historial?
+                        </h2>
+                        <p style={{ fontSize: '14px', color: 'var(--text-dim)', marginBottom: '25px', lineHeight: '1.5' }}>
+                            Esta acción eliminará permanentemente este registro de tu historial.
+                        </p>
+
+                        <div style={{ display: 'flex', gap: '12px' }}>
+                            <button
+                                onClick={() => setShowDeleteModal(false)}
+                                style={{
+                                    flex: 1,
+                                    padding: '12px',
+                                    borderRadius: '15px',
+                                    background: 'rgba(255,255,255,0.05)',
+                                    color: 'white',
+                                    fontWeight: '700',
+                                    border: 'none'
+                                }}
+                            >
+                                Cancelar
+                            </button>
+                            <button
+                                onClick={handleDelete}
+                                disabled={isCancelling}
+                                style={{
+                                    flex: 1,
+                                    padding: '12px',
+                                    borderRadius: '15px',
+                                    background: '#ef4444',
+                                    color: 'white',
+                                    fontWeight: '700',
+                                    border: 'none'
+                                }}
+                            >
+                                {isCancelling ? 'Eliminando...' : 'Eliminar'}
                             </button>
                         </div>
                     </motion.div>
