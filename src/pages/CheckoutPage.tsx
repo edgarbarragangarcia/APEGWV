@@ -11,7 +11,7 @@ import { useCart } from '../context/CartContext';
 import { supabase } from '../services/SupabaseManager';
 import CardInput from '../components/CardInput';
 import PageHero from '../components/PageHero';
-// Removed: import CardScanner from '../components/CardScanner';
+import CardScanner from '../components/CardScanner';
 import { encrypt } from '../services/EncryptionService';
 
 interface PaymentMethod {
@@ -36,6 +36,7 @@ const CheckoutPage: React.FC = () => {
     const totalAmount = isReservation ? reservationData.price : cartTotal;
 
     const [step, setStep] = useState<1 | 2>(isReservation ? 2 : 1);
+    const [showScanner, setShowScanner] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -325,30 +326,22 @@ const CheckoutPage: React.FC = () => {
         }
     };
 
-    const handleScan = async () => {
-        if (window.iOSNative && window.iOSNative.startOCR) {
-            try {
-                const data = await window.iOSNative.startOCR();
-                if (data && data.number) {
-                    setNewCard((prev: any) => ({
-                        ...prev,
-                        number: data.number,
-                        expiry: data.expiry || (prev?.expiry || ''),
-                        name: data.name || (prev?.name || '')
-                    }));
-                    if (navigator.vibrate) navigator.vibrate(50);
-                }
-            } catch (err) {
-                console.error("Native OCR Error:", err);
-            }
+    const runScanAnimation = () => {
+        setShowScanner(true);
+    };
+
+    const handleScanComplete = (data: { number: string; expiry: string }) => {
+        if (selectedMethodId === 'new') {
+            setNewCard((prev: any) => ({
+                ...prev,
+                number: data.number,
+                expiry: data.expiry || (prev?.expiry || '')
+            }));
+
+            // Trigger haptic feedback if available (handled in CardScanner, but added here for redundancy)
+            if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
         }
     };
-
-    const runScanAnimation = () => {
-        handleScan();
-    };
-
-    // Unified scanner handling via window.iOSNative.startOCR
 
     if (isSuccess) {
         return (
@@ -800,7 +793,12 @@ const CheckoutPage: React.FC = () => {
                     )}
                 </div>
 
-
+                {/* Card Scanner Implementation */}
+                <CardScanner
+                    isOpen={showScanner}
+                    onClose={() => setShowScanner(false)}
+                    onScanComplete={handleScanComplete}
+                />
 
                 <div style={{ padding: '30px 0', display: 'flex', justifyContent: 'center' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', opacity: 0.4 }}>

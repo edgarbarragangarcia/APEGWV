@@ -221,7 +221,7 @@ const PaymentMethodsPage: React.FC = () => {
             position: 'fixed',
             inset: 0
         }}>
-            <PageHero />
+            <PageHero image="https://images.unsplash.com/photo-1596733430284-f7437764b1a9?q=80&w=2070&auto=format&fit=crop" />
 
             {/* Header Fijo */}
             <div style={{
@@ -246,7 +246,7 @@ const PaymentMethodsPage: React.FC = () => {
             {/* Area de Scroll */}
             <div style={{
                 position: 'absolute',
-                top: 'calc(var(--header-offset-top) + 50px)',
+                top: 'calc(var(--header-offset-top) + 78px)',
                 left: '0',
                 right: '0',
                 bottom: 'calc(var(--nav-height))',
@@ -344,25 +344,23 @@ const PaymentMethodsPage: React.FC = () => {
                 ) : (
                     <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                            <h3 style={{ fontSize: '18px', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                <CreditCard size={20} color="var(--secondary)" /> Pago Seguro
-                            </h3>
+                            <h3 style={{ fontSize: '18px', fontWeight: '800' }}>Nueva Tarjeta</h3>
                             <button
                                 onClick={handleScan}
                                 style={{
-                                    background: 'rgba(163, 230, 53, 0.1)',
-                                    border: '1px solid var(--secondary)',
                                     color: 'var(--secondary)',
-                                    padding: '8px 12px',
-                                    borderRadius: '10px',
-                                    fontSize: '12px',
-                                    fontWeight: '700',
                                     display: 'flex',
                                     alignItems: 'center',
-                                    gap: '6px'
+                                    gap: '6px',
+                                    fontSize: '12px',
+                                    fontWeight: '700',
+                                    background: 'rgba(163, 230, 53, 0.1)',
+                                    border: '1px solid rgba(163, 230, 53, 0.2)',
+                                    padding: '6px 12px',
+                                    borderRadius: '8px'
                                 }}
                             >
-                                <Camera size={14} /> ESCANEAR
+                                <Camera size={16} /> ESCANEAR TARJETA
                             </button>
                         </div>
 
