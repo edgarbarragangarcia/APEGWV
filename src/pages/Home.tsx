@@ -887,11 +887,9 @@ const Home: React.FC = () => {
                                     {/* Header Action Buttons Overlay */}
                                     <div style={{
                                         position: 'absolute',
-                                        top: '40px',
+                                        top: '50%',
                                         left: '20px',
-                                        right: '20px',
-                                        display: 'flex',
-                                        justifyContent: 'space-between',
+                                        transform: 'translateY(-50%)',
                                         zIndex: 10
                                     }}>
                                         <button
