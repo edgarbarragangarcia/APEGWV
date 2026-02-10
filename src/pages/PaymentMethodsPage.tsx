@@ -11,6 +11,7 @@ import { supabase } from '../services/SupabaseManager';
 import Card from '../components/Card';
 import CardInput from '../components/CardInput';
 import PageHero from '../components/PageHero';
+import CardScanner from '../components/CardScanner';
 import { encrypt } from '../services/EncryptionService';
 
 
@@ -31,6 +32,7 @@ const PaymentMethodsPage: React.FC = () => {
     const [methods, setMethods] = useState<PaymentMethod[]>([]);
     const [loading, setLoading] = useState(true);
     const [showAddForm, setShowAddForm] = useState(false);
+    const [showScanner, setShowScanner] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [user, setUser] = useState<any>(null);
     const [scannedCard, setScannedCard] = useState<any>(null);
@@ -67,31 +69,17 @@ const PaymentMethodsPage: React.FC = () => {
     };
 
     // Handlers
-    const handleScan = async () => {
-        console.log("Attempting to start OCR scan...");
-        if (window.iOSNative && window.iOSNative.startOCR) {
-            try {
-                console.log("Calling window.iOSNative.startOCR()");
-                const data = await window.iOSNative.startOCR();
-                console.log("Scanned data received:", data);
-                if (data) {
-                    setScannedCard({
-                        number: data.number || '',
-                        expiry: data.expiry || '',
-                        name: data.name || ''
-                    });
-                    if (navigator.vibrate) navigator.vibrate(50);
-                } else {
-                    console.warn("OCR returned no data");
-                }
-            } catch (err) {
-                console.error("OCR Error in Web:", err);
-                alert("Error al escanear: " + err);
-            }
-        } else {
-            console.error("window.iOSNative.startOCR is not available");
-            alert("El escáner solo está disponible en la app nativa (iOS 16+). Si estás en la app, por favor reporta este error.");
-        }
+    const handleScan = () => {
+        setShowScanner(true);
+    };
+
+    const handleScanComplete = (data: { number: string; expiry: string }) => {
+        setScannedCard({
+            number: data.number,
+            expiry: data.expiry,
+            name: ''
+        });
+        if (navigator.vibrate) navigator.vibrate(50);
     };
 
     const handleAddCard = async (cardData: any) => {
@@ -386,6 +374,12 @@ const PaymentMethodsPage: React.FC = () => {
                     <CheckCircle2 size={32} style={{ margin: '0 auto 10px' }} />
                     <p style={{ fontSize: '11px', fontWeight: '700' }}>APEG SECURE PLATFORM</p>
                 </div>
+
+                <CardScanner
+                    isOpen={showScanner}
+                    onClose={() => setShowScanner(false)}
+                    onScanComplete={handleScanComplete}
+                />
             </div>
         </div>
     );
