@@ -20,6 +20,9 @@ interface Window {
         // Sensors
         startSensors?: (interval?: number) => void;
         stopSensors?: () => void;
+
+        // External URLs (for opening native apps)
+        openExternalURL?: (url: string) => void;
     };
 
     iOSPermissionStatuses?: {
