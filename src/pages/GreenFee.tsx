@@ -253,33 +253,6 @@ const GreenFee: React.FC = () => {
                                         <div style={{ position: 'absolute', bottom: '15px', left: '20px', right: '20px' }}>
                                             <h3 style={{ fontSize: '22px', fontWeight: '900', color: 'white', lineHeight: '1.1' }}>{course.name}</h3>
                                         </div>
-                                        {/* Navigation Button */}
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                setNavOptions({ name: course.name, location: `${course.name}, ${course.location}` });
-                                            }}
-                                            style={{
-                                                position: 'absolute',
-                                                bottom: '15px',
-                                                right: '15px',
-                                                width: '40px',
-                                                height: '40px',
-                                                borderRadius: '12px',
-                                                background: 'rgba(255,255,255,0.95)',
-                                                backdropFilter: 'blur(8px)',
-                                                border: '1px solid rgba(255,255,255,0.2)',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                cursor: 'pointer',
-                                                zIndex: 20,
-                                                padding: '8px'
-                                            }}
-                                            className="hover-opacity"
-                                        >
-                                            <img src="/images/waze.png" style={{ width: '24px', height: '24px' }} alt="Waze" />
-                                        </button>
                                         {!course.available && (
                                             <div style={{
                                                 position: 'absolute',
