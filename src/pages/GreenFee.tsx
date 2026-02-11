@@ -424,7 +424,7 @@ const GreenFee: React.FC = () => {
                                 >
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                                         <div style={{ width: '40px', height: '40px', background: 'white', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                            <img src="https://upload.wikimedia.org/wikipedia/commons/6/66/Waze_logo.svg" style={{ width: '24px' }} alt="Waze" />
+                                            <img src="/images/waze.png" style={{ width: '24px' }} alt="Waze" />
                                         </div>
                                         Waze
                                     </div>
