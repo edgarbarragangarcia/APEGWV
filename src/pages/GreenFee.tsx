@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { MapPin, ChevronRight, Star, Filter, LayoutGrid, Ticket } from 'lucide-react';
+import { MapPin, ChevronRight, Star, Filter, LayoutGrid, Ticket, ExternalLink, X } from 'lucide-react';
 import Card from '../components/Card';
 import PageHeader from '../components/PageHeader';
 import PageHero from '../components/PageHero';
@@ -13,6 +14,7 @@ const GreenFee: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const [selectedCity, setSelectedCity] = useState('Todas');
+    const [navOptions, setNavOptions] = useState<{ name: string, location: string } | null>(null);
     const [activeTab, setActiveTab] = useState<'courses' | 'reservations'>('courses');
     const [dbCourses, setDbCourses] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
@@ -251,6 +253,33 @@ const GreenFee: React.FC = () => {
                                         <div style={{ position: 'absolute', bottom: '15px', left: '20px', right: '20px' }}>
                                             <h3 style={{ fontSize: '22px', fontWeight: '900', color: 'white', lineHeight: '1.1' }}>{course.name}</h3>
                                         </div>
+                                        {/* Navigation Button */}
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setNavOptions({ name: course.name, location: `${course.name}, ${course.location}` });
+                                            }}
+                                            style={{
+                                                position: 'absolute',
+                                                bottom: '15px',
+                                                right: '15px',
+                                                width: '40px',
+                                                height: '40px',
+                                                borderRadius: '12px',
+                                                background: 'rgba(255,255,255,0.95)',
+                                                backdropFilter: 'blur(8px)',
+                                                border: '1px solid rgba(255,255,255,0.2)',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                cursor: 'pointer',
+                                                zIndex: 20,
+                                                padding: '8px'
+                                            }}
+                                            className="hover-opacity"
+                                        >
+                                            <img src="/images/waze.png" style={{ width: '24px', height: '24px' }} alt="Waze" />
+                                        </button>
                                         {!course.available && (
                                             <div style={{
                                                 position: 'absolute',
@@ -310,6 +339,102 @@ const GreenFee: React.FC = () => {
                     <MyReservations onRequestSwitchTab={() => setActiveTab('courses')} />
                 )}
             </div>
+
+            {/* Navigation Modal */}
+            <AnimatePresence>
+                {navOptions && (
+                    <div
+                        onClick={() => setNavOptions(null)}
+                        style={{ position: 'fixed', inset: 0, zIndex: 3000, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)' }}
+                    >
+                        <motion.div
+                            initial={{ y: 300 }}
+                            animate={{ y: 0 }}
+                            exit={{ y: 300 }}
+                            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                            onClick={(e: React.MouseEvent) => e.stopPropagation()}
+                            style={{
+                                width: '100%',
+                                maxWidth: '450px',
+                                background: 'rgba(15, 30, 15, 0.98)',
+                                borderTopLeftRadius: '32px',
+                                borderTopRightRadius: '32px',
+                                padding: '30px 24px 50px',
+                                borderTop: '1px solid rgba(255,b255,b255,0.1)',
+                                boxShadow: '0 -20px 40px rgba(0,0,0,0.4)'
+                            }}
+                        >
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px' }}>
+                                <div>
+                                    <h3 style={{ fontSize: '20px', fontWeight: '900', color: 'white' }}>¿Cómo quieres <span style={{ color: 'var(--secondary)' }}>llegar</span>?</h3>
+                                    <p style={{ fontSize: '12px', color: 'var(--text-dim)', marginTop: '2px' }}>{navOptions.name}</p>
+                                </div>
+                                <button onClick={() => setNavOptions(null)} style={{ background: 'rgba(255,255,255,0.05)', border: 'none', borderRadius: '50%', padding: '8px', color: 'white' }}>
+                                    <X size={20} />
+                                </button>
+                            </div>
+
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                                <button
+                                    onClick={() => {
+                                        window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(navOptions.location)}`, '_blank');
+                                        setNavOptions(null);
+                                    }}
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'space-between',
+                                        padding: '18px 24px',
+                                        background: 'rgba(255,255,255,0.05)',
+                                        borderRadius: '20px',
+                                        border: '1px solid rgba(255,255,255,0.1)',
+                                        color: 'white',
+                                        fontWeight: '700',
+                                        fontSize: '15px',
+                                        cursor: 'pointer'
+                                    }}
+                                >
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                        <div style={{ width: '40px', height: '40px', background: 'white', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                            <img src="https://upload.wikimedia.org/wikipedia/commons/3/39/Google_Maps_icon_%282020%29.svg" style={{ width: '24px' }} alt="Google Maps" />
+                                        </div>
+                                        Google Maps
+                                    </div>
+                                    <ExternalLink size={18} opacity={0.5} />
+                                </button>
+
+                                <button
+                                    onClick={() => {
+                                        window.open(`https://waze.com/ul?q=${encodeURIComponent(navOptions.location)}`, '_blank');
+                                        setNavOptions(null);
+                                    }}
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'space-between',
+                                        padding: '18px 24px',
+                                        background: 'rgba(255,255,255,0.05)',
+                                        borderRadius: '20px',
+                                        border: '1px solid rgba(255,255,255,0.1)',
+                                        color: 'white',
+                                        fontWeight: '700',
+                                        fontSize: '15px',
+                                        cursor: 'pointer'
+                                    }}
+                                >
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                        <div style={{ width: '40px', height: '40px', background: 'white', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                            <img src="https://upload.wikimedia.org/wikipedia/commons/6/66/Waze_logo.svg" style={{ width: '24px' }} alt="Waze" />
+                                        </div>
+                                        Waze
+                                    </div>
+                                    <ExternalLink size={18} opacity={0.5} />
+                                </button>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
         </div>
 
     );

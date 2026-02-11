@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, ChevronRight, CheckCircle2, Loader2 } from 'lucide-react';
+import { MapPin, ChevronRight, CheckCircle2, Loader2, ExternalLink, X } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '../services/SupabaseManager';
 import PageHeader from '../components/PageHeader';
@@ -17,6 +17,7 @@ const CourseReservation: React.FC = () => {
     const [selectedTime, setSelectedTime] = useState<string | null>(null);
     const [isReserved, setIsReserved] = useState(false);
     const [priceOverrides, setPriceOverrides] = useState<any[]>([]);
+    const [navOptions, setNavOptions] = useState<{ name: string, location: string } | null>(null);
 
     React.useEffect(() => {
         const fetchCourse = async () => {
@@ -251,9 +252,30 @@ const CourseReservation: React.FC = () => {
                                 <h1 style={{ fontSize: '28px', color: 'white', fontWeight: '900' }}>
                                     {course.name.split(' ')[0]} <span style={{ color: 'var(--secondary)' }}>{course.name.split(' ').slice(1).join(' ')}</span>
                                 </h1>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: 'rgba(255,255,255,0.8)', fontSize: '14px' }}>
-                                    <MapPin size={14} />
-                                    <span>{course.address || course.location}</span>
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: 'rgba(255,255,255,0.8)', fontSize: '14px' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                        <MapPin size={14} />
+                                        <span>{course.address || course.location}</span>
+                                    </div>
+                                    <button
+                                        onClick={() => setNavOptions({ name: course.name, location: course.address || course.location })}
+                                        style={{
+                                            padding: '8px 12px',
+                                            borderRadius: '10px',
+                                            background: 'rgba(255,255,255,0.95)',
+                                            backdropFilter: 'blur(8px)',
+                                            border: '1px solid rgba(255,255,255,0.1)',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '6px',
+                                            color: '#000',
+                                            fontSize: '12px',
+                                            fontWeight: '700',
+                                            cursor: 'pointer'
+                                        }}
+                                    >
+                                        <img src="https://upload.wikimedia.org/wikipedia/commons/6/66/Waze_logo.svg" style={{ width: '16px', height: '16px' }} alt="Waze" /> CÓMO LLEGAR
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -591,6 +613,103 @@ const CourseReservation: React.FC = () => {
                             <ChevronRight size={28} />
                         </motion.button>
                     </motion.div>
+                )}
+            </AnimatePresence>
+            {/* Final del Área de Scroll */}
+
+            {/* Navigation Modal */}
+            <AnimatePresence>
+                {navOptions && (
+                    <div
+                        onClick={() => setNavOptions(null)}
+                        style={{ position: 'fixed', inset: 0, zIndex: 3000, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)' }}
+                    >
+                        <motion.div
+                            initial={{ y: 300 }}
+                            animate={{ y: 0 }}
+                            exit={{ y: 300 }}
+                            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                            onClick={(e: React.MouseEvent) => e.stopPropagation()}
+                            style={{
+                                width: '100%',
+                                maxWidth: '450px',
+                                background: 'rgba(15, 30, 15, 0.98)',
+                                borderTopLeftRadius: '32px',
+                                borderTopRightRadius: '32px',
+                                padding: '30px 24px 50px',
+                                borderTop: '1px solid rgba(255,b255,b255,0.1)',
+                                boxShadow: '0 -20px 40px rgba(0,0,0,0.4)'
+                            }}
+                        >
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px' }}>
+                                <div>
+                                    <h3 style={{ fontSize: '20px', fontWeight: '900', color: 'white' }}>¿Cómo quieres <span style={{ color: 'var(--secondary)' }}>llegar</span>?</h3>
+                                    <p style={{ fontSize: '12px', color: 'var(--text-dim)', marginTop: '2px' }}>{navOptions.name}</p>
+                                </div>
+                                <button onClick={() => setNavOptions(null)} style={{ background: 'rgba(255,255,255,0.05)', border: 'none', borderRadius: '50%', padding: '8px', color: 'white' }}>
+                                    <X size={20} />
+                                </button>
+                            </div>
+
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                                <button
+                                    onClick={() => {
+                                        window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(navOptions.location)}`, '_blank');
+                                        setNavOptions(null);
+                                    }}
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'space-between',
+                                        padding: '18px 24px',
+                                        background: 'rgba(255,255,255,0.05)',
+                                        borderRadius: '20px',
+                                        border: '1px solid rgba(255,255,255,0.1)',
+                                        color: 'white',
+                                        fontWeight: '700',
+                                        fontSize: '15px',
+                                        cursor: 'pointer'
+                                    }}
+                                >
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                        <div style={{ width: '40px', height: '40px', background: 'white', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                            <img src="https://upload.wikimedia.org/wikipedia/commons/3/39/Google_Maps_icon_%282020%29.svg" style={{ width: '24px' }} alt="Google Maps" />
+                                        </div>
+                                        Google Maps
+                                    </div>
+                                    <ExternalLink size={18} opacity={0.5} />
+                                </button>
+
+                                <button
+                                    onClick={() => {
+                                        window.open(`https://waze.com/ul?q=${encodeURIComponent(navOptions.location)}`, '_blank');
+                                        setNavOptions(null);
+                                    }}
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'space-between',
+                                        padding: '18px 24px',
+                                        background: 'rgba(255,255,255,0.05)',
+                                        borderRadius: '20px',
+                                        border: '1px solid rgba(255,255,255,0.1)',
+                                        color: 'white',
+                                        fontWeight: '700',
+                                        fontSize: '15px',
+                                        cursor: 'pointer'
+                                    }}
+                                >
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                        <div style={{ width: '40px', height: '40px', background: 'white', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                            <img src="https://upload.wikimedia.org/wikipedia/commons/6/66/Waze_logo.svg" style={{ width: '24px' }} alt="Waze" />
+                                        </div>
+                                        Waze
+                                    </div>
+                                    <ExternalLink size={18} opacity={0.5} />
+                                </button>
+                            </div>
+                        </motion.div>
+                    </div>
                 )}
             </AnimatePresence>
         </div>

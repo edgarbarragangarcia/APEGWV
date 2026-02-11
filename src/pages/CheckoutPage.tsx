@@ -39,7 +39,6 @@ const CheckoutPage: React.FC = () => {
 
     const [isProcessing, setIsProcessing] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
-    const [error, setError] = useState<string | null>(null);
     const [showStatusModal, setShowStatusModal] = useState(false);
     const [statusMessage, setStatusMessage] = useState({ title: '', message: '', type: 'success' as 'success' | 'error' });
 
@@ -98,12 +97,10 @@ const CheckoutPage: React.FC = () => {
     const fetchSavedMethods = async (userId: string) => {
         setLoadingMethods(true);
         try {
-            const { data, error } = await supabase
+            const { data } = await supabase
                 .from('payment_methods')
                 .select('id, last_four, card_type, is_default, card_holder, expiry, user_id')
                 .eq('user_id', userId);
-
-            if (error) throw error;
             setSavedMethods(data || []);
 
             const defaultMethod = data?.find(m => m.is_default);
@@ -126,15 +123,18 @@ const CheckoutPage: React.FC = () => {
         // Input validation - Only for actual orders, reservations use profile info or don't need shipping
         if (!isReservation) {
             if (!shipping.name || shipping.name.trim().length < 3) {
-                setError('Por favor ingresa un nombre válido (mínimo 3 caracteres)');
+                setStatusMessage({ title: 'Datos de Envío', message: 'Por favor ingresa un nombre válido (mínimo 3 caracteres)', type: 'error' });
+                setShowStatusModal(true);
                 return;
             }
             if (!shipping.phone || !/^\d{7,10}$/.test(shipping.phone.replace(/\s/g, ''))) {
-                setError('Por favor ingresa un número de teléfono válido (7-10 dígitos)');
+                setStatusMessage({ title: 'Datos de Envío', message: 'Por favor ingresa un número de teléfono válido (7-10 dígitos)', type: 'error' });
+                setShowStatusModal(true);
                 return;
             }
             if (!shipping.address || shipping.address.trim().length < 10) {
-                setError('Por favor ingresa una dirección completa (mínimo 10 caracteres)');
+                setStatusMessage({ title: 'Datos de Envío', message: 'Por favor ingresa una dirección completa (mínimo 10 caracteres)', type: 'error' });
+                setShowStatusModal(true);
                 return;
             }
         }
@@ -153,7 +153,6 @@ const CheckoutPage: React.FC = () => {
         }
 
         setIsProcessing(true);
-        setError(null);
         try {
             // 1. Save New Payment Method if needed
             if (selectedMethodId === 'new' && newCard) {
@@ -321,10 +320,11 @@ const CheckoutPage: React.FC = () => {
         } catch (err: any) {
             console.error('Order error:', err);
             if (err.code === '42501') {
-                setError('Error de permisos en la base de datos. Por favor ejecuta el script SQL para habilitar la creación de pedidos.');
+                setStatusMessage({ title: 'Permisos', message: 'Error de permisos en la base de datos. Por favor ejecuta el script SQL para habilitar la creación de pedidos.', type: 'error' });
             } else {
-                setError(err.message || 'Error al procesar el pedido. Por favor intenta de nuevo.');
+                setStatusMessage({ title: 'Error', message: err.message || 'Error al procesar el pedido. Por favor intenta de nuevo.', type: 'error' });
             }
+            setShowStatusModal(true);
         } finally {
             setIsProcessing(false);
         }
