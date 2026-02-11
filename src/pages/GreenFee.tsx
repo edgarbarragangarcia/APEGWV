@@ -85,7 +85,7 @@ const GreenFee: React.FC = () => {
             overflow: 'hidden',
             zIndex: 500
         }} className="animate-fade">
-            <PageHero image="https://images.unsplash.com/photo-1535131749006-b7f58c99034b?q=80&w=2070&auto=format&fit=crop" />
+            <PageHero />
 
             {/* Header Fijo - Green Fees */}
             <div style={{
@@ -104,7 +104,7 @@ const GreenFee: React.FC = () => {
                 <PageHeader
                     noMargin
                     showBack={false}
-                    title="Green Fees"
+                    title="Green Fee"
                     subtitle="Reserva tu salida en los mejores campos"
                 />
 

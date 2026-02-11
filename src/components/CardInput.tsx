@@ -11,10 +11,9 @@ interface CardData {
 
 interface CardInputProps {
     onComplete: (data: CardData) => void;
-    data?: CardData;
 }
 
-const CardInput: React.FC<CardInputProps> = ({ onComplete, data }) => {
+const CardInput: React.FC<CardInputProps> = ({ onComplete }) => {
     const [card, setCard] = useState<CardData>({
         number: '',
         name: '',
@@ -22,18 +21,7 @@ const CardInput: React.FC<CardInputProps> = ({ onComplete, data }) => {
         cvv: ''
     });
 
-    // Update internal state when external data changes (e.g. from scanner)
-    React.useEffect(() => {
-        if (data) {
-            setCard(prev => ({
-                ...prev,
-                ...data,
-                // Keep existing CVV or name if not provided by scanner, but override if new data has it
-                name: data.name || prev.name,
-                cvv: data.cvv || prev.cvv
-            }));
-        }
-    }, [data]);
+
 
     const [isFlipped, setIsFlipped] = useState(false);
 
@@ -68,16 +56,40 @@ const CardInput: React.FC<CardInputProps> = ({ onComplete, data }) => {
         const newCard = { ...card, [name]: formattedValue };
         setCard(newCard);
 
-        if (newCard.number.length >= 19 && newCard.expiry.length === 5 && newCard.cvv.length >= 3 && newCard.name.length > 3) {
+        const cleanNumber = newCard.number.replace(/\s/g, '');
+        const isNumberValid = cleanNumber.length >= 15 && cleanNumber.length <= 16;
+        const isExpiryValid = newCard.expiry.length === 5;
+        const isCvvValid = newCard.cvv.length >= 3;
+        const isNameValid = newCard.name.trim().length >= 2;
+
+        if (isNumberValid && isExpiryValid && isCvvValid && isNameValid) {
             onComplete(newCard);
+        } else {
+            // Send null if incomplete to prevent old valid data from persisting
+            onComplete(null as any);
         }
     };
 
     const getCardType = (number: string) => {
-        if (number.startsWith('4')) return 'Visa';
-        if (number.startsWith('5')) return 'MasterCard';
-        if (number.startsWith('3')) return 'Amex';
+        const cleanNumber = number.replace(/\s/g, '');
+        if (cleanNumber.startsWith('4')) return 'Visa';
+        if (cleanNumber.startsWith('5')) return 'MasterCard';
+        if (cleanNumber.startsWith('2')) return 'MasterCard'; // Newer MasterCard range
+        if (cleanNumber.startsWith('34') || cleanNumber.startsWith('37')) return 'Amex';
         return 'Card';
+    };
+
+    const getCardLogo = (type: string) => {
+        switch (type) {
+            case 'Visa':
+                return "https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg";
+            case 'MasterCard':
+                return "https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg";
+            case 'Amex':
+                return "https://upload.wikimedia.org/wikipedia/commons/b/b3/American_Express_logo_%282018%29.svg";
+            default:
+                return null;
+        }
     };
 
     return (
@@ -110,8 +122,28 @@ const CardInput: React.FC<CardInputProps> = ({ onComplete, data }) => {
                         boxShadow: '0 20px 40px rgba(0,0,0,0.3)'
                     }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                            <div style={{ width: '45px', height: '35px', background: 'rgba(255,255,255,0.2)', borderRadius: '6px' }} />
-                            <span style={{ fontSize: '18px', fontWeight: '900', color: 'rgba(255,255,255,0.8)' }}>{getCardType(card.number)}</span>
+                            <div style={{
+                                width: '45px',
+                                height: '28px',
+                                background: 'linear-gradient(135deg, #ffd700, #b8860b)',
+                                borderRadius: '4px',
+                                boxShadow: '0 2px 5px rgba(0,0,0,0.2)',
+                                position: 'relative',
+                                overflow: 'hidden'
+                            }}>
+                                <div style={{ position: 'absolute', top: '50%', left: 0, right: 0, height: '1px', background: 'rgba(0,0,0,0.1)' }} />
+                                <div style={{ position: 'absolute', top: 0, bottom: 0, left: '50%', width: '1px', background: 'rgba(0,0,0,0.1)' }} />
+                            </div>
+
+                            {getCardLogo(getCardType(card.number)) ? (
+                                <img
+                                    src={getCardLogo(getCardType(card.number))!}
+                                    alt={getCardType(card.number)}
+                                    style={{ height: '24px', objectFit: 'contain', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))' }}
+                                />
+                            ) : (
+                                <span style={{ fontSize: '18px', fontWeight: '900', color: 'rgba(255,255,255,0.8)' }}>{getCardType(card.number)}</span>
+                            )}
                         </div>
 
                         <div style={{ fontSize: '20px', letterSpacing: '3px', fontWeight: '700', fontFamily: 'monospace', color: 'white' }}>

@@ -64,7 +64,7 @@ const CartPage: React.FC = () => {
     if (cartItems.length === 0) {
         return (
             <div className="animate-fade" style={styles.pageContainer}>
-                <PageHero image="https://images.unsplash.com/photo-1593113598332-cd288d649433?q=80&w=2070&auto=format&fit=crop" />
+                <PageHero />
                 <div style={styles.headerContainer}>
                     <PageHeader noMargin title="Mi Carrito" />
                 </div>
@@ -77,7 +77,7 @@ const CartPage: React.FC = () => {
 
     return (
         <div className="animate-fade" style={styles.pageContainer}>
-            <PageHero image="https://images.unsplash.com/photo-1593113598332-cd288d649433?q=80&w=2070&auto=format&fit=crop" />
+            <PageHero />
             <div style={styles.headerContainer}>
                 <PageHeader noMargin title="Mi Carrito" />
             </div>

@@ -144,7 +144,7 @@ const RoundDetail: React.FC = () => {
             background: 'var(--primary)',
             zIndex: 501
         }}>
-            <PageHero image="https://images.unsplash.com/photo-1535131749006-b7f58c99034b?q=80&w=2070&auto=format&fit=crop" />
+            <PageHero />
             {/* Header Fijo */}
             <div style={{
                 position: 'absolute',

@@ -119,7 +119,7 @@ const NotificationsPage: React.FC = () => {
             width: '100%',
             overflow: 'hidden'
         }}>
-            <PageHero image="https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?q=80&w=2070&auto=format&fit=crop" />
+            <PageHero />
 
             {/* Header Fijo */}
             <div style={{

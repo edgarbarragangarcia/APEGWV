@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import {
     MapPin, CreditCard,
     ShieldCheck, Loader2,
-    CheckCircle2, Sparkles, Plus, X, AlertCircle, User, Phone, Edit3, Camera
+    CheckCircle2, Sparkles, Plus, X, AlertCircle, User, Phone, Edit3
 } from 'lucide-react';
 import PageHeader from '../components/PageHeader';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -11,7 +11,7 @@ import { useCart } from '../context/CartContext';
 import { supabase } from '../services/SupabaseManager';
 import CardInput from '../components/CardInput';
 import PageHero from '../components/PageHero';
-import CardScanner from '../components/CardScanner';
+
 import { encrypt } from '../services/EncryptionService';
 
 interface PaymentMethod {
@@ -36,10 +36,12 @@ const CheckoutPage: React.FC = () => {
     const totalAmount = isReservation ? reservationData.price : cartTotal;
 
     const [step, setStep] = useState<1 | 2>(isReservation ? 2 : 1);
-    const [showScanner, setShowScanner] = useState(false);
+
     const [isProcessing, setIsProcessing] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [showStatusModal, setShowStatusModal] = useState(false);
+    const [statusMessage, setStatusMessage] = useState({ title: '', message: '', type: 'success' as 'success' | 'error' });
 
     // Payment Methods State
     const [savedMethods, setSavedMethods] = useState<PaymentMethod[]>([]);
@@ -139,12 +141,14 @@ const CheckoutPage: React.FC = () => {
 
         // Validate payment method selection
         if (!selectedMethodId) {
-            setError('Por favor selecciona un método de pago');
+            setStatusMessage({ title: 'Atención', message: 'Por favor selecciona un método de pago', type: 'error' });
+            setShowStatusModal(true);
             return;
         }
 
         if (selectedMethodId === 'new' && !newCard) {
-            setError('Por favor completa todos los campos de la tarjeta');
+            setStatusMessage({ title: 'Datos Incompletos', message: 'Por favor completa todos los campos de la tarjeta para continuar.', type: 'error' });
+            setShowStatusModal(true);
             return;
         }
 
@@ -326,22 +330,7 @@ const CheckoutPage: React.FC = () => {
         }
     };
 
-    const runScanAnimation = () => {
-        setShowScanner(true);
-    };
 
-    const handleScanComplete = (data: { number: string; expiry: string }) => {
-        if (selectedMethodId === 'new') {
-            setNewCard((prev: any) => ({
-                ...prev,
-                number: data.number,
-                expiry: data.expiry || (prev?.expiry || '')
-            }));
-
-            // Trigger haptic feedback if available (handled in CardScanner, but added here for redundancy)
-            if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
-        }
-    };
 
     if (isSuccess) {
         return (
@@ -630,25 +619,7 @@ const CheckoutPage: React.FC = () => {
                                 <h3 style={{ fontSize: '18px', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '10px' }}>
                                     <CreditCard size={20} color="var(--secondary)" /> Pago Seguro
                                 </h3>
-                                {selectedMethodId === 'new' && (
-                                    <button
-                                        onClick={runScanAnimation}
-                                        style={{
-                                            background: 'rgba(163, 230, 53, 0.1)',
-                                            border: '1px solid var(--secondary)',
-                                            color: 'var(--secondary)',
-                                            padding: '8px 12px',
-                                            borderRadius: '10px',
-                                            fontSize: '12px',
-                                            fontWeight: '700',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            gap: '6px'
-                                        }}
-                                    >
-                                        <Camera size={14} /> ESCANEAR
-                                    </button>
-                                )}
+
                             </div>
 
                             {/* Loading Skeleton */}
@@ -687,15 +658,22 @@ const CheckoutPage: React.FC = () => {
                                             <div style={{
                                                 width: '40px',
                                                 height: '28px',
-                                                background: 'rgba(255,255,255,0.1)',
+                                                background: 'white',
                                                 borderRadius: '4px',
                                                 display: 'flex',
                                                 alignItems: 'center',
                                                 justifyContent: 'center',
-                                                fontSize: '8px',
-                                                fontWeight: '900'
+                                                padding: '3px'
                                             }}>
-                                                {method.card_type.toUpperCase()}
+                                                {method.card_type.toLowerCase() === 'visa' ? (
+                                                    <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" alt="Visa" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                                                ) : method.card_type.toLowerCase() === 'mastercard' ? (
+                                                    <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="MasterCard" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                                                ) : method.card_type.toLowerCase() === 'amex' ? (
+                                                    <img src="https://upload.wikimedia.org/wikipedia/commons/b/b3/American_Express_logo_%282018%29.svg" alt="Amex" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                                                ) : (
+                                                    <span style={{ fontSize: '7px', fontWeight: '900', color: 'var(--primary)' }}>{method.card_type.toUpperCase()}</span>
+                                                )}
                                             </div>
                                             <div style={{ flex: 1 }}>
                                                 <p style={{ fontWeight: '700', fontSize: '14px' }}>•••• {method.last_four}</p>
@@ -749,7 +727,7 @@ const CheckoutPage: React.FC = () => {
 
                             {!loadingMethods && selectedMethodId === 'new' && (
                                 <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }}>
-                                    <CardInput onComplete={(data) => setNewCard(data)} data={newCard} />
+                                    <CardInput onComplete={(data) => setNewCard(data)} />
                                 </motion.div>
                             )}
 
@@ -793,12 +771,7 @@ const CheckoutPage: React.FC = () => {
                     )}
                 </div>
 
-                {/* Card Scanner Implementation */}
-                <CardScanner
-                    isOpen={showScanner}
-                    onClose={() => setShowScanner(false)}
-                    onScanComplete={handleScanComplete}
-                />
+
 
                 <div style={{ padding: '30px 0', display: 'flex', justifyContent: 'center' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', opacity: 0.4 }}>
@@ -806,38 +779,65 @@ const CheckoutPage: React.FC = () => {
                         <span style={{ fontSize: '11px', fontWeight: '700' }}>PAGO SEGURO CIFRADO</span>
                     </div>
                 </div>
-                {/* Error Banner */}
+                {/* Standardized Status Modal */}
                 <AnimatePresence>
-                    {error && (
-                        <motion.div
-                            initial={{ opacity: 0, y: -20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -20 }}
-                            style={{
-                                position: 'fixed',
-                                top: '20px',
-                                left: '20px',
-                                right: '20px',
-                                zIndex: 10000,
-                                background: '#ef4444',
-                                color: 'white',
-                                padding: '15px',
-                                borderRadius: '12px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '12px',
-                                boxShadow: '0 10px 30px rgba(239, 68, 68, 0.3)'
-                            }}
+                    {showStatusModal && (
+                        <div
+                            onClick={() => setShowStatusModal(false)}
+                            style={{ position: 'fixed', inset: 0, zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)' }}
                         >
-                            <AlertCircle size={24} />
-                            <div style={{ flex: 1 }}>
-                                <p style={{ fontWeight: '700', fontSize: '14px' }}>Error</p>
-                                <p style={{ fontSize: '12px' }}>{error}</p>
-                            </div>
-                            <button onClick={() => setError(null)} style={{ background: 'none', border: 'none', color: 'white' }}>
-                                <X size={20} />
-                            </button>
-                        </motion.div>
+                            <motion.div
+                                initial={{ scale: 0.8, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                exit={{ scale: 0.8, opacity: 0 }}
+                                onClick={(e) => e.stopPropagation()}
+                                style={{
+                                    background: 'rgba(20, 35, 20, 0.95)',
+                                    borderRadius: '30px',
+                                    padding: '40px 30px',
+                                    textAlign: 'center',
+                                    maxWidth: '85%',
+                                    width: '320px',
+                                    border: `1px solid ${statusMessage.type === 'success' ? 'rgba(163, 230, 53, 0.3)' : 'rgba(239, 68, 68, 0.3)'}`,
+                                    boxShadow: '0 25px 50px rgba(0,0,0,0.5)'
+                                }}
+                            >
+                                <div style={{
+                                    width: '70px',
+                                    height: '70px',
+                                    borderRadius: '50%',
+                                    background: statusMessage.type === 'success' ? 'rgba(163, 230, 53, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    margin: '0 auto 20px',
+                                    color: statusMessage.type === 'success' ? 'var(--secondary)' : '#ef4444'
+                                }}>
+                                    {statusMessage.type === 'success' ? <CheckCircle2 size={40} /> : <X size={40} />}
+                                </div>
+                                <h2 style={{ fontSize: '24px', fontWeight: '900', color: 'white', marginBottom: '10px' }}>
+                                    {statusMessage.title}
+                                </h2>
+                                <p style={{ fontSize: '14px', color: 'rgba(255,255,255,0.7)', lineHeight: '1.4', marginBottom: '25px' }}>
+                                    {statusMessage.message}
+                                </p>
+                                <button
+                                    onClick={() => setShowStatusModal(false)}
+                                    style={{
+                                        width: '100%',
+                                        padding: '14px',
+                                        borderRadius: '14px',
+                                        background: statusMessage.type === 'success' ? 'var(--secondary)' : 'rgba(255,255,255,0.05)',
+                                        color: statusMessage.type === 'success' ? 'var(--primary)' : 'white',
+                                        border: 'none',
+                                        fontWeight: '900',
+                                        fontSize: '14px'
+                                    }}
+                                >
+                                    ENTENDIDO
+                                </button>
+                            </motion.div>
+                        </div>
                     )}
                 </AnimatePresence>
 

@@ -212,7 +212,7 @@ const Home: React.FC = () => {
             width: '100%',
             overflow: 'hidden'
         }}>
-            <PageHero image="/images/briceno18.png" />
+            <PageHero />
 
             {/* Header y Stats Fijos */}
             <div style={{

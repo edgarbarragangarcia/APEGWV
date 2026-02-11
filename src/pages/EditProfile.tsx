@@ -117,7 +117,7 @@ const EditProfile: React.FC = () => {
 
     return (
         <div className="animate-fade" style={styles.pageContainer}>
-            <PageHero image="https://images.unsplash.com/photo-1593113598332-cd288d649433?q=80&w=2070&auto=format&fit=crop" />
+            <PageHero />
             <div style={styles.headerArea}>
                 <PageHeader noMargin title="Editar Perfil" onBack={() => navigate('/profile')} />
             </div>

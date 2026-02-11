@@ -188,7 +188,7 @@ const Tournaments: React.FC = () => {
             margin: '0 auto',
             overflow: 'hidden'
         }}>
-            <PageHero image="/images/briceno18.png" />
+            <PageHero />
             {/* Header Fijo - Eventos */}
             <div style={{
                 position: 'absolute',

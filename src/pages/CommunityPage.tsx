@@ -20,7 +20,7 @@ const CommunityPage: React.FC = () => {
             width: '100%',
             overflow: 'hidden'
         }}>
-            <PageHero image="/images/briceno18.png" />
+            <PageHero />
 
             {/* Header Fijo */}
             <div style={{

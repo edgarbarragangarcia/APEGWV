@@ -144,7 +144,7 @@ const CouponManager: React.FC = () => {
             overflow: 'hidden',
             zIndex: 900
         }}>
-            <PageHero image="https://images.unsplash.com/photo-1593113598332-cd288d649433?q=80&w=2070&auto=format&fit=crop" />
+            <PageHero />
             <div style={{ flexShrink: 0, zIndex: 10, background: 'transparent', padding: '0 20px', paddingTop: 'var(--header-offset-top)' }}>
                 <PageHeader title="Generar Cupones" onBack={() => navigate('/my-events')} />
             </div>

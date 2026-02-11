@@ -142,7 +142,7 @@ const CreateGroup: React.FC = () => {
             overflow: 'hidden',
             background: 'var(--primary)',
         }} className="animate-fade">
-            <PageHero image="https://images.unsplash.com/photo-1593113598332-cd288d649433?q=80&w=2070&auto=format&fit=crop" />
+            <PageHero />
 
             {/* Success Overlay */}
             {showSuccess && (

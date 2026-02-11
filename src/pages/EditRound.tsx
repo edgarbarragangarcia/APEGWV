@@ -85,7 +85,7 @@ const EditRound: React.FC = () => {
             overflow: 'hidden',
             background: 'var(--primary)'
         }}>
-            <PageHero image="https://images.unsplash.com/photo-1596733430284-f7437764b1a9?q=80&w=2070&auto=format&fit=crop" />
+            <PageHero />
 
             {/* Header Fijo */}
             <div style={{

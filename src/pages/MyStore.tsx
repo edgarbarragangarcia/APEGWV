@@ -786,7 +786,7 @@ const MyStore: React.FC = () => {
             overflow: 'hidden',
             zIndex: 500
         }} className="animate-fade">
-            <PageHero image="https://images.unsplash.com/photo-1593113630400-ea4288922497?q=80&w=2070&auto=format&fit=crop" />
+            <PageHero />
 
             <div style={{
                 position: 'absolute',

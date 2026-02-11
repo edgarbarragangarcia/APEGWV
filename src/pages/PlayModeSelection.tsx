@@ -223,7 +223,7 @@ const PlayModeSelection: React.FC = () => {
             overflow: 'hidden',
             zIndex: 500
         }} className="animate-fade">
-            <PageHero image="/images/briceno18.png" />
+            <PageHero />
 
             {/* Header Fijo */}
             <div style={{

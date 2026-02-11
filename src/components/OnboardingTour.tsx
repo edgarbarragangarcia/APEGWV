@@ -57,7 +57,7 @@ const steps: Step[] = [
         gradient: "linear-gradient(135deg, #a3e635 0%, #65a30d 100%)"
     },
     {
-        title: "Green Fees",
+        title: "Green Fee",
         description: "¿Planeando tu próxima salida? Reserva tus turnos en los mejores campos del país de forma rápida y segura.",
         icon: <Calendar size={32} />,
         targetId: 'nav-green-fee',

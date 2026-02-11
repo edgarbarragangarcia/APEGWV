@@ -9,7 +9,7 @@ interface PageHeroProps {
 }
 
 const PageHero: React.FC<PageHeroProps> = ({
-    image = 'https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?q=80&w=2070&auto=format&fit=crop',
+    image = '/images/briceno18.png',
     height = '420px',
     opacity = 0.6,
     overlayGradient = 'linear-gradient(to bottom, rgba(14, 47, 31, 0.4) 0%, rgba(14, 47, 31, 0.8) 70%, var(--primary) 100%)'
@@ -23,7 +23,8 @@ const PageHero: React.FC<PageHeroProps> = ({
             height: height,
             zIndex: 0,
             overflow: 'hidden',
-            pointerEvents: 'none'
+            pointerEvents: 'none',
+            background: 'var(--primary)'
         }}>
             <motion.img
                 initial={{ scale: 1.1, opacity: 0 }}

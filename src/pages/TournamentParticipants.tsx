@@ -85,7 +85,7 @@ const TournamentParticipants: React.FC = () => {
             overflow: 'hidden',
             zIndex: 900
         }}>
-            <PageHero image="https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?q=80&w=2070&auto=format&fit=crop" />
+            <PageHero />
             {/* Header */}
             <div style={{
                 position: 'absolute',

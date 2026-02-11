@@ -92,7 +92,7 @@ const EditStats: React.FC = () => {
             position: 'fixed',
             inset: 0
         }}>
-            <PageHero image="https://images.unsplash.com/photo-1593113598332-cd288d649433?q=80&w=2070&auto=format&fit=crop" />
+            <PageHero />
 
             {/* Header Fijo */}
             <div style={{

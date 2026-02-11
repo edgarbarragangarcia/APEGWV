@@ -461,7 +461,7 @@ const TournamentManager: React.FC = () => {
             overflow: 'hidden',
             zIndex: 900
         }}>
-            <PageHero image="https://images.unsplash.com/photo-1535131749006-b7f58c99034b?q=80&w=2070&auto=format&fit=crop" />
+            <PageHero />
             {/* Fixed Title Header */}
             <div style={{ flexShrink: 0, zIndex: 10, background: 'transparent', padding: '0 20px 20px 20px', paddingTop: 'var(--header-offset-top)', textAlign: 'center' }}>
                 <span style={{

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     CreditCard, Plus,
-    Trash2, ShieldCheck, Camera,
+    Trash2, ShieldCheck,
     CheckCircle2, Loader2, Star
 } from 'lucide-react';
 import PageHeader from '../components/PageHeader';
@@ -11,7 +11,7 @@ import { supabase } from '../services/SupabaseManager';
 import Card from '../components/Card';
 import CardInput from '../components/CardInput';
 import PageHero from '../components/PageHero';
-import CardScanner from '../components/CardScanner';
+
 import { encrypt } from '../services/EncryptionService';
 
 
@@ -32,10 +32,10 @@ const PaymentMethodsPage: React.FC = () => {
     const [methods, setMethods] = useState<PaymentMethod[]>([]);
     const [loading, setLoading] = useState(true);
     const [showAddForm, setShowAddForm] = useState(false);
-    const [showScanner, setShowScanner] = useState(false);
+
     const [isSaving, setIsSaving] = useState(false);
     const [user, setUser] = useState<any>(null);
-    const [scannedCard, setScannedCard] = useState<any>(null);
+
 
     useEffect(() => {
         const checkUser = async () => {
@@ -69,18 +69,7 @@ const PaymentMethodsPage: React.FC = () => {
     };
 
     // Handlers
-    const handleScan = () => {
-        setShowScanner(true);
-    };
 
-    const handleScanComplete = (data: { number: string; expiry: string }) => {
-        setScannedCard({
-            number: data.number,
-            expiry: data.expiry,
-            name: ''
-        });
-        if (navigator.vibrate) navigator.vibrate(50);
-    };
 
     const handleAddCard = async (cardData: any) => {
         setIsSaving(true);
@@ -117,7 +106,7 @@ const PaymentMethodsPage: React.FC = () => {
 
             setMethods([data as unknown as PaymentMethod, ...methods]);
             setShowAddForm(false);
-            setScannedCard(null); // Reset scanned data
+
             if (navigator.vibrate) navigator.vibrate(50);
         } catch (err: any) {
             console.error('Error saving card:', err);
@@ -150,7 +139,7 @@ const PaymentMethodsPage: React.FC = () => {
                     if (!error && data) {
                         setMethods([data as unknown as PaymentMethod, ...methods]);
                         setShowAddForm(false);
-                        setScannedCard(null);
+
                         alert('Tarjeta guardada (sin cifrado debido a que la DB no está actualizada).');
                         return;
                     }
@@ -209,7 +198,7 @@ const PaymentMethodsPage: React.FC = () => {
             position: 'fixed',
             inset: 0
         }}>
-            <PageHero image="https://images.unsplash.com/photo-1596733430284-f7437764b1a9?q=80&w=2070&auto=format&fit=crop" />
+            <PageHero />
 
             {/* Header Fijo */}
             <div style={{
@@ -266,16 +255,22 @@ const PaymentMethodsPage: React.FC = () => {
                                             <div style={{
                                                 width: '50px',
                                                 height: '35px',
-                                                background: 'rgba(255,255,255,0.05)',
+                                                background: 'white',
                                                 borderRadius: '6px',
                                                 display: 'flex',
                                                 alignItems: 'center',
                                                 justifyContent: 'center',
-                                                fontSize: '10px',
-                                                fontWeight: '900',
-                                                color: 'var(--secondary)'
+                                                padding: '5px'
                                             }}>
-                                                {method.card_type.toUpperCase()}
+                                                {method.card_type.toLowerCase() === 'visa' ? (
+                                                    <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" alt="Visa" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                                                ) : method.card_type.toLowerCase() === 'mastercard' ? (
+                                                    <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="MasterCard" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                                                ) : method.card_type.toLowerCase() === 'amex' ? (
+                                                    <img src="https://upload.wikimedia.org/wikipedia/commons/b/b3/American_Express_logo_%282018%29.svg" alt="Amex" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                                                ) : (
+                                                    <span style={{ fontSize: '10px', fontWeight: '900', color: 'var(--primary)' }}>{method.card_type.toUpperCase()}</span>
+                                                )}
                                             </div>
                                             <div style={{ flex: 1 }}>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -333,26 +328,9 @@ const PaymentMethodsPage: React.FC = () => {
                     <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
                             <h3 style={{ fontSize: '18px', fontWeight: '800' }}>Nueva Tarjeta</h3>
-                            <button
-                                onClick={handleScan}
-                                style={{
-                                    color: 'var(--secondary)',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '6px',
-                                    fontSize: '12px',
-                                    fontWeight: '700',
-                                    background: 'rgba(163, 230, 53, 0.1)',
-                                    border: '1px solid rgba(163, 230, 53, 0.2)',
-                                    padding: '6px 12px',
-                                    borderRadius: '8px'
-                                }}
-                            >
-                                <Camera size={16} /> ESCANEAR TARJETA
-                            </button>
                         </div>
 
-                        <CardInput onComplete={handleAddCard} data={scannedCard} />
+                        <CardInput onComplete={handleAddCard} />
 
                         <div style={{ marginTop: '30px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', opacity: 0.5 }}>
@@ -375,11 +353,7 @@ const PaymentMethodsPage: React.FC = () => {
                     <p style={{ fontSize: '11px', fontWeight: '700' }}>APEG SECURE PLATFORM</p>
                 </div>
 
-                <CardScanner
-                    isOpen={showScanner}
-                    onClose={() => setShowScanner(false)}
-                    onScanComplete={handleScanComplete}
-                />
+
             </div>
         </div>
     );
