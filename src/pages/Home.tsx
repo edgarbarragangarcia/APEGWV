@@ -913,16 +913,81 @@ const Home: React.FC = () => {
                                 flexDirection: 'column',
                                 overflow: 'hidden'
                             }}>
+                                {/* Header: Title & Back Button */}
+                                <div style={{
+                                    padding: 'calc(var(--header-height) + 15px) 20px 15px',
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'flex-start',
+                                    zIndex: 100,
+                                    position: 'relative'
+                                }}>
+                                    <div>
+                                        <h1 style={{
+                                            fontSize: '32px',
+                                            fontWeight: '950',
+                                            color: 'white',
+                                            textTransform: 'uppercase',
+                                            margin: 0,
+                                            lineHeight: '1',
+                                            letterSpacing: '-1px'
+                                        }}>
+                                            {selectedProduct.name}
+                                        </h1>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '6px' }}>
+                                            <span style={{
+                                                color: 'var(--secondary)',
+                                                fontSize: '11px',
+                                                fontWeight: '800',
+                                                textTransform: 'uppercase',
+                                                letterSpacing: '0.5px'
+                                            }}>
+                                                {selectedProduct.category}
+                                            </span>
+                                            {selectedProduct.brand && (
+                                                <span style={{
+                                                    color: 'rgba(255,255,255,0.4)',
+                                                    fontSize: '11px',
+                                                    fontWeight: '700',
+                                                    textTransform: 'uppercase',
+                                                    letterSpacing: '0.5px'
+                                                }}>
+                                                    • {selectedProduct.brand}
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <motion.button
+                                        whileTap={{ scale: 0.9 }}
+                                        onClick={handleCloseProduct}
+                                        style={{
+                                            width: '44px',
+                                            height: '44px',
+                                            borderRadius: '12px',
+                                            background: 'rgba(255,255,255,0.05)',
+                                            backdropFilter: 'blur(10px)',
+                                            border: '1px solid rgba(255,255,255,0.1)',
+                                            color: 'white',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            cursor: 'pointer'
+                                        }}
+                                    >
+                                        <ArrowLeft size={24} />
+                                    </motion.button>
+                                </div>
+
                                 <div style={{
                                     position: 'relative',
-                                    height: '65vh',
+                                    height: '55vh',
                                     width: '100%',
                                     flexShrink: 0,
                                     background: 'linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%)',
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
-                                    padding: 'calc(var(--header-height) + 10px) 12px 30px 12px',
+                                    padding: '0 12px 30px 12px',
                                     overflow: 'hidden'
                                 }}>
                                     {/* Ambient Glow Background */}
@@ -1121,32 +1186,6 @@ const Home: React.FC = () => {
                                         )}
                                     </motion.div>
 
-                                    {/* Close Button Overlay */}
-                                    <div style={{
-                                        position: 'absolute',
-                                        top: '50%',
-                                        left: '15px',
-                                        transform: 'translateY(-50%)',
-                                        zIndex: 20
-                                    }}>
-                                        <button
-                                            onClick={handleCloseProduct}
-                                            style={{
-                                                width: '40px',
-                                                height: '40px',
-                                                borderRadius: '50%',
-                                                background: 'rgba(0,0,0,0.3)',
-                                                backdropFilter: 'blur(10px)',
-                                                border: '1px solid rgba(255,255,255,0.1)',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                color: 'white'
-                                            }}
-                                        >
-                                            <ArrowLeft size={20} />
-                                        </button>
-                                    </div>
                                 </div>
 
                                 <div style={{
@@ -1171,43 +1210,11 @@ const Home: React.FC = () => {
                                         margin: '0 auto 15px'
                                     }} />
 
-                                    {/* Sub-Header: Category, Brand & Price */}
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                            <span style={{
-                                                background: 'rgba(163, 230, 53, 0.1)',
-                                                color: 'var(--secondary)',
-                                                padding: '3px 8px',
-                                                borderRadius: '6px',
-                                                fontSize: '10px',
-                                                fontWeight: '800',
-                                                textTransform: 'uppercase',
-                                                letterSpacing: '0.5px'
-                                            }}>
-                                                {selectedProduct.category}
-                                            </span>
-                                            {selectedProduct.brand && (
-                                                <span style={{
-                                                    fontSize: '10px',
-                                                    fontWeight: '700',
-                                                    color: 'rgba(255,255,255,0.4)',
-                                                    textTransform: 'uppercase',
-                                                    letterSpacing: '0.5px'
-                                                }}>
-                                                    • {selectedProduct.brand}
-                                                </span>
-                                            )}
-                                        </div>
-                                        <div style={{ fontSize: '18px', fontWeight: '900', color: 'var(--secondary)' }}>
+                                    {/* Price & Actions Row */}
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '15px', marginBottom: '25px' }}>
+                                        <div style={{ fontSize: '24px', fontWeight: '900', color: 'var(--secondary)' }}>
                                             ${new Intl.NumberFormat('es-CO').format(selectedProduct.price)}
                                         </div>
-                                    </div>
-
-                                    {/* Header: Title & Quick Actions */}
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '15px', marginBottom: '15px' }}>
-                                        <h2 style={{ fontSize: '22px', fontWeight: '900', color: 'white', lineHeight: '1.2', margin: 0, flex: 1 }}>
-                                            {selectedProduct.name}
-                                        </h2>
 
                                         <div style={{ display: 'flex', gap: '8px' }}>
                                             {/* Offer/Negotiate Icon */}

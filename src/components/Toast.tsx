@@ -81,7 +81,8 @@ const Toast: React.FC<ToastProps> = ({ id, message, type, duration = 3000, onClo
                 fontSize: '15px',
                 fontWeight: '700',
                 lineHeight: '1.4',
-                margin: 0
+                margin: 0,
+                textTransform: 'uppercase'
             }}>
                 {message}
             </p>

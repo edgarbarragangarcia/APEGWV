@@ -1187,7 +1187,18 @@ const MyStore: React.FC = () => {
                                         <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Categoría</label>
                                         <select
                                             value={formData.category}
-                                            onChange={e => setFormData({ ...formData, category: e.target.value })}
+                                            onChange={e => {
+                                                const newCat = e.target.value;
+                                                setFormData(prev => ({
+                                                    ...prev,
+                                                    category: newCat,
+                                                    clothing_type: newCat === 'Ropa' ? prev.clothing_type : '',
+                                                    sizes_inventory: (
+                                                        (prev.category === 'Zapatos' && newCat !== 'Zapatos') ||
+                                                        (prev.category !== 'Zapatos' && newCat === 'Zapatos')
+                                                    ) ? [] : prev.sizes_inventory
+                                                }));
+                                            }}
                                             style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '12px', color: 'white', fontSize: '15px' }}
                                         >
                                             {categories.map(c => <option key={c} value={c}>{c}</option>)}
@@ -1253,44 +1264,6 @@ const MyStore: React.FC = () => {
                                                             );
                                                         })}
                                                     </div>
-
-                                                    {/* Quantity Inputs for Selected Sizes */}
-                                                    {formData.sizes_inventory.length > 0 && (
-                                                        <div style={{
-                                                            background: 'rgba(255,255,255,0.02)',
-                                                            padding: '15px',
-                                                            borderRadius: '12px',
-                                                            border: '1px solid rgba(255,255,255,0.05)',
-                                                            marginTop: '5px'
-                                                        }}>
-                                                            <p style={{ fontSize: '11px', color: 'var(--text-dim)', marginBottom: '10px', fontWeight: '800' }}>CANTIDADES POR TALLA</p>
-                                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                                                {formData.sizes_inventory.map(s => (
-                                                                    <div key={s.size} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                                                        <span style={{ fontSize: '14px', fontWeight: '900', color: 'white' }}>Talla {s.size}</span>
-                                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                                                            <button
-                                                                                type="button"
-                                                                                onClick={() => updateSizeQuantity(s.size, s.quantity - 1)}
-                                                                                style={{ width: '28px', height: '28px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: 'white' }}
-                                                                            >-</button>
-                                                                            <input
-                                                                                type="number"
-                                                                                value={s.quantity}
-                                                                                onChange={(e) => updateSizeQuantity(s.size, parseInt(e.target.value) || 0)}
-                                                                                style={{ width: '40px', textAlign: 'center', background: 'transparent', border: 'none', color: 'white', fontWeight: '800', fontSize: '14px' }}
-                                                                            />
-                                                                            <button
-                                                                                type="button"
-                                                                                onClick={() => updateSizeQuantity(s.size, s.quantity + 1)}
-                                                                                style={{ width: '28px', height: '28px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'white', color: 'var(--primary)' }}
-                                                                            >+</button>
-                                                                        </div>
-                                                                    </div>
-                                                                ))}
-                                                            </div>
-                                                        </div>
-                                                    )}
                                                 </div>
                                             </div>
                                         </div>
@@ -1336,6 +1309,75 @@ const MyStore: React.FC = () => {
                                                         style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '10px', padding: '10px', color: 'white', fontSize: '14px', boxSizing: 'border-box' }}
                                                     />
                                                 </div>
+                                            </div>
+
+                                            {/* Shoe Inventory Selector */}
+                                            <div style={{ marginTop: '5px' }}>
+                                                <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Selecciona Tallas en Inventario (COL)</label>
+                                                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                                                    {['36', '37', '38', '39', '40', '41', '42', '43', '44', '45'].map(size => {
+                                                        const isSelected = !!formData.sizes_inventory.find(s => s.size === size);
+                                                        return (
+                                                            <button
+                                                                key={size}
+                                                                type="button"
+                                                                onClick={() => toggleSizeInventory(size)}
+                                                                style={{
+                                                                    flex: '1 0 45px',
+                                                                    padding: '10px',
+                                                                    borderRadius: '10px',
+                                                                    border: '1px solid var(--glass-border)',
+                                                                    background: isSelected ? 'var(--secondary)' : 'rgba(255,255,255,0.05)',
+                                                                    color: isSelected ? 'var(--primary)' : 'white',
+                                                                    fontWeight: '700',
+                                                                    fontSize: '12px',
+                                                                    transition: 'all 0.2s ease',
+                                                                    boxSizing: 'border-box'
+                                                                }}
+                                                            >
+                                                                {size}
+                                                            </button>
+                                                        );
+                                                    })}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Shared Quantity Inputs for Selected Sizes */}
+                                    {formData.sizes_inventory.length > 0 && (
+                                        <div style={{
+                                            background: 'rgba(255,255,255,0.02)',
+                                            padding: '15px',
+                                            borderRadius: '12px',
+                                            border: '1px solid rgba(255,255,255,0.05)',
+                                            marginTop: '15px'
+                                        }}>
+                                            <p style={{ fontSize: '11px', color: 'var(--text-dim)', marginBottom: '10px', fontWeight: '800' }}>CANTIDADES POR TALLA</p>
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                                {formData.sizes_inventory.map(s => (
+                                                    <div key={s.size} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                                        <span style={{ fontSize: '14px', fontWeight: '900', color: 'white' }}>Talla {s.size}</span>
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => updateSizeQuantity(s.size, s.quantity - 1)}
+                                                                style={{ width: '28px', height: '28px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: 'white' }}
+                                                            >-</button>
+                                                            <input
+                                                                type="number"
+                                                                value={s.quantity}
+                                                                onChange={(e) => updateSizeQuantity(s.size, parseInt(e.target.value) || 0)}
+                                                                style={{ width: '40px', textAlign: 'center', background: 'transparent', border: 'none', color: 'white', fontWeight: '800', fontSize: '14px' }}
+                                                            />
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => updateSizeQuantity(s.size, s.quantity + 1)}
+                                                                style={{ width: '28px', height: '28px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'white', color: 'var(--primary)' }}
+                                                            >+</button>
+                                                        </div>
+                                                    </div>
+                                                ))}
                                             </div>
                                         </div>
                                     )}
