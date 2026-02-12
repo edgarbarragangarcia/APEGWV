@@ -782,11 +782,12 @@ const Home: React.FC = () => {
                             style={{
                                 position: 'fixed',
                                 inset: 0,
-                                zIndex: 2000,
-                                background: 'var(--primary)'
+                                zIndex: 10000,
+                                background: 'var(--primary)',
+                                pointerEvents: 'auto'
                             }}
                         >
-                            <PageHero opacity={0.4} />
+                            <PageHero opacity={0.6} />
                             <div style={{
                                 position: 'relative',
                                 width: '100%',
@@ -804,7 +805,7 @@ const Home: React.FC = () => {
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
-                                    padding: '100px 20px 30px 20px',
+                                    padding: 'calc(var(--header-height) + 20px) 20px 40px 20px',
                                     overflow: 'hidden'
                                 }}>
                                     {/* Ambient Glow Background */}
@@ -919,14 +920,16 @@ const Home: React.FC = () => {
                                     position: 'relative',
                                     flex: 1,
                                     background: 'var(--primary)',
-                                    borderTopLeftRadius: '24px',
-                                    borderTopRightRadius: '24px',
-                                    marginTop: '-20px',
-                                    padding: '15px 18px 40px',
+                                    borderTopLeftRadius: '32px',
+                                    borderTopRightRadius: '32px',
+                                    marginTop: '-30px',
+                                    padding: '24px 20px 60px', // Reduced bottom padding since footer is gone
                                     zIndex: 5,
                                     display: 'flex',
                                     flexDirection: 'column',
-                                    overflow: 'hidden'
+                                    overflowY: 'auto', // Enable scrolling
+                                    msOverflowStyle: 'none',
+                                    scrollbarWidth: 'none'
                                 }}>
                                     <div style={{
                                         width: '40px',
@@ -936,132 +939,47 @@ const Home: React.FC = () => {
                                         margin: '0 auto 20px'
                                     }} />
 
-                                    <div style={{ marginBottom: '10px' }}>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                <span style={{
-                                                    background: 'rgba(163, 230, 53, 0.15)',
-                                                    color: 'var(--secondary)',
-                                                    padding: '4px 10px',
-                                                    borderRadius: '8px',
-                                                    fontSize: '11px',
-                                                    fontWeight: '900',
-                                                    textTransform: 'uppercase'
-                                                }}>
-                                                    {selectedProduct.category}
-                                                </span>
-                                                {selectedProduct.brand && (
+                                    <div style={{ marginBottom: '20px' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
+                                            <div style={{ flex: 1 }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
                                                     <span style={{
+                                                        background: 'rgba(163, 230, 53, 0.12)',
+                                                        color: 'var(--secondary)',
+                                                        padding: '4px 10px',
+                                                        borderRadius: '8px',
                                                         fontSize: '11px',
-                                                        fontWeight: '700',
-                                                        color: 'rgba(255,255,255,0.4)',
+                                                        fontWeight: '900',
                                                         textTransform: 'uppercase',
                                                         letterSpacing: '0.5px'
                                                     }}>
-                                                        • {selectedProduct.brand}
+                                                        {selectedProduct.category}
+                                                    </span>
+                                                    {selectedProduct.brand && (
+                                                        <span style={{
+                                                            fontSize: '11px',
+                                                            fontWeight: '700',
+                                                            color: 'rgba(255,255,255,0.4)',
+                                                            textTransform: 'uppercase',
+                                                            letterSpacing: '0.5px'
+                                                        }}>
+                                                            • {selectedProduct.brand}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <h2 style={{ fontSize: '28px', fontWeight: '900', color: 'white', lineHeight: '1.1', marginBottom: '8px' }}>
+                                                    {selectedProduct.name}
+                                                </h2>
+                                            </div>
+                                            <div style={{ textAlign: 'right' }}>
+                                                <p style={{ fontSize: '26px', fontWeight: '900', color: 'var(--secondary)', margin: 0 }}>
+                                                    $ {new Intl.NumberFormat('es-CO').format(selectedProduct.price)}
+                                                </p>
+                                                {selectedProduct.condition && (
+                                                    <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontWeight: '700' }}>
+                                                        Estado: {selectedProduct.condition}
                                                     </span>
                                                 )}
-                                            </div>
-                                        </div>
-                                        <h2 style={{ fontSize: '24px', fontWeight: '900', marginBottom: '4px', color: 'white' }}>
-                                            {selectedProduct.name}
-                                        </h2>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: '15px', flexWrap: 'wrap' }}>
-                                            <p style={{ fontSize: '28px', fontWeight: '900', color: 'var(--secondary)', margin: 0 }}>
-                                                $ {new Intl.NumberFormat('es-CO').format(selectedProduct.price)}
-                                            </p>
-
-                                            <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-start' }}>
-                                                {selectedProduct.is_negotiable && selectedProduct.seller_id !== user?.id && (
-                                                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
-                                                        <motion.button
-                                                            whileTap={{ scale: 0.9 }}
-                                                            onClick={() => {
-                                                                if (!user) return navigate('/auth');
-                                                                setShowOfferModal(true);
-                                                                setOfferAmount(selectedProduct.price.toString());
-                                                            }}
-                                                            style={{
-                                                                width: '56px',
-                                                                height: '56px',
-                                                                borderRadius: '50%',
-                                                                background: 'rgba(255,255,255,0.05)',
-                                                                color: 'white',
-                                                                display: 'flex',
-                                                                alignItems: 'center',
-                                                                justifyContent: 'center',
-                                                                border: '1px solid rgba(255,255,255,0.1)'
-                                                            }}
-                                                        >
-                                                            <Handshake size={24} />
-                                                        </motion.button>
-                                                        <span style={{ fontSize: '10px', fontWeight: '800', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase' }}>Oferta</span>
-                                                    </div>
-                                                )}
-
-                                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
-                                                    <motion.button
-                                                        whileTap={{ scale: 0.9 }}
-                                                        onClick={async () => {
-                                                            if (selectedProduct.sizes_inventory && selectedProduct.sizes_inventory.length > 0 && !selectedSize) {
-                                                                // Highlight size selection or show toast
-                                                                alert('Por favor selecciona una talla');
-                                                                return;
-                                                            }
-                                                            setAddingToCart(selectedProduct.id);
-                                                            await addToCart({ ...selectedProduct } as any, selectedSize);
-                                                            setTimeout(() => setAddingToCart(null), 1500);
-                                                        }}
-                                                        disabled={selectedProduct.seller_id === user?.id}
-                                                        style={{
-                                                            width: '56px',
-                                                            height: '56px',
-                                                            borderRadius: '50%',
-                                                            background: 'rgba(255,255,255,0.05)',
-                                                            color: addingToCart === selectedProduct.id ? 'var(--secondary)' : 'white',
-                                                            display: 'flex',
-                                                            alignItems: 'center',
-                                                            justifyContent: 'center',
-                                                            border: '1px solid rgba(255,255,255,0.1)'
-                                                        }}
-                                                    >
-                                                        {addingToCart === selectedProduct.id ? <CheckCircle2 size={24} /> : <ShoppingCart size={24} />}
-                                                    </motion.button>
-                                                    <span style={{ fontSize: '10px', fontWeight: '800', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase' }}>Carrito</span>
-                                                </div>
-
-                                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
-                                                    <motion.button
-                                                        whileTap={{ scale: 0.9 }}
-                                                        onClick={async () => {
-                                                            if (!user) return navigate('/auth');
-                                                            if (selectedProduct.sizes_inventory && selectedProduct.sizes_inventory.length > 0 && !selectedSize) {
-                                                                alert('Por favor selecciona una talla');
-                                                                return;
-                                                            }
-                                                            setBuying(true);
-                                                            await addToCart({ ...selectedProduct } as any, selectedSize);
-                                                            setSelectedProduct(null);
-                                                            navigate('/checkout');
-                                                        }}
-                                                        disabled={buying || selectedProduct?.seller_id === user?.id}
-                                                        style={{
-                                                            width: '56px',
-                                                            height: '56px',
-                                                            borderRadius: '50%',
-                                                            background: 'var(--secondary)',
-                                                            color: 'var(--primary)',
-                                                            display: 'flex',
-                                                            alignItems: 'center',
-                                                            justifyContent: 'center',
-                                                            border: 'none',
-                                                            boxShadow: '0 10px 20px rgba(163, 230, 53, 0.2)'
-                                                        }}
-                                                    >
-                                                        <DollarSign size={24} />
-                                                    </motion.button>
-                                                    <span style={{ fontSize: '10px', fontWeight: '800', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase' }}>Comprar</span>
-                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -1074,14 +992,106 @@ const Home: React.FC = () => {
                                         </div>
                                     )}
 
-                                    {/* Sizes Inventory Selection */}
+                                    {/* Action Buttons Row - Consistent Style */}
+                                    <div style={{ display: 'flex', gap: '10px', marginBottom: '25px' }}>
+                                        {selectedProduct.is_negotiable && selectedProduct.seller_id !== user?.id && (
+                                            <motion.button
+                                                whileTap={{ scale: 0.9 }}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    if (!user) return navigate('/auth');
+                                                    setShowOfferModal(true);
+                                                    setOfferAmount(selectedProduct.price.toString());
+                                                }}
+                                                style={{
+                                                    width: '46px',
+                                                    height: '46px',
+                                                    borderRadius: '50%',
+                                                    background: 'rgba(255,255,255,0.05)',
+                                                    border: '1px solid rgba(255,255,255,0.1)',
+                                                    color: 'white',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    cursor: 'pointer'
+                                                }}
+                                            >
+                                                <Handshake size={22} />
+                                            </motion.button>
+                                        )}
+
+                                        <motion.button
+                                            whileTap={{ scale: 0.9 }}
+                                            onClick={async (e) => {
+                                                e.stopPropagation();
+                                                if (selectedProduct.sizes_inventory && selectedProduct.sizes_inventory.length > 0 && !selectedSize) {
+                                                    alert('Por favor selecciona una talla');
+                                                    return;
+                                                }
+                                                setAddingToCart(selectedProduct.id);
+                                                await addToCart({ ...selectedProduct } as any, selectedSize);
+                                                setTimeout(() => setAddingToCart(null), 1500);
+                                            }}
+                                            disabled={selectedProduct.seller_id === user?.id}
+                                            style={{
+                                                width: '46px',
+                                                height: '46px',
+                                                borderRadius: '50%',
+                                                background: 'rgba(163, 230, 53, 0.1)',
+                                                color: 'var(--secondary)',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                border: '1px solid rgba(163, 230, 53, 0.2)',
+                                                cursor: selectedProduct.seller_id === user?.id ? 'not-allowed' : 'pointer',
+                                                opacity: selectedProduct.seller_id === user?.id ? 0.3 : 1
+                                            }}
+                                        >
+                                            {addingToCart === selectedProduct.id ? <CheckCircle2 size={22} /> : <ShoppingCart size={22} />}
+                                        </motion.button>
+
+                                        <motion.button
+                                            whileTap={{ scale: 0.95 }}
+                                            onClick={async (e) => {
+                                                e.stopPropagation();
+                                                if (!user) return navigate('/auth');
+                                                if (selectedProduct.sizes_inventory && selectedProduct.sizes_inventory.length > 0 && !selectedSize) {
+                                                    alert('Por favor selecciona una talla');
+                                                    return;
+                                                }
+                                                setBuying(true);
+                                                await addToCart({ ...selectedProduct } as any, selectedSize);
+                                                setSelectedProduct(null);
+                                                navigate('/checkout');
+                                            }}
+                                            disabled={buying || selectedProduct?.seller_id === user?.id}
+                                            style={{
+                                                width: '46px',
+                                                height: '46px',
+                                                borderRadius: '50%',
+                                                background: 'var(--secondary)',
+                                                color: 'var(--primary)',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                border: 'none',
+                                                cursor: (buying || selectedProduct?.seller_id === user?.id) ? 'not-allowed' : 'pointer',
+                                                opacity: (buying || selectedProduct?.seller_id === user?.id) ? 0.5 : 1,
+                                                boxShadow: '0 8px 15px rgba(163, 230, 53, 0.2)'
+                                            }}
+                                        >
+                                            <DollarSign size={22} />
+                                        </motion.button>
+                                    </div>
+
+                                    {/* Sizes Inventory Selection - Independent row if exists */}
                                     {selectedProduct.sizes_inventory && selectedProduct.sizes_inventory.length > 0 && (
                                         <div style={{ marginBottom: '25px' }}>
                                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
                                                 <h4 style={{ color: 'white', fontSize: '14px', fontWeight: '800', margin: 0 }}>Talla Disponible</h4>
                                                 {selectedSize && (
                                                     <span style={{ fontSize: '11px', color: 'var(--secondary)', fontWeight: '700' }}>
-                                                        {selectedProduct.sizes_inventory.find((s: { size: string; quantity: number }) => s.size === selectedSize)?.quantity} disponibles
+                                                        {selectedProduct.sizes_inventory?.find((s: { size: string; quantity: number }) => s.size === selectedSize)?.quantity} disponibles
                                                     </span>
                                                 )}
                                             </div>
@@ -1116,6 +1126,7 @@ const Home: React.FC = () => {
                                     )}
 
                                 </div>
+
                             </div>
                         </motion.div>
                     )}
@@ -1126,7 +1137,7 @@ const Home: React.FC = () => {
                         <div style={{
                             position: 'fixed',
                             inset: 0,
-                            zIndex: 3000,
+                            zIndex: 11000,
                             display: 'flex',
                             alignItems: 'flex-end',
                             justifyContent: 'center'

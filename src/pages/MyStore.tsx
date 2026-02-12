@@ -871,15 +871,16 @@ const MyStore: React.FC = () => {
                 {/* Dashboard Navigation */}
                 <div style={{
                     display: 'flex',
-                    background: 'rgba(255,255,255,0.03)',
-                    padding: '5px',
-                    borderRadius: '20px',
-                    marginBottom: '10px',
-                    border: '1px solid rgba(255,255,255,0.05)',
-                    backdropFilter: 'blur(10px)'
+                    background: 'rgba(255,255,255,0.02)',
+                    padding: '6px',
+                    borderRadius: '24px',
+                    marginBottom: '15px',
+                    border: '1px solid rgba(255,255,255,0.04)',
+                    backdropFilter: 'blur(20px)',
+                    boxShadow: '0 8px 32px rgba(0,0,0,0.2)'
                 }}>
                     {[
-                        { id: 'products', label: 'PRODUCTOS', icon: Package, count: 0 },
+                        { id: 'products', label: 'STOCK', icon: Package, count: 0 },
                         { id: 'orders', label: 'PEDIDOS', icon: Truck, count: orders.filter(o => o.status === 'Pendiente').length },
                         { id: 'offers', label: 'OFERTAS', icon: Handshake, count: offers.filter(o => o.status === 'pending').length },
                         { id: 'coupons', label: 'CUPONES', icon: Ticket, count: 0 },
@@ -893,32 +894,32 @@ const MyStore: React.FC = () => {
                                 onClick={() => setActiveTab(tab.id as any)}
                                 style={{
                                     flex: 1,
-                                    padding: '12px 10px',
-                                    borderRadius: '16px',
+                                    padding: '12px 4px',
+                                    borderRadius: '18px',
                                     border: 'none',
                                     background: isActive ? 'var(--secondary)' : 'transparent',
-                                    color: isActive ? 'var(--primary)' : 'var(--text-dim)',
-                                    fontWeight: '800',
-                                    fontSize: '10px',
+                                    color: isActive ? 'var(--primary)' : 'rgba(255,255,255,0.4)',
+                                    fontWeight: '900',
                                     display: 'flex',
                                     flexDirection: 'column',
                                     alignItems: 'center',
                                     justifyContent: 'center',
                                     gap: '6px',
                                     cursor: 'pointer',
-                                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                                    position: 'relative'
+                                    transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                                    position: 'relative',
+                                    transform: isActive ? 'scale(1.02)' : 'scale(1)'
                                 }}
                             >
-                                <Icon size={18} strokeWidth={isActive ? 3 : 2} />
-                                <span style={{ fontSize: '9px', letterSpacing: '0.05em' }}>{tab.label}</span>
+                                <Icon size={18} strokeWidth={isActive ? 2.5 : 2} style={{ opacity: isActive ? 1 : 0.7 }} />
+                                <span style={{ fontSize: '8px', fontWeight: '900', letterSpacing: '0.08em', textTransform: 'uppercase' }}>{tab.label}</span>
                                 {tab.count > 0 && (
                                     <span style={{
                                         position: 'absolute',
                                         top: '6px',
-                                        right: '20%',
-                                        background: isActive ? 'var(--primary)' : '#ef4444',
-                                        color: isActive ? 'var(--secondary)' : 'white',
+                                        right: '15%',
+                                        background: isActive ? 'var(--primary)' : 'var(--secondary)',
+                                        color: isActive ? 'var(--secondary)' : 'var(--primary)',
                                         fontSize: '9px',
                                         minWidth: '16px',
                                         height: '16px',
@@ -927,7 +928,8 @@ const MyStore: React.FC = () => {
                                         alignItems: 'center',
                                         justifyContent: 'center',
                                         fontWeight: '900',
-                                        boxShadow: '0 2px 5px rgba(0,0,0,0.2)'
+                                        boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                                        border: isActive ? 'none' : '1px solid rgba(0,0,0,0.1)'
                                     }}>
                                         {tab.count}
                                     </span>
@@ -941,17 +943,63 @@ const MyStore: React.FC = () => {
 
             <div style={{
                 position: 'absolute',
-                top: 'calc(var(--header-offset-top) + 145px)',
+                top: 'calc(var(--header-offset-top) + 155px)',
                 left: '0',
                 right: '0',
                 bottom: 'calc(var(--nav-height))',
                 overflowY: 'auto',
-                padding: '0 20px 20px 20px',
-                transition: 'top 0.3s ease'
+                padding: '0 20px 40px 20px',
+                transition: 'top 0.3s ease',
+                WebkitOverflowScrolling: 'touch',
+                msOverflowStyle: 'none',
+                scrollbarWidth: 'none'
             }}>
                 {activeTab === 'products' ? (
                     <>
-                        <h2 style={{ fontSize: '20px', fontWeight: '700', marginBottom: '15px' }}>Gestión de Inventario</h2>
+                        {/* Quick Stats Summary */}
+                        <div style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(2, 1fr)',
+                            gap: '12px',
+                            marginBottom: '20px'
+                        }} className="animate-fade-up">
+                            <div style={{
+                                background: 'rgba(255,255,255,0.03)',
+                                padding: '15px',
+                                borderRadius: '22px',
+                                border: '1px solid rgba(255,255,255,0.05)',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: '5px'
+                            }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <div style={{ background: 'rgba(163, 230, 53, 0.1)', padding: '6px', borderRadius: '8px' }}>
+                                        <Package size={14} color="var(--secondary)" />
+                                    </div>
+                                    <span style={{ fontSize: '11px', fontWeight: '800', color: 'var(--text-dim)', textTransform: 'uppercase' }}>PRODUCTOS</span>
+                                </div>
+                                <span style={{ fontSize: '24px', fontWeight: '900', color: 'white', marginTop: '5px' }}>{products.length}</span>
+                            </div>
+                            <div style={{
+                                background: 'rgba(255,255,255,0.03)',
+                                padding: '15px',
+                                borderRadius: '22px',
+                                border: '1px solid rgba(255,255,255,0.05)',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: '5px'
+                            }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <div style={{ background: 'rgba(59, 130, 246, 0.1)', padding: '6px', borderRadius: '8px' }}>
+                                        <TrendingDown size={14} color="#60a5fa" />
+                                    </div>
+                                    <span style={{ fontSize: '11px', fontWeight: '800', color: 'var(--text-dim)', textTransform: 'uppercase' }}>VENTAS</span>
+                                </div>
+                                <span style={{ fontSize: '24px', fontWeight: '900', color: 'white', marginTop: '5px' }}>{orders.filter(o => o.status === 'Entregado').length}</span>
+                            </div>
+                        </div>
+
+                        <h2 style={{ fontSize: '20px', fontWeight: '900', marginBottom: '15px', letterSpacing: '-0.02em', color: 'white' }}>Gestión de Inventario</h2>
 
                         {!showForm && (
                             <button

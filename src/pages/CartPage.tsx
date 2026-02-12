@@ -88,7 +88,7 @@ const CartPage: React.FC = () => {
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                         {cartItems.map((item) => (
                             <CartItem
-                                key={item.id}
+                                key={`${item.id}-${item.selected_size}`}
                                 item={item}
                                 onUpdateQuantity={updateQuantity}
                                 onRemove={removeFromCart}
@@ -143,7 +143,11 @@ const EmptyCartView = ({ onNavigate }: { onNavigate: () => void }) => (
     </div>
 );
 
-const CartItem = ({ item, onUpdateQuantity, onRemove }: { item: any, onUpdateQuantity: (id: string, q: number) => void, onRemove: (id: string) => void }) => (
+const CartItem = ({ item, onUpdateQuantity, onRemove }: {
+    item: any,
+    onUpdateQuantity: (id: string, q: number, size?: string | null) => void,
+    onRemove: (id: string, size?: string | null) => void
+}) => (
     <motion.div
         layout
         initial={{ opacity: 0, scale: 0.95 }}
@@ -169,7 +173,7 @@ const CartItem = ({ item, onUpdateQuantity, onRemove }: { item: any, onUpdateQua
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', marginTop: '5px' }}>
                         <div style={styles.quantityControl}>
                             <button
-                                onClick={() => onUpdateQuantity(item.id, item.quantity - 1)}
+                                onClick={() => onUpdateQuantity(item.id, item.quantity - 1, item.selected_size)}
                                 style={styles.quantityButton}
                             >
                                 -
@@ -178,7 +182,7 @@ const CartItem = ({ item, onUpdateQuantity, onRemove }: { item: any, onUpdateQua
                                 {item.quantity}
                             </span>
                             <button
-                                onClick={() => onUpdateQuantity(item.id, item.quantity + 1)}
+                                onClick={() => onUpdateQuantity(item.id, item.quantity + 1, item.selected_size)}
                                 style={styles.quantityButton}
                             >
                                 +
@@ -187,7 +191,7 @@ const CartItem = ({ item, onUpdateQuantity, onRemove }: { item: any, onUpdateQua
                     </div>
                 </div>
                 <button
-                    onClick={() => onRemove(item.id)}
+                    onClick={() => onRemove(item.id, item.selected_size)}
                     style={styles.removeButton}
                 >
                     <Trash2 size={18} />

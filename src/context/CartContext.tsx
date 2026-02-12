@@ -11,7 +11,7 @@ interface CartContextType {
     cartItems: CartItem[];
     addToCart: (product: Product, selectedSize?: string | null) => Promise<void>;
     removeFromCart: (productId: string, selectedSize?: string | null) => Promise<void>;
-    updateQuantity: (productId: string, quantity: number) => Promise<void>;
+    updateQuantity: (productId: string, quantity: number, selectedSize?: string | null) => Promise<void>;
     clearCart: () => Promise<void>;
     totalItems: number;
     totalAmount: number;
@@ -117,10 +117,12 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 .eq('selected_size', (selectedSize || null) as any);
         }
 
-        setCartItems(prev => prev.filter(item => !(item.id === productId && item.selected_size === selectedSize)));
+        setCartItems(prev => prev.filter(item =>
+            !(item.id === productId && (item.selected_size === selectedSize || (item.selected_size === null && selectedSize === undefined)))
+        ));
     };
 
-    const updateQuantity = async (productId: string, quantity: number) => {
+    const updateQuantity = async (productId: string, quantity: number, selectedSize?: string | null) => {
         if (quantity < 1) return;
 
         const { data: { session } } = await supabase.auth.getSession();
@@ -130,11 +132,14 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 .from('cart_items')
                 .update({ quantity })
                 .eq('user_id', session.user.id)
-                .eq('product_id', productId);
+                .eq('product_id', productId)
+                .eq('selected_size', (selectedSize || null) as any);
         }
 
         setCartItems(prev => prev.map(item =>
-            item.id === productId ? { ...item, quantity } : item
+            (item.id === productId && (item.selected_size === selectedSize || (item.selected_size === null && selectedSize === undefined)))
+                ? { ...item, quantity }
+                : item
         ));
     };
 
