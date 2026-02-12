@@ -51,7 +51,7 @@ import { QueryProvider } from './context/QueryProvider';
 import { ToastProvider } from './context/ToastContext';
 
 const AppContent: React.FC = () => {
-  const { session, loading } = useAuth();
+  const { session } = useAuth();
   const location = useLocation();
   const isOnline = useOnlineStatus();
   const [showOnboarding, setShowOnboarding] = React.useState(false);
@@ -93,9 +93,7 @@ const AppContent: React.FC = () => {
     }
   }, [session]);
 
-  if (loading) {
-    return <div style={{ background: '#0e2f1f', height: '100vh', width: '100%' }} />;
-  }
+  // Removed blocking loading state to prevent being stuck on green screen
 
   const isRoundPage = location.pathname === '/round';
   const isNotificationsPage = location.pathname === '/notifications';
