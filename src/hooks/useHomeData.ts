@@ -17,7 +17,7 @@ export const useFeaturedProducts = (limit = 4) => {
                 price: typeof p.price === 'string' ? parseFloat(p.price) : p.price
             }));
         },
-        staleTime: 1000 * 60 * 30, // 30 minutos
+        staleTime: 0, // Always fetch fresh data
     });
 };
 
