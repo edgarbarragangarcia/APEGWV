@@ -155,7 +155,7 @@ const PremiumProductCard: React.FC<PremiumProductCardProps> = ({ product, onAddT
                         textTransform: 'uppercase',
                         letterSpacing: '1px'
                     }}>
-                        {product.category}
+                        {product.category} {(product as any).clothing_type ? `• ${(product as any).clothing_type}` : ''}
                     </span>
                     <div style={{
                         display: 'flex',

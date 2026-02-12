@@ -94,6 +94,7 @@ const MyStore: React.FC = () => {
         displayPrice: '', // String with thousand separators for UI
         category: 'Accesorios',
         image_url: '',
+        images: [] as string[],
         size_clothing: '',
         clothing_type: 'Camiseta',
         size_shoes_us: '',
@@ -335,7 +336,7 @@ const MyStore: React.FC = () => {
         }
     }, [user]);
 
-    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
         const file = e.target.files?.[0];
         if (!file) return;
 
@@ -358,7 +359,15 @@ const MyStore: React.FC = () => {
                 .from('products')
                 .getPublicUrl(filePath);
 
-            setFormData(prev => ({ ...prev, image_url: publicUrl }));
+            setFormData(prev => {
+                const newImages = [...prev.images];
+                newImages[index] = publicUrl;
+                return {
+                    ...prev,
+                    images: newImages,
+                    image_url: index === 0 ? publicUrl : (prev.image_url || publicUrl)
+                };
+            });
         } catch (err) {
             console.error('Error uploading image:', err);
             setSuccessMessage({ title: 'Error', message: 'Error al subir la imagen', type: 'error' });
@@ -419,6 +428,7 @@ const MyStore: React.FC = () => {
                         clothing_type: formData.category === 'Ropa' ? formData.clothing_type : null,
                         is_negotiable: formData.is_negotiable,
                         stock_quantity: 1,
+                        images: formData.images,
                         updated_at: new Date().toISOString()
                     })
                     .eq('id', editingId)
@@ -443,7 +453,8 @@ const MyStore: React.FC = () => {
                         clothing_type: formData.category === 'Ropa' ? formData.clothing_type : null,
                         is_negotiable: formData.is_negotiable,
                         seller_id: user.id,
-                        stock_quantity: 1
+                        stock_quantity: 1,
+                        images: formData.images
                     }])
                     .select()
                     .single();
@@ -486,7 +497,8 @@ const MyStore: React.FC = () => {
             size_shoes_col: '',
             size_shoes_cm: '',
             is_negotiable: false,
-            selectedCouponId: ''
+            selectedCouponId: '',
+            images: []
         });
         setEditingId(null);
     };
@@ -507,7 +519,8 @@ const MyStore: React.FC = () => {
             size_shoes_col: (product as any).size_shoes_col || '',
             size_shoes_cm: (product as any).size_shoes_cm || '',
             is_negotiable: (product as any).is_negotiable || false,
-            selectedCouponId: coupons.find(c => c.product_id === product.id)?.id || ''
+            selectedCouponId: coupons.find(c => c.product_id === product.id)?.id || '',
+            images: Array.isArray((product as any).images) ? (product as any).images : (product.image_url ? [product.image_url] : [])
         });
         setEditingId(product.id);
         setShowForm(true);
@@ -940,30 +953,78 @@ const MyStore: React.FC = () => {
 
                                 {/* Image Upload Area */}
                                 <div style={{ marginBottom: '20px' }}>
-                                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Foto del Producto</label>
-                                    <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9', borderRadius: '15px', overflow: 'hidden', background: 'rgba(255,255,255,0.05)', border: '1px dashed var(--glass-border)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-                                        {formData.image_url ? (
-                                            <img
-                                                src={optimizeImage(formData.image_url, { width: 600, height: 600 })}
-                                                alt="Preview"
-                                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                                onError={(e) => {
-                                                    const target = e.target as HTMLImageElement;
-                                                    target.src = 'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?auto=format&fit=crop&q=80&w=400';
+                                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Fotos del Producto (Máximo 3)</label>
+                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
+                                        {[0, 1, 2].map((index) => (
+                                            <div
+                                                key={index}
+                                                style={{
+                                                    position: 'relative',
+                                                    width: '100%',
+                                                    aspectRatio: '1/1',
+                                                    borderRadius: '15px',
+                                                    overflow: 'hidden',
+                                                    background: 'rgba(255,255,255,0.05)',
+                                                    border: '1px dashed var(--glass-border)',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    cursor: 'pointer'
                                                 }}
-                                            />
-                                        ) : (
-                                            <div style={{ textAlign: 'center' }}>
-                                                <Camera size={32} color="var(--text-dim)" style={{ marginBottom: '8px' }} />
-                                                <p style={{ fontSize: '12px', color: 'var(--text-dim)' }}>{uploading ? 'Subiendo...' : 'Toca para subir'}</p>
+                                            >
+                                                {formData.images[index] ? (
+                                                    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+                                                        <img
+                                                            src={optimizeImage(formData.images[index], { width: 400, height: 400 })}
+                                                            alt={`Preview ${index}`}
+                                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                                        />
+                                                        <button
+                                                            type="button"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                setFormData(prev => {
+                                                                    const newImages = [...prev.images];
+                                                                    newImages[index] = '';
+                                                                    return {
+                                                                        ...prev,
+                                                                        images: newImages,
+                                                                        image_url: newImages[0] || ''
+                                                                    };
+                                                                });
+                                                            }}
+                                                            style={{
+                                                                position: 'absolute',
+                                                                top: '5px',
+                                                                right: '5px',
+                                                                background: 'rgba(0,0,0,0.5)',
+                                                                border: 'none',
+                                                                borderRadius: '50%',
+                                                                width: '20px',
+                                                                height: '20px',
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                justifyContent: 'center',
+                                                                color: 'white'
+                                                            }}
+                                                        >
+                                                            <X size={12} />
+                                                        </button>
+                                                    </div>
+                                                ) : (
+                                                    <div style={{ textAlign: 'center' }}>
+                                                        <Camera size={24} color="var(--text-dim)" style={{ marginBottom: '4px' }} />
+                                                        <p style={{ fontSize: '10px', color: 'var(--text-dim)' }}>{uploading ? '...' : 'Subir'}</p>
+                                                    </div>
+                                                )}
+                                                <input
+                                                    type="file"
+                                                    accept="image/*"
+                                                    onChange={(e) => handleImageUpload(e, index)}
+                                                    style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer' }}
+                                                />
                                             </div>
-                                        )}
-                                        <input
-                                            type="file"
-                                            accept="image/*"
-                                            onChange={handleImageUpload}
-                                            style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer' }}
-                                        />
+                                        ))}
                                     </div>
                                 </div>
 
