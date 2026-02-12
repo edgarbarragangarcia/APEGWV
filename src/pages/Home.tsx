@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
-import { Heart, ChevronRight, ShoppingCart, Loader2, Plus, CheckCircle2, ArrowLeft } from 'lucide-react';
+import { Heart, ChevronRight, ShoppingCart, Loader2, CheckCircle2, ArrowLeft, DollarSign, Handshake } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { supabase, optimizeImage } from '../services/SupabaseManager';
 import { useProfile } from '../hooks/useProfile';
@@ -956,82 +956,88 @@ const Home: React.FC = () => {
                                                 $ {new Intl.NumberFormat('es-CO').format(selectedProduct.price)}
                                             </p>
 
-                                            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                            <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-start' }}>
                                                 {selectedProduct.is_negotiable && selectedProduct.seller_id !== user?.id && (
-                                                    <motion.button
-                                                        whileTap={{ scale: 0.95 }}
-                                                        onClick={() => {
-                                                            if (!user) return navigate('/auth');
-                                                            setShowOfferModal(true);
-                                                            setOfferAmount(selectedProduct.price.toString());
-                                                        }}
-                                                        style={{
-                                                            background: 'rgba(255,255,255,0.05)',
-                                                            color: 'white',
-                                                            height: '46px',
-                                                            padding: '0 15px',
-                                                            borderRadius: '14px',
-                                                            fontWeight: '800',
-                                                            fontSize: '12px',
-                                                            border: '1px solid rgba(255,255,255,0.1)',
-                                                            display: 'flex',
-                                                            alignItems: 'center',
-                                                            gap: '6px'
-                                                        }}
-                                                    >
-                                                        🤝 OFERTA
-                                                    </motion.button>
+                                                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
+                                                        <motion.button
+                                                            whileTap={{ scale: 0.9 }}
+                                                            onClick={() => {
+                                                                if (!user) return navigate('/auth');
+                                                                setShowOfferModal(true);
+                                                                setOfferAmount(selectedProduct.price.toString());
+                                                            }}
+                                                            style={{
+                                                                width: '56px',
+                                                                height: '56px',
+                                                                borderRadius: '50%',
+                                                                background: 'rgba(255,255,255,0.05)',
+                                                                color: 'white',
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                justifyContent: 'center',
+                                                                border: '1px solid rgba(255,255,255,0.1)'
+                                                            }}
+                                                        >
+                                                            <Handshake size={24} />
+                                                        </motion.button>
+                                                        <span style={{ fontSize: '10px', fontWeight: '800', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase' }}>Oferta</span>
+                                                    </div>
                                                 )}
 
-                                                <motion.button
-                                                    whileTap={{ scale: 0.95 }}
-                                                    onClick={async () => {
-                                                        setAddingToCart(selectedProduct.id);
-                                                        await addToCart({ ...selectedProduct } as any);
-                                                        setTimeout(() => setAddingToCart(null), 1500);
-                                                    }}
-                                                    disabled={selectedProduct.seller_id === user?.id}
-                                                    style={{
-                                                        width: '46px',
-                                                        height: '46px',
-                                                        background: 'rgba(255,255,255,0.05)',
-                                                        color: addingToCart === selectedProduct.id ? 'var(--secondary)' : 'white',
-                                                        borderRadius: '14px',
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        justifyContent: 'center',
-                                                        border: '1px solid rgba(255,255,255,0.1)'
-                                                    }}
-                                                >
-                                                    {addingToCart === selectedProduct.id ? <CheckCircle2 size={20} /> : <Plus size={20} />}
-                                                </motion.button>
+                                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
+                                                    <motion.button
+                                                        whileTap={{ scale: 0.9 }}
+                                                        onClick={async () => {
+                                                            setAddingToCart(selectedProduct.id);
+                                                            await addToCart({ ...selectedProduct } as any);
+                                                            setTimeout(() => setAddingToCart(null), 1500);
+                                                        }}
+                                                        disabled={selectedProduct.seller_id === user?.id}
+                                                        style={{
+                                                            width: '56px',
+                                                            height: '56px',
+                                                            borderRadius: '50%',
+                                                            background: 'rgba(255,255,255,0.05)',
+                                                            color: addingToCart === selectedProduct.id ? 'var(--secondary)' : 'white',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
+                                                            border: '1px solid rgba(255,255,255,0.1)'
+                                                        }}
+                                                    >
+                                                        {addingToCart === selectedProduct.id ? <CheckCircle2 size={24} /> : <ShoppingCart size={24} />}
+                                                    </motion.button>
+                                                    <span style={{ fontSize: '10px', fontWeight: '800', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase' }}>Carrito</span>
+                                                </div>
 
-                                                <motion.button
-                                                    whileTap={{ scale: 0.95 }}
-                                                    onClick={async () => {
-                                                        if (!user) return navigate('/auth');
-                                                        setBuying(true);
-                                                        await addToCart({ ...selectedProduct } as any);
-                                                        setSelectedProduct(null);
-                                                        navigate('/checkout');
-                                                    }}
-                                                    disabled={buying || selectedProduct?.seller_id === user?.id}
-                                                    className="btn-primary"
-                                                    style={{
-                                                        height: '46px',
-                                                        padding: '0 20px',
-                                                        borderRadius: '14px',
-                                                        fontSize: '13px',
-                                                        fontWeight: '900',
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        gap: '8px',
-                                                        width: 'auto'
-                                                    }}
-                                                >
-                                                    <ShoppingCart size={18} />
-                                                    {buying ? '...' : 'COMPRAR'}
-                                                </motion.button>
+                                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
+                                                    <motion.button
+                                                        whileTap={{ scale: 0.9 }}
+                                                        onClick={async () => {
+                                                            if (!user) return navigate('/auth');
+                                                            setBuying(true);
+                                                            await addToCart({ ...selectedProduct } as any);
+                                                            setSelectedProduct(null);
+                                                            navigate('/checkout');
+                                                        }}
+                                                        disabled={buying || selectedProduct?.seller_id === user?.id}
+                                                        style={{
+                                                            width: '56px',
+                                                            height: '56px',
+                                                            borderRadius: '50%',
+                                                            background: 'var(--secondary)',
+                                                            color: 'var(--primary)',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
+                                                            border: 'none',
+                                                            boxShadow: '0 10px 20px rgba(163, 230, 53, 0.2)'
+                                                        }}
+                                                    >
+                                                        <DollarSign size={24} />
+                                                    </motion.button>
+                                                    <span style={{ fontSize: '10px', fontWeight: '800', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase' }}>Comprar</span>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
