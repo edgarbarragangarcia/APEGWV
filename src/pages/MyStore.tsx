@@ -1313,7 +1313,10 @@ const MyStore: React.FC = () => {
 
                                             {/* Shoe Inventory Selector */}
                                             <div style={{ marginTop: '5px' }}>
-                                                <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Selecciona Tallas en Inventario (COL)</label>
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                                                    <label style={{ fontSize: '13px', color: 'var(--text-dim)' }}>Selecciona Tallas y Cantidades (COL)</label>
+                                                    <span style={{ fontSize: '10px', color: 'var(--secondary)', fontWeight: '700' }}>Usa los números para activar stock</span>
+                                                </div>
                                                 <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                                                     {['36', '37', '38', '39', '40', '41', '42', '43', '44', '45'].map(size => {
                                                         const isSelected = !!formData.sizes_inventory.find(s => s.size === size);
@@ -1326,13 +1329,14 @@ const MyStore: React.FC = () => {
                                                                     flex: '1 0 45px',
                                                                     padding: '10px',
                                                                     borderRadius: '10px',
-                                                                    border: '1px solid var(--glass-border)',
+                                                                    border: '1px solid ' + (isSelected ? 'var(--secondary)' : 'var(--glass-border)'),
                                                                     background: isSelected ? 'var(--secondary)' : 'rgba(255,255,255,0.05)',
                                                                     color: isSelected ? 'var(--primary)' : 'white',
-                                                                    fontWeight: '700',
-                                                                    fontSize: '12px',
+                                                                    fontWeight: '800',
+                                                                    fontSize: '13px',
                                                                     transition: 'all 0.2s ease',
-                                                                    boxSizing: 'border-box'
+                                                                    boxSizing: 'border-box',
+                                                                    boxShadow: isSelected ? '0 0 15px rgba(163, 230, 53, 0.2)' : 'none'
                                                                 }}
                                                             >
                                                                 {size}
@@ -1629,9 +1633,43 @@ const MyStore: React.FC = () => {
                                                                 textTransform: 'uppercase',
                                                                 border: '1px solid rgba(255,255,255,0.05)'
                                                             }}>
-                                                                {(product as any).clothing_type || product.category}
+                                                                Stock Total: {(product as any).stock_quantity || 0}
                                                             </span>
-                                                            {(product as any).size_clothing && (
+
+                                                            {/* Size Inventory Breakdown */}
+                                                            {Array.isArray((product as any).sizes_inventory) && (product as any).sizes_inventory.length > 0 && (
+                                                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '4px' }}>
+                                                                    {(product as any).sizes_inventory.map((inv: { size: string; quantity: number }, i: number) => (
+                                                                        <span key={i} style={{
+                                                                            background: inv.quantity > 0 ? 'rgba(163, 230, 53, 0.1)' : 'rgba(255, 255, 255, 0.05)',
+                                                                            padding: '2px 8px',
+                                                                            borderRadius: '6px',
+                                                                            fontSize: '10px',
+                                                                            color: inv.quantity > 0 ? 'var(--secondary)' : 'rgba(255,255,255,0.3)',
+                                                                            fontWeight: '900',
+                                                                            border: '1px solid ' + (inv.quantity > 0 ? 'rgba(163, 230, 53, 0.2)' : 'rgba(255,255,255,0.1)')
+                                                                        }}>
+                                                                            {inv.size}: {inv.quantity}
+                                                                        </span>
+                                                                    ))}
+                                                                </div>
+                                                            )}
+
+                                                            {/* Individual Shoe Size Columns (Fallback) */}
+                                                            {(!Array.isArray((product as any).sizes_inventory) || (product as any).sizes_inventory.length === 0) && (product as any).size_shoes_col && (
+                                                                <span style={{
+                                                                    background: 'rgba(163, 230, 53, 0.1)',
+                                                                    padding: '4px 10px',
+                                                                    borderRadius: '8px',
+                                                                    fontSize: '10px',
+                                                                    color: 'var(--secondary)',
+                                                                    fontWeight: '900',
+                                                                    border: '1px solid rgba(163, 230, 53, 0.2)'
+                                                                }}>
+                                                                    TALLA COL: {(product as any).size_shoes_col}
+                                                                </span>
+                                                            )}
+                                                            {(!Array.isArray((product as any).sizes_inventory) || (product as any).sizes_inventory.length === 0) && (product as any).size_clothing && (
                                                                 <span style={{
                                                                     background: 'rgba(163, 230, 53, 0.1)',
                                                                     padding: '4px 10px',
