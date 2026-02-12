@@ -142,32 +142,49 @@ const PremiumProductCard: React.FC<PremiumProductCardProps> = ({ product, onAddT
                 flexDirection: 'column',
                 gap: '6px'
             }}>
-                {/* Category & Rating */}
+                {/* Brand & Category & Rating */}
                 <div style={{
                     display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center'
+                    flexDirection: 'column',
+                    gap: '2px'
                 }}>
-                    <span style={{
-                        fontSize: '10px',
-                        fontWeight: '700',
-                        color: 'var(--secondary)',
-                        textTransform: 'uppercase',
-                        letterSpacing: '1px'
-                    }}>
-                        {product.category} {(product as any).clothing_type ? `• ${(product as any).clothing_type}` : ''}
-                    </span>
+                    {product.brand && (
+                        <span style={{
+                            fontSize: '9px',
+                            fontWeight: '800',
+                            color: 'rgba(255,255,255,0.4)',
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.5px'
+                        }}>
+                            {product.brand}
+                        </span>
+                    )}
                     <div style={{
                         display: 'flex',
-                        alignItems: 'center',
-                        gap: '2px',
-                        background: 'rgba(255,255,255,0.05)',
-                        padding: '2px 6px',
-                        borderRadius: '6px'
+                        justifyContent: 'space-between',
+                        alignItems: 'center'
                     }}>
-                        <Star size={10} color="var(--accent)" fill="var(--accent)" />
-                        <span style={{ fontSize: '10px', fontWeight: '600', color: 'white' }}>{rating}</span>
-                        <span style={{ fontSize: '10px', fontWeight: '500', color: 'rgba(255,255,255,0.4)', marginLeft: '2px' }}>({reviews})</span>
+                        <span style={{
+                            fontSize: '10px',
+                            fontWeight: '700',
+                            color: 'var(--secondary)',
+                            textTransform: 'uppercase',
+                            letterSpacing: '1px'
+                        }}>
+                            {product.category} {(product as any).clothing_type ? `• ${(product as any).clothing_type}` : ''}
+                        </span>
+                        <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '2px',
+                            background: 'rgba(255,255,255,0.05)',
+                            padding: '2px 6px',
+                            borderRadius: '6px'
+                        }}>
+                            <Star size={10} color="var(--accent)" fill="var(--accent)" />
+                            <span style={{ fontSize: '10px', fontWeight: '600', color: 'white' }}>{rating}</span>
+                            <span style={{ fontSize: '10px', fontWeight: '500', color: 'rgba(255,255,255,0.4)', marginLeft: '2px' }}>({reviews})</span>
+                        </div>
                     </div>
                 </div>
 

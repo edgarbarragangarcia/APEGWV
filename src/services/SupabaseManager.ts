@@ -28,6 +28,8 @@ export interface Product {
     created_at?: string | null;
     status?: string | null;
     is_negotiable?: boolean | null;
+    brand?: string | null;
+    sizes_inventory?: { size: string; quantity: number }[] | null;
     negotiating_buyer_id?: string | null;
     negotiation_expires_at?: string | null;
 }

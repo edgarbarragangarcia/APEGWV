@@ -101,9 +101,13 @@ const MyStore: React.FC = () => {
         size_shoes_eu: '',
         size_shoes_col: '',
         size_shoes_cm: '',
+        brand: '',
+        sizes_inventory: [] as { size: string; quantity: number }[],
         is_negotiable: false,
         selectedCouponId: ''
     });
+
+    const [brandsList, setBrandsList] = useState<string[]>([]);
 
     const convertShoeSizes = (colVal: string) => {
         const col = parseFloat(colVal);
@@ -134,6 +138,32 @@ const MyStore: React.FC = () => {
     };
 
     const categories = ['Ropa', 'Accesorios', 'Bolas', 'Zapatos', 'Palos', 'Guantes', 'Gorras', 'Otros'];
+
+    const toggleSizeInventory = (size: string) => {
+        setFormData(prev => {
+            const exists = prev.sizes_inventory.find(s => s.size === size);
+            if (exists) {
+                return {
+                    ...prev,
+                    sizes_inventory: prev.sizes_inventory.filter(s => s.size !== size)
+                };
+            } else {
+                return {
+                    ...prev,
+                    sizes_inventory: [...prev.sizes_inventory, { size, quantity: 1 }]
+                };
+            }
+        });
+    };
+
+    const updateSizeQuantity = (size: string, quantity: number) => {
+        setFormData(prev => ({
+            ...prev,
+            sizes_inventory: prev.sizes_inventory.map(s =>
+                s.size === size ? { ...s, quantity: Math.max(0, quantity) } : s
+            )
+        }));
+    };
 
     const handleScanComplete = (trackingNumber: string, provider?: string) => {
         if (scanningOrderId) {
@@ -268,6 +298,14 @@ const MyStore: React.FC = () => {
                 fetchOrders(user.id);
                 fetchOffers(user.id);
                 fetchCoupons(user.id);
+
+                const { data: brandsData } = await supabase
+                    .from('brands')
+                    .select('name')
+                    .order('name', { ascending: true });
+                if (brandsData) {
+                    setBrandsList(brandsData.map(b => b.name));
+                }
             }
         } catch (err) {
             console.error('Error fetching store data:', err);
@@ -427,8 +465,10 @@ const MyStore: React.FC = () => {
                         size_shoes_cm: formData.category === 'Zapatos' ? formData.size_shoes_cm : null,
                         clothing_type: formData.category === 'Ropa' ? formData.clothing_type : null,
                         is_negotiable: formData.is_negotiable,
-                        stock_quantity: 1,
+                        stock_quantity: formData.sizes_inventory.reduce((acc, curr) => acc + curr.quantity, 0),
                         images: formData.images,
+                        brand: formData.brand,
+                        sizes_inventory: formData.sizes_inventory,
                         updated_at: new Date().toISOString()
                     })
                     .eq('id', editingId)
@@ -453,7 +493,9 @@ const MyStore: React.FC = () => {
                         clothing_type: formData.category === 'Ropa' ? formData.clothing_type : null,
                         is_negotiable: formData.is_negotiable,
                         seller_id: user.id,
-                        stock_quantity: 1,
+                        stock_quantity: formData.sizes_inventory.reduce((acc, curr) => acc + curr.quantity, 0),
+                        brand: formData.brand,
+                        sizes_inventory: formData.sizes_inventory,
                         images: formData.images
                     }])
                     .select()
@@ -498,7 +540,9 @@ const MyStore: React.FC = () => {
             size_shoes_cm: '',
             is_negotiable: false,
             selectedCouponId: '',
-            images: []
+            images: [],
+            brand: '',
+            sizes_inventory: []
         });
         setEditingId(null);
     };
@@ -520,7 +564,9 @@ const MyStore: React.FC = () => {
             size_shoes_cm: (product as any).size_shoes_cm || '',
             is_negotiable: (product as any).is_negotiable || false,
             selectedCouponId: coupons.find(c => c.product_id === product.id)?.id || '',
-            images: Array.isArray((product as any).images) ? (product as any).images : (product.image_url ? [product.image_url] : [])
+            images: Array.isArray((product as any).images) ? (product as any).images : (product.image_url ? [product.image_url] : []),
+            brand: (product as any).brand || '',
+            sizes_inventory: (product as any).sizes_inventory || []
         });
         setEditingId(product.id);
         setShowForm(true);
@@ -1040,6 +1086,19 @@ const MyStore: React.FC = () => {
                                         />
                                     </div>
 
+                                    <div>
+                                        <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Marca</label>
+                                        <select
+                                            value={formData.brand}
+                                            onChange={e => setFormData({ ...formData, brand: e.target.value })}
+                                            style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '12px', color: 'white', fontSize: '15px' }}
+                                        >
+                                            <option value="">Selecciona una marca...</option>
+                                            <option value="OTRA">OTRA (Especificar en descripción)</option>
+                                            {brandsList.map(b => <option key={b} value={b}>{b}</option>)}
+                                        </select>
+                                    </div>
+
                                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
                                         <div>
                                             <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Categoría</label>
@@ -1085,28 +1144,71 @@ const MyStore: React.FC = () => {
                                             </div>
 
                                             <div>
-                                                <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Talla</label>
-                                                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                                                    {(formData.clothing_type === 'Pantalón' || formData.clothing_type === 'Short' ? ['30', '32', '34', '36', '38', '40'] : ['S', 'M', 'L', 'XL', 'XXL']).map(size => (
-                                                        <button
-                                                            key={size}
-                                                            type="button"
-                                                            onClick={() => setFormData({ ...formData, size_clothing: size })}
-                                                            style={{
-                                                                flex: 1,
-                                                                minWidth: '50px',
-                                                                padding: '10px',
-                                                                borderRadius: '10px',
-                                                                border: '1px solid var(--glass-border)',
-                                                                background: formData.size_clothing === size ? 'var(--secondary)' : 'rgba(255,255,255,0.05)',
-                                                                color: formData.size_clothing === size ? 'var(--primary)' : 'white',
-                                                                fontWeight: '700',
-                                                                fontSize: '13px'
-                                                            }}
-                                                        >
-                                                            {size}
-                                                        </button>
-                                                    ))}
+                                                <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Selecciona Tallas y Cantidades</label>
+                                                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                                                        {(formData.clothing_type === 'Pantalón' || formData.clothing_type === 'Short' ? ['30', '32', '34', '36', '38', '40'] : ['S', 'M', 'L', 'XL', 'XXL']).map(size => {
+                                                            const isSelected = !!formData.sizes_inventory.find(s => s.size === size);
+                                                            return (
+                                                                <button
+                                                                    key={size}
+                                                                    type="button"
+                                                                    onClick={() => toggleSizeInventory(size)}
+                                                                    style={{
+                                                                        flex: '1 0 50px',
+                                                                        padding: '10px',
+                                                                        borderRadius: '10px',
+                                                                        border: '1px solid var(--glass-border)',
+                                                                        background: isSelected ? 'var(--secondary)' : 'rgba(255,255,255,0.05)',
+                                                                        color: isSelected ? 'var(--primary)' : 'white',
+                                                                        fontWeight: '700',
+                                                                        fontSize: '13px',
+                                                                        transition: 'all 0.2s ease'
+                                                                    }}
+                                                                >
+                                                                    {size}
+                                                                </button>
+                                                            );
+                                                        })}
+                                                    </div>
+
+                                                    {/* Quantity Inputs for Selected Sizes */}
+                                                    {formData.sizes_inventory.length > 0 && (
+                                                        <div style={{
+                                                            background: 'rgba(255,255,255,0.02)',
+                                                            padding: '15px',
+                                                            borderRadius: '12px',
+                                                            border: '1px solid rgba(255,255,255,0.05)',
+                                                            marginTop: '5px'
+                                                        }}>
+                                                            <p style={{ fontSize: '11px', color: 'var(--text-dim)', marginBottom: '10px', fontWeight: '800' }}>CANTIDADES POR TALLA</p>
+                                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                                                {formData.sizes_inventory.map(s => (
+                                                                    <div key={s.size} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                                                        <span style={{ fontSize: '14px', fontWeight: '900', color: 'white' }}>Talla {s.size}</span>
+                                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                                            <button
+                                                                                type="button"
+                                                                                onClick={() => updateSizeQuantity(s.size, s.quantity - 1)}
+                                                                                style={{ width: '28px', height: '28px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: 'white' }}
+                                                                            >-</button>
+                                                                            <input
+                                                                                type="number"
+                                                                                value={s.quantity}
+                                                                                onChange={(e) => updateSizeQuantity(s.size, parseInt(e.target.value) || 0)}
+                                                                                style={{ width: '40px', textAlign: 'center', background: 'transparent', border: 'none', color: 'white', fontWeight: '800', fontSize: '14px' }}
+                                                                            />
+                                                                            <button
+                                                                                type="button"
+                                                                                onClick={() => updateSizeQuantity(s.size, s.quantity + 1)}
+                                                                                style={{ width: '28px', height: '28px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'white', color: 'var(--primary)' }}
+                                                                            >+</button>
+                                                                        </div>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </div>
                                         </div>

@@ -33,6 +33,7 @@ const Home: React.FC = () => {
     const [offerSuccess, setOfferSuccess] = React.useState(false);
     const [addingToCart, setAddingToCart] = React.useState<string | null>(null);
     const [buying, setBuying] = React.useState(false);
+    const [selectedSize, setSelectedSize] = React.useState<string | null>(null);
     const [myOffers, setMyOffers] = React.useState<any[]>([]);
     const { likedProducts, toggleLike } = useLikes();
 
@@ -65,6 +66,7 @@ const Home: React.FC = () => {
 
     const handleProductSelect = (product: any) => {
         setSelectedProduct(product);
+        setSelectedSize(null);
         window.history.pushState({}, '', `/product/${product.id}`);
     };
 
@@ -936,17 +938,30 @@ const Home: React.FC = () => {
 
                                     <div style={{ marginBottom: '10px' }}>
                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                                            <span style={{
-                                                background: 'rgba(163, 230, 53, 0.15)',
-                                                color: 'var(--secondary)',
-                                                padding: '4px 10px',
-                                                borderRadius: '8px',
-                                                fontSize: '11px',
-                                                fontWeight: '900',
-                                                textTransform: 'uppercase'
-                                            }}>
-                                                {selectedProduct.category}
-                                            </span>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                <span style={{
+                                                    background: 'rgba(163, 230, 53, 0.15)',
+                                                    color: 'var(--secondary)',
+                                                    padding: '4px 10px',
+                                                    borderRadius: '8px',
+                                                    fontSize: '11px',
+                                                    fontWeight: '900',
+                                                    textTransform: 'uppercase'
+                                                }}>
+                                                    {selectedProduct.category}
+                                                </span>
+                                                {selectedProduct.brand && (
+                                                    <span style={{
+                                                        fontSize: '11px',
+                                                        fontWeight: '700',
+                                                        color: 'rgba(255,255,255,0.4)',
+                                                        textTransform: 'uppercase',
+                                                        letterSpacing: '0.5px'
+                                                    }}>
+                                                        • {selectedProduct.brand}
+                                                    </span>
+                                                )}
+                                            </div>
                                         </div>
                                         <h2 style={{ fontSize: '24px', fontWeight: '900', marginBottom: '4px', color: 'white' }}>
                                             {selectedProduct.name}
@@ -988,8 +1003,13 @@ const Home: React.FC = () => {
                                                     <motion.button
                                                         whileTap={{ scale: 0.9 }}
                                                         onClick={async () => {
+                                                            if (selectedProduct.sizes_inventory && selectedProduct.sizes_inventory.length > 0 && !selectedSize) {
+                                                                // Highlight size selection or show toast
+                                                                alert('Por favor selecciona una talla');
+                                                                return;
+                                                            }
                                                             setAddingToCart(selectedProduct.id);
-                                                            await addToCart({ ...selectedProduct } as any);
+                                                            await addToCart({ ...selectedProduct } as any, selectedSize);
                                                             setTimeout(() => setAddingToCart(null), 1500);
                                                         }}
                                                         disabled={selectedProduct.seller_id === user?.id}
@@ -1015,8 +1035,12 @@ const Home: React.FC = () => {
                                                         whileTap={{ scale: 0.9 }}
                                                         onClick={async () => {
                                                             if (!user) return navigate('/auth');
+                                                            if (selectedProduct.sizes_inventory && selectedProduct.sizes_inventory.length > 0 && !selectedSize) {
+                                                                alert('Por favor selecciona una talla');
+                                                                return;
+                                                            }
                                                             setBuying(true);
-                                                            await addToCart({ ...selectedProduct } as any);
+                                                            await addToCart({ ...selectedProduct } as any, selectedSize);
                                                             setSelectedProduct(null);
                                                             navigate('/checkout');
                                                         }}
@@ -1047,6 +1071,47 @@ const Home: React.FC = () => {
                                             <p style={{ color: 'rgba(255,255,255,0.7)', lineHeight: '1.5', fontSize: '15px' }}>
                                                 {selectedProduct.description}
                                             </p>
+                                        </div>
+                                    )}
+
+                                    {/* Sizes Inventory Selection */}
+                                    {selectedProduct.sizes_inventory && selectedProduct.sizes_inventory.length > 0 && (
+                                        <div style={{ marginBottom: '25px' }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                                                <h4 style={{ color: 'white', fontSize: '14px', fontWeight: '800', margin: 0 }}>Talla Disponible</h4>
+                                                {selectedSize && (
+                                                    <span style={{ fontSize: '11px', color: 'var(--secondary)', fontWeight: '700' }}>
+                                                        {selectedProduct.sizes_inventory.find((s: { size: string; quantity: number }) => s.size === selectedSize)?.quantity} disponibles
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                                                {selectedProduct.sizes_inventory.map((s: { size: string; quantity: number }) => (
+                                                    <button
+                                                        key={s.size}
+                                                        disabled={s.quantity <= 0}
+                                                        onClick={() => setSelectedSize(s.size)}
+                                                        style={{
+                                                            minWidth: '50px',
+                                                            height: '46px',
+                                                            borderRadius: '12px',
+                                                            border: '1px solid ' + (selectedSize === s.size ? 'var(--secondary)' : 'rgba(255,255,255,0.1)'),
+                                                            background: selectedSize === s.size ? 'var(--secondary)' : 'rgba(255,255,255,0.05)',
+                                                            color: selectedSize === s.size ? 'var(--primary)' : (s.quantity <= 0 ? 'rgba(255,255,255,0.2)' : 'white'),
+                                                            fontSize: '14px',
+                                                            fontWeight: '800',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
+                                                            transition: 'all 0.2s ease',
+                                                            opacity: s.quantity <= 0 ? 0.5 : 1,
+                                                            cursor: s.quantity <= 0 ? 'not-allowed' : 'pointer'
+                                                        }}
+                                                    >
+                                                        {s.size}
+                                                    </button>
+                                                ))}
+                                            </div>
                                         </div>
                                     )}
 

@@ -4,12 +4,13 @@ import type { Product } from '../services/SupabaseManager';
 
 interface CartItem extends Product {
     quantity: number;
+    selected_size?: string | null;
 }
 
 interface CartContextType {
     cartItems: CartItem[];
-    addToCart: (product: Product) => Promise<void>;
-    removeFromCart: (productId: string) => Promise<void>;
+    addToCart: (product: Product, selectedSize?: string | null) => Promise<void>;
+    removeFromCart: (productId: string, selectedSize?: string | null) => Promise<void>;
     updateQuantity: (productId: string, quantity: number) => Promise<void>;
     clearCart: () => Promise<void>;
     totalItems: number;
@@ -35,9 +36,10 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     .eq('user_id', session.user.id);
 
                 if (!error && data) {
-                    const mappedItems: CartItem[] = data.map(item => ({
+                    const mappedItems: CartItem[] = (data as any[]).map(item => ({
                         ...(item.products as any),
-                        quantity: item.quantity
+                        quantity: item.quantity,
+                        selected_size: item.selected_size
                     }));
                     setCartItems(mappedItems);
                 }
@@ -64,40 +66,46 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         syncLocal();
     }, [cartItems]);
 
-    const addToCart = async (product: Product) => {
+    const addToCart = async (product: Product, selectedSize?: string | null) => {
         const { data: { session } } = await supabase.auth.getSession();
 
-        const existingItem = cartItems.find(item => item.id === product.id);
+        const existingItem = cartItems.find(item =>
+            item.id === product.id && item.selected_size === selectedSize
+        );
 
         if (session) {
             if (existingItem) {
                 const newQuantity = existingItem.quantity + 1;
                 await supabase
                     .from('cart_items')
-                    .update({ quantity: newQuantity })
+                    .update({ quantity: newQuantity } as any)
                     .eq('user_id', session.user.id)
-                    .eq('product_id', product.id);
+                    .eq('product_id', product.id)
+                    .eq('selected_size', (selectedSize || null) as any);
             } else {
                 await supabase
                     .from('cart_items')
                     .insert({
                         user_id: session.user.id,
                         product_id: product.id,
-                        quantity: 1
-                    });
+                        quantity: 1,
+                        selected_size: selectedSize || null
+                    } as any);
             }
         }
 
         if (existingItem) {
             setCartItems(prev => prev.map(item =>
-                item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
+                (item.id === product.id && item.selected_size === selectedSize)
+                    ? { ...item, quantity: item.quantity + 1 }
+                    : item
             ));
         } else {
-            setCartItems(prev => [...prev, { ...product, quantity: 1 }]);
+            setCartItems(prev => [...prev, { ...product, quantity: 1, selected_size: selectedSize }]);
         }
     };
 
-    const removeFromCart = async (productId: string) => {
+    const removeFromCart = async (productId: string, selectedSize?: string | null) => {
         const { data: { session } } = await supabase.auth.getSession();
 
         if (session) {
@@ -105,10 +113,11 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 .from('cart_items')
                 .delete()
                 .eq('user_id', session.user.id)
-                .eq('product_id', productId);
+                .eq('product_id', productId)
+                .eq('selected_size', (selectedSize || null) as any);
         }
 
-        setCartItems(prev => prev.filter(item => item.id !== productId));
+        setCartItems(prev => prev.filter(item => !(item.id === productId && item.selected_size === selectedSize)));
     };
 
     const updateQuantity = async (productId: string, quantity: number) => {
