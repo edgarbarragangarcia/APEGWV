@@ -5,6 +5,7 @@ import {
     Package, ShieldCheck, Ticket, CheckCircle2, XCircle
 } from 'lucide-react';
 import PageHeader from '../components/PageHeader';
+import { useToast } from '../context/ToastContext';
 import { motion } from 'framer-motion';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
@@ -13,6 +14,7 @@ import PageHero from '../components/PageHero';
 
 const CartPage: React.FC = () => {
     const navigate = useNavigate();
+    const { warning } = useToast();
     const { cartItems, removeFromCart, updateQuantity, totalAmount, totalItems } = useCart();
     const { user } = useAuth();
 
@@ -52,7 +54,7 @@ const CartPage: React.FC = () => {
 
     const handleCheckout = () => {
         if (!user) {
-            alert('Por favor, inicia sesión para realizar el pedido.');
+            warning('Por favor, inicia sesión para realizar el pedido.');
             navigate('/auth');
             return;
         }

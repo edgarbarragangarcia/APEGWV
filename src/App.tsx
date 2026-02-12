@@ -48,6 +48,7 @@ import OfflineOverlay from './components/OfflineOverlay';
 
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { QueryProvider } from './context/QueryProvider';
+import { ToastProvider } from './context/ToastContext';
 
 const AppContent: React.FC = () => {
   const { session, loading } = useAuth();
@@ -186,11 +187,13 @@ const AppContent: React.FC = () => {
 const App: React.FC = () => {
   return (
     <QueryProvider>
-      <AuthProvider>
-        <Router>
-          <AppContent />
-        </Router>
-      </AuthProvider>
+      <ToastProvider>
+        <AuthProvider>
+          <Router>
+            <AppContent />
+          </Router>
+        </AuthProvider>
+      </ToastProvider>
     </QueryProvider>
   );
 };

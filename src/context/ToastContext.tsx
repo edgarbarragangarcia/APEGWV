@@ -54,13 +54,18 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             {children}
             <div style={{
                 position: 'fixed',
-                top: '20px',
-                right: '20px',
+                top: '80px',
+                left: '50%',
+                transform: 'translateX(-50%)',
                 zIndex: 9999,
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '12px',
-                pointerEvents: 'none'
+                pointerEvents: 'none',
+                width: '100%',
+                maxWidth: '400px',
+                alignItems: 'center',
+                padding: '0 20px'
             }}>
                 <AnimatePresence>
                     {toasts.map(toast => (

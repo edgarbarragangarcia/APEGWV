@@ -10,10 +10,12 @@ import { useLikes } from '../hooks/useLikes';
 import PageHeader from '../components/PageHeader';
 import { useCart } from '../context/CartContext';
 import PageHero from '../components/PageHero';
+import { useToast } from '../context/ToastContext';
 
 const Home: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
+    const { warning } = useToast();
     const { id: productId } = useParams();
     const { data: profile } = useProfile();
     const { data: featuredProducts = [] } = useFeaturedProducts(10); // Fetch more for filtering
@@ -1241,7 +1243,7 @@ const Home: React.FC = () => {
                                                 onClick={async (e) => {
                                                     e.stopPropagation();
                                                     if (selectedProduct.sizes_inventory && selectedProduct.sizes_inventory.length > 0 && !selectedSize) {
-                                                        alert('Selecciona talla');
+                                                        warning('Selecciona talla');
                                                         return;
                                                     }
                                                     try {
@@ -1275,7 +1277,7 @@ const Home: React.FC = () => {
                                                     e.stopPropagation();
                                                     if (!user) return navigate('/auth');
                                                     if (selectedProduct.sizes_inventory && selectedProduct.sizes_inventory.length > 0 && !selectedSize) {
-                                                        alert('Selecciona talla');
+                                                        warning('Selecciona talla');
                                                         return;
                                                     }
                                                     try {

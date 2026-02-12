@@ -110,16 +110,34 @@ const MyStore: React.FC = () => {
 
     const [brandsList, setBrandsList] = useState<string[]>([]);
 
-    const convertShoeSizes = (colVal: string) => {
-        const col = parseFloat(colVal);
-        if (isNaN(col)) return { us: '', eu: '', cm: '' };
+    const syncShoeSizes = (value: string, source: 'col' | 'us' | 'eu' | 'cm') => {
+        const num = parseFloat(value);
+        if (isNaN(num)) {
+            setFormData(prev => ({
+                ...prev,
+                size_shoes_col: source === 'col' ? value : '',
+                size_shoes_us: source === 'us' ? value : '',
+                size_shoes_eu: source === 'eu' ? value : '',
+                size_shoes_cm: source === 'cm' ? value : ''
+            }));
+            return;
+        }
 
-        // Accurate conversion based on Colombian standard for Golf/Sports
-        return {
-            us: (col - 31).toString(),
-            eu: (col + 2).toString(),
-            cm: (col - 13).toString()
-        };
+        let col = 0;
+        if (source === 'col') col = num;
+        else if (source === 'us') col = num + 31;
+        else if (source === 'eu') col = num - 2;
+        else if (source === 'cm') col = num + 13;
+
+        setFormData(prev => ({
+            ...prev,
+            size_shoes_col: col.toString(),
+            size_shoes_us: (col - 31).toString(),
+            size_shoes_eu: (col + 2).toString(),
+            size_shoes_cm: (col - 13).toString(),
+            // Ensure the source field retains exactly what the user typed (e.g. decimals)
+            [`size_shoes_${source}`]: value
+        }));
     };
 
     const formatPrice = (val: string) => {
@@ -1281,23 +1299,13 @@ const MyStore: React.FC = () => {
                                     {formData.category === 'Zapatos' && (
                                         <div className="animate-fade" style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                                             <label style={{ display: 'block', marginBottom: '-5px', fontSize: '13px', color: 'var(--text-dim)' }}>Tallas de Calzado (Conversión automática)</label>
-                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                                                 <div>
                                                     <label style={{ display: 'block', marginBottom: '5px', fontSize: '11px', color: 'var(--secondary)', fontWeight: '800' }}>Talla COL</label>
                                                     <input
                                                         placeholder="Ej: 40"
                                                         value={formData.size_shoes_col}
-                                                        onChange={e => {
-                                                            const val = e.target.value;
-                                                            const converted = convertShoeSizes(val);
-                                                            setFormData({
-                                                                ...formData,
-                                                                size_shoes_col: val,
-                                                                size_shoes_us: converted.us,
-                                                                size_shoes_eu: converted.eu,
-                                                                size_shoes_cm: converted.cm
-                                                            });
-                                                        }}
+                                                        onChange={e => syncShoeSizes(e.target.value, 'col')}
                                                         style={{ width: '100%', background: 'rgba(163, 230, 53, 0.1)', border: '1px solid var(--secondary)', borderRadius: '10px', padding: '10px', color: 'white', fontSize: '14px', fontWeight: '700', boxSizing: 'border-box' }}
                                                     />
                                                 </div>
@@ -1306,7 +1314,7 @@ const MyStore: React.FC = () => {
                                                     <input
                                                         placeholder="Ej: 9.5"
                                                         value={formData.size_shoes_us}
-                                                        onChange={e => setFormData({ ...formData, size_shoes_us: e.target.value })}
+                                                        onChange={e => syncShoeSizes(e.target.value, 'us')}
                                                         style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '10px', padding: '10px', color: 'white', fontSize: '14px', boxSizing: 'border-box' }}
                                                     />
                                                 </div>
@@ -1315,7 +1323,7 @@ const MyStore: React.FC = () => {
                                                     <input
                                                         placeholder="Ej: 42"
                                                         value={formData.size_shoes_eu}
-                                                        onChange={e => setFormData({ ...formData, size_shoes_eu: e.target.value })}
+                                                        onChange={e => syncShoeSizes(e.target.value, 'eu')}
                                                         style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '10px', padding: '10px', color: 'white', fontSize: '14px', boxSizing: 'border-box' }}
                                                     />
                                                 </div>
@@ -1324,7 +1332,7 @@ const MyStore: React.FC = () => {
                                                     <input
                                                         placeholder="Ej: 27"
                                                         value={formData.size_shoes_cm}
-                                                        onChange={e => setFormData({ ...formData, size_shoes_cm: e.target.value })}
+                                                        onChange={e => syncShoeSizes(e.target.value, 'cm')}
                                                         style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '10px', padding: '10px', color: 'white', fontSize: '14px', boxSizing: 'border-box' }}
                                                     />
                                                 </div>
