@@ -772,9 +772,106 @@ const Home: React.FC = () => {
                     )}
                 </div>
 
-                {/* Modals moved from Shop.tsx */}
-                <AnimatePresence>
-                    {selectedProduct && (
+
+                {/* Featured Caddies / Tournaments */}
+                <div style={{ marginBottom: '40px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', paddingRight: '5px' }}>
+                        <h3 style={{ fontSize: '22px', fontWeight: '900', letterSpacing: '-0.8px', color: 'white' }}>Torneos <span style={{ color: 'rgba(255,255,255,0.3)', fontWeight: '500' }}>Populares</span></h3>
+                        <motion.button
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => navigate('/tournaments')}
+                            style={{
+                                background: 'rgba(255, 255, 255, 0.05)',
+                                backdropFilter: 'blur(10px)',
+                                WebkitBackdropFilter: 'blur(10px)',
+                                border: '1px solid rgba(255, 255, 255, 0.1)',
+                                color: 'rgba(255,255,255,0.6)',
+                                fontSize: '13px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                                cursor: 'pointer',
+                                fontWeight: '800',
+                                padding: '6px 14px',
+                                borderRadius: '20px'
+                            }}
+                        >
+                            Calendario <ChevronRight size={14} />
+                        </motion.button>
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                        {tournaments.length > 0 ? (
+                            tournaments.map(tournament => (
+                                <motion.div
+                                    key={tournament.id}
+                                    whileTap={{ scale: 0.98 }}
+                                    onClick={() => navigate('/tournaments')}
+                                    style={{
+                                        display: 'flex',
+                                        gap: '16px',
+                                        alignItems: 'center',
+                                        padding: '12px',
+                                        borderRadius: '24px',
+                                        background: 'rgba(255,255,255,0.04)',
+                                        backdropFilter: 'blur(12px)',
+                                        WebkitBackdropFilter: 'blur(12px)',
+                                        border: '1px solid rgba(255,255,255,0.08)',
+                                        cursor: 'pointer',
+                                        boxShadow: '0 8px 32px rgba(0,0,0,0.1)'
+                                    }}
+                                >
+                                    <div style={{
+                                        width: '60px',
+                                        height: '60px',
+                                        background: 'rgba(255,255,255,0.05)',
+                                        borderRadius: '16px',
+                                        backgroundImage: tournament.image_url ? `url(${tournament.image_url})` : 'none',
+                                        backgroundSize: 'cover',
+                                        backgroundPosition: 'center',
+                                        border: '1px solid rgba(255,255,255,0.1)'
+                                    }} />
+                                    <div style={{ flex: 1 }}>
+                                        <div style={{ fontWeight: '900', fontSize: '16px', color: 'white', marginBottom: '2px', letterSpacing: '-0.3px' }}>{tournament.name}</div>
+                                        <div style={{ fontSize: '13px', color: 'var(--secondary)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                                            {new Date(tournament.date).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}
+                                        </div>
+                                    </div>
+                                    <div style={{
+                                        width: '32px',
+                                        height: '32px',
+                                        borderRadius: '50%',
+                                        background: 'rgba(255,255,255,0.05)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        color: 'rgba(255,255,255,0.3)'
+                                    }}>
+                                        <ChevronRight size={18} />
+                                    </div>
+                                </motion.div>
+                            ))
+                        ) : (
+                            <div style={{
+                                padding: '30px',
+                                textAlign: 'center',
+                                background: 'rgba(255,255,255,0.02)',
+                                borderRadius: '24px',
+                                border: '1px dashed rgba(255,255,255,0.1)'
+                            }}>
+                                <p style={{ fontSize: '14px', color: 'var(--text-dim)', fontWeight: '500' }}>
+                                    No hay torneos programados próximamente.
+                                </p>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
+
+            {/* Modals moved to the end of the component to ensure top stacking */}
+            <AnimatePresence>
+                {
+                    selectedProduct && (
                         <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
@@ -782,7 +879,7 @@ const Home: React.FC = () => {
                             style={{
                                 position: 'fixed',
                                 inset: 0,
-                                zIndex: 10000,
+                                zIndex: 100000, // Very high z-index to stay above BottomNav
                                 background: 'var(--primary)',
                                 pointerEvents: 'auto'
                             }}
@@ -942,7 +1039,7 @@ const Home: React.FC = () => {
                                     borderTopLeftRadius: '32px',
                                     borderTopRightRadius: '32px',
                                     marginTop: '-30px',
-                                    padding: '24px 20px 60px', // Reduced bottom padding since footer is gone
+                                    padding: '24px 20px 110px', // INCREASED PADDING to avoid BottomNav coverage
                                     zIndex: 5,
                                     display: 'flex',
                                     flexDirection: 'column',
@@ -1006,6 +1103,7 @@ const Home: React.FC = () => {
                                                 whileTap={{ scale: 0.9 }}
                                                 onClick={(e) => {
                                                     e.stopPropagation();
+                                                    console.log('Offer button clicked');
                                                     if (!user) return navigate('/auth');
                                                     setShowOfferModal(true);
                                                     setOfferAmount(selectedProduct.price.toString());
@@ -1031,13 +1129,19 @@ const Home: React.FC = () => {
                                             whileTap={{ scale: 0.9 }}
                                             onClick={async (e) => {
                                                 e.stopPropagation();
+                                                console.log('Cart button clicked');
                                                 if (selectedProduct.sizes_inventory && selectedProduct.sizes_inventory.length > 0 && !selectedSize) {
                                                     alert('Por favor selecciona una talla');
                                                     return;
                                                 }
-                                                setAddingToCart(selectedProduct.id);
-                                                await addToCart({ ...selectedProduct } as any, selectedSize);
-                                                setTimeout(() => setAddingToCart(null), 1500);
+                                                try {
+                                                    setAddingToCart(selectedProduct.id);
+                                                    await addToCart({ ...selectedProduct } as any, selectedSize);
+                                                    setTimeout(() => setAddingToCart(null), 1500);
+                                                } catch (err) {
+                                                    console.error('Error adding to cart:', err);
+                                                    setAddingToCart(null);
+                                                }
                                             }}
                                             disabled={selectedProduct.seller_id === user?.id}
                                             style={{
@@ -1061,15 +1165,21 @@ const Home: React.FC = () => {
                                             whileTap={{ scale: 0.95 }}
                                             onClick={async (e) => {
                                                 e.stopPropagation();
+                                                console.log('Buy button clicked');
                                                 if (!user) return navigate('/auth');
                                                 if (selectedProduct.sizes_inventory && selectedProduct.sizes_inventory.length > 0 && !selectedSize) {
                                                     alert('Por favor selecciona una talla');
                                                     return;
                                                 }
-                                                setBuying(true);
-                                                await addToCart({ ...selectedProduct } as any, selectedSize);
-                                                setSelectedProduct(null);
-                                                navigate('/checkout');
+                                                try {
+                                                    setBuying(true);
+                                                    await addToCart({ ...selectedProduct } as any, selectedSize);
+                                                    setSelectedProduct(null);
+                                                    navigate('/checkout');
+                                                } catch (err) {
+                                                    console.error('Error in buy now:', err);
+                                                    setBuying(false);
+                                                }
                                             }}
                                             disabled={buying || selectedProduct?.seller_id === user?.id}
                                             style={{
@@ -1136,242 +1246,147 @@ const Home: React.FC = () => {
 
                             </div>
                         </motion.div>
-                    )}
-                </AnimatePresence>
+                    )
+                }
+            </AnimatePresence >
 
-                <AnimatePresence>
-                    {showOfferModal && selectedProduct && (
-                        <div style={{
-                            position: 'fixed',
-                            inset: 0,
-                            zIndex: 11000,
-                            display: 'flex',
-                            alignItems: 'flex-end',
-                            justifyContent: 'center'
-                        }}>
-                            <motion.div
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                exit={{ opacity: 0 }}
-                                onClick={() => setShowOfferModal(false)}
-                                style={{
-                                    position: 'fixed',
-                                    inset: 0,
-                                    background: 'rgba(0,0,0,0.4)',
-                                    backdropFilter: 'blur(10px)'
-                                }}
-                            />
-                            <motion.div
-                                initial={{ y: '100%' }}
-                                animate={{ y: 0 }}
-                                exit={{ y: '100%' }}
-                                style={{
-                                    width: '100%',
-                                    maxWidth: 'var(--app-max-width)',
-                                    background: 'var(--primary)',
-                                    borderTopLeftRadius: '32px',
-                                    borderTopRightRadius: '32px',
-                                    padding: '30px 25px calc(110px + env(safe-area-inset-bottom)) 25px',
-                                    position: 'relative',
-                                    boxShadow: '0 -10px 40px rgba(0,0,0,0.5)',
-                                    border: '1px solid rgba(255,255,255,0.05)'
-                                }}
-                            >
-                                {!offerSuccess ? (
-                                    <>
-                                        <div style={{ display: 'flex', gap: '20px', marginBottom: '25px' }}>
-                                            <img
-                                                src={selectedProduct.image_url || ''}
-                                                style={{ width: '80px', height: '80px', borderRadius: '16px', objectFit: 'cover' }}
-                                                alt=""
-                                            />
-                                            <div>
-                                                <h3 style={{ fontSize: '20px', fontWeight: '900', color: 'white' }}>Nueva Oferta</h3>
-                                                <p style={{ fontSize: '14px', color: 'var(--text-dim)' }}>{selectedProduct.name}</p>
-                                            </div>
-                                        </div>
-
-                                        <div style={{ marginBottom: '20px' }}>
-                                            <label style={{ display: 'block', fontSize: '11px', fontWeight: '900', color: 'var(--text-dim)', textTransform: 'uppercase', marginBottom: '10px' }}>Tu propuesta</label>
-                                            <div style={{ position: 'relative' }}>
-                                                <span style={{ position: 'absolute', left: '20px', top: '50%', transform: 'translateY(-50%)', fontWeight: '900', color: 'var(--secondary)', fontSize: '20px' }}>$</span>
-                                                <input
-                                                    type="text"
-                                                    inputMode="numeric"
-                                                    value={offerAmount ? new Intl.NumberFormat('es-CO').format(parseInt(offerAmount.replace(/\D/g, '') || '0')) : ''}
-                                                    onChange={(e) => setOfferAmount(e.target.value.replace(/\D/g, ''))}
-                                                    style={{
-                                                        width: '100%',
-                                                        background: 'rgba(255,255,255,0.03)',
-                                                        border: '1px solid rgba(255,255,255,0.1)',
-                                                        borderRadius: '20px',
-                                                        padding: '20px 20px 20px 45px',
-                                                        color: 'white',
-                                                        fontSize: '28px',
-                                                        fontWeight: '900',
-                                                        outline: 'none'
-                                                    }}
-                                                />
-                                            </div>
-                                        </div>
-
-                                        <div style={{ display: 'flex', gap: '15px' }}>
-                                            <motion.button
-                                                whileTap={{ scale: 0.95 }}
-                                                onClick={() => setShowOfferModal(false)}
-                                                style={{
-                                                    flex: 1,
-                                                    padding: '18px',
-                                                    borderRadius: '20px',
-                                                    background: 'rgba(255,255,255,0.05)',
-                                                    border: '1px solid rgba(255,255,255,0.1)',
-                                                    color: 'white',
-                                                    fontWeight: '800'
-                                                }}
-                                            >
-                                                CANCELAR
-                                            </motion.button>
-                                            <motion.button
-                                                whileTap={{ scale: 0.95 }}
-                                                disabled={sendingOffer || !offerAmount}
-                                                onClick={async () => {
-                                                    setSendingOffer(true);
-                                                    try {
-                                                        const { error } = await supabase
-                                                            .from('offers')
-                                                            .insert([{
-                                                                product_id: selectedProduct.id,
-                                                                buyer_id: user?.id,
-                                                                seller_id: selectedProduct.seller_id,
-                                                                offer_amount: parseFloat(offerAmount),
-                                                                status: 'pending'
-                                                            }]);
-                                                        if (error) throw error;
-                                                        setOfferSuccess(true);
-                                                        setTimeout(() => {
-                                                            setOfferSuccess(false);
-                                                            setShowOfferModal(false);
-                                                            setSelectedProduct(null);
-                                                        }, 2000);
-                                                    } catch (err) {
-                                                        console.error(err);
-                                                    } finally {
-                                                        setSendingOffer(false);
-                                                    }
-                                                }}
-                                                className="btn-primary"
-                                                style={{ flex: 2, width: 'auto' }}
-                                            >
-                                                {sendingOffer ? 'ENVIANDO...' : 'ENVIAR OFERTA'}
-                                            </motion.button>
-                                        </div>
-                                    </>
-                                ) : (
-                                    <div style={{ textAlign: 'center', padding: '40px 0' }}>
-                                        <CheckCircle2 size={40} color="var(--secondary)" style={{ margin: '0 auto 25px' }} />
-                                        <h3 style={{ fontSize: '24px', fontWeight: '900', color: 'white' }}>¡Propuesta Enviada!</h3>
-                                    </div>
-                                )}
-                            </motion.div>
-                        </div>
-                    )}
-                </AnimatePresence>
-
-
-                {/* Featured Caddies / Tournaments */}
-                <div style={{ marginBottom: '40px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', paddingRight: '5px' }}>
-                        <h3 style={{ fontSize: '22px', fontWeight: '900', letterSpacing: '-0.8px', color: 'white' }}>Torneos <span style={{ color: 'rgba(255,255,255,0.3)', fontWeight: '500' }}>Populares</span></h3>
-                        <motion.button
-                            whileTap={{ scale: 0.95 }}
-                            onClick={() => navigate('/tournaments')}
+            <AnimatePresence>
+                {showOfferModal && selectedProduct && (
+                    <div style={{
+                        position: 'fixed',
+                        inset: 0,
+                        zIndex: 110000, // Higher than ProductModal
+                        display: 'flex',
+                        alignItems: 'flex-end',
+                        justifyContent: 'center'
+                    }}>
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setShowOfferModal(false)}
                             style={{
-                                background: 'rgba(255, 255, 255, 0.05)',
-                                backdropFilter: 'blur(10px)',
-                                WebkitBackdropFilter: 'blur(10px)',
-                                border: '1px solid rgba(255, 255, 255, 0.1)',
-                                color: 'rgba(255,255,255,0.6)',
-                                fontSize: '13px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '6px',
-                                cursor: 'pointer',
-                                fontWeight: '800',
-                                padding: '6px 14px',
-                                borderRadius: '20px'
+                                position: 'fixed',
+                                inset: 0,
+                                background: 'rgba(0,0,0,0.4)',
+                                backdropFilter: 'blur(10px)'
+                            }}
+                        />
+                        <motion.div
+                            initial={{ y: '100%' }}
+                            animate={{ y: 0 }}
+                            exit={{ y: '100%' }}
+                            style={{
+                                width: '100%',
+                                maxWidth: 'var(--app-max-width)',
+                                background: 'var(--primary)',
+                                borderTopLeftRadius: '32px',
+                                borderTopRightRadius: '32px',
+                                padding: '30px 25px calc(110px + env(safe-area-inset-bottom)) 25px',
+                                position: 'relative',
+                                boxShadow: '0 -10px 40px rgba(0,0,0,0.5)',
+                                border: '1px solid rgba(255,255,255,0.05)'
                             }}
                         >
-                            Calendario <ChevronRight size={14} />
-                        </motion.button>
-                    </div>
-
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                        {tournaments.length > 0 ? (
-                            tournaments.map(tournament => (
-                                <motion.div
-                                    key={tournament.id}
-                                    whileTap={{ scale: 0.98 }}
-                                    onClick={() => navigate('/tournaments')}
-                                    style={{
-                                        display: 'flex',
-                                        gap: '16px',
-                                        alignItems: 'center',
-                                        padding: '12px',
-                                        borderRadius: '24px',
-                                        background: 'rgba(255,255,255,0.04)',
-                                        backdropFilter: 'blur(12px)',
-                                        WebkitBackdropFilter: 'blur(12px)',
-                                        border: '1px solid rgba(255,255,255,0.08)',
-                                        cursor: 'pointer',
-                                        boxShadow: '0 8px 32px rgba(0,0,0,0.1)'
-                                    }}
-                                >
-                                    <div style={{
-                                        width: '60px',
-                                        height: '60px',
-                                        background: 'rgba(255,255,255,0.05)',
-                                        borderRadius: '16px',
-                                        backgroundImage: tournament.image_url ? `url(${tournament.image_url})` : 'none',
-                                        backgroundSize: 'cover',
-                                        backgroundPosition: 'center',
-                                        border: '1px solid rgba(255,255,255,0.1)'
-                                    }} />
-                                    <div style={{ flex: 1 }}>
-                                        <div style={{ fontWeight: '900', fontSize: '16px', color: 'white', marginBottom: '2px', letterSpacing: '-0.3px' }}>{tournament.name}</div>
-                                        <div style={{ fontSize: '13px', color: 'var(--secondary)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                                            {new Date(tournament.date).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}
+                            {!offerSuccess ? (
+                                <>
+                                    <div style={{ display: 'flex', gap: '20px', marginBottom: '25px' }}>
+                                        <img
+                                            src={selectedProduct.image_url || ''}
+                                            style={{ width: '80px', height: '80px', borderRadius: '16px', objectFit: 'cover' }}
+                                            alt=""
+                                        />
+                                        <div>
+                                            <h3 style={{ fontSize: '20px', fontWeight: '900', color: 'white' }}>Nueva Oferta</h3>
+                                            <p style={{ fontSize: '14px', color: 'var(--text-dim)' }}>{selectedProduct.name}</p>
                                         </div>
                                     </div>
-                                    <div style={{
-                                        width: '32px',
-                                        height: '32px',
-                                        borderRadius: '50%',
-                                        background: 'rgba(255,255,255,0.05)',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        color: 'rgba(255,255,255,0.3)'
-                                    }}>
-                                        <ChevronRight size={18} />
+
+                                    <div style={{ marginBottom: '20px' }}>
+                                        <label style={{ display: 'block', fontSize: '11px', fontWeight: '900', color: 'var(--text-dim)', textTransform: 'uppercase', marginBottom: '10px' }}>Tu propuesta</label>
+                                        <div style={{ position: 'relative' }}>
+                                            <span style={{ position: 'absolute', left: '20px', top: '50%', transform: 'translateY(-50%)', fontWeight: '900', color: 'var(--secondary)', fontSize: '20px' }}>$</span>
+                                            <input
+                                                type="text"
+                                                inputMode="numeric"
+                                                value={offerAmount ? new Intl.NumberFormat('es-CO').format(parseInt(offerAmount.replace(/\D/g, '') || '0')) : ''}
+                                                onChange={(e) => setOfferAmount(e.target.value.replace(/\D/g, ''))}
+                                                style={{
+                                                    width: '100%',
+                                                    background: 'rgba(255,255,255,0.03)',
+                                                    border: '1px solid rgba(255,255,255,0.1)',
+                                                    borderRadius: '20px',
+                                                    padding: '20px 20px 20px 45px',
+                                                    color: 'white',
+                                                    fontSize: '28px',
+                                                    fontWeight: '900',
+                                                    outline: 'none'
+                                                }}
+                                            />
+                                        </div>
                                     </div>
-                                </motion.div>
-                            ))
-                        ) : (
-                            <div style={{
-                                padding: '30px',
-                                textAlign: 'center',
-                                background: 'rgba(255,255,255,0.02)',
-                                borderRadius: '24px',
-                                border: '1px dashed rgba(255,255,255,0.1)'
-                            }}>
-                                <p style={{ fontSize: '14px', color: 'var(--text-dim)', fontWeight: '500' }}>
-                                    No hay torneos programados próximamente.
-                                </p>
-                            </div>
-                        )}
+
+                                    <div style={{ display: 'flex', gap: '15px' }}>
+                                        <motion.button
+                                            whileTap={{ scale: 0.95 }}
+                                            onClick={() => setShowOfferModal(false)}
+                                            style={{
+                                                flex: 1,
+                                                padding: '18px',
+                                                borderRadius: '20px',
+                                                background: 'rgba(255,255,255,0.05)',
+                                                border: '1px solid rgba(255,255,255,0.1)',
+                                                color: 'white',
+                                                fontWeight: '800'
+                                            }}
+                                        >
+                                            CANCELAR
+                                        </motion.button>
+                                        <motion.button
+                                            whileTap={{ scale: 0.95 }}
+                                            disabled={sendingOffer || !offerAmount}
+                                            onClick={async () => {
+                                                setSendingOffer(true);
+                                                try {
+                                                    const { error } = await supabase
+                                                        .from('offers')
+                                                        .insert([{
+                                                            product_id: selectedProduct.id,
+                                                            buyer_id: user?.id,
+                                                            seller_id: selectedProduct.seller_id,
+                                                            offer_amount: parseFloat(offerAmount),
+                                                            status: 'pending'
+                                                        }]);
+                                                    if (error) throw error;
+                                                    setOfferSuccess(true);
+                                                    setTimeout(() => {
+                                                        setOfferSuccess(false);
+                                                        setShowOfferModal(false);
+                                                        setSelectedProduct(null);
+                                                    }, 2000);
+                                                } catch (err) {
+                                                    console.error(err);
+                                                } finally {
+                                                    setSendingOffer(false);
+                                                }
+                                            }}
+                                            className="btn-primary"
+                                            style={{ flex: 2, width: 'auto' }}
+                                        >
+                                            {sendingOffer ? 'ENVIANDO...' : 'ENVIAR OFERTA'}
+                                        </motion.button>
+                                    </div>
+                                </>
+                            ) : (
+                                <div style={{ textAlign: 'center', padding: '40px 0' }}>
+                                    <CheckCircle2 size={40} color="var(--secondary)" style={{ margin: '0 auto 25px' }} />
+                                    <h3 style={{ fontSize: '24px', fontWeight: '900', color: 'white' }}>¡Propuesta Enviada!</h3>
+                                </div>
+                            )}
+                        </motion.div>
                     </div>
-                </div>
-            </div>
+                )}
+            </AnimatePresence>
         </div>
     );
 };

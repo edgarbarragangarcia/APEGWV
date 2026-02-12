@@ -76,12 +76,17 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (session) {
             if (existingItem) {
                 const newQuantity = existingItem.quantity + 1;
-                await supabase
+                const query = supabase
                     .from('cart_items')
                     .update({ quantity: newQuantity } as any)
                     .eq('user_id', session.user.id)
-                    .eq('product_id', product.id)
-                    .eq('selected_size', (selectedSize || null) as any);
+                    .eq('product_id', product.id);
+
+                if (selectedSize) {
+                    await query.eq('selected_size', selectedSize);
+                } else {
+                    await query.is('selected_size', null);
+                }
             } else {
                 await supabase
                     .from('cart_items')
@@ -109,12 +114,17 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const { data: { session } } = await supabase.auth.getSession();
 
         if (session) {
-            await supabase
+            const query = supabase
                 .from('cart_items')
                 .delete()
                 .eq('user_id', session.user.id)
-                .eq('product_id', productId)
-                .eq('selected_size', (selectedSize || null) as any);
+                .eq('product_id', productId);
+
+            if (selectedSize) {
+                await query.eq('selected_size', selectedSize);
+            } else {
+                await query.is('selected_size', null);
+            }
         }
 
         setCartItems(prev => prev.filter(item =>
@@ -128,12 +138,17 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const { data: { session } } = await supabase.auth.getSession();
 
         if (session) {
-            await supabase
+            const query = supabase
                 .from('cart_items')
                 .update({ quantity })
                 .eq('user_id', session.user.id)
-                .eq('product_id', productId)
-                .eq('selected_size', (selectedSize || null) as any);
+                .eq('product_id', productId);
+
+            if (selectedSize) {
+                await query.eq('selected_size', selectedSize);
+            } else {
+                await query.is('selected_size', null);
+            }
         }
 
         setCartItems(prev => prev.map(item =>
