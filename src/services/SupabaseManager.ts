@@ -4,20 +4,16 @@ import type { Database } from '../types/database.types';
 const rawUrl = (import.meta.env.VITE_SUPABASE_URL || '').trim();
 const supabaseAnonKey = (import.meta.env.VITE_SUPABASE_ANON_KEY || '').trim();
 
-// Usar el PROXY para evitar bloqueos de CORS y 522 en local
-const supabaseUrl = import.meta.env.DEV ? '/supabase-proxy' : rawUrl;
+// La librería puede seguir usando la URL real para no romper nada interno
+export const supabase = createClient<Database>(rawUrl, supabaseAnonKey);
 
-console.log('--- SUPABASE PROXY ACTIVE ---');
-console.log('Using URL:', supabaseUrl);
-
-export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
-
-/**
- * Fallback login using direct fetch to bypass library-level browser blocks.
- */
 export const manualLogin = async (email: string, password: string) => {
-    console.log('--- Intentando BYPASS DIRECTO con fetch ---');
-    const response = await fetch(`${supabaseUrl}/auth/v1/token?grant_type=password`, {
+    // Usamos el proxy relativo para que no haya CORS
+    const targetUrl = '/supabase-proxy/auth/v1/token?grant_type=password';
+
+    console.log('--- BYPASS FINAL: Fetch a través de Proxy ---');
+
+    const response = await fetch(targetUrl, {
         method: 'POST',
         headers: {
             'apikey': supabaseAnonKey,
@@ -27,9 +23,8 @@ export const manualLogin = async (email: string, password: string) => {
     });
 
     if (!response.ok) {
-        const text = await response.text();
-        console.error('Bypass response text:', text);
-        throw new Error(`Servidor respondió con status ${response.status}`);
+        const errorData = await response.json().catch(() => ({ msg: 'Servidor no responde' }));
+        throw new Error(errorData.error_description || errorData.msg || `Error ${response.status}`);
     }
 
     return await response.json();

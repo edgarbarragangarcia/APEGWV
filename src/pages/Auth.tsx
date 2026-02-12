@@ -29,7 +29,31 @@ const Auth: React.FC = () => {
         setLoading(true);
         setError(null);
 
-        // Añadir un timeout manual porque Supabase a veces se queda 'pending' en el navegador del usuario
+        // --- SOLUCIÓN RADICAL: Si es LOCALHOST, usar FETCH PROXY de inmediato ---
+        if (import.meta.env.DEV && isLogin) {
+            console.log('--- MODO DE RESILIENCIA ACTIVADO: Usando bypass de red ---');
+            try {
+                const { manualLogin } = await import('../services/SupabaseManager');
+                const authData = await manualLogin(formData.email, formData.password);
+
+                if (authData.access_token) {
+                    const { error: sessionError } = await supabase.auth.setSession({
+                        access_token: authData.access_token,
+                        refresh_token: authData.refresh_token
+                    });
+                    if (sessionError) throw sessionError;
+                    return; // ÉXITO TOTAL
+                }
+            } catch (err: any) {
+                console.error('Fallo en Bypass:', err);
+                setError('Error crítico de red en tu sistema. Supabase no responde.');
+            } finally {
+                setLoading(false);
+            }
+            return;
+        }
+
+        // Si no es dev o es registro, usar flujo normal (con timeout)
         const authPromise = isLogin
             ? supabase.auth.signInWithPassword({
                 email: formData.email,
