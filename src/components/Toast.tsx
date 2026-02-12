@@ -22,36 +22,32 @@ const Toast: React.FC<ToastProps> = ({ id, message, type, duration = 3000, onClo
     }, [id, duration, onClose]);
 
     const iconMap = {
-        success: <CheckCircle2 size={20} />,
-        error: <XCircle size={20} />,
-        warning: <AlertCircle size={20} />,
-        info: <Info size={20} />
+        success: <CheckCircle2 size={24} />,
+        error: <XCircle size={24} />,
+        warning: <AlertCircle size={24} />,
+        info: <Info size={24} />
     };
 
     const colorMap = {
         success: {
-            bg: 'rgba(16, 185, 129, 0.1)',
-            border: '#10b981',
-            text: '#10b981',
-            icon: '#10b981'
+            bg: '#10b981', // Solid emerald
+            text: 'white',
+            icon: 'white'
         },
         error: {
-            bg: 'rgba(239, 68, 68, 0.1)',
-            border: '#ef4444',
-            text: '#f87171',
-            icon: '#ef4444'
+            bg: '#ef4444', // Solid red
+            text: 'white',
+            icon: 'white'
         },
         warning: {
-            bg: 'rgba(245, 158, 11, 0.1)',
-            border: '#f59e0b',
-            text: '#fbbf24',
-            icon: '#f59e0b'
+            bg: '#f59e0b', // Solid amber
+            text: 'white',
+            icon: 'white'
         },
         info: {
-            bg: 'rgba(59, 130, 246, 0.1)',
-            border: '#3b82f6',
-            text: '#60a5fa',
-            icon: '#3b82f6'
+            bg: '#3b82f6', // Solid blue
+            text: 'white',
+            icon: 'white'
         }
     };
 
@@ -59,23 +55,22 @@ const Toast: React.FC<ToastProps> = ({ id, message, type, duration = 3000, onClo
 
     return (
         <motion.div
-            initial={{ opacity: 0, y: -50, scale: 0.9 }}
+            initial={{ opacity: 0, y: 50, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.15 } }}
+            exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.15 } }}
             style={{
                 display: 'flex',
                 alignItems: 'center',
                 gap: '12px',
-                padding: '16px 20px',
+                padding: '14px 20px',
                 borderRadius: '16px',
                 background: colors.bg,
-                border: `1px solid ${colors.border}`,
-                boxShadow: '0 10px 40px rgba(0,0,0,0.3)',
-                backdropFilter: 'blur(10px)',
-                minWidth: '280px',
+                boxShadow: '0 20px 40px rgba(0,0,0,0.5)',
+                width: 'calc(100vw - 40px)',
                 maxWidth: '400px',
-                color: 'white',
-                position: 'relative'
+                color: colors.text,
+                position: 'relative',
+                pointerEvents: 'auto'
             }}
         >
             <div style={{ color: colors.icon, flexShrink: 0 }}>
@@ -83,8 +78,8 @@ const Toast: React.FC<ToastProps> = ({ id, message, type, duration = 3000, onClo
             </div>
             <p style={{
                 flex: 1,
-                fontSize: '14px',
-                fontWeight: '600',
+                fontSize: '15px',
+                fontWeight: '700',
                 lineHeight: '1.4',
                 margin: 0
             }}>
@@ -93,11 +88,12 @@ const Toast: React.FC<ToastProps> = ({ id, message, type, duration = 3000, onClo
             <button
                 onClick={() => onClose(id)}
                 style={{
-                    background: 'none',
+                    background: 'rgba(255,255,255,0.2)',
                     border: 'none',
-                    color: 'rgba(255,255,255,0.5)',
+                    color: 'white',
                     cursor: 'pointer',
-                    padding: '4px',
+                    padding: '6px',
+                    borderRadius: '50%',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',

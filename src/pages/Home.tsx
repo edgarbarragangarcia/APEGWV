@@ -1243,7 +1243,7 @@ const Home: React.FC = () => {
                                                 onClick={async (e) => {
                                                     e.stopPropagation();
                                                     if (selectedProduct.sizes_inventory && selectedProduct.sizes_inventory.length > 0 && !selectedSize) {
-                                                        warning('Selecciona talla');
+                                                        warning('Falta seleccionar la talla');
                                                         return;
                                                     }
                                                     try {
@@ -1277,7 +1277,7 @@ const Home: React.FC = () => {
                                                     e.stopPropagation();
                                                     if (!user) return navigate('/auth');
                                                     if (selectedProduct.sizes_inventory && selectedProduct.sizes_inventory.length > 0 && !selectedSize) {
-                                                        warning('Selecciona talla');
+                                                        warning('Falta seleccionar la talla');
                                                         return;
                                                     }
                                                     try {
