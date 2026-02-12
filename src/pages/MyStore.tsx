@@ -103,6 +103,7 @@ const MyStore: React.FC = () => {
         size_shoes_cm: '',
         brand: '',
         sizes_inventory: [] as { size: string; quantity: number }[],
+        condition: 'Nuevo',
         is_negotiable: false,
         selectedCouponId: ''
     });
@@ -457,7 +458,7 @@ const MyStore: React.FC = () => {
                         price: parseFloat(formData.price),
                         category: formData.category,
                         image_url: formData.image_url,
-                        condition: 'Nuevo',
+                        condition: formData.condition,
                         size_clothing: formData.category === 'Ropa' ? formData.size_clothing : null,
                         size_shoes_us: formData.category === 'Zapatos' ? formData.size_shoes_us : null,
                         size_shoes_eu: formData.category === 'Zapatos' ? formData.size_shoes_eu : null,
@@ -484,7 +485,7 @@ const MyStore: React.FC = () => {
                         price: parseFloat(formData.price),
                         category: formData.category,
                         image_url: formData.image_url,
-                        condition: 'Nuevo',
+                        condition: formData.condition,
                         size_clothing: formData.category === 'Ropa' ? formData.size_clothing : null,
                         size_shoes_us: formData.category === 'Zapatos' ? formData.size_shoes_us : null,
                         size_shoes_eu: formData.category === 'Zapatos' ? formData.size_shoes_eu : null,
@@ -542,7 +543,8 @@ const MyStore: React.FC = () => {
             selectedCouponId: '',
             images: [],
             brand: '',
-            sizes_inventory: []
+            sizes_inventory: [],
+            condition: 'Nuevo'
         });
         setEditingId(null);
     };
@@ -566,7 +568,8 @@ const MyStore: React.FC = () => {
             selectedCouponId: coupons.find(c => c.product_id === product.id)?.id || '',
             images: Array.isArray((product as any).images) ? (product as any).images : (product.image_url ? [product.image_url] : []),
             brand: (product as any).brand || '',
-            sizes_inventory: (product as any).sizes_inventory || []
+            sizes_inventory: (product as any).sizes_inventory || [],
+            condition: (product as any).condition || 'Nuevo'
         });
         setEditingId(product.id);
         setShowForm(true);
@@ -1087,6 +1090,20 @@ const MyStore: React.FC = () => {
                                     </div>
 
                                     <div>
+                                        <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Estado</label>
+                                        <select
+                                            value={formData.condition}
+                                            onChange={e => setFormData({ ...formData, condition: e.target.value })}
+                                            style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '12px', color: 'white', fontSize: '15px' }}
+                                        >
+                                            <option value="Nuevo">Nuevo</option>
+                                            <option value="Usado - Como nuevo">Usado - Como nuevo</option>
+                                            <option value="Usado - Buen estado">Usado - Buen estado</option>
+                                            <option value="Usado - Desgastado">Usado - Desgastado</option>
+                                        </select>
+                                    </div>
+
+                                    <div>
                                         <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Marca</label>
                                         <select
                                             value={formData.brand}
@@ -1099,33 +1116,32 @@ const MyStore: React.FC = () => {
                                         </select>
                                     </div>
 
-                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
-                                        <div>
-                                            <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Categoría</label>
-                                            <select
-                                                value={formData.category}
-                                                onChange={e => setFormData({ ...formData, category: e.target.value })}
+
+                                    <div>
+                                        <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Categoría</label>
+                                        <select
+                                            value={formData.category}
+                                            onChange={e => setFormData({ ...formData, category: e.target.value })}
+                                            style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '12px', color: 'white', fontSize: '15px' }}
+                                        >
+                                            {categories.map(c => <option key={c} value={c}>{c}</option>)}
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Precio (COP)</label>
+                                        <div style={{ position: 'relative' }}>
+                                            <input
+                                                required
+                                                type="text"
+                                                inputMode="numeric"
+                                                value={formData.displayPrice}
+                                                onChange={handlePriceChange}
                                                 style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '12px', color: 'white', fontSize: '15px' }}
-                                            >
-                                                {categories.map(c => <option key={c} value={c}>{c}</option>)}
-                                            </select>
-                                        </div>
-                                        <div>
-                                            <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Precio (COP)</label>
-                                            <div style={{ position: 'relative' }}>
-                                                <input
-                                                    required
-                                                    type="text"
-                                                    inputMode="numeric"
-                                                    value={formData.displayPrice}
-                                                    onChange={handlePriceChange}
-                                                    style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '12px', color: 'white', fontSize: '15px' }}
-                                                    placeholder="0"
-                                                />
-                                                <span style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-dim)', fontSize: '12px', pointerEvents: 'none' }}>
-                                                    $
-                                                </span>
-                                            </div>
+                                                placeholder="0"
+                                            />
+                                            <span style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-dim)', fontSize: '12px', pointerEvents: 'none' }}>
+                                                $
+                                            </span>
                                         </div>
                                     </div>
 
@@ -1217,9 +1233,9 @@ const MyStore: React.FC = () => {
                                     {formData.category === 'Zapatos' && (
                                         <div className="animate-fade" style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                                             <label style={{ display: 'block', marginBottom: '-5px', fontSize: '13px', color: 'var(--text-dim)' }}>Tallas de Calzado (Conversión automática)</label>
-                                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px' }}>
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                                                 <div>
-                                                    <label style={{ display: 'block', marginBottom: '5px', fontSize: '11px', color: 'var(--secondary)', fontWeight: '800' }}>COL</label>
+                                                    <label style={{ display: 'block', marginBottom: '5px', fontSize: '11px', color: 'var(--secondary)', fontWeight: '800' }}>Talla COL</label>
                                                     <input
                                                         placeholder="Ej: 40"
                                                         value={formData.size_shoes_col}
@@ -1238,7 +1254,7 @@ const MyStore: React.FC = () => {
                                                     />
                                                 </div>
                                                 <div>
-                                                    <label style={{ display: 'block', marginBottom: '5px', fontSize: '11px', color: 'var(--text-dim)' }}>US</label>
+                                                    <label style={{ display: 'block', marginBottom: '5px', fontSize: '11px', color: 'var(--text-dim)' }}>Talla US</label>
                                                     <input
                                                         placeholder="Ej: 9.5"
                                                         value={formData.size_shoes_us}
@@ -1247,7 +1263,7 @@ const MyStore: React.FC = () => {
                                                     />
                                                 </div>
                                                 <div>
-                                                    <label style={{ display: 'block', marginBottom: '5px', fontSize: '11px', color: 'var(--text-dim)' }}>EU</label>
+                                                    <label style={{ display: 'block', marginBottom: '5px', fontSize: '11px', color: 'var(--text-dim)' }}>Talla EU</label>
                                                     <input
                                                         placeholder="Ej: 42"
                                                         value={formData.size_shoes_eu}
@@ -1256,7 +1272,7 @@ const MyStore: React.FC = () => {
                                                     />
                                                 </div>
                                                 <div>
-                                                    <label style={{ display: 'block', marginBottom: '5px', fontSize: '11px', color: 'var(--text-dim)' }}>CM</label>
+                                                    <label style={{ display: 'block', marginBottom: '5px', fontSize: '11px', color: 'var(--text-dim)' }}>Talla CM</label>
                                                     <input
                                                         placeholder="Ej: 27"
                                                         value={formData.size_shoes_cm}
@@ -1316,76 +1332,75 @@ const MyStore: React.FC = () => {
                                             }} />
                                         </div>
                                     </div>
-                                </div>
-
-                                {/* Coupon Selection */}
-                                <div style={{ background: 'rgba(255,255,255,0.03)', padding: '15px', borderRadius: '15px', border: '1px solid var(--glass-border)' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
-                                        <div style={{ background: 'rgba(163, 230, 53, 0.1)', padding: '6px', borderRadius: '8px' }}>
-                                            <Ticket size={14} color="var(--secondary)" />
+                                    {/* Coupon Selection */}
+                                    <div style={{ background: 'rgba(255,255,255,0.03)', padding: '15px', borderRadius: '15px', border: '1px solid var(--glass-border)' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
+                                            <div style={{ background: 'rgba(163, 230, 53, 0.1)', padding: '6px', borderRadius: '8px' }}>
+                                                <Ticket size={14} color="var(--secondary)" />
+                                            </div>
+                                            <label style={{ fontSize: '13px', fontWeight: '800', color: 'white' }}>Asignar Cupón (Opcional)</label>
                                         </div>
-                                        <label style={{ fontSize: '13px', fontWeight: '800', color: 'white' }}>Asignar Cupón (Opcional)</label>
+                                        <p style={{ fontSize: '11px', color: 'var(--text-dim)', marginBottom: '10px' }}>
+                                            Selecciona un cupón para activarlo exclusivamente en este producto.
+                                        </p>
+                                        <select
+                                            value={formData.selectedCouponId}
+                                            onChange={e => setFormData({ ...formData, selectedCouponId: e.target.value })}
+                                            style={{
+                                                width: '100%',
+                                                background: 'rgba(0,0,0,0.2)',
+                                                border: '1px solid rgba(255,255,255,0.1)',
+                                                borderRadius: '12px',
+                                                padding: '12px',
+                                                color: 'white',
+                                                fontSize: '14px'
+                                            }}
+                                        >
+                                            <option value="">Ningún cupón seleccionado</option>
+                                            {coupons.map(coupon => (
+                                                <option key={coupon.id} value={coupon.id}>
+                                                    {coupon.code} - {coupon.discount_type === 'percentage' ? `${coupon.discount_value}% OFF` : `$${coupon.discount_value.toLocaleString()} OFF`}
+                                                    {coupon.product_id && coupon.product_id !== editingId ? ' (Asignado a otro producto)' : ''}
+                                                </option>
+                                            ))}
+                                        </select>
                                     </div>
-                                    <p style={{ fontSize: '11px', color: 'var(--text-dim)', marginBottom: '10px' }}>
-                                        Selecciona un cupón para activarlo exclusivamente en este producto.
-                                    </p>
-                                    <select
-                                        value={formData.selectedCouponId}
-                                        onChange={e => setFormData({ ...formData, selectedCouponId: e.target.value })}
+
+                                    {/* Commission Calculation */}
+                                    {formData.price && (
+                                        <div className="glass" style={{ padding: '15px', background: 'rgba(163, 230, 53, 0.05)', borderRadius: '15px', border: '1px solid rgba(163, 230, 53, 0.1)' }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '13px' }}>
+                                                <span style={{ color: 'var(--text-dim)' }}>Comisión APEG (5%)</span>
+                                                <span style={{ color: '#ef4444', fontWeight: '600' }}>- {formatPrice((parseFloat(formData.price) * 0.05).toString())}</span>
+                                            </div>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '15px', fontWeight: '800', paddingTop: '8px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                                                <span>Recibes en tu cuenta</span>
+                                                <span style={{ color: 'var(--secondary)' }}>$ {formatPrice((parseFloat(formData.price) * 0.95).toString())}</span>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    <button
+                                        type="submit"
+                                        disabled={saving || !formData.image_url}
                                         style={{
                                             width: '100%',
-                                            background: 'rgba(0,0,0,0.2)',
-                                            border: '1px solid rgba(255,255,255,0.1)',
-                                            borderRadius: '12px',
-                                            padding: '12px',
-                                            color: 'white',
-                                            fontSize: '14px'
+                                            background: (saving || !formData.image_url) ? 'rgba(163, 230, 53, 0.3)' : 'var(--secondary)',
+                                            color: 'var(--primary)',
+                                            padding: '15px',
+                                            borderRadius: '15px',
+                                            fontWeight: '800',
+                                            marginTop: '10px',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            gap: '10px'
                                         }}
                                     >
-                                        <option value="">Ningún cupón seleccionado</option>
-                                        {coupons.map(coupon => (
-                                            <option key={coupon.id} value={coupon.id}>
-                                                {coupon.code} - {coupon.discount_type === 'percentage' ? `${coupon.discount_value}% OFF` : `$${coupon.discount_value.toLocaleString()} OFF`}
-                                                {coupon.product_id && coupon.product_id !== editingId ? ' (Asignado a otro producto)' : ''}
-                                            </option>
-                                        ))}
-                                    </select>
+                                        {saving ? <Loader2 className="animate-spin" size={20} /> : <CheckCircle2 size={20} />}
+                                        {saving ? 'GUARDANDO...' : 'PUBLICAR PRODUCTO'}
+                                    </button>
                                 </div>
-
-                                {/* Commission Calculation */}
-                                {formData.price && (
-                                    <div className="glass" style={{ padding: '15px', background: 'rgba(163, 230, 53, 0.05)', borderRadius: '15px', border: '1px solid rgba(163, 230, 53, 0.1)' }}>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '13px' }}>
-                                            <span style={{ color: 'var(--text-dim)' }}>Comisión APEG (5%)</span>
-                                            <span style={{ color: '#ef4444', fontWeight: '600' }}>- {formatPrice((parseFloat(formData.price) * 0.05).toString())}</span>
-                                        </div>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '15px', fontWeight: '800', paddingTop: '8px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-                                            <span>Recibes en tu cuenta</span>
-                                            <span style={{ color: 'var(--secondary)' }}>$ {formatPrice((parseFloat(formData.price) * 0.95).toString())}</span>
-                                        </div>
-                                    </div>
-                                )}
-
-                                <button
-                                    type="submit"
-                                    disabled={saving || !formData.image_url}
-                                    style={{
-                                        width: '100%',
-                                        background: (saving || !formData.image_url) ? 'rgba(163, 230, 53, 0.3)' : 'var(--secondary)',
-                                        color: 'var(--primary)',
-                                        padding: '15px',
-                                        borderRadius: '15px',
-                                        fontWeight: '800',
-                                        marginTop: '10px',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        gap: '10px'
-                                    }}
-                                >
-                                    {saving ? <Loader2 className="animate-spin" size={20} /> : <CheckCircle2 size={20} />}
-                                    {saving ? 'GUARDANDO...' : 'PUBLICAR PRODUCTO'}
-                                </button>
                             </form>
                         ) : (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
@@ -2066,7 +2081,7 @@ const MyStore: React.FC = () => {
                                         <button type="button" onClick={() => { setShowCouponForm(false); setEditingCouponId(null); }} style={{ color: 'var(--text-dim)' }}><X size={20} /></button>
                                     </div>
 
-                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                                         <div>
                                             <label style={{ display: 'block', fontSize: '11px', fontWeight: '900', color: 'var(--secondary)', marginBottom: '8px', textTransform: 'uppercase' }}>Código</label>
                                             <input
@@ -2088,9 +2103,7 @@ const MyStore: React.FC = () => {
                                                 <option value="fixed">Valor Fijo ($)</option>
                                             </select>
                                         </div>
-                                    </div>
 
-                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
                                         <div>
                                             <label style={{ display: 'block', fontSize: '11px', fontWeight: '900', color: 'var(--secondary)', marginBottom: '8px', textTransform: 'uppercase' }}>Valor Descuento</label>
                                             <input
@@ -2714,7 +2727,9 @@ const MyStore: React.FC = () => {
                     </div>
                 )}
             </AnimatePresence>
-        </div >
+        </div>
+
+
 
     );
 };

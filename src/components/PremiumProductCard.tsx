@@ -114,7 +114,12 @@ const PremiumProductCard: React.FC<PremiumProductCardProps> = ({ product, onAddT
                         whileTap={{ scale: 0.9 }}
                         onClick={(e) => {
                             e.stopPropagation();
-                            onAddToCart(product);
+                            if (product.sizes_inventory && product.sizes_inventory.length > 0) {
+                                // Trigger product detail to select size
+                                onClick();
+                            } else {
+                                onAddToCart(product);
+                            }
                         }}
                         style={{
                             width: '44px',
