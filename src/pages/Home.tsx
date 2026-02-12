@@ -913,7 +913,7 @@ const Home: React.FC = () => {
                             }}>
                                 <div style={{
                                     position: 'relative',
-                                    height: '60vh',
+                                    height: '65vh',
                                     width: '100%',
                                     flexShrink: 0,
                                     background: 'linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%)',
@@ -959,10 +959,12 @@ const Home: React.FC = () => {
                                                     transition={{ duration: 0.3 }}
                                                     drag="x"
                                                     dragConstraints={{ left: 0, right: 0 }}
+                                                    dragElastic={0.2}
                                                     onDragEnd={(_, info) => {
-                                                        if (info.offset.x < -50 && currentImageIndex < productImages.length) {
+                                                        const threshold = 30; // More sensitive threshold
+                                                        if (info.offset.x < -threshold && currentImageIndex < productImages.length) {
                                                             setCurrentImageIndex(prev => prev + 1);
-                                                        } else if (info.offset.x > 50 && currentImageIndex > 0) {
+                                                        } else if (info.offset.x > threshold && currentImageIndex > 0) {
                                                             setCurrentImageIndex(prev => prev - 1);
                                                         }
                                                     }}
@@ -987,8 +989,10 @@ const Home: React.FC = () => {
                                                     transition={{ duration: 0.3 }}
                                                     drag="x"
                                                     dragConstraints={{ left: 0, right: 0 }}
+                                                    dragElastic={0.2}
                                                     onDragEnd={(_, info) => {
-                                                        if (info.offset.x > 50 && currentImageIndex > 0) {
+                                                        const threshold = 30; // More sensitive threshold
+                                                        if (info.offset.x > threshold && currentImageIndex > 0) {
                                                             setCurrentImageIndex(prev => prev - 1);
                                                         }
                                                     }}
