@@ -21,7 +21,7 @@ interface Window {
         startSensors?: (interval?: number) => void;
         stopSensors?: () => void;
 
-        // External URLs (for opening native apps)
+        // External URLs
         openExternalURL?: (url: string) => void;
     };
 

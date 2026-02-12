@@ -318,22 +318,23 @@ const GreenFee: React.FC = () => {
                 {navOptions && (
                     <div
                         onClick={() => setNavOptions(null)}
-                        style={{ position: 'fixed', inset: 0, zIndex: 3000, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)' }}
+                        style={{ position: 'fixed', inset: 0, zIndex: 3000, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)' }}
                     >
                         <motion.div
-                            initial={{ scale: 0.9, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            exit={{ scale: 0.9, opacity: 0 }}
+                            initial={{ y: 300 }}
+                            animate={{ y: 0 }}
+                            exit={{ y: 300 }}
                             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
                             onClick={(e: React.MouseEvent) => e.stopPropagation()}
                             style={{
-                                width: '90%',
-                                maxWidth: '400px',
+                                width: '100%',
+                                maxWidth: '450px',
                                 background: 'rgba(15, 30, 15, 0.98)',
-                                borderRadius: '32px',
-                                padding: '30px 24px',
-                                border: '1px solid rgba(255,255,255,0.1)',
-                                boxShadow: '0 20px 60px rgba(0,0,0,0.5)'
+                                borderTopLeftRadius: '32px',
+                                borderTopRightRadius: '32px',
+                                padding: '30px 24px 50px',
+                                borderTop: '1px solid rgba(255,255,255,0.1)',
+                                boxShadow: '0 -20px 40px rgba(0,0,0,0.4)'
                             }}
                         >
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px' }}>
@@ -341,7 +342,7 @@ const GreenFee: React.FC = () => {
                                     <h3 style={{ fontSize: '20px', fontWeight: '900', color: 'white' }}>¿Cómo quieres <span style={{ color: 'var(--secondary)' }}>llegar</span>?</h3>
                                     <p style={{ fontSize: '12px', color: 'var(--text-dim)', marginTop: '2px' }}>{navOptions.name}</p>
                                 </div>
-                                <button onClick={() => setNavOptions(null)} style={{ background: 'rgba(255,255,255,0.05)', border: 'none', borderRadius: '50%', padding: '8px', color: 'white', cursor: 'pointer' }}>
+                                <button onClick={() => setNavOptions(null)} style={{ background: 'rgba(255,255,255,0.05)', border: 'none', borderRadius: '50%', padding: '8px', color: 'white' }}>
                                     <X size={20} />
                                 </button>
                             </div>
@@ -349,16 +350,7 @@ const GreenFee: React.FC = () => {
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                                 <button
                                     onClick={() => {
-                                        const mapsUrl = `https://maps.apple.com/?q=${encodeURIComponent(navOptions.location)}`;
-                                        const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(navOptions.location)}`;
-
-                                        if (window.iOSNative?.openExternalURL) {
-                                            // Try Apple Maps first on iOS
-                                            window.iOSNative.openExternalURL(mapsUrl);
-                                        } else {
-                                            // Fallback to Google Maps web
-                                            window.open(googleMapsUrl, '_blank');
-                                        }
+                                        window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(navOptions.location)}`, '_blank');
                                         setNavOptions(null);
                                     }}
                                     style={{
@@ -386,16 +378,7 @@ const GreenFee: React.FC = () => {
 
                                 <button
                                     onClick={() => {
-                                        const wazeUrl = `waze://?q=${encodeURIComponent(navOptions.location)}`;
-                                        const wazeWebUrl = `https://waze.com/ul?q=${encodeURIComponent(navOptions.location)}`;
-
-                                        if (window.iOSNative?.openExternalURL) {
-                                            // Open Waze app on iOS
-                                            window.iOSNative.openExternalURL(wazeUrl);
-                                        } else {
-                                            // Fallback to Waze web
-                                            window.open(wazeWebUrl, '_blank');
-                                        }
+                                        window.open(`https://waze.com/ul?q=${encodeURIComponent(navOptions.location)}`, '_blank');
                                         setNavOptions(null);
                                     }}
                                     style={{
@@ -414,7 +397,7 @@ const GreenFee: React.FC = () => {
                                 >
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                                         <div style={{ width: '40px', height: '40px', background: 'white', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                            <img src="/images/waze.png" style={{ width: '24px' }} alt="Waze" />
+                                            <img src="https://upload.wikimedia.org/wikipedia/commons/6/66/Waze_logo.svg" style={{ width: '24px' }} alt="Waze" />
                                         </div>
                                         Waze
                                     </div>
