@@ -985,39 +985,38 @@ const Home: React.FC = () => {
                                             </motion.button>
                                         </div>
 
-                                        {/* Price and Condition Overlay */}
-                                        <div style={{
-                                            position: 'absolute',
-                                            bottom: '25px',
-                                            right: '20px',
-                                            zIndex: 10,
-                                            textAlign: 'right',
-                                            textShadow: '0 2px 10px rgba(0,0,0,0.5)'
-                                        }}>
-                                            <p style={{ fontSize: '32px', fontWeight: '900', color: 'var(--secondary)', margin: 0, lineHeight: 1 }}>
-                                                $ {new Intl.NumberFormat('es-CO').format(selectedProduct.price)}
-                                            </p>
-                                            {selectedProduct.condition && (
-                                                <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.7)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                                                    Estado: {selectedProduct.condition}
+                                        {/* Condition Overlay */}
+                                        {selectedProduct.condition && (
+                                            <div style={{
+                                                position: 'absolute',
+                                                bottom: '20px',
+                                                right: '20px',
+                                                zIndex: 10,
+                                                background: 'rgba(0,0,0,0.3)',
+                                                backdropFilter: 'blur(10px)',
+                                                padding: '4px 10px',
+                                                borderRadius: '8px',
+                                                border: '1px solid rgba(255,255,255,0.1)'
+                                            }}>
+                                                <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.9)', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                                                    {selectedProduct.condition}
                                                 </span>
-                                            )}
-                                        </div>
+                                            </div>
+                                        )}
                                     </motion.div>
 
-                                    {/* Header Action Buttons Overlay */}
+                                    {/* Close Button Overlay */}
                                     <div style={{
                                         position: 'absolute',
-                                        top: '50%',
+                                        top: '20px',
                                         left: '20px',
-                                        transform: 'translateY(-50%)',
-                                        zIndex: 10
+                                        zIndex: 20
                                     }}>
                                         <button
                                             onClick={handleCloseProduct}
                                             style={{
-                                                width: '44px',
-                                                height: '44px',
+                                                width: '40px',
+                                                height: '40px',
                                                 borderRadius: '50%',
                                                 background: 'rgba(0,0,0,0.3)',
                                                 backdropFilter: 'blur(10px)',
@@ -1037,123 +1036,145 @@ const Home: React.FC = () => {
                                     position: 'relative',
                                     flex: 1,
                                     background: 'var(--primary)',
-                                    borderTopLeftRadius: '32px',
-                                    borderTopRightRadius: '32px',
-                                    marginTop: '-30px',
-                                    padding: '24px 20px 110px', // INCREASED PADDING to avoid BottomNav coverage
+                                    borderTopLeftRadius: '24px',
+                                    borderTopRightRadius: '24px',
+                                    marginTop: '-24px', // Reduced negative margin overlap
+                                    padding: '20px 20px 30px', // Reduced padding
                                     zIndex: 5,
                                     display: 'flex',
                                     flexDirection: 'column',
-                                    overflowY: 'auto', // Enable scrolling
-                                    msOverflowStyle: 'none',
-                                    scrollbarWidth: 'none'
+                                    overflow: 'hidden', // Disable global scrolling
                                 }}>
+                                    {/* Drag Handle */}
                                     <div style={{
-                                        width: '40px',
-                                        height: '4px',
-                                        background: 'rgba(255,255,255,0.15)',
+                                        width: '32px',
+                                        height: '3px',
+                                        background: 'rgba(255,255,255,0.2)',
                                         borderRadius: '2px',
-                                        margin: '0 auto 20px'
+                                        margin: '0 auto 15px'
                                     }} />
 
-                                    <div style={{ marginBottom: '20px' }}>
-                                        <div style={{ marginBottom: '12px' }}>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                                    {/* Sub-Header: Category, Brand & Price */}
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            <span style={{
+                                                background: 'rgba(163, 230, 53, 0.1)',
+                                                color: 'var(--secondary)',
+                                                padding: '3px 8px',
+                                                borderRadius: '6px',
+                                                fontSize: '10px',
+                                                fontWeight: '800',
+                                                textTransform: 'uppercase',
+                                                letterSpacing: '0.5px'
+                                            }}>
+                                                {selectedProduct.category}
+                                            </span>
+                                            {selectedProduct.brand && (
                                                 <span style={{
-                                                    background: 'rgba(163, 230, 53, 0.12)',
-                                                    color: 'var(--secondary)',
-                                                    padding: '4px 10px',
-                                                    borderRadius: '8px',
-                                                    fontSize: '11px',
-                                                    fontWeight: '900',
+                                                    fontSize: '10px',
+                                                    fontWeight: '700',
+                                                    color: 'rgba(255,255,255,0.4)',
                                                     textTransform: 'uppercase',
                                                     letterSpacing: '0.5px'
                                                 }}>
-                                                    {selectedProduct.category}
+                                                    • {selectedProduct.brand}
                                                 </span>
-                                                {selectedProduct.brand && (
-                                                    <span style={{
-                                                        fontSize: '11px',
-                                                        fontWeight: '700',
-                                                        color: 'rgba(255,255,255,0.4)',
-                                                        textTransform: 'uppercase',
-                                                        letterSpacing: '0.5px'
-                                                    }}>
-                                                        • {selectedProduct.brand}
+                                            )}
+                                        </div>
+                                        <div style={{ fontSize: '18px', fontWeight: '900', color: 'var(--secondary)' }}>
+                                            ${new Intl.NumberFormat('es-CO').format(selectedProduct.price)}
+                                        </div>
+                                    </div>
+
+                                    {/* Header: Title */}
+                                    <div style={{ marginBottom: '15px' }}>
+                                        <h2 style={{ fontSize: '22px', fontWeight: '900', color: 'white', lineHeight: '1.2', margin: 0 }}>
+                                            {selectedProduct.name}
+                                        </h2>
+                                    </div>
+
+                                    {/* Sizes Inventory Selection */}
+                                    {selectedProduct.sizes_inventory && selectedProduct.sizes_inventory.length > 0 && (
+                                        <div style={{ marginBottom: '15px' }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                                                <h4 style={{ color: 'rgba(255,255,255,0.8)', fontSize: '11px', fontWeight: '800', margin: 0, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Talla</h4>
+                                                {selectedSize && (
+                                                    <span style={{ fontSize: '10px', color: 'var(--secondary)', fontWeight: '700' }}>
+                                                        {selectedProduct.sizes_inventory?.find((s: { size: string; quantity: number }) => s.size === selectedSize)?.quantity} disponibles
                                                     </span>
                                                 )}
                                             </div>
-                                            <h2 style={{ fontSize: '28px', fontWeight: '900', color: 'white', lineHeight: '1.1', marginBottom: '8px' }}>
-                                                {selectedProduct.name}
-                                            </h2>
-                                        </div>
-
-                                        {/* Sizes Inventory Selection - Moved up as requested */}
-                                        {selectedProduct.sizes_inventory && selectedProduct.sizes_inventory.length > 0 && (
-                                            <div style={{ marginBottom: '25px' }}>
-                                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                                                    <h4 style={{ color: 'white', fontSize: '14px', fontWeight: '800', margin: 0 }}>Talla Disponible</h4>
-                                                    {selectedSize && (
-                                                        <span style={{ fontSize: '11px', color: 'var(--secondary)', fontWeight: '700' }}>
-                                                            {selectedProduct.sizes_inventory?.find((s: { size: string; quantity: number }) => s.size === selectedSize)?.quantity} disponibles
-                                                        </span>
-                                                    )}
-                                                </div>
-                                                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                                                    {selectedProduct.sizes_inventory.map((s: { size: string; quantity: number }) => (
-                                                        <button
-                                                            key={s.size}
-                                                            disabled={s.quantity <= 0}
-                                                            onClick={() => setSelectedSize(s.size)}
-                                                            style={{
-                                                                minWidth: '50px',
-                                                                height: '46px',
-                                                                borderRadius: '12px',
-                                                                border: '1px solid ' + (selectedSize === s.size ? 'var(--secondary)' : 'rgba(255,255,255,0.1)'),
-                                                                background: selectedSize === s.size ? 'var(--secondary)' : 'rgba(255,255,255,0.05)',
-                                                                color: selectedSize === s.size ? 'var(--primary)' : (s.quantity <= 0 ? 'rgba(255,255,255,0.2)' : 'white'),
-                                                                fontSize: '14px',
-                                                                fontWeight: '800',
-                                                                display: 'flex',
-                                                                alignItems: 'center',
-                                                                justifyContent: 'center',
-                                                                transition: 'all 0.2s ease',
-                                                                opacity: s.quantity <= 0 ? 0.5 : 1,
-                                                                cursor: s.quantity <= 0 ? 'not-allowed' : 'pointer'
-                                                            }}
-                                                        >
-                                                            {s.size}
-                                                        </button>
-                                                    ))}
-                                                </div>
+                                            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                                                {selectedProduct.sizes_inventory.map((s: { size: string; quantity: number }) => (
+                                                    <button
+                                                        key={s.size}
+                                                        disabled={s.quantity <= 0}
+                                                        onClick={() => setSelectedSize(s.size)}
+                                                        style={{
+                                                            minWidth: '32px',
+                                                            height: '32px',
+                                                            borderRadius: '8px',
+                                                            border: '1px solid ' + (selectedSize === s.size ? 'var(--secondary)' : 'rgba(255,255,255,0.1)'),
+                                                            background: selectedSize === s.size ? 'var(--secondary)' : 'rgba(255,255,255,0.05)',
+                                                            color: selectedSize === s.size ? 'var(--primary)' : (s.quantity <= 0 ? 'rgba(255,255,255,0.2)' : 'white'),
+                                                            fontSize: '11px',
+                                                            fontWeight: '800',
+                                                            padding: '0 8px',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
+                                                            transition: 'all 0.2s ease',
+                                                            opacity: s.quantity <= 0 ? 0.5 : 1,
+                                                            cursor: s.quantity <= 0 ? 'not-allowed' : 'pointer'
+                                                        }}
+                                                    >
+                                                        {s.size}
+                                                    </button>
+                                                ))}
                                             </div>
-                                        )}
-                                    </div>
-
-                                    {selectedProduct.description && (
-                                        <div style={{ marginBottom: '20px' }}>
-                                            <p style={{ color: 'rgba(255,255,255,0.7)', lineHeight: '1.5', fontSize: '15px' }}>
-                                                {selectedProduct.description}
-                                            </p>
                                         </div>
                                     )}
 
-                                    {/* Action Buttons Row - Consistent Style */}
-                                    <div style={{ display: 'flex', gap: '10px', marginBottom: '25px' }}>
+                                    {/* Description - Compact with vertical scroll */}
+                                    <div style={{ flex: 1, minHeight: 0, marginBottom: '15px', overflowY: 'auto', overflowX: 'hidden' }}>
+                                        <h3 style={{
+                                            fontSize: '11px',
+                                            fontWeight: '800',
+                                            color: 'rgba(255,255,255,0.5)',
+                                            marginBottom: '6px',
+                                            letterSpacing: '0.5px',
+                                            textTransform: 'uppercase'
+                                        }}>
+                                            Descripción
+                                        </h3>
+                                        <p style={{
+                                            color: 'rgba(255,255,255,0.7)',
+                                            lineHeight: '1.5',
+                                            fontSize: '13px',
+                                            margin: 0,
+                                            whiteSpace: 'pre-wrap',
+                                            wordBreak: 'break-word',
+                                            maxWidth: '100%'
+                                        }}>
+                                            {selectedProduct.description || 'Sin descripción.'}
+                                        </p>
+                                    </div>
+
+                                    {/* Action Buttons Row - Fixed at bottom */}
+                                    <div style={{ display: 'flex', gap: '10px', marginTop: 'auto', paddingBottom: 'env(safe-area-inset-bottom)' }}>
                                         {selectedProduct.is_negotiable && selectedProduct.seller_id !== user?.id && (
                                             <motion.button
-                                                whileTap={{ scale: 0.9 }}
+                                                whileTap={{ scale: 0.95 }}
                                                 onClick={(e) => {
                                                     e.stopPropagation();
-                                                    console.log('Offer button clicked');
                                                     if (!user) return navigate('/auth');
                                                     setShowOfferModal(true);
                                                     setOfferAmount(selectedProduct.price.toString());
                                                 }}
                                                 style={{
-                                                    width: '46px',
-                                                    height: '46px',
-                                                    borderRadius: '50%',
+                                                    width: '44px',
+                                                    height: '44px',
+                                                    borderRadius: '12px',
                                                     background: 'rgba(255,255,255,0.05)',
                                                     border: '1px solid rgba(255,255,255,0.1)',
                                                     color: 'white',
@@ -1163,17 +1184,16 @@ const Home: React.FC = () => {
                                                     cursor: 'pointer'
                                                 }}
                                             >
-                                                <Handshake size={22} />
+                                                <Handshake size={20} />
                                             </motion.button>
                                         )}
 
                                         <motion.button
-                                            whileTap={{ scale: 0.9 }}
+                                            whileTap={{ scale: 0.95 }}
                                             onClick={async (e) => {
                                                 e.stopPropagation();
-                                                console.log('Cart button clicked');
                                                 if (selectedProduct.sizes_inventory && selectedProduct.sizes_inventory.length > 0 && !selectedSize) {
-                                                    alert('Por favor selecciona una talla');
+                                                    alert('Selecciona talla');
                                                     return;
                                                 }
                                                 try {
@@ -1181,35 +1201,36 @@ const Home: React.FC = () => {
                                                     await addToCart({ ...selectedProduct } as any, selectedSize);
                                                     setTimeout(() => setAddingToCart(null), 1500);
                                                 } catch (err) {
-                                                    console.error('Error adding to cart:', err);
                                                     setAddingToCart(null);
                                                 }
                                             }}
                                             style={{
-                                                width: '46px',
-                                                height: '46px',
-                                                borderRadius: '50%',
+                                                flex: 1,
+                                                height: '44px',
+                                                borderRadius: '12px',
                                                 background: 'rgba(163, 230, 53, 0.1)',
                                                 color: 'var(--secondary)',
                                                 display: 'flex',
                                                 alignItems: 'center',
                                                 justifyContent: 'center',
+                                                gap: '8px',
                                                 border: '1px solid rgba(163, 230, 53, 0.2)',
                                                 cursor: 'pointer',
-                                                opacity: 1
+                                                fontSize: '13px',
+                                                fontWeight: '700'
                                             }}
                                         >
-                                            {addingToCart === selectedProduct.id ? <CheckCircle2 size={22} /> : <ShoppingCart size={22} />}
+                                            {addingToCart === selectedProduct.id ? <CheckCircle2 size={18} /> : <ShoppingCart size={18} />}
+                                            {addingToCart === selectedProduct.id ? 'Listo' : 'Carrito'}
                                         </motion.button>
 
                                         <motion.button
                                             whileTap={{ scale: 0.95 }}
                                             onClick={async (e) => {
                                                 e.stopPropagation();
-                                                console.log('Buy button clicked');
                                                 if (!user) return navigate('/auth');
                                                 if (selectedProduct.sizes_inventory && selectedProduct.sizes_inventory.length > 0 && !selectedSize) {
-                                                    alert('Por favor selecciona una talla');
+                                                    alert('Selecciona talla');
                                                     return;
                                                 }
                                                 try {
@@ -1218,27 +1239,30 @@ const Home: React.FC = () => {
                                                     setSelectedProduct(null);
                                                     navigate('/checkout');
                                                 } catch (err) {
-                                                    console.error('Error in buy now:', err);
                                                     setBuying(false);
                                                 }
                                             }}
                                             disabled={buying}
                                             style={{
-                                                width: '46px',
-                                                height: '46px',
-                                                borderRadius: '50%',
+                                                flex: 2,
+                                                height: '44px',
+                                                borderRadius: '12px',
                                                 background: 'var(--secondary)',
                                                 color: 'var(--primary)',
                                                 display: 'flex',
                                                 alignItems: 'center',
                                                 justifyContent: 'center',
+                                                gap: '8px',
                                                 border: 'none',
                                                 cursor: buying ? 'not-allowed' : 'pointer',
                                                 opacity: buying ? 0.5 : 1,
-                                                boxShadow: '0 8px 15px rgba(163, 230, 53, 0.2)'
+                                                boxShadow: '0 4px 12px rgba(163, 230, 53, 0.2)',
+                                                fontSize: '13px',
+                                                fontWeight: '800'
                                             }}
                                         >
-                                            <DollarSign size={22} />
+                                            {buying ? <Loader2 className="animate-spin" size={18} /> : <DollarSign size={18} />}
+                                            {buying ? '...' : 'Comprar Ahora'}
                                         </motion.button>
                                     </div>
 
