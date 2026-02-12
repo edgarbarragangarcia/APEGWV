@@ -1185,7 +1185,6 @@ const Home: React.FC = () => {
                                                     setAddingToCart(null);
                                                 }
                                             }}
-                                            disabled={selectedProduct.seller_id === user?.id}
                                             style={{
                                                 width: '46px',
                                                 height: '46px',
@@ -1196,8 +1195,8 @@ const Home: React.FC = () => {
                                                 alignItems: 'center',
                                                 justifyContent: 'center',
                                                 border: '1px solid rgba(163, 230, 53, 0.2)',
-                                                cursor: selectedProduct.seller_id === user?.id ? 'not-allowed' : 'pointer',
-                                                opacity: selectedProduct.seller_id === user?.id ? 0.3 : 1
+                                                cursor: 'pointer',
+                                                opacity: 1
                                             }}
                                         >
                                             {addingToCart === selectedProduct.id ? <CheckCircle2 size={22} /> : <ShoppingCart size={22} />}
@@ -1223,7 +1222,7 @@ const Home: React.FC = () => {
                                                     setBuying(false);
                                                 }
                                             }}
-                                            disabled={buying || selectedProduct?.seller_id === user?.id}
+                                            disabled={buying}
                                             style={{
                                                 width: '46px',
                                                 height: '46px',
@@ -1234,8 +1233,8 @@ const Home: React.FC = () => {
                                                 alignItems: 'center',
                                                 justifyContent: 'center',
                                                 border: 'none',
-                                                cursor: (buying || selectedProduct?.seller_id === user?.id) ? 'not-allowed' : 'pointer',
-                                                opacity: (buying || selectedProduct?.seller_id === user?.id) ? 0.5 : 1,
+                                                cursor: buying ? 'not-allowed' : 'pointer',
+                                                opacity: buying ? 0.5 : 1,
                                                 boxShadow: '0 8px 15px rgba(163, 230, 53, 0.2)'
                                             }}
                                         >
