@@ -1086,11 +1086,110 @@ const Home: React.FC = () => {
                                         </div>
                                     </div>
 
-                                    {/* Header: Title */}
-                                    <div style={{ marginBottom: '15px' }}>
-                                        <h2 style={{ fontSize: '22px', fontWeight: '900', color: 'white', lineHeight: '1.2', margin: 0 }}>
+                                    {/* Header: Title & Quick Actions */}
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '15px', marginBottom: '15px' }}>
+                                        <h2 style={{ fontSize: '22px', fontWeight: '900', color: 'white', lineHeight: '1.2', margin: 0, flex: 1 }}>
                                             {selectedProduct.name}
                                         </h2>
+
+                                        <div style={{ display: 'flex', gap: '8px' }}>
+                                            {/* Offer/Negotiate Icon */}
+                                            {selectedProduct.is_negotiable && selectedProduct.seller_id !== user?.id && (
+                                                <motion.button
+                                                    whileTap={{ scale: 0.95 }}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        if (!user) return navigate('/auth');
+                                                        setShowOfferModal(true);
+                                                        setOfferAmount(selectedProduct.price.toString());
+                                                    }}
+                                                    style={{
+                                                        width: '38px',
+                                                        height: '38px',
+                                                        borderRadius: '10px',
+                                                        background: 'rgba(255,255,255,0.05)',
+                                                        border: '1px solid rgba(255,255,255,0.1)',
+                                                        color: 'white',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        cursor: 'pointer'
+                                                    }}
+                                                >
+                                                    <Handshake size={18} />
+                                                </motion.button>
+                                            )}
+
+                                            {/* Cart Icon */}
+                                            <motion.button
+                                                whileTap={{ scale: 0.95 }}
+                                                onClick={async (e) => {
+                                                    e.stopPropagation();
+                                                    if (selectedProduct.sizes_inventory && selectedProduct.sizes_inventory.length > 0 && !selectedSize) {
+                                                        alert('Selecciona talla');
+                                                        return;
+                                                    }
+                                                    try {
+                                                        setAddingToCart(selectedProduct.id);
+                                                        await addToCart({ ...selectedProduct } as any, selectedSize);
+                                                        setTimeout(() => setAddingToCart(null), 1500);
+                                                    } catch (err) {
+                                                        setAddingToCart(null);
+                                                    }
+                                                }}
+                                                style={{
+                                                    width: '38px',
+                                                    height: '38px',
+                                                    borderRadius: '10px',
+                                                    background: 'rgba(163, 230, 53, 0.1)',
+                                                    color: 'var(--secondary)',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    border: '1px solid rgba(163, 230, 53, 0.2)',
+                                                    cursor: 'pointer'
+                                                }}
+                                            >
+                                                {addingToCart === selectedProduct.id ? <CheckCircle2 size={18} /> : <ShoppingCart size={18} />}
+                                            </motion.button>
+
+                                            {/* Buy Now Icon */}
+                                            <motion.button
+                                                whileTap={{ scale: 0.95 }}
+                                                onClick={async (e) => {
+                                                    e.stopPropagation();
+                                                    if (!user) return navigate('/auth');
+                                                    if (selectedProduct.sizes_inventory && selectedProduct.sizes_inventory.length > 0 && !selectedSize) {
+                                                        alert('Selecciona talla');
+                                                        return;
+                                                    }
+                                                    try {
+                                                        setBuying(true);
+                                                        await addToCart({ ...selectedProduct } as any, selectedSize);
+                                                        setSelectedProduct(null);
+                                                        navigate('/checkout');
+                                                    } catch (err) {
+                                                        setBuying(false);
+                                                    }
+                                                }}
+                                                disabled={buying}
+                                                style={{
+                                                    width: '38px',
+                                                    height: '38px',
+                                                    borderRadius: '10px',
+                                                    background: 'var(--secondary)',
+                                                    color: 'var(--primary)',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    border: 'none',
+                                                    cursor: buying ? 'not-allowed' : 'pointer',
+                                                    opacity: buying ? 0.5 : 1
+                                                }}
+                                            >
+                                                {buying ? <Loader2 className="animate-spin" size={18} /> : <DollarSign size={18} />}
+                                            </motion.button>
+                                        </div>
                                     </div>
 
                                     {/* Sizes Inventory Selection */}
@@ -1160,111 +1259,6 @@ const Home: React.FC = () => {
                                         </p>
                                     </div>
 
-                                    {/* Action Buttons Row - Fixed at bottom */}
-                                    <div style={{ display: 'flex', gap: '10px', marginTop: 'auto', paddingBottom: 'env(safe-area-inset-bottom)' }}>
-                                        {selectedProduct.is_negotiable && selectedProduct.seller_id !== user?.id && (
-                                            <motion.button
-                                                whileTap={{ scale: 0.95 }}
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    if (!user) return navigate('/auth');
-                                                    setShowOfferModal(true);
-                                                    setOfferAmount(selectedProduct.price.toString());
-                                                }}
-                                                style={{
-                                                    width: '44px',
-                                                    height: '44px',
-                                                    borderRadius: '12px',
-                                                    background: 'rgba(255,255,255,0.05)',
-                                                    border: '1px solid rgba(255,255,255,0.1)',
-                                                    color: 'white',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center',
-                                                    cursor: 'pointer'
-                                                }}
-                                            >
-                                                <Handshake size={20} />
-                                            </motion.button>
-                                        )}
-
-                                        <motion.button
-                                            whileTap={{ scale: 0.95 }}
-                                            onClick={async (e) => {
-                                                e.stopPropagation();
-                                                if (selectedProduct.sizes_inventory && selectedProduct.sizes_inventory.length > 0 && !selectedSize) {
-                                                    alert('Selecciona talla');
-                                                    return;
-                                                }
-                                                try {
-                                                    setAddingToCart(selectedProduct.id);
-                                                    await addToCart({ ...selectedProduct } as any, selectedSize);
-                                                    setTimeout(() => setAddingToCart(null), 1500);
-                                                } catch (err) {
-                                                    setAddingToCart(null);
-                                                }
-                                            }}
-                                            style={{
-                                                flex: 1,
-                                                height: '44px',
-                                                borderRadius: '12px',
-                                                background: 'rgba(163, 230, 53, 0.1)',
-                                                color: 'var(--secondary)',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                gap: '8px',
-                                                border: '1px solid rgba(163, 230, 53, 0.2)',
-                                                cursor: 'pointer',
-                                                fontSize: '13px',
-                                                fontWeight: '700'
-                                            }}
-                                        >
-                                            {addingToCart === selectedProduct.id ? <CheckCircle2 size={18} /> : <ShoppingCart size={18} />}
-                                            {addingToCart === selectedProduct.id ? 'Listo' : 'Carrito'}
-                                        </motion.button>
-
-                                        <motion.button
-                                            whileTap={{ scale: 0.95 }}
-                                            onClick={async (e) => {
-                                                e.stopPropagation();
-                                                if (!user) return navigate('/auth');
-                                                if (selectedProduct.sizes_inventory && selectedProduct.sizes_inventory.length > 0 && !selectedSize) {
-                                                    alert('Selecciona talla');
-                                                    return;
-                                                }
-                                                try {
-                                                    setBuying(true);
-                                                    await addToCart({ ...selectedProduct } as any, selectedSize);
-                                                    setSelectedProduct(null);
-                                                    navigate('/checkout');
-                                                } catch (err) {
-                                                    setBuying(false);
-                                                }
-                                            }}
-                                            disabled={buying}
-                                            style={{
-                                                flex: 2,
-                                                height: '44px',
-                                                borderRadius: '12px',
-                                                background: 'var(--secondary)',
-                                                color: 'var(--primary)',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                gap: '8px',
-                                                border: 'none',
-                                                cursor: buying ? 'not-allowed' : 'pointer',
-                                                opacity: buying ? 0.5 : 1,
-                                                boxShadow: '0 4px 12px rgba(163, 230, 53, 0.2)',
-                                                fontSize: '13px',
-                                                fontWeight: '800'
-                                            }}
-                                        >
-                                            {buying ? <Loader2 className="animate-spin" size={18} /> : <DollarSign size={18} />}
-                                            {buying ? '...' : 'Comprar Ahora'}
-                                        </motion.button>
-                                    </div>
 
 
                                 </div>
