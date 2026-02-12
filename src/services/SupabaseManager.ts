@@ -32,7 +32,6 @@ export interface Product {
     sizes_inventory?: { size: string; quantity: number }[] | null;
     negotiating_buyer_id?: string | null;
     negotiation_expires_at?: string | null;
-    images?: string[] | null;
 }
 
 export interface Round {

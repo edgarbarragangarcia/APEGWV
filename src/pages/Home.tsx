@@ -36,46 +36,8 @@ const Home: React.FC = () => {
     const [selectedSize, setSelectedSize] = React.useState<string | null>(null);
     const [myOffers, setMyOffers] = React.useState<any[]>([]);
     const { likedProducts, toggleLike } = useLikes();
-    const [currentImageIndex, setCurrentImageIndex] = React.useState(0);
 
-    // Reset image index when product changes
-    useEffect(() => {
-        setCurrentImageIndex(0);
-    }, [selectedProduct]);
 
-    const productImages = React.useMemo(() => {
-        if (!selectedProduct) return [];
-        let imgs = selectedProduct.images;
-
-        // Handle if images comes as a string (JSON stringified array)
-        if (typeof imgs === 'string') {
-            try {
-                imgs = JSON.parse(imgs);
-            } catch (e) {
-                console.error('Error parsing images JSON', e);
-                imgs = [];
-            }
-        }
-
-        if (!Array.isArray(imgs)) imgs = [];
-
-        const mainImg = selectedProduct.image_url;
-        // Combine main image and images array, ensuring uniqueness
-        const uniqueImages = new Set([mainImg, ...imgs].filter(Boolean));
-        return Array.from(uniqueImages) as string[];
-    }, [selectedProduct]);
-
-    const paginate = (newDirection: number) => {
-        if (newDirection > 0) {
-            if (currentImageIndex < productImages.length - 1) {
-                setCurrentImageIndex(currentImageIndex + 1);
-            }
-        } else {
-            if (currentImageIndex > 0) {
-                setCurrentImageIndex(currentImageIndex - 1);
-            }
-        }
-    };
     // Fetch profile and initial data
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
@@ -971,122 +933,19 @@ const Home: React.FC = () => {
                                             background: 'var(--primary-light)'
                                         }}
                                     >
-                                        <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-                                            <AnimatePresence initial={false} mode="wait">
-                                                <motion.img
-                                                    key={currentImageIndex}
-                                                    src={optimizeImage(productImages[currentImageIndex], { width: 800, height: 1000 })}
-                                                    initial={{ opacity: 0, x: 20 }}
-                                                    animate={{ opacity: 1, x: 0 }}
-                                                    exit={{ opacity: 0, x: -20 }}
-                                                    transition={{ duration: 0.3 }}
-                                                    drag="x"
-                                                    dragConstraints={{ left: 0, right: 0 }}
-                                                    dragElastic={0.2}
-                                                    onDragEnd={(e, { offset, velocity }) => {
-                                                        const swipe = offset.x; // Simplified
-                                                        const threshold = 50;
-                                                        if (swipe < -threshold) {
-                                                            paginate(1);
-                                                        } else if (swipe > threshold) {
-                                                            paginate(-1);
-                                                        }
-                                                    }}
-                                                    style={{
-                                                        position: 'absolute',
-                                                        top: 0,
-                                                        left: 0,
-                                                        width: '100%',
-                                                        height: '100%',
-                                                        objectFit: 'cover',
-                                                        cursor: 'grab'
-                                                    }}
-                                                    alt={selectedProduct.name}
-                                                    onError={(e) => {
-                                                        const target = e.target as HTMLImageElement;
-                                                        target.src = 'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?auto=format&fit=crop&q=80&w=800';
-                                                    }}
-                                                />
-                                            </AnimatePresence>
-
-                                            {/* Dot Indicators */}
-                                            {productImages.length > 1 && (
-                                                <div style={{
-                                                    position: 'absolute',
-                                                    bottom: '20px',
-                                                    left: '50%',
-                                                    transform: 'translateX(-50%)',
-                                                    display: 'flex',
-                                                    gap: '6px',
-                                                    zIndex: 20
-                                                }}>
-                                                    {productImages.map((_, idx) => (
-                                                        <div
-                                                            key={idx}
-                                                            onClick={() => setCurrentImageIndex(idx)}
-                                                            style={{
-                                                                width: idx === currentImageIndex ? '20px' : '6px',
-                                                                height: '6px',
-                                                                borderRadius: '3px',
-                                                                background: idx === currentImageIndex ? 'white' : 'rgba(255,255,255,0.4)',
-                                                                transition: 'all 0.3s ease',
-                                                                cursor: 'pointer',
-                                                                boxShadow: '0 2px 4px rgba(0,0,0,0.3)'
-                                                            }}
-                                                        />
-                                                    ))}
-                                                </div>
-                                            )}
-
-                                            {/* Left Arrow */}
-                                            {productImages.length > 1 && currentImageIndex > 0 && (
-                                                <div onClick={(e) => { e.stopPropagation(); paginate(-1); }}
-                                                    style={{
-                                                        position: 'absolute', top: '50%', left: '10px', transform: 'translateY(-50%)',
-                                                        background: 'rgba(0,0,0,0.2)', backdropFilter: 'blur(4px)', color: 'white',
-                                                        border: '1px solid rgba(255,255,255,0.1)', borderRadius: '50%',
-                                                        width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                        cursor: 'pointer', zIndex: 15
-                                                    }}
-                                                >
-                                                    <ChevronRight size={20} style={{ transform: 'rotate(180deg)' }} />
-                                                </div>
-                                            )}
-
-                                            {/* Image Counter Badge */}
-                                            {productImages.length > 1 && (
-                                                <div style={{
-                                                    position: 'absolute',
-                                                    top: '20px',
-                                                    left: '20px',
-                                                    background: 'rgba(0,0,0,0.5)',
-                                                    backdropFilter: 'blur(4px)',
-                                                    color: 'white',
-                                                    padding: '4px 10px',
-                                                    borderRadius: '12px',
-                                                    fontSize: '12px',
-                                                    fontWeight: '700',
-                                                    zIndex: 20
-                                                }}>
-                                                    {currentImageIndex + 1}/{productImages.length}
-                                                </div>
-                                            )}
-
-                                            {/* Right Arrow */}
-                                            {productImages.length > 1 && currentImageIndex < productImages.length - 1 && (
-                                                <div onClick={(e) => { e.stopPropagation(); paginate(1); }}
-                                                    style={{
-                                                        position: 'absolute', top: '50%', right: '10px', transform: 'translateY(-50%)',
-                                                        background: 'rgba(0,0,0,0.2)', backdropFilter: 'blur(4px)', color: 'white',
-                                                        border: '1px solid rgba(255,255,255,0.1)', borderRadius: '50%',
-                                                        width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                        cursor: 'pointer', zIndex: 15
-                                                    }}
-                                                >
-                                                    <ChevronRight size={20} />
-                                                </div>
-                                            )}
-                                        </div>
+                                        <motion.img
+                                            src={optimizeImage(selectedProduct.image_url, { width: 800, height: 1000 })}
+                                            style={{
+                                                width: '100%',
+                                                height: '100%',
+                                                objectFit: 'cover',
+                                            }}
+                                            alt={selectedProduct.name}
+                                            onError={(e) => {
+                                                const target = e.target as HTMLImageElement;
+                                                target.src = 'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?auto=format&fit=crop&q=80&w=800';
+                                            }}
+                                        />
 
                                         {/* Dynamic Gradient Overlay */}
                                         <div style={{
