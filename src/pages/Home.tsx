@@ -951,65 +951,112 @@ const Home: React.FC = () => {
                                         }}
                                     >
                                         <AnimatePresence initial={false} mode="wait">
-                                            <motion.img
-                                                key={currentImageIndex}
-                                                src={optimizeImage(productImages[currentImageIndex] || selectedProduct.image_url, { width: 800, height: 1000 })}
-                                                initial={{ opacity: 0, x: 20 }}
-                                                animate={{ opacity: 1, x: 0 }}
-                                                exit={{ opacity: 0, x: -20 }}
-                                                transition={{ duration: 0.3 }}
-                                                drag="x"
-                                                dragConstraints={{ left: 0, right: 0 }}
-                                                onDragEnd={(_, info) => {
-                                                    if (info.offset.x < -50 && currentImageIndex < productImages.length - 1) {
-                                                        setCurrentImageIndex(prev => prev + 1);
-                                                    } else if (info.offset.x > 50 && currentImageIndex > 0) {
-                                                        setCurrentImageIndex(prev => prev - 1);
-                                                    }
-                                                }}
-                                                style={{
-                                                    width: '100%',
-                                                    height: '100%',
-                                                    objectFit: 'contain',
-                                                    touchAction: 'none'
-                                                }}
-                                                alt={`${selectedProduct.name} - ${currentImageIndex + 1}`}
-                                                onError={(e) => {
-                                                    const target = e.target as HTMLImageElement;
-                                                    target.src = 'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?auto=format&fit=crop&q=80&w=800';
-                                                }}
-                                            />
+                                            {currentImageIndex < productImages.length ? (
+                                                <motion.img
+                                                    key={`img-${currentImageIndex}`}
+                                                    src={optimizeImage(productImages[currentImageIndex], { width: 800, height: 1000 })}
+                                                    initial={{ opacity: 0, x: 20 }}
+                                                    animate={{ opacity: 1, x: 0 }}
+                                                    exit={{ opacity: 0, x: -20 }}
+                                                    transition={{ duration: 0.3 }}
+                                                    drag="x"
+                                                    dragConstraints={{ left: 0, right: 0 }}
+                                                    onDragEnd={(_, info) => {
+                                                        if (info.offset.x < -50 && currentImageIndex < productImages.length) {
+                                                            setCurrentImageIndex(prev => prev + 1);
+                                                        } else if (info.offset.x > 50 && currentImageIndex > 0) {
+                                                            setCurrentImageIndex(prev => prev - 1);
+                                                        }
+                                                    }}
+                                                    style={{
+                                                        width: '100%',
+                                                        height: '100%',
+                                                        objectFit: 'contain',
+                                                        touchAction: 'none'
+                                                    }}
+                                                    alt={`${selectedProduct.name} - ${currentImageIndex + 1}`}
+                                                    onError={(e) => {
+                                                        const target = e.target as HTMLImageElement;
+                                                        target.src = 'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?auto=format&fit=crop&q=80&w=800';
+                                                    }}
+                                                />
+                                            ) : (
+                                                <motion.div
+                                                    key="description-slide"
+                                                    initial={{ opacity: 0, x: 20 }}
+                                                    animate={{ opacity: 1, x: 0 }}
+                                                    exit={{ opacity: 0, x: -20 }}
+                                                    transition={{ duration: 0.3 }}
+                                                    drag="x"
+                                                    dragConstraints={{ left: 0, right: 0 }}
+                                                    onDragEnd={(_, info) => {
+                                                        if (info.offset.x > 50 && currentImageIndex > 0) {
+                                                            setCurrentImageIndex(prev => prev - 1);
+                                                        }
+                                                    }}
+                                                    style={{
+                                                        width: '100%',
+                                                        height: '100%',
+                                                        padding: '60px 25px 40px',
+                                                        display: 'flex',
+                                                        flexDirection: 'column',
+                                                        background: 'rgba(0,0,0,0.6)',
+                                                        backdropFilter: 'blur(20px)',
+                                                        touchAction: 'none',
+                                                        overflowY: 'auto'
+                                                    }}
+                                                >
+                                                    <h3 style={{
+                                                        fontSize: '11px',
+                                                        fontWeight: '900',
+                                                        color: 'var(--secondary)',
+                                                        marginBottom: '15px',
+                                                        textTransform: 'uppercase',
+                                                        letterSpacing: '1px'
+                                                    }}>
+                                                        Descripción Completa
+                                                    </h3>
+                                                    <p style={{
+                                                        color: 'rgba(255,255,255,0.9)',
+                                                        lineHeight: '1.6',
+                                                        fontSize: '15px',
+                                                        margin: 0,
+                                                        whiteSpace: 'pre-wrap',
+                                                        wordBreak: 'break-word'
+                                                    }}>
+                                                        {selectedProduct.description || 'Sin descripción.'}
+                                                    </p>
+                                                </motion.div>
+                                            )}
                                         </AnimatePresence>
 
-                                        {/* Pagination Dots */}
-                                        {productImages.length > 1 && (
-                                            <div style={{
-                                                position: 'absolute',
-                                                bottom: '15px',
-                                                left: '50%',
-                                                transform: 'translateX(-50%)',
-                                                display: 'flex',
-                                                gap: '6px',
-                                                zIndex: 10,
-                                                padding: '6px 10px',
-                                                borderRadius: '20px',
-                                                background: 'rgba(0,0,0,0.2)',
-                                                backdropFilter: 'blur(5px)'
-                                            }}>
-                                                {productImages.map((_, idx) => (
-                                                    <div
-                                                        key={idx}
-                                                        style={{
-                                                            width: idx === currentImageIndex ? '16px' : '6px',
-                                                            height: '6px',
-                                                            borderRadius: '3px',
-                                                            background: idx === currentImageIndex ? 'var(--secondary)' : 'rgba(255,255,255,0.4)',
-                                                            transition: 'all 0.3s ease'
-                                                        }}
-                                                    />
-                                                ))}
-                                            </div>
-                                        )}
+                                        {/* Pagination Dots (Included Description Slide) */}
+                                        <div style={{
+                                            position: 'absolute',
+                                            bottom: '15px',
+                                            left: '50%',
+                                            transform: 'translateX(-50%)',
+                                            display: 'flex',
+                                            gap: '6px',
+                                            zIndex: 10,
+                                            padding: '6px 10px',
+                                            borderRadius: '20px',
+                                            background: 'rgba(0,0,0,0.2)',
+                                            backdropFilter: 'blur(5px)'
+                                        }}>
+                                            {[...Array(productImages.length + 1)].map((_, idx) => (
+                                                <div
+                                                    key={idx}
+                                                    style={{
+                                                        width: idx === currentImageIndex ? '16px' : '6px',
+                                                        height: '6px',
+                                                        borderRadius: '3px',
+                                                        background: idx === currentImageIndex ? 'var(--secondary)' : 'rgba(255,255,255,0.4)',
+                                                        transition: 'all 0.3s ease'
+                                                    }}
+                                                />
+                                            ))}
+                                        </div>
 
                                         {/* Dynamic Gradient Overlay */}
                                         <div style={{
@@ -1299,30 +1346,6 @@ const Home: React.FC = () => {
                                         </div>
                                     )}
 
-                                    {/* Description - Compact with vertical scroll */}
-                                    <div style={{ flex: 1, minHeight: 0, marginBottom: '15px', overflowY: 'auto', overflowX: 'hidden' }}>
-                                        <h3 style={{
-                                            fontSize: '11px',
-                                            fontWeight: '800',
-                                            color: 'rgba(255,255,255,0.5)',
-                                            marginBottom: '6px',
-                                            letterSpacing: '0.5px',
-                                            textTransform: 'uppercase'
-                                        }}>
-                                            Descripción
-                                        </h3>
-                                        <p style={{
-                                            color: 'rgba(255,255,255,0.7)',
-                                            lineHeight: '1.5',
-                                            fontSize: '13px',
-                                            margin: 0,
-                                            whiteSpace: 'pre-wrap',
-                                            wordBreak: 'break-word',
-                                            maxWidth: '100%'
-                                        }}>
-                                            {selectedProduct.description || 'Sin descripción.'}
-                                        </p>
-                                    </div>
 
 
 
