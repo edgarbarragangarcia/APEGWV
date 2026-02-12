@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../services/SupabaseManager';
 import Card from '../components/Card';
-import { Calendar, Clock, MapPin, AlertCircle, CheckCircle2, ChevronDown, Trash2, ExternalLink, X } from 'lucide-react';
+import { Calendar, Clock, MapPin, AlertCircle, CheckCircle2, ChevronDown, Trash2 } from 'lucide-react';
 import PageHeader from '../components/PageHeader';
 import PageHero from '../components/PageHero';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -32,7 +32,6 @@ const MyReservations: React.FC<MyReservationsProps> = ({ onRequestSwitchTab }) =
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [isCancelling, setIsCancelling] = useState(false);
     const [showCancelled, setShowCancelled] = useState(false);
-    const [navOptions, setNavOptions] = useState<{ name: string, location: string } | null>(null);
 
     const fetchReservations = async () => {
         try {
@@ -216,10 +215,15 @@ const MyReservations: React.FC<MyReservationsProps> = ({ onRequestSwitchTab }) =
                                     <button
                                         onClick={(e) => {
                                             e.stopPropagation();
-                                            setNavOptions({
-                                                name: (res as any).golf_courses?.name || 'Campo de Golf',
-                                                location: (res as any).golf_courses?.address || (res as any).golf_courses?.location || 'Bogotá, COL'
-                                            });
+                                            const location = (res as any).golf_courses?.address || (res as any).golf_courses?.location || 'Bogotá, COL';
+                                            const wazeUrl = `waze://?q=${encodeURIComponent(location)}`;
+                                            const wazeWebUrl = `https://waze.com/ul?q=${encodeURIComponent(location)}`;
+
+                                            if (window.iOSNative?.openExternalURL) {
+                                                window.iOSNative.openExternalURL(wazeUrl);
+                                            } else {
+                                                window.open(wazeWebUrl, '_blank');
+                                            }
                                         }}
                                         style={{
                                             position: 'absolute',
@@ -650,115 +654,6 @@ const MyReservations: React.FC<MyReservationsProps> = ({ onRequestSwitchTab }) =
                     </motion.div>
                 </div>
             )}
-
-            {/* Navigation Modal */}
-            <AnimatePresence>
-                {navOptions && (
-                    <div
-                        onClick={() => setNavOptions(null)}
-                        style={{ position: 'fixed', inset: 0, zIndex: 3000, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)' }}
-                    >
-                        <motion.div
-                            initial={{ scale: 0.9, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            exit={{ scale: 0.9, opacity: 0 }}
-                            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                            onClick={(e: React.MouseEvent) => e.stopPropagation()}
-                            style={{
-                                width: '90%',
-                                maxWidth: '400px',
-                                background: 'rgba(15, 30, 15, 0.98)',
-                                borderRadius: '32px',
-                                padding: '30px 24px',
-                                border: '1px solid rgba(255,255,255,0.1)',
-                                boxShadow: '0 20px 60px rgba(0,0,0,0.5)'
-                            }}
-                        >
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px' }}>
-                                <div>
-                                    <h3 style={{ fontSize: '20px', fontWeight: '900', color: 'white' }}>¿Cómo quieres <span style={{ color: 'var(--secondary)' }}>llegar</span>?</h3>
-                                    <p style={{ fontSize: '12px', color: 'var(--text-dim)', marginTop: '2px' }}>{navOptions.name}</p>
-                                </div>
-                                <button onClick={() => setNavOptions(null)} style={{ background: 'rgba(255,255,255,0.05)', border: 'none', borderRadius: '50%', padding: '8px', color: 'white', cursor: 'pointer' }}>
-                                    <X size={20} />
-                                </button>
-                            </div>
-
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                                <button
-                                    onClick={() => {
-                                        const mapsUrl = `https://maps.apple.com/?q=${encodeURIComponent(navOptions.location)}`;
-                                        const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(navOptions.location)}`;
-
-                                        if (window.iOSNative?.openExternalURL) {
-                                            window.iOSNative.openExternalURL(mapsUrl);
-                                        } else {
-                                            window.open(googleMapsUrl, '_blank');
-                                        }
-                                        setNavOptions(null);
-                                    }}
-                                    style={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'space-between',
-                                        padding: '18px 24px',
-                                        background: 'rgba(255,255,255,0.05)',
-                                        borderRadius: '20px',
-                                        border: '1px solid rgba(255,255,255,0.1)',
-                                        color: 'white',
-                                        fontWeight: '700',
-                                        fontSize: '15px',
-                                        cursor: 'pointer'
-                                    }}
-                                >
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                        <div style={{ width: '40px', height: '40px', background: 'white', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                            <img src="https://upload.wikimedia.org/wikipedia/commons/3/39/Google_Maps_icon_%282020%29.svg" style={{ width: '24px' }} alt="Google Maps" />
-                                        </div>
-                                        Google Maps
-                                    </div>
-                                    <ExternalLink size={18} opacity={0.5} />
-                                </button>
-
-                                <button
-                                    onClick={() => {
-                                        const wazeUrl = `waze://?q=${encodeURIComponent(navOptions.location)}`;
-                                        const wazeWebUrl = `https://waze.com/ul?q=${encodeURIComponent(navOptions.location)}`;
-
-                                        if (window.iOSNative?.openExternalURL) {
-                                            window.iOSNative.openExternalURL(wazeUrl);
-                                        } else {
-                                            window.open(wazeWebUrl, '_blank');
-                                        }
-                                        setNavOptions(null);
-                                    }}
-                                    style={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'space-between',
-                                        padding: '18px 24px',
-                                        background: 'rgba(255,255,255,0.05)',
-                                        borderRadius: '20px',
-                                        border: '1px solid rgba(255,255,255,0.1)',
-                                        color: 'white',
-                                        fontWeight: '700',
-                                        fontSize: '15px',
-                                        cursor: 'pointer'
-                                    }}
-                                >
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                        <div style={{ width: '40px', height: '40px', background: 'white', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                            <img src="/images/waze.png" style={{ width: '24px' }} alt="Waze" />
-                                        </div>
-                                        Waze
-                                    </div>
-                                    <ExternalLink size={18} opacity={0.5} />
-                                </button>
-                            </div>
-                        </motion.div>
-                    </div>
-                )}
-            </AnimatePresence>
         </AnimatePresence>
     );
 
