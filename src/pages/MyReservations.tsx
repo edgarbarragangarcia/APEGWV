@@ -216,8 +216,8 @@ const MyReservations: React.FC<MyReservationsProps> = ({ onRequestSwitchTab }) =
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             const location = (res as any).golf_courses?.address || (res as any).golf_courses?.location || 'Bogotá, COL';
-                                            const wazeUrl = `waze://?q=${encodeURIComponent(location)}`;
-                                            const wazeWebUrl = `https://waze.com/ul?q=${encodeURIComponent(location)}`;
+                                            const wazeUrl = `waze://?q=${encodeURIComponent(location)}&navigate=yes`;
+                                            const wazeWebUrl = `https://waze.com/ul?q=${encodeURIComponent(location)}&navigate=yes`;
 
                                             if (window.iOSNative?.openExternalURL) {
                                                 window.iOSNative.openExternalURL(wazeUrl);
