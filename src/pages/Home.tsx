@@ -913,7 +913,7 @@ const Home: React.FC = () => {
                             }}>
                                 <div style={{
                                     position: 'relative',
-                                    height: '50vh',
+                                    height: '60vh',
                                     width: '100%',
                                     flexShrink: 0,
                                     background: 'linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%)',
@@ -1120,8 +1120,9 @@ const Home: React.FC = () => {
                                     {/* Close Button Overlay */}
                                     <div style={{
                                         position: 'absolute',
-                                        top: '20px',
-                                        left: '20px',
+                                        top: '50%',
+                                        left: '15px',
+                                        transform: 'translateY(-50%)',
                                         zIndex: 20
                                     }}>
                                         <button
