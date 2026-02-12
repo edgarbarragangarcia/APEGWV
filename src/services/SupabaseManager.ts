@@ -30,6 +30,7 @@ export interface Product {
     is_negotiable?: boolean | null;
     brand?: string | null;
     sizes_inventory?: { size: string; quantity: number }[] | null;
+    images?: string[] | null;
     negotiating_buyer_id?: string | null;
     negotiation_expires_at?: string | null;
 }

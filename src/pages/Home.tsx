@@ -36,6 +36,23 @@ const Home: React.FC = () => {
     const [selectedSize, setSelectedSize] = React.useState<string | null>(null);
     const [myOffers, setMyOffers] = React.useState<any[]>([]);
     const { likedProducts, toggleLike } = useLikes();
+    const [currentImageIndex, setCurrentImageIndex] = React.useState(0);
+
+    const productImages = React.useMemo(() => {
+        if (!selectedProduct) return [];
+        const imgs = [];
+        if (selectedProduct.image_url) imgs.push(selectedProduct.image_url);
+        if (selectedProduct.images && Array.isArray(selectedProduct.images)) {
+            const additionalImgs = selectedProduct.images.filter((img: string) => img !== selectedProduct.image_url);
+            imgs.push(...additionalImgs);
+        }
+        return imgs;
+    }, [selectedProduct]);
+
+    // Reset index when product changes
+    useEffect(() => {
+        setCurrentImageIndex(0);
+    }, [selectedProduct]);
 
 
     // Fetch profile and initial data
@@ -933,26 +950,74 @@ const Home: React.FC = () => {
                                             background: 'var(--primary-light)'
                                         }}
                                     >
-                                        <motion.img
-                                            src={optimizeImage(selectedProduct.image_url, { width: 800, height: 1000 })}
-                                            style={{
-                                                width: '100%',
-                                                height: '100%',
-                                                objectFit: 'contain',
-                                            }}
-                                            alt={selectedProduct.name}
-                                            onError={(e) => {
-                                                const target = e.target as HTMLImageElement;
-                                                target.src = 'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?auto=format&fit=crop&q=80&w=800';
-                                            }}
-                                        />
+                                        <AnimatePresence initial={false} mode="wait">
+                                            <motion.img
+                                                key={currentImageIndex}
+                                                src={optimizeImage(productImages[currentImageIndex] || selectedProduct.image_url, { width: 800, height: 1000 })}
+                                                initial={{ opacity: 0, x: 20 }}
+                                                animate={{ opacity: 1, x: 0 }}
+                                                exit={{ opacity: 0, x: -20 }}
+                                                transition={{ duration: 0.3 }}
+                                                drag="x"
+                                                dragConstraints={{ left: 0, right: 0 }}
+                                                onDragEnd={(_, info) => {
+                                                    if (info.offset.x < -50 && currentImageIndex < productImages.length - 1) {
+                                                        setCurrentImageIndex(prev => prev + 1);
+                                                    } else if (info.offset.x > 50 && currentImageIndex > 0) {
+                                                        setCurrentImageIndex(prev => prev - 1);
+                                                    }
+                                                }}
+                                                style={{
+                                                    width: '100%',
+                                                    height: '100%',
+                                                    objectFit: 'contain',
+                                                    touchAction: 'none'
+                                                }}
+                                                alt={`${selectedProduct.name} - ${currentImageIndex + 1}`}
+                                                onError={(e) => {
+                                                    const target = e.target as HTMLImageElement;
+                                                    target.src = 'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?auto=format&fit=crop&q=80&w=800';
+                                                }}
+                                            />
+                                        </AnimatePresence>
+
+                                        {/* Pagination Dots */}
+                                        {productImages.length > 1 && (
+                                            <div style={{
+                                                position: 'absolute',
+                                                bottom: '15px',
+                                                left: '50%',
+                                                transform: 'translateX(-50%)',
+                                                display: 'flex',
+                                                gap: '6px',
+                                                zIndex: 10,
+                                                padding: '6px 10px',
+                                                borderRadius: '20px',
+                                                background: 'rgba(0,0,0,0.2)',
+                                                backdropFilter: 'blur(5px)'
+                                            }}>
+                                                {productImages.map((_, idx) => (
+                                                    <div
+                                                        key={idx}
+                                                        style={{
+                                                            width: idx === currentImageIndex ? '16px' : '6px',
+                                                            height: '6px',
+                                                            borderRadius: '3px',
+                                                            background: idx === currentImageIndex ? 'var(--secondary)' : 'rgba(255,255,255,0.4)',
+                                                            transition: 'all 0.3s ease'
+                                                        }}
+                                                    />
+                                                ))}
+                                            </div>
+                                        )}
 
                                         {/* Dynamic Gradient Overlay */}
                                         <div style={{
                                             position: 'absolute',
                                             inset: 0,
-                                            background: 'linear-gradient(to top, rgba(0,0,0,0.4) 0%, transparent 40%)',
-                                            zIndex: 2
+                                            background: 'linear-gradient(to top, rgba(0,0,0,0.3) 0%, transparent 40%)',
+                                            zIndex: 2,
+                                            pointerEvents: 'none'
                                         }} />
 
                                         {/* Heart Button Overlay */}
