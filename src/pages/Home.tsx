@@ -781,9 +781,10 @@ const Home: React.FC = () => {
                                 position: 'fixed',
                                 inset: 0,
                                 zIndex: 2000,
-                                background: 'black'
+                                background: 'var(--primary)'
                             }}
                         >
+                            <PageHero opacity={0.4} />
                             <div style={{
                                 position: 'relative',
                                 width: '100%',
@@ -801,7 +802,7 @@ const Home: React.FC = () => {
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
-                                    padding: '60px 20px 30px 20px',
+                                    padding: '100px 20px 30px 20px',
                                     overflow: 'hidden'
                                 }}>
                                     {/* Ambient Glow Background */}
@@ -822,7 +823,7 @@ const Home: React.FC = () => {
                                             position: 'relative',
                                             width: '100%',
                                             height: '100%',
-                                            maxWidth: '350px',
+                                            maxWidth: '400px',
                                             borderRadius: '32px',
                                             overflow: 'hidden',
                                             boxShadow: '0 20px 50px rgba(0,0,0,0.5)',

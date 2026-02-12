@@ -335,7 +335,7 @@ button:active {
 .modern-auth-bg {
   position: fixed;
   inset: 0;
-  background: #050505;
+  background: var(--primary);
   z-index: -2;
   overflow: hidden;
 }

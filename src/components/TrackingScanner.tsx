@@ -154,7 +154,7 @@ const TrackingScanner: React.FC<TrackingScannerProps> = ({ onScanComplete, onClo
     // Moved complex inline object styles to constants for readability
     const overlayStyle: React.CSSProperties = {
         position: 'fixed', inset: 0, zIndex: 2000,
-        background: '#062216', display: 'flex', flexDirection: 'column'
+        background: 'var(--primary)', display: 'flex', flexDirection: 'column'
     };
 
     const headerStyle: React.CSSProperties = {

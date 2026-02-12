@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../services/SupabaseManager';
 import { Mail, Lock, User, Loader2, ArrowRight, Phone, Award, Hash, Trophy, Activity, Zap, Users } from 'lucide-react';
-
+import PageHero from '../components/PageHero';
 
 const Auth: React.FC = () => {
     const [isLogin, setIsLogin] = useState(true);
@@ -34,6 +34,7 @@ const Auth: React.FC = () => {
                 const { error } = await supabase.auth.signInWithPassword({
                     email: formData.email,
                     password: formData.password,
+                    // auth: { persistSession: true }
                 });
                 if (error) throw error;
             } else {
@@ -72,6 +73,7 @@ const Auth: React.FC = () => {
             fontFamily: '"Outfit", sans-serif',
             overflow: 'hidden'
         }}>
+            <PageHero />
             {/* Cinematic Video Background */}
             {/* Modern Animated Background */}
             <div className="modern-auth-bg">
