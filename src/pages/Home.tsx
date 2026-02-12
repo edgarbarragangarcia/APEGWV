@@ -857,11 +857,11 @@ const Home: React.FC = () => {
                                             zIndex: 2
                                         }} />
 
-                                        {/* Heart Button INSIDE the photo container */}
+                                        {/* Heart Button Overlay */}
                                         <div style={{
                                             position: 'absolute',
-                                            top: '15px',
-                                            right: '15px',
+                                            top: '20px',
+                                            right: '20px',
                                             zIndex: 10
                                         }}>
                                             <motion.button
@@ -885,6 +885,25 @@ const Home: React.FC = () => {
                                                     fill={likedProducts.has(selectedProduct.id) ? '#ef4444' : 'none'}
                                                 />
                                             </motion.button>
+                                        </div>
+
+                                        {/* Price and Condition Overlay */}
+                                        <div style={{
+                                            position: 'absolute',
+                                            bottom: '25px',
+                                            right: '20px',
+                                            zIndex: 10,
+                                            textAlign: 'right',
+                                            textShadow: '0 2px 10px rgba(0,0,0,0.5)'
+                                        }}>
+                                            <p style={{ fontSize: '32px', fontWeight: '900', color: 'var(--secondary)', margin: 0, lineHeight: 1 }}>
+                                                $ {new Intl.NumberFormat('es-CO').format(selectedProduct.price)}
+                                            </p>
+                                            {selectedProduct.condition && (
+                                                <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.7)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                                                    Estado: {selectedProduct.condition}
+                                                </span>
+                                            )}
                                         </div>
                                     </motion.div>
 
@@ -940,47 +959,35 @@ const Home: React.FC = () => {
                                     }} />
 
                                     <div style={{ marginBottom: '20px' }}>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
-                                            <div style={{ flex: 1 }}>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                                        <div style={{ marginBottom: '12px' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                                                <span style={{
+                                                    background: 'rgba(163, 230, 53, 0.12)',
+                                                    color: 'var(--secondary)',
+                                                    padding: '4px 10px',
+                                                    borderRadius: '8px',
+                                                    fontSize: '11px',
+                                                    fontWeight: '900',
+                                                    textTransform: 'uppercase',
+                                                    letterSpacing: '0.5px'
+                                                }}>
+                                                    {selectedProduct.category}
+                                                </span>
+                                                {selectedProduct.brand && (
                                                     <span style={{
-                                                        background: 'rgba(163, 230, 53, 0.12)',
-                                                        color: 'var(--secondary)',
-                                                        padding: '4px 10px',
-                                                        borderRadius: '8px',
                                                         fontSize: '11px',
-                                                        fontWeight: '900',
+                                                        fontWeight: '700',
+                                                        color: 'rgba(255,255,255,0.4)',
                                                         textTransform: 'uppercase',
                                                         letterSpacing: '0.5px'
                                                     }}>
-                                                        {selectedProduct.category}
-                                                    </span>
-                                                    {selectedProduct.brand && (
-                                                        <span style={{
-                                                            fontSize: '11px',
-                                                            fontWeight: '700',
-                                                            color: 'rgba(255,255,255,0.4)',
-                                                            textTransform: 'uppercase',
-                                                            letterSpacing: '0.5px'
-                                                        }}>
-                                                            • {selectedProduct.brand}
-                                                        </span>
-                                                    )}
-                                                </div>
-                                                <h2 style={{ fontSize: '28px', fontWeight: '900', color: 'white', lineHeight: '1.1', marginBottom: '8px' }}>
-                                                    {selectedProduct.name}
-                                                </h2>
-                                            </div>
-                                            <div style={{ textAlign: 'right' }}>
-                                                <p style={{ fontSize: '26px', fontWeight: '900', color: 'var(--secondary)', margin: 0 }}>
-                                                    $ {new Intl.NumberFormat('es-CO').format(selectedProduct.price)}
-                                                </p>
-                                                {selectedProduct.condition && (
-                                                    <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontWeight: '700' }}>
-                                                        Estado: {selectedProduct.condition}
+                                                        • {selectedProduct.brand}
                                                     </span>
                                                 )}
                                             </div>
+                                            <h2 style={{ fontSize: '28px', fontWeight: '900', color: 'white', lineHeight: '1.1', marginBottom: '8px' }}>
+                                                {selectedProduct.name}
+                                            </h2>
                                         </div>
                                     </div>
 
