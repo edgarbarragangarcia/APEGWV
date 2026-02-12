@@ -920,7 +920,7 @@ const Home: React.FC = () => {
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
-                                    padding: 'calc(var(--header-height) + 20px) 20px 40px 20px',
+                                    padding: 'calc(var(--header-height) + 10px) 12px 30px 12px',
                                     overflow: 'hidden'
                                 }}>
                                     {/* Ambient Glow Background */}
@@ -933,7 +933,6 @@ const Home: React.FC = () => {
                                         filter: 'blur(40px)'
                                     }} />
 
-                                    {/* The Image Container */}
                                     <motion.div
                                         initial={{ opacity: 0, scale: 0.9, y: 20 }}
                                         animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -941,7 +940,6 @@ const Home: React.FC = () => {
                                             position: 'relative',
                                             width: '100%',
                                             height: '100%',
-                                            maxWidth: '400px',
                                             borderRadius: '32px',
                                             overflow: 'hidden',
                                             boxShadow: '0 20px 50px rgba(0,0,0,0.5)',
@@ -971,7 +969,7 @@ const Home: React.FC = () => {
                                                     style={{
                                                         width: '100%',
                                                         height: '100%',
-                                                        objectFit: 'contain',
+                                                        objectFit: 'cover',
                                                         touchAction: 'none'
                                                     }}
                                                     alt={`${selectedProduct.name} - ${currentImageIndex + 1}`}
