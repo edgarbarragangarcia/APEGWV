@@ -977,7 +977,7 @@ const MyStore: React.FC = () => {
                         )}
 
                         {showForm ? (
-                            <form onSubmit={handleSubmit} className="glass" style={{ padding: '25px', marginBottom: '30px' }}>
+                            <form onSubmit={handleSubmit} className="glass" style={{ padding: '15px', marginBottom: '30px' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', marginBottom: '20px', gap: '15px' }}>
                                     <button
                                         type="button"
@@ -1250,7 +1250,7 @@ const MyStore: React.FC = () => {
                                                                 size_shoes_cm: converted.cm
                                                             });
                                                         }}
-                                                        style={{ width: '100%', background: 'rgba(163, 230, 53, 0.1)', border: '1px solid var(--secondary)', borderRadius: '10px', padding: '10px', color: 'white', fontSize: '14px', fontWeight: '700' }}
+                                                        style={{ width: '100%', background: 'rgba(163, 230, 53, 0.1)', border: '1px solid var(--secondary)', borderRadius: '10px', padding: '10px', color: 'white', fontSize: '14px', fontWeight: '700', boxSizing: 'border-box' }}
                                                     />
                                                 </div>
                                                 <div>
@@ -1259,7 +1259,7 @@ const MyStore: React.FC = () => {
                                                         placeholder="Ej: 9.5"
                                                         value={formData.size_shoes_us}
                                                         onChange={e => setFormData({ ...formData, size_shoes_us: e.target.value })}
-                                                        style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '10px', padding: '10px', color: 'white', fontSize: '14px' }}
+                                                        style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '10px', padding: '10px', color: 'white', fontSize: '14px', boxSizing: 'border-box' }}
                                                     />
                                                 </div>
                                                 <div>
@@ -1268,7 +1268,7 @@ const MyStore: React.FC = () => {
                                                         placeholder="Ej: 42"
                                                         value={formData.size_shoes_eu}
                                                         onChange={e => setFormData({ ...formData, size_shoes_eu: e.target.value })}
-                                                        style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '10px', padding: '10px', color: 'white', fontSize: '14px' }}
+                                                        style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '10px', padding: '10px', color: 'white', fontSize: '14px', boxSizing: 'border-box' }}
                                                     />
                                                 </div>
                                                 <div>
@@ -1277,7 +1277,7 @@ const MyStore: React.FC = () => {
                                                         placeholder="Ej: 27"
                                                         value={formData.size_shoes_cm}
                                                         onChange={e => setFormData({ ...formData, size_shoes_cm: e.target.value })}
-                                                        style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '10px', padding: '10px', color: 'white', fontSize: '14px' }}
+                                                        style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '10px', padding: '10px', color: 'white', fontSize: '14px', boxSizing: 'border-box' }}
                                                     />
                                                 </div>
                                             </div>
@@ -2089,7 +2089,7 @@ const MyStore: React.FC = () => {
                                                 placeholder="GOLF2024"
                                                 value={couponFormData.code}
                                                 onChange={e => setCouponFormData({ ...couponFormData, code: e.target.value.toUpperCase() })}
-                                                style={{ width: '100%', padding: '12px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }}
+                                                style={{ width: '100%', padding: '12px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', boxSizing: 'border-box' }}
                                             />
                                         </div>
                                         <div>
@@ -2112,7 +2112,7 @@ const MyStore: React.FC = () => {
                                                 placeholder={couponFormData.discount_type === 'percentage' ? '10' : '50000'}
                                                 value={couponFormData.discount_value}
                                                 onChange={e => setCouponFormData({ ...couponFormData, discount_value: e.target.value })}
-                                                style={{ width: '100%', padding: '12px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }}
+                                                style={{ width: '100%', padding: '12px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', boxSizing: 'border-box' }}
                                             />
                                         </div>
                                         <div>
@@ -2122,7 +2122,7 @@ const MyStore: React.FC = () => {
                                                 placeholder="Sin límite"
                                                 value={couponFormData.usage_limit}
                                                 onChange={e => setCouponFormData({ ...couponFormData, usage_limit: e.target.value })}
-                                                style={{ width: '100%', padding: '12px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }}
+                                                style={{ width: '100%', padding: '12px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', boxSizing: 'border-box' }}
                                             />
                                         </div>
                                     </div>
@@ -2453,6 +2453,7 @@ const MyStore: React.FC = () => {
                     </div>
                 )}
             </div>
+
             {/* Custom Confirmation Modal */}
             {
                 deleteModal.isOpen && (
@@ -2537,6 +2538,7 @@ const MyStore: React.FC = () => {
                     </div>
                 )
             }
+
 
             {/* Modal de Contraoferta */}
             {
@@ -2675,6 +2677,7 @@ const MyStore: React.FC = () => {
                 )
             }
 
+
             {
                 showScanner && (
                     <TrackingScanner
@@ -2727,7 +2730,7 @@ const MyStore: React.FC = () => {
                     </div>
                 )}
             </AnimatePresence>
-        </div>
+        </div >
 
 
 
