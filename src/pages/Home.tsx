@@ -769,7 +769,8 @@ const Home: React.FC = () => {
                                 </div>
                             </div>
                         )
-                    )}
+                    )
+                    }
                 </div>
 
 
@@ -1086,6 +1087,47 @@ const Home: React.FC = () => {
                                                 {selectedProduct.name}
                                             </h2>
                                         </div>
+
+                                        {/* Sizes Inventory Selection - Moved up as requested */}
+                                        {selectedProduct.sizes_inventory && selectedProduct.sizes_inventory.length > 0 && (
+                                            <div style={{ marginBottom: '25px' }}>
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                                                    <h4 style={{ color: 'white', fontSize: '14px', fontWeight: '800', margin: 0 }}>Talla Disponible</h4>
+                                                    {selectedSize && (
+                                                        <span style={{ fontSize: '11px', color: 'var(--secondary)', fontWeight: '700' }}>
+                                                            {selectedProduct.sizes_inventory?.find((s: { size: string; quantity: number }) => s.size === selectedSize)?.quantity} disponibles
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                                                    {selectedProduct.sizes_inventory.map((s: { size: string; quantity: number }) => (
+                                                        <button
+                                                            key={s.size}
+                                                            disabled={s.quantity <= 0}
+                                                            onClick={() => setSelectedSize(s.size)}
+                                                            style={{
+                                                                minWidth: '50px',
+                                                                height: '46px',
+                                                                borderRadius: '12px',
+                                                                border: '1px solid ' + (selectedSize === s.size ? 'var(--secondary)' : 'rgba(255,255,255,0.1)'),
+                                                                background: selectedSize === s.size ? 'var(--secondary)' : 'rgba(255,255,255,0.05)',
+                                                                color: selectedSize === s.size ? 'var(--primary)' : (s.quantity <= 0 ? 'rgba(255,255,255,0.2)' : 'white'),
+                                                                fontSize: '14px',
+                                                                fontWeight: '800',
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                justifyContent: 'center',
+                                                                transition: 'all 0.2s ease',
+                                                                opacity: s.quantity <= 0 ? 0.5 : 1,
+                                                                cursor: s.quantity <= 0 ? 'not-allowed' : 'pointer'
+                                                            }}
+                                                        >
+                                                            {s.size}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
 
                                     {selectedProduct.description && (
@@ -1201,46 +1243,6 @@ const Home: React.FC = () => {
                                         </motion.button>
                                     </div>
 
-                                    {/* Sizes Inventory Selection - Independent row if exists */}
-                                    {selectedProduct.sizes_inventory && selectedProduct.sizes_inventory.length > 0 && (
-                                        <div style={{ marginBottom: '25px' }}>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                                                <h4 style={{ color: 'white', fontSize: '14px', fontWeight: '800', margin: 0 }}>Talla Disponible</h4>
-                                                {selectedSize && (
-                                                    <span style={{ fontSize: '11px', color: 'var(--secondary)', fontWeight: '700' }}>
-                                                        {selectedProduct.sizes_inventory?.find((s: { size: string; quantity: number }) => s.size === selectedSize)?.quantity} disponibles
-                                                    </span>
-                                                )}
-                                            </div>
-                                            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                                                {selectedProduct.sizes_inventory.map((s: { size: string; quantity: number }) => (
-                                                    <button
-                                                        key={s.size}
-                                                        disabled={s.quantity <= 0}
-                                                        onClick={() => setSelectedSize(s.size)}
-                                                        style={{
-                                                            minWidth: '50px',
-                                                            height: '46px',
-                                                            borderRadius: '12px',
-                                                            border: '1px solid ' + (selectedSize === s.size ? 'var(--secondary)' : 'rgba(255,255,255,0.1)'),
-                                                            background: selectedSize === s.size ? 'var(--secondary)' : 'rgba(255,255,255,0.05)',
-                                                            color: selectedSize === s.size ? 'var(--primary)' : (s.quantity <= 0 ? 'rgba(255,255,255,0.2)' : 'white'),
-                                                            fontSize: '14px',
-                                                            fontWeight: '800',
-                                                            display: 'flex',
-                                                            alignItems: 'center',
-                                                            justifyContent: 'center',
-                                                            transition: 'all 0.2s ease',
-                                                            opacity: s.quantity <= 0 ? 0.5 : 1,
-                                                            cursor: s.quantity <= 0 ? 'not-allowed' : 'pointer'
-                                                        }}
-                                                    >
-                                                        {s.size}
-                                                    </button>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
 
                                 </div>
 
