@@ -1,11 +1,39 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '../types/database.types';
 
-// Reemplazar estas credenciales con las de tu proyecto de Supabase
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://your-project-url.supabase.co';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'your-anon-key';
+const rawUrl = (import.meta.env.VITE_SUPABASE_URL || '').trim();
+const supabaseAnonKey = (import.meta.env.VITE_SUPABASE_ANON_KEY || '').trim();
+
+// Usar el PROXY para evitar bloqueos de CORS y 522 en local
+const supabaseUrl = import.meta.env.DEV ? '/supabase-proxy' : rawUrl;
+
+console.log('--- SUPABASE PROXY ACTIVE ---');
+console.log('Using URL:', supabaseUrl);
 
 export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
+
+/**
+ * Fallback login using direct fetch to bypass library-level browser blocks.
+ */
+export const manualLogin = async (email: string, password: string) => {
+    console.log('--- Intentando BYPASS DIRECTO con fetch ---');
+    const response = await fetch(`${supabaseUrl}/auth/v1/token?grant_type=password`, {
+        method: 'POST',
+        headers: {
+            'apikey': supabaseAnonKey,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email, password })
+    });
+
+    if (!response.ok) {
+        const text = await response.text();
+        console.error('Bypass response text:', text);
+        throw new Error(`Servidor respondió con status ${response.status}`);
+    }
+
+    return await response.json();
+};
 
 // Interfaces para los datos de la aplicación
 export interface UserProfile {

@@ -29,32 +29,61 @@ const Auth: React.FC = () => {
         setLoading(true);
         setError(null);
 
-        try {
-            if (isLogin) {
-                const { error } = await supabase.auth.signInWithPassword({
-                    email: formData.email,
-                    password: formData.password,
-                    // auth: { persistSession: true }
-                });
-                if (error) throw error;
-            } else {
-                const { error } = await supabase.auth.signUp({
-                    email: formData.email,
-                    password: formData.password,
-                    options: {
-                        data: {
-                            full_name: formData.fullName,
-                            handicap: formData.handicap,
-                            federation_code: formData.federationCode,
-                            phone: formData.phone
-                        }
+        // Añadir un timeout manual porque Supabase a veces se queda 'pending' en el navegador del usuario
+        const authPromise = isLogin
+            ? supabase.auth.signInWithPassword({
+                email: formData.email,
+                password: formData.password,
+            })
+            : supabase.auth.signUp({
+                email: formData.email,
+                password: formData.password,
+                options: {
+                    data: {
+                        full_name: formData.fullName,
+                        handicap: formData.handicap,
+                        federation_code: formData.federationCode,
+                        phone: formData.phone
                     }
-                });
-                if (error) throw error;
+                }
+            });
+
+        const timeoutPromise = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('La conexión está tardando demasiado. Revisa tu conexión o extensiones del navegador.')), 10000)
+        );
+
+        try {
+            const { error }: any = await Promise.race([authPromise, timeoutPromise]);
+            if (error) throw error;
+            if (!isLogin && !error) {
                 setError('¡Registro exitoso! Por favor revisa tu correo para confirmar.');
             }
         } catch (err: any) {
-            setError(err.message || 'Ocurrió un error inesperado');
+            console.error('Auth Error:', err);
+
+            // BYPASS LOGIC: Si es un timeout o error de conexión, intentar login directo
+            if (isLogin && (err.message.includes('tardando') || err.message.includes('timeout') || err.message.includes('bloqueadas'))) {
+                console.log('--- INICIANDO BYPASS DE SEGURIDAD (DIRECT FETCH) ---');
+                try {
+                    const { manualLogin } = await import('../services/SupabaseManager');
+                    const authData = await manualLogin(formData.email, formData.password);
+
+                    if (authData.access_token) {
+                        console.log('--- BYPASS EXITOSO ---');
+                        const { error: sessionError } = await supabase.auth.setSession({
+                            access_token: authData.access_token,
+                            refresh_token: authData.refresh_token
+                        });
+                        if (sessionError) throw sessionError;
+                        return; // Éxito, el AuthProvider detectará el cambio
+                    }
+                } catch (bypassErr: any) {
+                    console.error('Bypass failed:', bypassErr);
+                    setError(`Error crítico: ${bypassErr.message}. Tu navegador bloquea toda conexión a la base de datos.`);
+                }
+            } else {
+                setError(err.message || 'Error de conexión. Las peticiones están siendo bloqueadas por tu navegador.');
+            }
         } finally {
             setLoading(false);
         }
@@ -350,7 +379,7 @@ const Auth: React.FC = () => {
 
                         <div style={{ width: '100%', height: '1px', background: 'rgba(255,255,255,0.1)' }} />
 
-                        <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', width: '100%', gap: '8px' }}>
                             <motion.button
                                 whileHover={{ scale: 1.01 }}
                                 whileTap={{ scale: 0.99 }}
@@ -380,6 +409,28 @@ const Auth: React.FC = () => {
                                 </svg>
                                 Google Login
                             </motion.button>
+
+                            <button
+                                onClick={() => {
+                                    localStorage.clear();
+                                    sessionStorage.clear();
+                                    window.location.reload();
+                                }}
+                                style={{
+                                    width: '100%',
+                                    padding: '8px',
+                                    background: 'none',
+                                    color: 'rgba(255,255,255,0.3)',
+                                    borderRadius: '10px',
+                                    border: '1px dashed rgba(255, 255, 255, 0.1)',
+                                    fontSize: '10px',
+                                    fontWeight: '600',
+                                    cursor: 'pointer',
+                                    marginTop: '8px'
+                                }}
+                            >
+                                RECOBRAR Y REFRESCAR APP
+                            </button>
                         </div>
                     </div>
                 </div>
