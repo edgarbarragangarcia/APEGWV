@@ -896,7 +896,7 @@ const Home: React.FC = () => {
                             }}>
                                 <div style={{
                                     position: 'relative',
-                                    height: '60vh',
+                                    height: '50vh',
                                     width: '100%',
                                     flexShrink: 0,
                                     background: 'linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%)',
@@ -938,7 +938,7 @@ const Home: React.FC = () => {
                                             style={{
                                                 width: '100%',
                                                 height: '100%',
-                                                objectFit: 'cover',
+                                                objectFit: 'contain',
                                             }}
                                             alt={selectedProduct.name}
                                             onError={(e) => {
