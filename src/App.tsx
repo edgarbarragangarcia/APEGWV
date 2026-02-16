@@ -105,15 +105,6 @@ const AppContent: React.FC = () => {
         justifyContent: 'center',
         gap: '20px'
       }}>
-        <img
-          src={apegLogo}
-          alt="APEG Logo"
-          style={{
-            width: '150px',
-            height: 'auto',
-            animation: 'pulse 2s infinite ease-in-out'
-          }}
-        />
         <div className="loader"></div>
         <style>{`
           @keyframes pulse {

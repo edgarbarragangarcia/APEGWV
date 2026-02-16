@@ -88,6 +88,7 @@ const MyStore: React.FC = () => {
     const [editingTrackingId, setEditingTrackingId] = useState<string | null>(null);
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [successMessage, setSuccessMessage] = useState({ title: '', message: '', type: 'success' as 'success' | 'error' });
+    const [searchTerm, setSearchTerm] = useState('');
 
 
 
@@ -116,6 +117,10 @@ const MyStore: React.FC = () => {
     });
 
     const [brandsList, setBrandsList] = useState<string[]>([]);
+
+    useEffect(() => {
+        setSearchTerm('');
+    }, [activeTab]);
 
     const syncShoeSizes = (value: string, source: 'col' | 'us' | 'eu' | 'cm') => {
         const num = parseFloat(value);
@@ -1071,45 +1076,106 @@ const MyStore: React.FC = () => {
                             display: 'grid',
                             gridTemplateColumns: 'repeat(2, 1fr)',
                             gap: '12px',
-                            marginBottom: '20px'
+                            marginBottom: '25px'
                         }} className="animate-fade-up">
                             <div style={{
-                                background: 'rgba(255,255,255,0.03)',
-                                padding: '15px',
-                                borderRadius: '22px',
-                                border: '1px solid rgba(255,255,255,0.05)',
+                                background: 'linear-gradient(145deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%)',
+                                padding: '20px',
+                                borderRadius: '24px',
+                                border: '1px solid rgba(255,255,255,0.08)',
                                 display: 'flex',
                                 flexDirection: 'column',
-                                gap: '5px'
+                                gap: '8px',
+                                boxShadow: '0 8px 32px rgba(0,0,0,0.1)'
                             }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                    <div style={{ background: 'rgba(163, 230, 53, 0.1)', padding: '6px', borderRadius: '8px' }}>
-                                        <Package size={14} color="var(--secondary)" />
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                    <div style={{
+                                        background: 'rgba(163, 230, 53, 0.15)',
+                                        width: '32px',
+                                        height: '32px',
+                                        borderRadius: '10px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        border: '1px solid rgba(163, 230, 53, 0.2)'
+                                    }}>
+                                        <Package size={16} color="var(--secondary)" />
                                     </div>
-                                    <span style={{ fontSize: '11px', fontWeight: '800', color: 'var(--text-dim)', textTransform: 'uppercase' }}>PRODUCTOS</span>
+                                    <span style={{ fontSize: '12px', fontWeight: '800', color: 'rgba(255,255,255,0.5)', letterSpacing: '0.05em' }}>PRODUCTOS</span>
                                 </div>
-                                <span style={{ fontSize: '24px', fontWeight: '900', color: 'white', marginTop: '5px' }}>{products.length}</span>
+                                <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', marginTop: '4px' }}>
+                                    <span style={{ fontSize: '28px', fontWeight: '950', color: 'white', letterSpacing: '-1px' }}>{products.length}</span>
+                                    <span style={{ fontSize: '11px', fontWeight: '700', color: 'var(--secondary)', opacity: 0.8 }}>ACTIVOS</span>
+                                </div>
                             </div>
                             <div style={{
-                                background: 'rgba(255,255,255,0.03)',
-                                padding: '15px',
-                                borderRadius: '22px',
-                                border: '1px solid rgba(255,255,255,0.05)',
+                                background: 'linear-gradient(145deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%)',
+                                padding: '20px',
+                                borderRadius: '24px',
+                                border: '1px solid rgba(255,255,255,0.08)',
                                 display: 'flex',
                                 flexDirection: 'column',
-                                gap: '5px'
+                                gap: '8px',
+                                boxShadow: '0 8px 32px rgba(0,0,0,0.1)'
                             }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                    <div style={{ background: 'rgba(59, 130, 246, 0.1)', padding: '6px', borderRadius: '8px' }}>
-                                        <TrendingDown size={14} color="#60a5fa" />
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                    <div style={{
+                                        background: 'rgba(59, 130, 246, 0.15)',
+                                        width: '32px',
+                                        height: '32px',
+                                        borderRadius: '10px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        border: '1px solid rgba(59, 130, 246, 0.2)'
+                                    }}>
+                                        <TrendingDown size={16} color="#60a5fa" />
                                     </div>
-                                    <span style={{ fontSize: '11px', fontWeight: '800', color: 'var(--text-dim)', textTransform: 'uppercase' }}>VENTAS</span>
+                                    <span style={{ fontSize: '12px', fontWeight: '800', color: 'rgba(255,255,255,0.5)', letterSpacing: '0.05em' }}>VENTAS</span>
                                 </div>
-                                <span style={{ fontSize: '24px', fontWeight: '900', color: 'white', marginTop: '5px' }}>{orders.filter(o => o.status === 'Entregado').length}</span>
+                                <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', marginTop: '4px' }}>
+                                    <span style={{ fontSize: '28px', fontWeight: '950', color: 'white', letterSpacing: '-1px' }}>{orders.filter(o => o.status === 'Entregado').length}</span>
+                                    <span style={{ fontSize: '11px', fontWeight: '700', color: '#60a5fa', opacity: 0.8 }}>COMPLETADAS</span>
+                                </div>
                             </div>
                         </div>
 
                         <h2 style={{ fontSize: '20px', fontWeight: '900', marginBottom: '15px', letterSpacing: '-0.02em', color: 'white' }}>Gestión de Inventario</h2>
+
+                        {!showForm && products.length > 0 && (
+                            <div style={{ position: 'relative', marginBottom: '20px' }}>
+                                <input
+                                    type="text"
+                                    placeholder="Buscar producto..."
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    style={{
+                                        width: '100%',
+                                        background: 'rgba(255,255,255,0.04)',
+                                        border: '1px solid rgba(255,255,255,0.08)',
+                                        padding: '14px 14px 14px 45px',
+                                        borderRadius: '16px',
+                                        color: 'white',
+                                        fontSize: '14px',
+                                        fontWeight: '600',
+                                        boxSizing: 'border-box',
+                                        transition: 'all 0.3s ease',
+                                        outline: 'none'
+                                    }}
+                                />
+                                <div style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', opacity: 0.5 }}>
+                                    <Package size={18} color="white" />
+                                </div>
+                                {searchTerm && (
+                                    <button
+                                        onClick={() => setSearchTerm('')}
+                                        style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'rgba(255,255,255,0.1)', border: 'none', color: 'white', padding: '4px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                    >
+                                        <X size={12} />
+                                    </button>
+                                )}
+                            </div>
+                        )}
 
                         {!showForm && (
                             <button
@@ -1728,210 +1794,275 @@ const MyStore: React.FC = () => {
                                         </button>
                                     </div>
                                 ) : (
-                                    products.map(product => (
-                                        <div key={product.id} className="animate-fade-up">
-                                            <div
-                                                style={{
-                                                    position: 'relative',
-                                                    background: 'rgba(255,255,255,0.03)',
-                                                    borderRadius: '26px',
-                                                    border: '1px solid rgba(255,255,255,0.06)',
-                                                    overflow: 'hidden',
-                                                    boxShadow: '0 10px 30px rgba(0,0,0,0.2)'
-                                                }}
-                                            >
-                                                <div style={{ padding: '15px', display: 'flex', gap: '18px', alignItems: 'center' }}>
-                                                    <div style={{ position: 'relative', flexShrink: 0 }}>
-                                                        <div style={{
-                                                            width: '90px',
-                                                            height: '90px',
-                                                            borderRadius: '20px',
+                                    products.filter(p =>
+                                        p.name.toLowerCase().includes(searchTerm.toLowerCase())
+                                    ).length === 0 && searchTerm ? (
+                                        <div className="glass" style={{ padding: '40px 20px', textAlign: 'center', borderRadius: '30px' }}>
+                                            <Package size={32} color="var(--text-dim)" style={{ opacity: 0.3, marginBottom: '10px', margin: '0 auto' }} />
+                                            <p style={{ color: 'var(--text-dim)', fontSize: '14px' }}>No se encontraron productos que coincidan con tu búsqueda.</p>
+                                        </div>
+                                    ) : (
+                                        products
+                                            .filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()))
+                                            .map(product => (
+                                                <div key={product.id} className="animate-fade-up">
+                                                    <div
+                                                        style={{
+                                                            position: 'relative',
+                                                            background: 'rgba(255,255,255,0.03)',
+                                                            borderRadius: '26px',
+                                                            border: '1px solid rgba(255,255,255,0.06)',
                                                             overflow: 'hidden',
-                                                            background: 'var(--primary-light)',
-                                                            border: '1px solid rgba(255,255,255,0.1)'
-                                                        }}>
-                                                            <img
-                                                                src={optimizeImage(product.image_url, { width: 200, height: 200 })}
-                                                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                                                alt={product.name}
-                                                                onError={(e) => {
-                                                                    const target = e.target as HTMLImageElement;
-                                                                    target.src = 'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?auto=format&fit=crop&q=80&w=200';
-                                                                }}
-                                                            />
-                                                        </div>
-                                                        <div style={{
-                                                            position: 'absolute',
-                                                            bottom: '-6px',
-                                                            right: '-6px',
-                                                            background: product.status === 'active' ? 'var(--secondary)' : '#f59e0b',
-                                                            width: '28px',
-                                                            height: '28px',
-                                                            borderRadius: '50%',
-                                                            display: 'flex',
-                                                            alignItems: 'center',
-                                                            justifyContent: 'center',
-                                                            border: '3px solid #062216',
-                                                            boxShadow: '0 4px 10px rgba(0,0,0,0.4)'
-                                                        }}>
-                                                            {product.status === 'active' ? <CheckCircle2 size={14} color="var(--primary)" /> : <Package size={14} color="white" />}
-                                                        </div>
-                                                    </div>
-                                                    <div style={{ flex: 1, minWidth: 0 }}>
-                                                        <h3 style={{
-                                                            fontSize: '17px',
-                                                            fontWeight: '900',
-                                                            marginBottom: '5px',
-                                                            color: 'white',
-                                                            letterSpacing: '-0.3px',
-                                                            overflow: 'hidden',
-                                                            textOverflow: 'ellipsis',
-                                                            whiteSpace: 'nowrap'
-                                                        }}>{product.name}</h3>
-
-                                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-                                                            <div style={{ display: 'flex', alignItems: 'baseline', gap: '5px' }}>
-                                                                <span style={{ color: 'var(--secondary)', fontWeight: '900', fontSize: '20px' }}>
-                                                                    {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(product.price || 0)}
-                                                                </span>
-                                                            </div>
-                                                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(255,255,255,0.05)', padding: '4px 10px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                                                                <Truck size={12} color={parseFloat(product.shipping_cost?.toString() || '0') > 0 ? "#38bdf8" : "#22c55e"} />
-                                                                <span style={{ fontSize: '11px', fontWeight: '800', color: parseFloat(product.shipping_cost?.toString() || '0') > 0 ? "#38bdf8" : "#22c55e" }}>
-                                                                    {parseFloat(product.shipping_cost?.toString() || '0') > 0
-                                                                        ? `+ $${formatPrice(product.shipping_cost?.toString() || '0')}`
-                                                                        : 'ENVÍO GRATIS'}
-                                                                </span>
-                                                            </div>
-                                                        </div>
-
-                                                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                                                            <span style={{
-                                                                background: 'rgba(255,255,255,0.05)',
-                                                                padding: '4px 10px',
-                                                                borderRadius: '8px',
-                                                                fontSize: '10px',
-                                                                color: 'var(--text-dim)',
-                                                                fontWeight: '800',
-                                                                textTransform: 'uppercase',
-                                                                border: '1px solid rgba(255,255,255,0.05)'
-                                                            }}>
-                                                                Stock Total: {(product as any).stock_quantity || 0}
-                                                            </span>
-
-                                                            {/* Size Inventory Breakdown */}
-                                                            {Array.isArray((product as any).sizes_inventory) && (product as any).sizes_inventory.length > 0 && (
-                                                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '4px' }}>
-                                                                    {(product as any).sizes_inventory.map((inv: { size: string; quantity: number }, i: number) => (
-                                                                        <span key={i} style={{
-                                                                            background: inv.quantity > 0 ? 'rgba(163, 230, 53, 0.1)' : 'rgba(255, 255, 255, 0.05)',
-                                                                            padding: '2px 8px',
-                                                                            borderRadius: '6px',
-                                                                            fontSize: '10px',
-                                                                            color: inv.quantity > 0 ? 'var(--secondary)' : 'rgba(255,255,255,0.3)',
-                                                                            fontWeight: '900',
-                                                                            border: '1px solid ' + (inv.quantity > 0 ? 'rgba(163, 230, 53, 0.2)' : 'rgba(255,255,255,0.1)')
-                                                                        }}>
-                                                                            {inv.size}: {inv.quantity}
-                                                                        </span>
-                                                                    ))}
+                                                            boxShadow: '0 10px 30px rgba(0,0,0,0.2)'
+                                                        }}
+                                                    >
+                                                        <div style={{ padding: '15px', display: 'flex', gap: '18px', alignItems: 'center' }}>
+                                                            <div style={{ position: 'relative', flexShrink: 0 }}>
+                                                                <div style={{
+                                                                    width: '90px',
+                                                                    height: '90px',
+                                                                    borderRadius: '20px',
+                                                                    overflow: 'hidden',
+                                                                    background: 'var(--primary-light)',
+                                                                    border: '1px solid rgba(255,255,255,0.1)'
+                                                                }}>
+                                                                    <img
+                                                                        src={optimizeImage(product.image_url, { width: 200, height: 200 })}
+                                                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                                                        alt={product.name}
+                                                                        onError={(e) => {
+                                                                            const target = e.target as HTMLImageElement;
+                                                                            target.src = 'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?auto=format&fit=crop&q=80&w=200';
+                                                                        }}
+                                                                    />
                                                                 </div>
-                                                            )}
+                                                                <div style={{
+                                                                    position: 'absolute',
+                                                                    bottom: '-6px',
+                                                                    right: '-6px',
+                                                                    background: product.status === 'active' ? 'var(--secondary)' : '#f59e0b',
+                                                                    width: '28px',
+                                                                    height: '28px',
+                                                                    borderRadius: '50%',
+                                                                    display: 'flex',
+                                                                    alignItems: 'center',
+                                                                    justifyContent: 'center',
+                                                                    border: '3px solid #062216',
+                                                                    boxShadow: '0 4px 10px rgba(0,0,0,0.4)'
+                                                                }}>
+                                                                    {product.status === 'active' ? <CheckCircle2 size={14} color="var(--primary)" /> : <Package size={14} color="white" />}
+                                                                </div>
+                                                            </div>
+                                                            <div style={{ flex: 1, minWidth: 0 }}>
+                                                                <h3 style={{
+                                                                    fontSize: '17px',
+                                                                    fontWeight: '900',
+                                                                    marginBottom: '5px',
+                                                                    color: 'white',
+                                                                    letterSpacing: '-0.3px',
+                                                                    overflow: 'hidden',
+                                                                    textOverflow: 'ellipsis',
+                                                                    whiteSpace: 'nowrap'
+                                                                }}>{product.name}</h3>
 
-                                                            {/* Individual Shoe Size Columns (Fallback) */}
-                                                            {(!Array.isArray((product as any).sizes_inventory) || (product as any).sizes_inventory.length === 0) && (product as any).size_shoes_col && (
-                                                                <span style={{
-                                                                    background: 'rgba(163, 230, 53, 0.1)',
-                                                                    padding: '4px 10px',
-                                                                    borderRadius: '8px',
-                                                                    fontSize: '10px',
-                                                                    color: 'var(--secondary)',
-                                                                    fontWeight: '900',
-                                                                    border: '1px solid rgba(163, 230, 53, 0.2)'
-                                                                }}>
-                                                                    TALLA COL: {(product as any).size_shoes_col}
-                                                                </span>
-                                                            )}
-                                                            {(!Array.isArray((product as any).sizes_inventory) || (product as any).sizes_inventory.length === 0) && (product as any).size_clothing && (
-                                                                <span style={{
-                                                                    background: 'rgba(163, 230, 53, 0.1)',
-                                                                    padding: '4px 10px',
-                                                                    borderRadius: '8px',
-                                                                    fontSize: '10px',
-                                                                    color: 'var(--secondary)',
-                                                                    fontWeight: '900',
-                                                                    border: '1px solid rgba(163, 230, 53, 0.2)'
-                                                                }}>
-                                                                    TALLA: {(product as any).size_clothing}
-                                                                </span>
-                                                            )}
+                                                                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '12px' }}>
+                                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                                        <span style={{ color: 'var(--secondary)', fontWeight: '900', fontSize: '22px', letterSpacing: '-0.5px' }}>
+                                                                            {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(product.price || 0)}
+                                                                        </span>
+                                                                    </div>
+                                                                    <div style={{
+                                                                        display: 'inline-flex',
+                                                                        alignItems: 'center',
+                                                                        gap: '6px',
+                                                                        background: parseFloat(product.shipping_cost?.toString() || '0') > 0 ? 'rgba(56, 189, 248, 0.08)' : 'rgba(34, 197, 94, 0.08)',
+                                                                        padding: '4px 10px',
+                                                                        borderRadius: '8px',
+                                                                        border: '1px solid ' + (parseFloat(product.shipping_cost?.toString() || '0') > 0 ? 'rgba(56, 189, 248, 0.15)' : 'rgba(34, 197, 94, 0.15)'),
+                                                                        width: 'fit-content'
+                                                                    }}>
+                                                                        <Truck size={12} color={parseFloat(product.shipping_cost?.toString() || '0') > 0 ? "#38bdf8" : "#22c55e"} />
+                                                                        <span style={{
+                                                                            fontSize: '10px',
+                                                                            fontWeight: '800',
+                                                                            color: parseFloat(product.shipping_cost?.toString() || '0') > 0 ? "#38bdf8" : "#22c55e",
+                                                                            letterSpacing: '0.02em'
+                                                                        }}>
+                                                                            {parseFloat(product.shipping_cost?.toString() || '0') > 0
+                                                                                ? `+ $${formatPrice(product.shipping_cost?.toString() || '0')} ENVÍO`
+                                                                                : 'ENVÍO GRATIS'}
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+
+                                                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                                                                    <div style={{
+                                                                        background: 'rgba(255,255,255,0.04)',
+                                                                        padding: '6px 12px',
+                                                                        borderRadius: '10px',
+                                                                        fontSize: '11px',
+                                                                        color: 'white',
+                                                                        fontWeight: '700',
+                                                                        display: 'flex',
+                                                                        alignItems: 'center',
+                                                                        gap: '6px',
+                                                                        border: '1px solid rgba(255,255,255,0.06)'
+                                                                    }}>
+                                                                        <span style={{ color: 'var(--text-dim)', fontSize: '9px', fontWeight: '800' }}>STOCK:</span>
+                                                                        <span style={{ color: (product as any).stock_quantity > 0 ? 'var(--secondary)' : '#ef4444' }}>
+                                                                            {(product as any).stock_quantity || 0}
+                                                                        </span>
+                                                                    </div>
+
+                                                                    {/* Size Inventory Breakdown */}
+                                                                    {Array.isArray((product as any).sizes_inventory) && (product as any).sizes_inventory.length > 0 && (
+                                                                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                                                                            {(product as any).sizes_inventory.map((inv: { size: string; quantity: number }, i: number) => (
+                                                                                <span key={i} style={{
+                                                                                    background: inv.quantity > 0 ? 'rgba(163, 230, 53, 0.08)' : 'rgba(255, 255, 255, 0.03)',
+                                                                                    padding: '2px 8px',
+                                                                                    borderRadius: '6px',
+                                                                                    fontSize: '10px',
+                                                                                    color: inv.quantity > 0 ? 'var(--secondary)' : 'rgba(255,255,255,0.2)',
+                                                                                    fontWeight: '900',
+                                                                                    border: '1px solid ' + (inv.quantity > 0 ? 'rgba(163, 230, 53, 0.1)' : 'rgba(255,255,255,0.05)')
+                                                                                }}>
+                                                                                    {inv.size}: {inv.quantity}
+                                                                                </span>
+                                                                            ))}
+                                                                        </div>
+                                                                    )}
+
+                                                                    {/* Individual Shoe Size Columns (Fallback) */}
+                                                                    {(!Array.isArray((product as any).sizes_inventory) || (product as any).sizes_inventory.length === 0) && (product as any).size_shoes_col && (
+                                                                        <span style={{
+                                                                            background: 'rgba(163, 230, 53, 0.1)',
+                                                                            padding: '4px 10px',
+                                                                            borderRadius: '8px',
+                                                                            fontSize: '10px',
+                                                                            color: 'var(--secondary)',
+                                                                            fontWeight: '900',
+                                                                            border: '1px solid rgba(163, 230, 53, 0.2)'
+                                                                        }}>
+                                                                            TALLA COL: {(product as any).size_shoes_col}
+                                                                        </span>
+                                                                    )}
+                                                                    {(!Array.isArray((product as any).sizes_inventory) || (product as any).sizes_inventory.length === 0) && (product as any).size_clothing && (
+                                                                        <span style={{
+                                                                            background: 'rgba(163, 230, 53, 0.1)',
+                                                                            padding: '4px 10px',
+                                                                            borderRadius: '8px',
+                                                                            fontSize: '10px',
+                                                                            color: 'var(--secondary)',
+                                                                            fontWeight: '900',
+                                                                            border: '1px solid rgba(163, 230, 53, 0.2)'
+                                                                        }}>
+                                                                            TALLA: {(product as any).size_clothing}
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', paddingLeft: '5px' }}>
+                                                                <button
+                                                                    onClick={(e) => { e.stopPropagation(); handleEditClick(product); }}
+                                                                    style={{
+                                                                        color: 'white',
+                                                                        background: 'rgba(255,255,255,0.05)',
+                                                                        border: '1px solid rgba(255,255,255,0.1)',
+                                                                        borderRadius: '12px',
+                                                                        width: '42px',
+                                                                        height: '42px',
+                                                                        display: 'flex',
+                                                                        alignItems: 'center',
+                                                                        justifyContent: 'center',
+                                                                        cursor: 'pointer',
+                                                                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+                                                                    }}
+                                                                    className="hover-scale"
+                                                                >
+                                                                    <Pencil size={18} />
+                                                                </button>
+                                                                <button
+                                                                    onClick={(e) => { e.stopPropagation(); handleDeleteClick(product); }}
+                                                                    style={{
+                                                                        color: '#ff6b6b',
+                                                                        background: 'rgba(255, 107, 107, 0.05)',
+                                                                        border: '1px solid rgba(255, 107, 107, 0.1)',
+                                                                        borderRadius: '12px',
+                                                                        width: '42px',
+                                                                        height: '42px',
+                                                                        display: 'flex',
+                                                                        alignItems: 'center',
+                                                                        justifyContent: 'center',
+                                                                        cursor: 'pointer',
+                                                                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+                                                                    }}
+                                                                    className="hover-scale"
+                                                                >
+                                                                    <Trash2 size={18} />
+                                                                </button>
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', paddingRight: '5px' }}>
-                                                        <button onClick={(e) => { e.stopPropagation(); handleEditClick(product); }} style={{ color: 'var(--text-dim)', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '10px', cursor: 'pointer', transition: 'all 0.2s' }}><Pencil size={18} /></button>
-                                                        <button onClick={(e) => { e.stopPropagation(); handleDeleteClick(product); }} style={{ color: '#ef4444', background: 'rgba(239, 68, 68, 0.04)', border: '1px solid rgba(239, 68, 68, 0.1)', borderRadius: '12px', padding: '10px', cursor: 'pointer', transition: 'all 0.2s' }}><Trash2 size={18} /></button>
+
+                                                        {product.status === 'pending_payment' && (
+                                                            <div style={{ padding: '0 15px 15px' }}>
+                                                                <button
+                                                                    onClick={async (e) => {
+                                                                        e.stopPropagation();
+                                                                        try {
+                                                                            const confirmed = confirm('¿Pagar 120,000 COP para publicar este producto?');
+                                                                            if (confirmed) {
+                                                                                const { error } = await supabase
+                                                                                    .from('products')
+                                                                                    .update({ status: 'active' })
+                                                                                    .eq('id', product.id);
+                                                                                if (error) throw error;
+                                                                                setProducts(products.map(p => p.id === product.id ? { ...p, status: 'active' } : p));
+                                                                                setSuccessMessage({
+                                                                                    title: '¡Publicado!',
+                                                                                    message: 'Tu producto ya está activo en el marketplace.',
+                                                                                    type: 'success'
+                                                                                });
+                                                                                setShowSuccessModal(true);
+                                                                                setTimeout(() => setShowSuccessModal(false), 3000);
+                                                                            }
+                                                                        } catch (err) {
+                                                                            console.error(err);
+                                                                            setSuccessMessage({
+                                                                                title: 'Error',
+                                                                                message: 'No se pudo procesar el pago o activar el producto.',
+                                                                                type: 'error'
+                                                                            });
+                                                                            setShowSuccessModal(true);
+                                                                            setTimeout(() => setShowSuccessModal(false), 3000);
+                                                                        }
+                                                                    }}
+                                                                    style={{
+                                                                        width: '100%',
+                                                                        background: 'linear-gradient(135deg, var(--secondary) 0%, #10b981 100%)',
+                                                                        color: 'var(--primary)',
+                                                                        padding: '14px',
+                                                                        borderRadius: '15px',
+                                                                        fontWeight: '900',
+                                                                        fontSize: '13px',
+                                                                        border: 'none',
+                                                                        cursor: 'pointer',
+                                                                        display: 'flex',
+                                                                        alignItems: 'center',
+                                                                        justifyContent: 'center',
+                                                                        gap: '10px',
+                                                                        boxShadow: '0 8px 15px rgba(163, 230, 53, 0.2)',
+                                                                        textAlign: 'center'
+                                                                    }}
+                                                                >
+                                                                    <CheckCircle2 size={18} />
+                                                                    PUBLICAR AHORA ($120.000)
+                                                                </button>
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 </div>
-
-                                                {product.status === 'pending_payment' && (
-                                                    <div style={{ padding: '0 15px 15px' }}>
-                                                        <button
-                                                            onClick={async (e) => {
-                                                                e.stopPropagation();
-                                                                try {
-                                                                    const confirmed = confirm('¿Pagar 120,000 COP para publicar este producto?');
-                                                                    if (confirmed) {
-                                                                        const { error } = await supabase
-                                                                            .from('products')
-                                                                            .update({ status: 'active' })
-                                                                            .eq('id', product.id);
-                                                                        if (error) throw error;
-                                                                        setProducts(products.map(p => p.id === product.id ? { ...p, status: 'active' } : p));
-                                                                        setSuccessMessage({
-                                                                            title: '¡Publicado!',
-                                                                            message: 'Tu producto ya está activo en el marketplace.',
-                                                                            type: 'success'
-                                                                        });
-                                                                        setShowSuccessModal(true);
-                                                                        setTimeout(() => setShowSuccessModal(false), 3000);
-                                                                    }
-                                                                } catch (err) {
-                                                                    console.error(err);
-                                                                    setSuccessMessage({
-                                                                        title: 'Error',
-                                                                        message: 'No se pudo procesar el pago o activar el producto.',
-                                                                        type: 'error'
-                                                                    });
-                                                                    setShowSuccessModal(true);
-                                                                    setTimeout(() => setShowSuccessModal(false), 3000);
-                                                                }
-                                                            }}
-                                                            style={{
-                                                                width: '100%',
-                                                                background: 'linear-gradient(135deg, var(--secondary) 0%, #10b981 100%)',
-                                                                color: 'var(--primary)',
-                                                                padding: '14px',
-                                                                borderRadius: '15px',
-                                                                fontWeight: '900',
-                                                                fontSize: '13px',
-                                                                border: 'none',
-                                                                cursor: 'pointer',
-                                                                display: 'flex',
-                                                                alignItems: 'center',
-                                                                justifyContent: 'center',
-                                                                gap: '10px',
-                                                                boxShadow: '0 8px 15px rgba(163, 230, 53, 0.2)',
-                                                                textAlign: 'center'
-                                                            }}
-                                                        >
-                                                            <CheckCircle2 size={18} />
-                                                            PUBLICAR AHORA ($120.000)
-                                                        </button>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </div>
-                                    ))
+                                            )))
                                 )}
                             </div>
                         )}
@@ -1951,226 +2082,241 @@ const MyStore: React.FC = () => {
                             </div>
                         ) : (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                                {orders.map(order => (
-                                    <Card key={order.id} style={{ padding: '20px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px' }}>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '18px', alignItems: 'center' }}>
-                                            <span style={{
-                                                padding: '6px 14px',
-                                                borderRadius: '12px',
-                                                fontSize: '10px',
-                                                fontWeight: '900',
-                                                background: order.status === 'Pendiente' ? 'rgba(245, 158, 11, 0.15)' : 'rgba(16, 185, 129, 0.15)',
-                                                color: order.status === 'Pendiente' ? '#f59e0b' : '#10b981',
-                                                border: `1px solid ${order.status === 'Pendiente' ? 'rgba(245, 158, 11, 0.3)' : 'rgba(16, 185, 129, 0.3)'}`,
-                                                letterSpacing: '0.05em'
-                                            }}>
-                                                {order.status?.toUpperCase() || 'PENDIENTE'}
-                                            </span>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-dim)', fontSize: '11px', fontWeight: '600' }}>
-                                                <Calendar size={12} />
-                                                {order.created_at ? new Date(order.created_at).toLocaleDateString() : '---'}
-                                            </div>
-                                        </div>
-
-                                        <div style={{ display: 'flex', gap: '15px', marginBottom: '20px', alignItems: 'center' }}>
-                                            <div style={{ position: 'relative' }}>
-                                                <img
-                                                    src={optimizeImage(order.product?.image_url, { width: 150, height: 150 })}
-                                                    style={{ width: '65px', height: '65px', borderRadius: '16px', objectFit: 'cover', border: '1px solid rgba(255,255,255,0.1)' }}
-                                                    alt=""
-                                                    onError={(e) => {
-                                                        const target = e.target as HTMLImageElement;
-                                                        target.src = 'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?auto=format&fit=crop&q=80&w=200';
-                                                    }}
-                                                />
-                                                <div style={{ position: 'absolute', bottom: '-5px', right: '-5px', background: 'var(--secondary)', width: '22px', height: '22px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #0e2f1f' }}>
-                                                    <Package size={10} color="var(--primary)" />
-                                                </div>
-                                            </div>
-                                            <div style={{ flex: 1 }}>
-                                                <h4 style={{ fontSize: '15px', fontWeight: '800', marginBottom: '4px' }}>{order.product?.name}</h4>
-                                                <p style={{ fontSize: '16px', color: 'var(--secondary)', fontWeight: '900' }}>
-                                                    {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(order.seller_net_amount || 0)}
-                                                    <span style={{ fontSize: '10px', color: 'var(--text-dim)', fontWeight: '600', marginLeft: '5px' }}>NETOS</span>
-                                                </p>
-                                            </div>
-                                        </div>
-
-                                        <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '18px', padding: '15px', marginBottom: '15px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                                            <p style={{ fontSize: '11px', fontWeight: '900', color: 'var(--secondary)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                                <User size={12} /> Información del Comprador
-                                            </p>
-                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '13px' }}>
-                                                    <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                        <User size={14} color="var(--text-dim)" />
+                                {orders.filter(o =>
+                                    (o.buyer_name || o.buyer?.full_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                    (o.product?.name || '').toLowerCase().includes(searchTerm.toLowerCase())
+                                ).length === 0 && searchTerm ? (
+                                    <div className="glass" style={{ padding: '40px 20px', textAlign: 'center', borderRadius: '30px' }}>
+                                        <TrendingDown size={32} color="var(--text-dim)" style={{ opacity: 0.3, marginBottom: '10px', margin: '0 auto' }} />
+                                        <p style={{ color: 'var(--text-dim)', fontSize: '14px' }}>No se encontraron ventas que coincidan con tu búsqueda.</p>
+                                    </div>
+                                ) : (
+                                    orders
+                                        .filter(o =>
+                                            (o.buyer_name || o.buyer?.full_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                            (o.product?.name || '').toLowerCase().includes(searchTerm.toLowerCase())
+                                        )
+                                        .map(order => (
+                                            <Card key={order.id} style={{ padding: '20px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px' }}>
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '18px', alignItems: 'center' }}>
+                                                    <span style={{
+                                                        padding: '6px 14px',
+                                                        borderRadius: '12px',
+                                                        fontSize: '10px',
+                                                        fontWeight: '900',
+                                                        background: order.status === 'Pendiente' ? 'rgba(245, 158, 11, 0.15)' : 'rgba(16, 185, 129, 0.15)',
+                                                        color: order.status === 'Pendiente' ? '#f59e0b' : '#10b981',
+                                                        border: `1px solid ${order.status === 'Pendiente' ? 'rgba(245, 158, 11, 0.3)' : 'rgba(16, 185, 129, 0.3)'}`,
+                                                        letterSpacing: '0.05em'
+                                                    }}>
+                                                        {order.status?.toUpperCase() || 'PENDIENTE'}
+                                                    </span>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-dim)', fontSize: '11px', fontWeight: '600' }}>
+                                                        <Calendar size={12} />
+                                                        {order.created_at ? new Date(order.created_at).toLocaleDateString() : '---'}
                                                     </div>
-                                                    <span style={{ fontWeight: '600' }}>{order.buyer_name || order.buyer?.full_name}</span>
                                                 </div>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '13px' }}>
-                                                    <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                        <Phone size={14} color="var(--text-dim)" />
-                                                    </div>
-                                                    <span style={{ fontWeight: '600' }}>{order.buyer_phone || order.buyer?.phone}</span>
-                                                </div>
-                                                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', fontSize: '13px' }}>
-                                                    <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: '2px' }}>
-                                                        <MapPin size={14} color="var(--text-dim)" />
-                                                    </div>
-                                                    <span style={{ lineHeight: '1.4', fontWeight: '500', color: 'rgba(255,255,255,0.8)' }}>{order.shipping_address}</span>
-                                                </div>
-                                            </div>
-                                        </div>
 
-                                        {order.status === 'Pendiente' && (
-                                            <button
-                                                onClick={() => updateOrderStatus(order.id, 'Preparando')}
-                                                disabled={updatingOrder === order.id}
-                                                style={{
-                                                    width: '100%',
-                                                    background: 'rgba(59, 130, 246, 0.1)',
-                                                    border: '1px solid rgba(59, 130, 246, 0.3)',
-                                                    color: '#60a5fa',
-                                                    padding: '14px',
-                                                    borderRadius: '16px',
-                                                    fontWeight: '800',
-                                                    fontSize: '13px',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center',
-                                                    gap: '8px',
-                                                    boxShadow: '0 4px 15px rgba(59, 130, 246, 0.1)'
-                                                }}
-                                            >
-                                                {updatingOrder === order.id ? <Loader2 size={18} className="animate-spin" /> : <Package size={18} />}
-                                                {updatingOrder === order.id ? 'ACTUALIZANDO...' : 'LISTO PARA DESPACHO'}
-                                            </button>
-                                        )}
-                                        {(order.status === 'Preparando' || order.status === 'Pagado' || editingTrackingId === order.id) && (
-                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                                                <p style={{ fontSize: '11px', fontWeight: '900', color: 'white', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                                                    {editingTrackingId === order.id ? 'Editar Datos de Envío' : 'Actualizar Guía de Envío'}
-                                                </p>
-                                                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                                    <input
-                                                        id={`provider-${order.id}`}
-                                                        placeholder="Transportadora (Servientrega, Coordinadora...)"
-                                                        defaultValue={order.shipping_provider || ''}
-                                                        style={{ width: '100%', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '12px', fontSize: '13px', color: 'white', outline: 'none' }}
-                                                    />
-                                                    <div style={{ display: 'flex', gap: '8px' }}>
-                                                        <input
-                                                            id={`tracking-${order.id}`}
-                                                            placeholder="No. Guía"
-                                                            defaultValue={order.tracking_number || ''}
-                                                            style={{ flex: 1, background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '12px', fontSize: '13px', color: 'white', outline: 'none' }}
+                                                <div style={{ display: 'flex', gap: '15px', marginBottom: '20px', alignItems: 'center' }}>
+                                                    <div style={{ position: 'relative' }}>
+                                                        <img
+                                                            src={optimizeImage(order.product?.image_url, { width: 150, height: 150 })}
+                                                            style={{ width: '65px', height: '65px', borderRadius: '16px', objectFit: 'cover', border: '1px solid rgba(255,255,255,0.1)' }}
+                                                            alt=""
+                                                            onError={(e) => {
+                                                                const target = e.target as HTMLImageElement;
+                                                                target.src = 'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?auto=format&fit=crop&q=80&w=200';
+                                                            }}
                                                         />
-                                                        <button
-                                                            onClick={() => {
-                                                                setScanningOrderId(order.id);
-                                                                setShowScanner(true);
-                                                            }}
-                                                            style={{
-                                                                background: 'rgba(255,255,255,0.1)',
-                                                                border: '1px solid rgba(255,255,255,0.2)',
-                                                                borderRadius: '12px',
-                                                                width: '46px',
-                                                                display: 'flex',
-                                                                alignItems: 'center',
-                                                                justifyContent: 'center',
-                                                                color: 'white',
-                                                                flexShrink: 0
-                                                            }}
-                                                            title="Escanear Guía"
-                                                        >
-                                                            <Camera size={20} />
-                                                        </button>
+                                                        <div style={{ position: 'absolute', bottom: '-5px', right: '-5px', background: 'var(--secondary)', width: '22px', height: '22px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #0e2f1f' }}>
+                                                            <Package size={10} color="var(--primary)" />
+                                                        </div>
+                                                    </div>
+                                                    <div style={{ flex: 1 }}>
+                                                        <h4 style={{ fontSize: '15px', fontWeight: '800', marginBottom: '4px' }}>{order.product?.name}</h4>
+                                                        <p style={{ fontSize: '16px', color: 'var(--secondary)', fontWeight: '900' }}>
+                                                            {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(order.seller_net_amount || 0)}
+                                                            <span style={{ fontSize: '10px', color: 'var(--text-dim)', fontWeight: '600', marginLeft: '5px' }}>NETOS</span>
+                                                        </p>
                                                     </div>
                                                 </div>
 
-                                                <div style={{ display: 'flex', gap: '10px' }}>
-                                                    {editingTrackingId === order.id && (
-                                                        <button
-                                                            onClick={() => setEditingTrackingId(null)}
-                                                            className="glass"
-                                                            style={{
-                                                                padding: '14px',
-                                                                borderRadius: '16px',
-                                                                cursor: 'pointer',
-                                                                color: 'var(--text-dim)',
-                                                                fontWeight: '700',
-                                                                fontSize: '13px'
-                                                            }}
-                                                        >
-                                                            CANCELAR
-                                                        </button>
-                                                    )}
+                                                <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '18px', padding: '15px', marginBottom: '15px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                                    <p style={{ fontSize: '11px', fontWeight: '900', color: 'var(--secondary)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                                        <User size={12} /> Información del Comprador
+                                                    </p>
+                                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '13px' }}>
+                                                            <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                                <User size={14} color="var(--text-dim)" />
+                                                            </div>
+                                                            <span style={{ fontWeight: '600' }}>{order.buyer_name || order.buyer?.full_name}</span>
+                                                        </div>
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '13px' }}>
+                                                            <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                                <Phone size={14} color="var(--text-dim)" />
+                                                            </div>
+                                                            <span style={{ fontWeight: '600' }}>{order.buyer_phone || order.buyer?.phone}</span>
+                                                        </div>
+                                                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', fontSize: '13px' }}>
+                                                            <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: '2px' }}>
+                                                                <MapPin size={14} color="var(--text-dim)" />
+                                                            </div>
+                                                            <span style={{ lineHeight: '1.4', fontWeight: '500', color: 'rgba(255,255,255,0.8)' }}>{order.shipping_address}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
 
+                                                {order.status === 'Pendiente' && (
                                                     <button
-                                                        onClick={() => {
-                                                            const prov = (document.getElementById(`provider-${order.id}`) as HTMLInputElement).value;
-                                                            const track = (document.getElementById(`tracking-${order.id}`) as HTMLInputElement).value;
-                                                            updateTracking(order.id, track, prov);
-                                                        }}
+                                                        onClick={() => updateOrderStatus(order.id, 'Preparando')}
                                                         disabled={updatingOrder === order.id}
                                                         style={{
-                                                            background: 'var(--secondary)',
-                                                            color: 'var(--primary)',
+                                                            width: '100%',
+                                                            background: 'rgba(59, 130, 246, 0.1)',
+                                                            border: '1px solid rgba(59, 130, 246, 0.3)',
+                                                            color: '#60a5fa',
                                                             padding: '14px',
                                                             borderRadius: '16px',
-                                                            fontWeight: '900',
-                                                            flex: 1,
+                                                            fontWeight: '800',
+                                                            fontSize: '13px',
                                                             display: 'flex',
                                                             alignItems: 'center',
                                                             justifyContent: 'center',
-                                                            gap: '10px',
-                                                            boxShadow: '0 8px 20px rgba(163, 230, 53, 0.2)'
+                                                            gap: '8px',
+                                                            boxShadow: '0 4px 15px rgba(59, 130, 246, 0.1)'
                                                         }}
                                                     >
-                                                        {updatingOrder === order.id ? <Loader2 size={18} className="animate-spin" /> : <Truck size={18} />}
-                                                        {editingTrackingId === order.id ? 'GUARDAR CAMBIOS' : 'MARCAR COMO ENVIADO'}
+                                                        {updatingOrder === order.id ? <Loader2 size={18} className="animate-spin" /> : <Package size={18} />}
+                                                        {updatingOrder === order.id ? 'ACTUALIZANDO...' : 'LISTO PARA DESPACHO'}
                                                     </button>
-                                                </div>
-                                            </div>
-                                        )}
+                                                )}
+                                                {(order.status === 'Preparando' || order.status === 'Pagado' || editingTrackingId === order.id) && (
+                                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                                        <p style={{ fontSize: '11px', fontWeight: '900', color: 'white', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                                            {editingTrackingId === order.id ? 'Editar Datos de Envío' : 'Actualizar Guía de Envío'}
+                                                        </p>
+                                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                                            <input
+                                                                id={`provider-${order.id}`}
+                                                                placeholder="Transportadora (Servientrega, Coordinadora...)"
+                                                                defaultValue={order.shipping_provider || ''}
+                                                                style={{ width: '100%', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '12px', fontSize: '13px', color: 'white', outline: 'none' }}
+                                                            />
+                                                            <div style={{ display: 'flex', gap: '8px' }}>
+                                                                <input
+                                                                    id={`tracking-${order.id}`}
+                                                                    placeholder="No. Guía"
+                                                                    defaultValue={order.tracking_number || ''}
+                                                                    style={{ flex: 1, background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '12px', fontSize: '13px', color: 'white', outline: 'none' }}
+                                                                />
+                                                                <button
+                                                                    onClick={() => {
+                                                                        setScanningOrderId(order.id);
+                                                                        setShowScanner(true);
+                                                                    }}
+                                                                    style={{
+                                                                        background: 'rgba(255,255,255,0.1)',
+                                                                        border: '1px solid rgba(255,255,255,0.2)',
+                                                                        borderRadius: '12px',
+                                                                        width: '46px',
+                                                                        display: 'flex',
+                                                                        alignItems: 'center',
+                                                                        justifyContent: 'center',
+                                                                        color: 'white',
+                                                                        flexShrink: 0
+                                                                    }}
+                                                                    title="Escanear Guía"
+                                                                >
+                                                                    <Camera size={20} />
+                                                                </button>
+                                                            </div>
+                                                        </div>
 
-                                        {order.status === 'Enviado' && editingTrackingId !== order.id && (
-                                            <div style={{
-                                                background: 'rgba(16, 185, 129, 0.08)',
-                                                border: '1px solid rgba(16, 185, 129, 0.2)',
-                                                padding: '16px',
-                                                borderRadius: '18px',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'space-between',
-                                                gap: '12px'
-                                            }}>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                                    <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'rgba(16, 185, 129, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                        <CheckCircle2 size={20} color="#10b981" />
+                                                        <div style={{ display: 'flex', gap: '10px' }}>
+                                                            {editingTrackingId === order.id && (
+                                                                <button
+                                                                    onClick={() => setEditingTrackingId(null)}
+                                                                    className="glass"
+                                                                    style={{
+                                                                        padding: '14px',
+                                                                        borderRadius: '16px',
+                                                                        cursor: 'pointer',
+                                                                        color: 'var(--text-dim)',
+                                                                        fontWeight: '700',
+                                                                        fontSize: '13px'
+                                                                    }}
+                                                                >
+                                                                    CANCELAR
+                                                                </button>
+                                                            )}
+
+                                                            <button
+                                                                onClick={() => {
+                                                                    const prov = (document.getElementById(`provider-${order.id}`) as HTMLInputElement).value;
+                                                                    const track = (document.getElementById(`tracking-${order.id}`) as HTMLInputElement).value;
+                                                                    updateTracking(order.id, track, prov);
+                                                                }}
+                                                                disabled={updatingOrder === order.id}
+                                                                style={{
+                                                                    background: 'var(--secondary)',
+                                                                    color: 'var(--primary)',
+                                                                    padding: '14px',
+                                                                    borderRadius: '16px',
+                                                                    fontWeight: '900',
+                                                                    flex: 1,
+                                                                    display: 'flex',
+                                                                    alignItems: 'center',
+                                                                    justifyContent: 'center',
+                                                                    gap: '10px',
+                                                                    boxShadow: '0 8px 20px rgba(163, 230, 53, 0.2)'
+                                                                }}
+                                                            >
+                                                                {updatingOrder === order.id ? <Loader2 size={18} className="animate-spin" /> : <Truck size={18} />}
+                                                                {editingTrackingId === order.id ? 'GUARDAR CAMBIOS' : 'MARCAR COMO ENVIADO'}
+                                                            </button>
+                                                        </div>
                                                     </div>
-                                                    <div>
-                                                        <p style={{ fontWeight: '800', color: '#10b981', fontSize: '14px' }}>Producto Enviado</p>
-                                                        <p style={{ fontSize: '12px', color: 'var(--text-dim)', fontWeight: '500' }}>{order.shipping_provider} • {order.tracking_number}</p>
+                                                )}
+
+                                                {order.status === 'Enviado' && editingTrackingId !== order.id && (
+                                                    <div style={{
+                                                        background: 'rgba(16, 185, 129, 0.08)',
+                                                        border: '1px solid rgba(16, 185, 129, 0.2)',
+                                                        padding: '16px',
+                                                        borderRadius: '18px',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'space-between',
+                                                        gap: '12px'
+                                                    }}>
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                                            <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'rgba(16, 185, 129, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                                <CheckCircle2 size={20} color="#10b981" />
+                                                            </div>
+                                                            <div>
+                                                                <p style={{ fontWeight: '800', color: '#10b981', fontSize: '14px' }}>Producto Enviado</p>
+                                                                <p style={{ fontSize: '12px', color: 'var(--text-dim)', fontWeight: '500' }}>{order.shipping_provider} • {order.tracking_number}</p>
+                                                            </div>
+                                                        </div>
+                                                        <button
+                                                            onClick={() => setEditingTrackingId(order.id)}
+                                                            style={{
+                                                                padding: '8px',
+                                                                borderRadius: '8px',
+                                                                background: 'rgba(255,255,255,0.05)',
+                                                                color: 'var(--text-dim)',
+                                                                border: 'none',
+                                                                cursor: 'pointer'
+                                                            }}
+                                                        >
+                                                            <Pencil size={16} />
+                                                        </button>
                                                     </div>
-                                                </div>
-                                                <button
-                                                    onClick={() => setEditingTrackingId(order.id)}
-                                                    style={{
-                                                        padding: '8px',
-                                                        borderRadius: '8px',
-                                                        background: 'rgba(255,255,255,0.05)',
-                                                        color: 'var(--text-dim)',
-                                                        border: 'none',
-                                                        cursor: 'pointer'
-                                                    }}
-                                                >
-                                                    <Pencil size={16} />
-                                                </button>
-                                            </div>
-                                        )}
-                                    </Card>
-                                ))}
+                                                )}
+                                            </Card>
+                                        )))
+                                }
                             </div>
                         )}
                     </div>
@@ -2186,200 +2332,215 @@ const MyStore: React.FC = () => {
                             </div>
                         ) : (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                                {offers.map(offer => (
-                                    <Card key={offer.id} style={{ padding: '20px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px' }}>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '18px', alignItems: 'center' }}>
-                                            <span style={{
-                                                padding: '6px 14px',
-                                                borderRadius: '12px',
-                                                fontSize: '10px',
-                                                fontWeight: '900',
-                                                background: offer.status === 'pending' ? 'rgba(245, 158, 11, 0.15)' :
-                                                    offer.status === 'accepted' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)',
-                                                color: offer.status === 'pending' ? '#f59e0b' :
-                                                    offer.status === 'accepted' ? '#10b981' : '#ef4444',
-                                                border: `1px solid ${offer.status === 'pending' ? 'rgba(245, 158, 11, 0.3)' :
-                                                    offer.status === 'accepted' ? 'rgba(16, 185, 129, 0.3)' : 'rgba(239, 68, 68, 0.3)'}`,
-                                                letterSpacing: '0.05em'
-                                            }}>
-                                                {offer.status === 'pending' ? 'PENDIENTE' :
-                                                    offer.status === 'accepted' ? 'ACEPTADA' : 'RECHAZADA'}
-                                            </span>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-dim)', fontSize: '11px', fontWeight: '600' }}>
-                                                    <Calendar size={12} />
-                                                    {offer.created_at ? new Date(offer.created_at).toLocaleDateString() : '---'}
-                                                </div>
-                                                <button
-                                                    onClick={() => deleteOffer(offer.id)}
-                                                    style={{
-                                                        background: 'none',
-                                                        border: 'none',
-                                                        color: 'rgba(239, 68, 68, 0.6)',
-                                                        padding: '4px',
-                                                        cursor: 'pointer',
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        justifyContent: 'center',
-                                                        borderRadius: '8px'
-                                                    }}
-                                                >
-                                                    <Trash2 size={14} />
-                                                </button>
-                                            </div>
-                                        </div>
-
-                                        <div style={{ display: 'flex', gap: '15px', marginBottom: '20px', alignItems: 'center' }}>
-                                            <div style={{ position: 'relative' }}>
-                                                <img
-                                                    src={optimizeImage(offer.product?.image_url, { width: 150, height: 150 })}
-                                                    style={{ width: '65px', height: '65px', borderRadius: '16px', objectFit: 'cover', border: '1px solid rgba(255,255,255,0.1)' }}
-                                                    alt=""
-                                                    onError={(e) => {
-                                                        const target = e.target as HTMLImageElement;
-                                                        target.src = 'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?auto=format&fit=crop&q=80&w=200';
-                                                    }}
-                                                />
-                                                <div style={{ position: 'absolute', bottom: '-5px', right: '-5px', background: '#3b82f6', width: '22px', height: '22px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #0e2f1f' }}>
-                                                    <Handshake size={10} color="white" />
-                                                </div>
-                                            </div>
-                                            <div style={{ flex: 1 }}>
-                                                <h4 style={{ fontSize: '15px', fontWeight: '800', marginBottom: '6px' }}>{offer.product?.name}</h4>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                                    <p style={{ fontSize: '18px', color: 'var(--secondary)', fontWeight: '900' }}>
-                                                        {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(offer.offer_amount || 0)}
-                                                    </p>
-                                                    <p style={{ fontSize: '12px', color: 'var(--text-dim)', textDecoration: 'line-through', fontWeight: '600' }}>
-                                                        {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(offer.product?.price || 0)}
-                                                    </p>
-                                                    <span style={{ fontSize: '10px', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', padding: '2px 6px', borderRadius: '4px', fontWeight: '800' }}>
-                                                        -{Math.round((1 - (offer.offer_amount || 0) / (offer.product?.price || 1)) * 100)}%
+                                {offers.filter(o =>
+                                    (o.buyer?.full_name || 'Comprador APEG').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                    (o.product?.name || '').toLowerCase().includes(searchTerm.toLowerCase())
+                                ).length === 0 && searchTerm ? (
+                                    <div className="glass" style={{ padding: '40px 20px', textAlign: 'center', borderRadius: '30px' }}>
+                                        <Handshake size={32} color="var(--text-dim)" style={{ opacity: 0.3, marginBottom: '10px', margin: '0 auto' }} />
+                                        <p style={{ color: 'var(--text-dim)', fontSize: '14px' }}>No se encontraron ofertas que coincidan con tu búsqueda.</p>
+                                    </div>
+                                ) : (
+                                    offers
+                                        .filter(o =>
+                                            (o.buyer?.full_name || 'Comprador APEG').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                            (o.product?.name || '').toLowerCase().includes(searchTerm.toLowerCase())
+                                        )
+                                        .map(offer => (
+                                            <Card key={offer.id} style={{ padding: '20px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px' }}>
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '18px', alignItems: 'center' }}>
+                                                    <span style={{
+                                                        padding: '6px 14px',
+                                                        borderRadius: '12px',
+                                                        fontSize: '10px',
+                                                        fontWeight: '900',
+                                                        background: offer.status === 'pending' ? 'rgba(245, 158, 11, 0.15)' :
+                                                            offer.status === 'accepted' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)',
+                                                        color: offer.status === 'pending' ? '#f59e0b' :
+                                                            offer.status === 'accepted' ? '#10b981' : '#ef4444',
+                                                        border: `1px solid ${offer.status === 'pending' ? 'rgba(245, 158, 11, 0.3)' :
+                                                            offer.status === 'accepted' ? 'rgba(16, 185, 129, 0.3)' : 'rgba(239, 68, 68, 0.3)'}`,
+                                                        letterSpacing: '0.05em'
+                                                    }}>
+                                                        {offer.status === 'pending' ? 'PENDIENTE' :
+                                                            offer.status === 'accepted' ? 'ACEPTADA' : 'RECHAZADA'}
                                                     </span>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '18px', padding: '15px', marginBottom: '18px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '13px', marginBottom: '10px' }}>
-                                                <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                    <User size={14} color="var(--text-dim)" />
-                                                </div>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                                    <span style={{ fontWeight: '700' }}>{offer.buyer?.full_name || 'Comprador APEG'}</span>
-                                                </div>
-                                            </div>
-
-
-                                            {offer.message && (
-                                                <div style={{ position: 'relative', padding: '12px', background: 'rgba(0,0,0,0.1)', borderRadius: '12px', borderLeft: '3px solid var(--secondary)' }}>
-                                                    <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.8)', fontStyle: 'italic', lineHeight: '1.4' }}>
-                                                        "{offer.message}"
-                                                    </p>
-                                                </div>
-                                            )}
-
-                                            {
-                                                offer.status === 'pending' && (
-                                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '4px' }}>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-dim)', fontSize: '11px', fontWeight: '600' }}>
+                                                            <Calendar size={12} />
+                                                            {offer.created_at ? new Date(offer.created_at).toLocaleDateString() : '---'}
+                                                        </div>
                                                         <button
-                                                            onClick={() => handleOfferAction(offer.id, 'rejected')}
-                                                            disabled={updatingOffer === offer.id}
+                                                            onClick={() => deleteOffer(offer.id)}
                                                             style={{
-                                                                flex: 1,
-                                                                minWidth: '100px',
-                                                                background: 'rgba(239, 68, 68, 0.1)',
-                                                                border: '1px solid rgba(239, 68, 68, 0.3)',
-                                                                color: '#f87171',
-                                                                padding: '12px',
-                                                                borderRadius: '14px',
-                                                                fontWeight: '800',
-                                                                fontSize: '11px'
-                                                            }}
-                                                        >
-                                                            RECHAZAR
-                                                        </button>
-                                                        <button
-                                                            onClick={() => {
-                                                                setSelectedOfferForCounter(offer);
-                                                                setCounterAmount(offer.offer_amount.toString());
-                                                                setCounterMessage('');
-                                                                setShowCounterModal(true);
-                                                            }}
-                                                            disabled={updatingOffer === offer.id}
-                                                            style={{
-                                                                flex: 1,
-                                                                minWidth: '100px',
-                                                                background: 'rgba(255, 255, 255, 0.05)',
-                                                                border: '1px solid rgba(255, 255, 255, 0.1)',
-                                                                color: 'white',
-                                                                padding: '12px',
-                                                                borderRadius: '14px',
-                                                                fontWeight: '800',
-                                                                fontSize: '11px'
-                                                            }}
-                                                        >
-                                                            CONTRAOFERTA
-                                                        </button>
-                                                        <button
-                                                            onClick={() => handleOfferAction(offer.id, 'accepted')}
-                                                            disabled={updatingOffer === offer.id}
-                                                            style={{
-                                                                flex: 2,
-                                                                minWidth: '180px',
-                                                                background: 'var(--secondary)',
-                                                                color: 'var(--primary)',
-                                                                padding: '12px',
-                                                                borderRadius: '14px',
-                                                                fontWeight: '900',
-                                                                fontSize: '11px',
+                                                                background: 'none',
+                                                                border: 'none',
+                                                                color: 'rgba(239, 68, 68, 0.6)',
+                                                                padding: '4px',
+                                                                cursor: 'pointer',
                                                                 display: 'flex',
                                                                 alignItems: 'center',
                                                                 justifyContent: 'center',
-                                                                gap: '8px',
-                                                                boxShadow: '0 8px 20px rgba(163, 230, 53, 0.2)'
+                                                                borderRadius: '8px'
                                                             }}
                                                         >
-                                                            {updatingOffer === offer.id ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle2 size={16} />}
-                                                            ACEPTAR OFERTA
+                                                            <Trash2 size={14} />
                                                         </button>
                                                     </div>
-                                                )
-                                            }
+                                                </div>
 
-                                            {
-                                                offer.status === 'countered' && (
-                                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                                                        <div style={{ background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.05)', padding: '16px', borderRadius: '16px' }}>
-                                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                                                                <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Tu Contraoferta</span>
-                                                                <span style={{ fontSize: '18px', fontWeight: '900', color: 'var(--secondary)' }}>${offer.counter_amount?.toLocaleString()}</span>
+                                                <div style={{ display: 'flex', gap: '15px', marginBottom: '20px', alignItems: 'center' }}>
+                                                    <div style={{ position: 'relative' }}>
+                                                        <img
+                                                            src={optimizeImage(offer.product?.image_url, { width: 150, height: 150 })}
+                                                            style={{ width: '65px', height: '65px', borderRadius: '16px', objectFit: 'cover', border: '1px solid rgba(255,255,255,0.1)' }}
+                                                            alt=""
+                                                            onError={(e) => {
+                                                                const target = e.target as HTMLImageElement;
+                                                                target.src = 'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?auto=format&fit=crop&q=80&w=200';
+                                                            }}
+                                                        />
+                                                        <div style={{ position: 'absolute', bottom: '-5px', right: '-5px', background: '#3b82f6', width: '22px', height: '22px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #0e2f1f' }}>
+                                                            <Handshake size={10} color="white" />
+                                                        </div>
+                                                    </div>
+                                                    <div style={{ flex: 1 }}>
+                                                        <h4 style={{ fontSize: '15px', fontWeight: '800', marginBottom: '6px' }}>{offer.product?.name}</h4>
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                            <p style={{ fontSize: '18px', color: 'var(--secondary)', fontWeight: '900' }}>
+                                                                {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(offer.offer_amount || 0)}
+                                                            </p>
+                                                            <p style={{ fontSize: '12px', color: 'var(--text-dim)', textDecoration: 'line-through', fontWeight: '600' }}>
+                                                                {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(offer.product?.price || 0)}
+                                                            </p>
+                                                            <span style={{ fontSize: '10px', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', padding: '2px 6px', borderRadius: '4px', fontWeight: '800' }}>
+                                                                -{Math.round((1 - (offer.offer_amount || 0) / (offer.product?.price || 1)) * 100)}%
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '18px', padding: '15px', marginBottom: '18px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '13px', marginBottom: '10px' }}>
+                                                        <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                            <User size={14} color="var(--text-dim)" />
+                                                        </div>
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                                            <span style={{ fontWeight: '700' }}>{offer.buyer?.full_name || 'Comprador APEG'}</span>
+                                                        </div>
+                                                    </div>
+
+
+                                                    {offer.message && (
+                                                        <div style={{ position: 'relative', padding: '12px', background: 'rgba(0,0,0,0.1)', borderRadius: '12px', borderLeft: '3px solid var(--secondary)' }}>
+                                                            <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.8)', fontStyle: 'italic', lineHeight: '1.4' }}>
+                                                                "{offer.message}"
+                                                            </p>
+                                                        </div>
+                                                    )}
+
+                                                    {
+                                                        offer.status === 'pending' && (
+                                                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '4px' }}>
+                                                                <button
+                                                                    onClick={() => handleOfferAction(offer.id, 'rejected')}
+                                                                    disabled={updatingOffer === offer.id}
+                                                                    style={{
+                                                                        flex: 1,
+                                                                        minWidth: '100px',
+                                                                        background: 'rgba(239, 68, 68, 0.1)',
+                                                                        border: '1px solid rgba(239, 68, 68, 0.3)',
+                                                                        color: '#f87171',
+                                                                        padding: '12px',
+                                                                        borderRadius: '14px',
+                                                                        fontWeight: '800',
+                                                                        fontSize: '11px'
+                                                                    }}
+                                                                >
+                                                                    RECHAZAR
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => {
+                                                                        setSelectedOfferForCounter(offer);
+                                                                        setCounterAmount(offer.offer_amount.toString());
+                                                                        setCounterMessage('');
+                                                                        setShowCounterModal(true);
+                                                                    }}
+                                                                    disabled={updatingOffer === offer.id}
+                                                                    style={{
+                                                                        flex: 1,
+                                                                        minWidth: '100px',
+                                                                        background: 'rgba(255, 255, 255, 0.05)',
+                                                                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                                                                        color: 'white',
+                                                                        padding: '12px',
+                                                                        borderRadius: '14px',
+                                                                        fontWeight: '800',
+                                                                        fontSize: '11px'
+                                                                    }}
+                                                                >
+                                                                    CONTRAOFERTA
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => handleOfferAction(offer.id, 'accepted')}
+                                                                    disabled={updatingOffer === offer.id}
+                                                                    style={{
+                                                                        flex: 2,
+                                                                        minWidth: '180px',
+                                                                        background: 'var(--secondary)',
+                                                                        color: 'var(--primary)',
+                                                                        padding: '12px',
+                                                                        borderRadius: '14px',
+                                                                        fontWeight: '900',
+                                                                        fontSize: '11px',
+                                                                        display: 'flex',
+                                                                        alignItems: 'center',
+                                                                        justifyContent: 'center',
+                                                                        gap: '8px',
+                                                                        boxShadow: '0 8px 20px rgba(163, 230, 53, 0.2)'
+                                                                    }}
+                                                                >
+                                                                    {updatingOffer === offer.id ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle2 size={16} />}
+                                                                    ACEPTAR OFERTA
+                                                                </button>
                                                             </div>
-                                                            {offer.counter_message && (
-                                                                <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.6)', fontStyle: 'italic', margin: 0 }}>
-                                                                    "{offer.counter_message}"
-                                                                </p>
-                                                            )}
-                                                        </div>
-                                                        <div style={{ background: 'rgba(59, 130, 246, 0.08)', border: '1px solid rgba(59, 130, 246, 0.2)', padding: '12px', borderRadius: '14px', color: '#60a5fa', textAlign: 'center', fontWeight: '800', fontSize: '11px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-                                                            <Info size={16} />
-                                                            RESERVADO • El comprador tiene 1 hora para comprar
-                                                        </div>
-                                                    </div>
-                                                )
-                                            }
+                                                        )
+                                                    }
 
-                                            {
-                                                offer.status === 'accepted' && (
-                                                    <div style={{ background: 'rgba(16, 185, 129, 0.08)', border: '1px solid rgba(16, 185, 129, 0.2)', padding: '16px', borderRadius: '16px', color: '#10b981', textAlign: 'center', fontWeight: '800', fontSize: '13px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-                                                        <CheckCircle2 size={18} />
-                                                        OFERTA ACEPTADA • Esperando pago (1h)
-                                                    </div>
-                                                )
-                                            }
-                                        </div>
-                                    </Card>
-                                ))}
+                                                    {
+                                                        offer.status === 'countered' && (
+                                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                                                <div style={{ background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.05)', padding: '16px', borderRadius: '16px' }}>
+                                                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                                                                        <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Tu Contraoferta</span>
+                                                                        <span style={{ fontSize: '18px', fontWeight: '900', color: 'var(--secondary)' }}>${offer.counter_amount?.toLocaleString()}</span>
+                                                                    </div>
+                                                                    {offer.counter_message && (
+                                                                        <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.6)', fontStyle: 'italic', margin: 0 }}>
+                                                                            "{offer.counter_message}"
+                                                                        </p>
+                                                                    )}
+                                                                </div>
+                                                                <div style={{ background: 'rgba(59, 130, 246, 0.08)', border: '1px solid rgba(59, 130, 246, 0.2)', padding: '12px', borderRadius: '14px', color: '#60a5fa', textAlign: 'center', fontWeight: '800', fontSize: '11px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                                                                    <Info size={16} />
+                                                                    RESERVADO • El comprador tiene 1 hora para comprar
+                                                                </div>
+                                                            </div>
+                                                        )
+                                                    }
+
+                                                    {
+                                                        offer.status === 'accepted' && (
+                                                            <div style={{ background: 'rgba(16, 185, 129, 0.08)', border: '1px solid rgba(16, 185, 129, 0.2)', padding: '16px', borderRadius: '16px', color: '#10b981', textAlign: 'center', fontWeight: '800', fontSize: '13px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                                                                <CheckCircle2 size={18} />
+                                                                OFERTA ACEPTADA • Esperando pago (1h)
+                                                            </div>
+                                                        )
+                                                    }
+                                                </div>
+                                            </Card>
+                                        )))
+                                }
                             </div>
                         )}
                     </div>
