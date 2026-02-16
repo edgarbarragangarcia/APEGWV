@@ -209,7 +209,22 @@ const MyStore: React.FC = () => {
         try {
             const { data: userOrders, error } = await supabase
                 .from('orders')
-                .select('id, created_at, status, total_amount, tracking_number, shipping_provider, product:products!orders_product_id_fkey(name, image_url), buyer:profiles!orders_buyer_id_fkey(full_name, id_photo_url, phone)')
+                .select(`
+                    id, 
+                    created_at, 
+                    status, 
+                    total_amount, 
+                    seller_net_amount,
+                    shipping_address,
+                    buyer_name,
+                    buyer_phone,
+                    tracking_number, 
+                    shipping_provider, 
+                    order_items(
+                        product:products(name, image_url)
+                    ), 
+                    buyer:profiles!orders_buyer_id_fkey(full_name, id_photo_url, phone)
+                `)
                 .eq('seller_id', userId)
                 .order('created_at', { ascending: false });
 
@@ -222,7 +237,7 @@ const MyStore: React.FC = () => {
                 // Normalize relations if they return as arrays
                 const mappedOrders: Order[] = userOrders.map((o: any) => ({
                     ...o,
-                    product: Array.isArray(o.product) ? o.product[0] : o.product,
+                    product: o.order_items?.[0]?.product || null,
                     buyer: Array.isArray(o.buyer) ? o.buyer[0] : o.buyer
                 }));
                 setOrders(mappedOrders);

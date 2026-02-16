@@ -7,6 +7,7 @@ import { OnboardingTour } from './components/OnboardingTour';
 import { supabase } from './services/SupabaseManager';
 
 import './index.css';
+import apegLogo from './assets/apeg_logo_v2.png';
 
 import Home from './pages/Home';
 import Round from './pages/Round';
@@ -51,7 +52,7 @@ import { QueryProvider } from './context/QueryProvider';
 import { ToastProvider } from './context/ToastContext';
 
 const AppContent: React.FC = () => {
-  const { session } = useAuth();
+  const { session, loading } = useAuth();
   const location = useLocation();
   const isOnline = useOnlineStatus();
   const [showOnboarding, setShowOnboarding] = React.useState(false);
@@ -93,7 +94,39 @@ const AppContent: React.FC = () => {
     }
   }, [session]);
 
-  // Removed blocking loading state to prevent being stuck on green screen
+  // Pantalla de carga inicial (Splash)
+  if (loading) {
+    return (
+      <div style={{
+        backgroundColor: '#0E2F1F',
+        height: '100dvh',
+        width: '100vw',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '20px'
+      }}>
+        <img
+          src={apegLogo}
+          alt="APEG Logo"
+          style={{
+            width: '150px',
+            height: 'auto',
+            animation: 'pulse 2s infinite ease-in-out'
+          }}
+        />
+        <div className="loader"></div>
+        <style>{`
+          @keyframes pulse {
+            0% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.05); opacity: 1; }
+            100% { transform: scale(1); opacity: 0.8; }
+          }
+        `}</style>
+      </div>
+    );
+  }
 
   const isRoundPage = location.pathname === '/round';
   const isNotificationsPage = location.pathname === '/notifications';
