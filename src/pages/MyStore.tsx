@@ -55,6 +55,11 @@ const MyStore: React.FC = () => {
         productId: null,
         productName: ''
     });
+    const [deleteCouponModal, setDeleteCouponModal] = useState<{ isOpen: boolean; couponId: string | null; couponCode: string }>({
+        isOpen: false,
+        couponId: null,
+        couponCode: ''
+    });
     const [orders, setOrders] = useState<Order[]>([]);
     const [showScanner, setShowScanner] = useState(false);
     const [scanningOrderId, setScanningOrderId] = useState<string | null>(null);
@@ -554,6 +559,31 @@ const MyStore: React.FC = () => {
 
             if (error) throw error;
 
+            const productId = data.id;
+
+            // Handle coupon assignment
+            // First, clear any coupons previously assigned to this product
+            const previouslyAssigned = coupons.filter(c => c.product_id === productId);
+            for (const coupon of previouslyAssigned) {
+                if (coupon.id !== formData.selectedCouponId) {
+                    await supabase
+                        .from('coupons')
+                        .update({ product_id: null })
+                        .eq('id', coupon.id);
+                }
+            }
+
+            // Then assign the selected coupon to this product
+            if (formData.selectedCouponId) {
+                await supabase
+                    .from('coupons')
+                    .update({ product_id: productId })
+                    .eq('id', formData.selectedCouponId);
+            }
+
+            // Refresh coupons to reflect changes
+            if (user) fetchCoupons(user.id);
+
             if (editingId) {
                 setProducts(products.map(p => p.id === editingId ? data : p));
             } else {
@@ -876,14 +906,23 @@ const MyStore: React.FC = () => {
         setShowCouponForm(true);
     };
 
-    const deleteCoupon = async (id: string) => {
-        if (!window.confirm('¿Estás seguro de eliminar este cupón?')) return;
+    const deleteCoupon = (id: string, code: string) => {
+        setDeleteCouponModal({ isOpen: true, couponId: id, couponCode: code });
+    };
+
+    const confirmDeleteCoupon = async () => {
+        if (!deleteCouponModal.couponId) return;
         try {
-            const { error } = await supabase.from('coupons').delete().eq('id', id);
+            const { error } = await supabase.from('coupons').delete().eq('id', deleteCouponModal.couponId);
             if (error) throw error;
-            setCoupons(prev => prev.filter(c => c.id !== id));
+            setCoupons(prev => prev.filter(c => c.id !== deleteCouponModal.couponId));
+            setDeleteCouponModal({ isOpen: false, couponId: null, couponCode: '' });
+            setSuccessMessage({ title: '¡Cupón Eliminado!', message: 'El cupón se ha eliminado correctamente.', type: 'success' });
+            setShowSuccessModal(true);
+            setTimeout(() => setShowSuccessModal(false), 3000);
         } catch (err) {
             console.error('Error deleting coupon:', err);
+            setDeleteCouponModal({ isOpen: false, couponId: null, couponCode: '' });
             setSuccessMessage({ title: 'Error', message: 'No se pudo eliminar el cupón.', type: 'error' });
             setShowSuccessModal(true);
             setTimeout(() => setShowSuccessModal(false), 3000);
@@ -2391,7 +2430,7 @@ const MyStore: React.FC = () => {
                                             </div>
                                             <div style={{ display: 'flex', gap: '8px' }}>
                                                 <button onClick={() => handleEditCoupon(coupon)} style={{ padding: '10px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', color: 'white' }}><Pencil size={16} /></button>
-                                                <button onClick={() => deleteCoupon(coupon.id)} style={{ padding: '10px', borderRadius: '10px', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444' }}><Trash2 size={16} /></button>
+                                                <button onClick={() => deleteCoupon(coupon.id, coupon.code)} style={{ padding: '10px', borderRadius: '10px', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444' }}><Trash2 size={16} /></button>
                                             </div>
                                         </div>
                                         <div style={{ marginTop: '15px', paddingTop: '15px', borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--text-dim)', fontWeight: '600' }}>
@@ -2745,6 +2784,91 @@ const MyStore: React.FC = () => {
                                 </button>
                                 <button
                                     onClick={confirmDelete}
+                                    style={{
+                                        flex: 1,
+                                        background: '#ef4444',
+                                        color: 'white',
+                                        padding: '14px',
+                                        borderRadius: '14px',
+                                        border: 'none',
+                                        fontWeight: '700',
+                                        fontSize: '14px'
+                                    }}
+                                >
+                                    Eliminar
+                                </button>
+                            </div>
+                        </motion.div>
+                    </div>
+                )
+            }
+
+            {/* Modal de Confirmación para Eliminar Cupón */}
+            {
+                deleteCouponModal.isOpen && (
+                    <div style={{
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        background: 'rgba(0,0,0,0.85)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        zIndex: 1000,
+                        padding: '20px',
+                        backdropFilter: 'blur(8px)'
+                    }}>
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            className="glass"
+                            style={{
+                                width: '100%',
+                                maxWidth: '320px',
+                                padding: '25px',
+                                borderRadius: '24px',
+                                textAlign: 'center',
+                                border: '1px solid rgba(255,255,255,0.1)',
+                                background: 'var(--primary)',
+                                boxShadow: '0 20px 40px rgba(0,0,0,0.4)'
+                            }}
+                        >
+                            <div style={{
+                                background: 'rgba(239, 68, 68, 0.15)',
+                                width: '60px',
+                                height: '60px',
+                                borderRadius: '50%',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                margin: '0 auto 20px'
+                            }}>
+                                <Trash2 color="#ef4444" size={28} />
+                            </div>
+                            <h2 style={{ fontSize: '20px', marginBottom: '10px', fontWeight: '700' }}>¿Eliminar cupón?</h2>
+                            <p style={{ color: 'var(--text-dim)', fontSize: '14px', marginBottom: '30px', lineHeight: '1.5' }}>
+                                ¿Estás seguro que deseas eliminar el cupón <strong>{deleteCouponModal.couponCode}</strong>? Esta acción es permanente.
+                            </p>
+                            <div style={{ display: 'flex', gap: '12px' }}>
+                                <button
+                                    onClick={() => setDeleteCouponModal({ isOpen: false, couponId: null, couponCode: '' })}
+                                    style={{
+                                        flex: 1,
+                                        background: 'rgba(255,255,255,0.05)',
+                                        color: 'white',
+                                        padding: '14px',
+                                        borderRadius: '14px',
+                                        border: '1px solid rgba(255,255,255,0.1)',
+                                        fontWeight: '600',
+                                        fontSize: '14px'
+                                    }}
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    onClick={confirmDeleteCoupon}
                                     style={{
                                         flex: 1,
                                         background: '#ef4444',
