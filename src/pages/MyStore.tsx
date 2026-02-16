@@ -1296,40 +1296,61 @@ const MyStore: React.FC = () => {
                                             {categories.map(c => <option key={c} value={c}>{c}</option>)}
                                         </select>
                                     </div>
-                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
-                                        <div>
-                                            <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Precio (COP)</label>
-                                            <div style={{ position: 'relative' }}>
-                                                <input
-                                                    required
-                                                    type="text"
-                                                    inputMode="numeric"
-                                                    value={formData.displayPrice}
-                                                    onChange={handlePriceChange}
-                                                    style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '12px', color: 'white', fontSize: '15px' }}
-                                                    placeholder="0"
-                                                />
-                                                <span style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-dim)', fontSize: '12px', pointerEvents: 'none' }}>
-                                                    $
-                                                </span>
-                                            </div>
+                                    <div style={{ marginBottom: '15px' }}>
+                                        <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Precio del Producto (COP)</label>
+                                        <div style={{ position: 'relative' }}>
+                                            <input
+                                                required
+                                                type="text"
+                                                inputMode="numeric"
+                                                value={formData.displayPrice}
+                                                onChange={handlePriceChange}
+                                                style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '12px', color: 'white', fontSize: '15px' }}
+                                                placeholder="0"
+                                            />
+                                            <span style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-dim)', fontSize: '12px', pointerEvents: 'none' }}>
+                                                $
+                                            </span>
                                         </div>
-                                        <div>
-                                            <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Envío (COP)</label>
-                                            <div style={{ position: 'relative' }}>
-                                                <input
-                                                    type="text"
-                                                    inputMode="numeric"
-                                                    value={formData.displayShippingCost}
-                                                    onChange={handleShippingCostChange}
-                                                    style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '12px', color: 'white', fontSize: '15px' }}
-                                                    placeholder="0"
-                                                />
-                                                <span style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-dim)', fontSize: '12px', pointerEvents: 'none' }}>
-                                                    $
-                                                </span>
+                                    </div>
+
+                                    <div style={{
+                                        background: 'rgba(255,255,255,0.03)',
+                                        padding: '15px',
+                                        borderRadius: '15px',
+                                        border: '1px solid var(--glass-border)',
+                                        marginBottom: '15px'
+                                    }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                                            <div style={{ background: 'rgba(56, 189, 248, 0.1)', padding: '6px', borderRadius: '8px' }}>
+                                                <Truck size={14} color="#38bdf8" />
                                             </div>
+                                            <label style={{ fontSize: '13px', fontWeight: '800', color: 'white' }}>Costo de Envío (Opcional)</label>
                                         </div>
+                                        <div style={{ position: 'relative' }}>
+                                            <input
+                                                type="text"
+                                                inputMode="numeric"
+                                                value={formData.displayShippingCost}
+                                                onChange={handleShippingCostChange}
+                                                style={{
+                                                    width: '100%',
+                                                    background: 'rgba(0,0,0,0.2)',
+                                                    border: '1px solid rgba(255,255,255,0.1)',
+                                                    borderRadius: '12px',
+                                                    padding: '12px',
+                                                    color: 'white',
+                                                    fontSize: '15px'
+                                                }}
+                                                placeholder="Ej: 15.000 o 0 si es gratis"
+                                            />
+                                            <span style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-dim)', fontSize: '12px', pointerEvents: 'none' }}>
+                                                $
+                                            </span>
+                                        </div>
+                                        <p style={{ fontSize: '11px', color: 'var(--text-dim)', marginTop: '8px' }}>
+                                            Define cuánto cobrarás por el envío. Si pones 0, se mostrará como **ENVÍO GRATIS**.
+                                        </p>
                                     </div>
 
                                     {/* Conditional Size & Type Fields */}
@@ -1579,18 +1600,60 @@ const MyStore: React.FC = () => {
                                     </div>
 
                                     {/* Commission Calculation */}
-                                    {formData.price && (
-                                        <div className="glass" style={{ padding: '15px', background: 'rgba(163, 230, 53, 0.05)', borderRadius: '15px', border: '1px solid rgba(163, 230, 53, 0.1)' }}>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '13px' }}>
-                                                <span style={{ color: 'var(--text-dim)' }}>Comisión APEG (5%)</span>
-                                                <span style={{ color: '#ef4444', fontWeight: '600' }}>- {formatPrice((parseFloat(formData.price) * 0.05).toString())}</span>
+                                    {(formData.price || formData.shipping_cost) && (() => {
+                                        const selectedCoupon = coupons.find(c => c.id === formData.selectedCouponId);
+                                        const basePrice = parseFloat(formData.price) || 0;
+                                        const shippingCost = parseFloat(formData.shipping_cost) || 0;
+
+                                        let discountValue = 0;
+                                        if (selectedCoupon) {
+                                            if (selectedCoupon.discount_type === 'percentage') {
+                                                discountValue = Math.round(basePrice * (Number(selectedCoupon.value) / 100));
+                                            } else {
+                                                discountValue = Number(selectedCoupon.value);
+                                            }
+                                        }
+
+                                        const discountedPrice = Math.max(0, basePrice - discountValue);
+                                        const commission = Math.round(discountedPrice * 0.05);
+                                        const finalTotal = discountedPrice - commission + shippingCost;
+
+                                        return (
+                                            <div className="glass" style={{ padding: '15px', background: 'rgba(163, 230, 53, 0.05)', borderRadius: '15px', border: '1px solid rgba(163, 230, 53, 0.1)' }}>
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '13px' }}>
+                                                    <span style={{ color: 'var(--text-dim)' }}>Precio base</span>
+                                                    <span style={{ color: 'white', fontWeight: '600' }}>$ {formatPrice(basePrice.toFixed(0))}</span>
+                                                </div>
+
+                                                {discountValue > 0 && (
+                                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', fontSize: '13px', paddingTop: '5px' }}>
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                                            <Percent size={12} color="#ef4444" />
+                                                            <span style={{ color: '#ef4444', fontWeight: '800' }}>Descuento ({selectedCoupon?.code})</span>
+                                                        </div>
+                                                        <span style={{ color: '#ef4444', fontWeight: '800' }}>- $ {formatPrice(discountValue.toFixed(0))}</span>
+                                                    </div>
+                                                )}
+
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '13px' }}>
+                                                    <span style={{ color: 'var(--text-dim)' }}>Comisión APEG (5%)</span>
+                                                    <span style={{ color: '#ff6b6b', fontWeight: '600' }}>- $ {formatPrice(commission.toFixed(0))}</span>
+                                                </div>
+
+                                                {shippingCost > 0 && (
+                                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '13px' }}>
+                                                        <span style={{ color: 'var(--text-dim)' }}>Costo de envío</span>
+                                                        <span style={{ color: '#38bdf8', fontWeight: '600' }}>+ $ {formatPrice(shippingCost.toFixed(0))}</span>
+                                                    </div>
+                                                )}
+
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '16px', fontWeight: '900', paddingTop: '12px', borderTop: '1px solid rgba(255,255,255,0.1)', marginTop: '8px' }}>
+                                                    <span>Recibes en tu cuenta</span>
+                                                    <span style={{ color: 'var(--secondary)' }}>$ {formatPrice(finalTotal.toFixed(0))}</span>
+                                                </div>
                                             </div>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '15px', fontWeight: '800', paddingTop: '8px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-                                                <span>Recibes en tu cuenta</span>
-                                                <span style={{ color: 'var(--secondary)' }}>$ {formatPrice((parseFloat(formData.price) * 0.95).toString())}</span>
-                                            </div>
-                                        </div>
-                                    )}
+                                        );
+                                    })()}
 
                                     <button
                                         type="submit"
@@ -1726,10 +1789,20 @@ const MyStore: React.FC = () => {
                                                             whiteSpace: 'nowrap'
                                                         }}>{product.name}</h3>
 
-                                                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '5px', marginBottom: '10px' }}>
-                                                            <span style={{ color: 'var(--secondary)', fontWeight: '900', fontSize: '20px' }}>
-                                                                {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(product.price || 0)}
-                                                            </span>
+                                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+                                                            <div style={{ display: 'flex', alignItems: 'baseline', gap: '5px' }}>
+                                                                <span style={{ color: 'var(--secondary)', fontWeight: '900', fontSize: '20px' }}>
+                                                                    {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(product.price || 0)}
+                                                                </span>
+                                                            </div>
+                                                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(255,255,255,0.05)', padding: '4px 10px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                                                <Truck size={12} color={parseFloat(product.shipping_cost?.toString() || '0') > 0 ? "#38bdf8" : "#22c55e"} />
+                                                                <span style={{ fontSize: '11px', fontWeight: '800', color: parseFloat(product.shipping_cost?.toString() || '0') > 0 ? "#38bdf8" : "#22c55e" }}>
+                                                                    {parseFloat(product.shipping_cost?.toString() || '0') > 0
+                                                                        ? `+ $${formatPrice(product.shipping_cost?.toString() || '0')}`
+                                                                        : 'ENVÍO GRATIS'}
+                                                                </span>
+                                                            </div>
                                                         </div>
 
                                                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
