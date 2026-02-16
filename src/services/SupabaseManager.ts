@@ -84,7 +84,7 @@ export interface Notification {
  * Falls back to the original URL if it's not a Supabase storage URL or if transformation isn't supported.
  */
 export const optimizeImage = (url: string | null | undefined, options: { width?: number; height?: number; quality?: number; resize?: 'cover' | 'contain' | 'fill' } = {}) => {
-    if (!url) return '';
+    if (!url) return undefined;
 
     // If it's a relative path, assume it's from the products bucket
     if (url && !url.startsWith('http') && !url.startsWith('blob:') && !url.startsWith('data:')) {

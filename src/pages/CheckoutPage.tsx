@@ -64,6 +64,23 @@ const CheckoutPage: React.FC = () => {
             if (session) {
                 setUser(session.user);
 
+                // Check for Mercado Pago return params
+                const params = new URLSearchParams(location.search);
+                const mpStatus = params.get('status');
+                if (mpStatus === 'success') {
+                    setIsSuccess(true);
+                    clearCart();
+                    // Optional: You could update order status here if not using Webhooks
+                    // But usually Webhooks follow up. For simple test, we show success.
+                } else if (mpStatus === 'failure') {
+                    setStatusMessage({
+                        title: 'Pago Fallido',
+                        message: 'Hubo un error al procesar tu pago con Mercado Pago. Por favor intenta de nuevo.',
+                        type: 'error'
+                    });
+                    setShowStatusModal(true);
+                }
+
                 // Fetch full profile
                 const { data: profile } = await supabase
                     .from('profiles')
@@ -235,6 +252,9 @@ const CheckoutPage: React.FC = () => {
                 ordersBySeller[sellerId].push(item);
             });
 
+            let firstOrderId = '';
+            const allItemsForMp: any[] = [];
+
             // Create orders by seller
             for (const [sellerId, items] of Object.entries(ordersBySeller)) {
                 const sellerTotal = items.reduce((acc, item) => acc + (item.price * item.quantity), 0);
@@ -245,21 +265,21 @@ const CheckoutPage: React.FC = () => {
                     : shipping.address;
 
                 const { data: orderData, error: orderError } = await supabase.from('orders').insert({
-                    user_id: user.id, // Required by DB
+                    user_id: user.id,
                     buyer_id: user.id,
                     seller_id: sellerId === 'admin' ? null : sellerId,
                     total_amount: sellerTotal,
-                    status: 'Pagado',
+                    status: 'Pendiente de Pago',
                     shipping_address: fullAddress,
                     buyer_name: shipping.name,
                     buyer_phone: shipping.phone,
-                    seller_net_amount: sellerTotal // Database trigger will override, but providing for typing
                 } as any).select().single();
 
                 if (orderError) throw orderError;
                 if (!orderData) throw new Error('Failed to create order');
 
                 const newOrderId = (orderData as any).id;
+                if (!firstOrderId) firstOrderId = newOrderId;
 
                 // Create order items
                 for (const item of items) {
@@ -271,58 +291,55 @@ const CheckoutPage: React.FC = () => {
                     });
                     if (itemError) throw itemError;
 
-                    // Update product status
-                    await supabase
-                        .from('products')
-                        .update({
-                            status: 'sold',
-                            negotiating_buyer_id: null,
-                            negotiation_expires_at: null
-                        } as any)
-                        .eq('id', item.id);
-
-                    // Mark active offer as completed
-                    await supabase
-                        .from('offers')
-                        .update({ status: 'completed' } as any)
-                        .eq('product_id', item.id)
-                        .eq('buyer_id', user.id) // DB column is buyer_id
-                        .in('status', ['accepted', 'countered']);
-                }
-
-                // Notify seller
-                if (sellerId !== 'admin') {
-                    await supabase.from('notifications').insert([{
-                        user_id: sellerId,
-                        title: '¡Venta realizada!',
-                        message: `Has vendido productos por $${new Intl.NumberFormat('es-CO').format(sellerTotal)}. Prepáralos para el envío.`,
-                        type: 'order_new',
-                        link: '/my-store?tab=orders'
-                    } as any]);
+                    allItemsForMp.push({
+                        id: item.id,
+                        name: item.name,
+                        price: item.price,
+                        quantity: item.quantity
+                    });
                 }
             }
 
-            // Notify buyer
-            await supabase.from('notifications').insert([{
-                user_id: user.id,
-                title: '¡Compra exitosa!',
-                message: `Tu pedido por $${new Intl.NumberFormat('es-CO').format(totalAmount)} ha sido confirmado.`,
-                type: 'order_new',
-                link: '/?tab=myorders'
-            }]);
+            // 2. Call Mercado Pago Edge Function
+            const { data: mpData, error: mpError } = await supabase.functions.invoke('mercadopago-preference', {
+                body: {
+                    items: allItemsForMp,
+                    buyer_email: user.email,
+                    order_id: firstOrderId
+                }
+            });
 
-            setIsSuccess(true);
-            setTimeout(() => {
-                clearCart();
-                navigate('/');
-            }, 3000);
+            if (mpError) throw mpError;
+            if (mpData?.init_point) {
+                // Redirect to Mercado Pago
+                window.location.href = mpData.init_point;
+            } else {
+                throw new Error('No se pudo generar el link de pago');
+            }
 
         } catch (err: any) {
             console.error('Order error:', err);
+
+            let errorMessage = err.message || 'Error al procesar el pedido. Por favor intenta de nuevo.';
+
+            // Try to extract more details from Supabase FunctionsHttpError
+            try {
+                if (err.context && typeof err.context.json === 'function') {
+                    const errorBody = await err.context.json();
+                    if (errorBody.error) errorMessage = errorBody.error;
+                    if (errorBody.details) errorMessage += `: ${errorBody.details}`;
+                    if (errorBody.raw) {
+                        errorMessage += `\nRaw: ${JSON.stringify(errorBody.raw)}`;
+                    }
+                }
+            } catch (jsonErr) {
+                console.warn('Could not parse error body:', jsonErr);
+            }
+
             if (err.code === '42501') {
                 setStatusMessage({ title: 'Permisos', message: 'Error de permisos en la base de datos. Por favor ejecuta el script SQL para habilitar la creación de pedidos.', type: 'error' });
             } else {
-                setStatusMessage({ title: 'Error', message: err.message || 'Error al procesar el pedido. Por favor intenta de nuevo.', type: 'error' });
+                setStatusMessage({ title: 'Error', message: errorMessage, type: 'error' });
             }
             setShowStatusModal(true);
         } finally {

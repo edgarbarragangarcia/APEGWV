@@ -2069,7 +2069,7 @@ const MyStore: React.FC = () => {
                                         <div style={{ display: 'flex', gap: '15px', marginBottom: '20px', alignItems: 'center' }}>
                                             <div style={{ position: 'relative' }}>
                                                 <img
-                                                    src={optimizeImage(offer.product?.image_url, { width: 150, height: 150 }) || ''}
+                                                    src={optimizeImage(offer.product?.image_url, { width: 150, height: 150 })}
                                                     style={{ width: '65px', height: '65px', borderRadius: '16px', objectFit: 'cover', border: '1px solid rgba(255,255,255,0.1)' }}
                                                     alt=""
                                                     onError={(e) => {
