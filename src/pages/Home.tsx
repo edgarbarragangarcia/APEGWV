@@ -1262,8 +1262,17 @@ const Home: React.FC = () => {
 
                                     {/* Price & Actions Row */}
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '15px', marginBottom: '25px' }}>
-                                        <div style={{ fontSize: '24px', fontWeight: '900', color: 'var(--secondary)' }}>
-                                            ${new Intl.NumberFormat('es-CO').format(selectedProduct.price)}
+                                        <div>
+                                            <div style={{ fontSize: '24px', fontWeight: '900', color: 'var(--secondary)' }}>
+                                                ${new Intl.NumberFormat('es-CO').format(selectedProduct.price)}
+                                            </div>
+                                            <div style={{ fontSize: '12px', color: 'var(--text-dim)', marginTop: '2px', fontWeight: '600' }}>
+                                                {Number(selectedProduct.shipping_cost) > 0 ? (
+                                                    <>+ $ {new Intl.NumberFormat('es-CO').format(selectedProduct.shipping_cost)} envío</>
+                                                ) : (
+                                                    <span style={{ color: 'var(--secondary)' }}>Envío GRATIS</span>
+                                                )}
+                                            </div>
                                         </div>
 
                                         <div style={{ display: 'flex', gap: '8px' }}>

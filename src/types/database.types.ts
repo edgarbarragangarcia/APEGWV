@@ -41,6 +41,7 @@ export type Database = {
           id: string
           product_id: string
           quantity: number
+          selected_size: string | null
           user_id: string
         }
         Insert: {
@@ -48,6 +49,7 @@ export type Database = {
           id?: string
           product_id: string
           quantity?: number
+          selected_size?: string | null
           user_id: string
         }
         Update: {
@@ -55,6 +57,7 @@ export type Database = {
           id?: string
           product_id?: string
           quantity?: number
+          selected_size?: string | null
           user_id?: string
         }
         Relationships: [
@@ -103,67 +106,46 @@ export type Database = {
         Row: {
           code: string
           created_at: string | null
-          description: string | null
           discount_type: string
           discount_value: number
-          end_date: string | null
           id: string
           is_active: boolean | null
           min_purchase_amount: number | null
           product_id: string | null
           seller_id: string
-          start_date: string | null
-          usage_count: number | null
           usage_limit: number | null
+          used_count: number | null
+          valid_until: string | null
         }
         Insert: {
           code: string
           created_at?: string | null
-          description?: string | null
           discount_type: string
           discount_value: number
-          end_date?: string | null
           id?: string
           is_active?: boolean | null
           min_purchase_amount?: number | null
           product_id?: string | null
           seller_id: string
-          start_date?: string | null
-          usage_count?: number | null
           usage_limit?: number | null
+          used_count?: number | null
+          valid_until?: string | null
         }
         Update: {
           code?: string
           created_at?: string | null
-          description?: string | null
           discount_type?: string
           discount_value?: number
-          end_date?: string | null
           id?: string
           is_active?: boolean | null
           min_purchase_amount?: number | null
           product_id?: string | null
           seller_id?: string
-          start_date?: string | null
-          usage_count?: number | null
           usage_limit?: number | null
+          used_count?: number | null
+          valid_until?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "coupons_product_id_fkey"
-            columns: ["product_id"]
-            isOneToOne: false
-            referencedRelation: "products"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "coupons_seller_id_fkey"
-            columns: ["seller_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       course_blocked_days: {
         Row: {
@@ -670,39 +652,6 @@ export type Database = {
           },
         ]
       }
-      payment_methods: {
-        Row: {
-          card_holder: string
-          card_type: string
-          created_at: string | null
-          expiry: string
-          id: string
-          is_default: boolean | null
-          last_four: string
-          user_id: string
-        }
-        Insert: {
-          card_holder: string
-          card_type: string
-          created_at?: string | null
-          expiry: string
-          id?: string
-          is_default?: boolean | null
-          last_four: string
-          user_id: string
-        }
-        Update: {
-          card_holder?: string
-          card_type?: string
-          created_at?: string | null
-          expiry?: string
-          id?: string
-          is_default?: boolean | null
-          last_four?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
       product_likes: {
         Row: {
           created_at: string
@@ -737,6 +686,7 @@ export type Database = {
           brand: string | null
           category: string | null
           clothing_type: string | null
+          condition: string | null
           created_at: string
           description: string | null
           id: string
@@ -748,12 +698,14 @@ export type Database = {
           negotiation_expires_at: string | null
           price: number
           seller_id: string | null
+          shipping_cost: number | null
           size: string | null
           size_clothing: string | null
           size_shoes_cm: string | null
           size_shoes_col: string | null
           size_shoes_eu: string | null
           size_shoes_us: string | null
+          sizes_inventory: Json | null
           status: string | null
           stock_quantity: number | null
           updated_at: string
@@ -762,6 +714,7 @@ export type Database = {
           brand?: string | null
           category?: string | null
           clothing_type?: string | null
+          condition?: string | null
           created_at?: string
           description?: string | null
           id?: string
@@ -773,12 +726,14 @@ export type Database = {
           negotiation_expires_at?: string | null
           price: number
           seller_id?: string | null
+          shipping_cost?: number | null
           size?: string | null
           size_clothing?: string | null
           size_shoes_cm?: string | null
           size_shoes_col?: string | null
           size_shoes_eu?: string | null
           size_shoes_us?: string | null
+          sizes_inventory?: Json | null
           status?: string | null
           stock_quantity?: number | null
           updated_at?: string
@@ -787,6 +742,7 @@ export type Database = {
           brand?: string | null
           category?: string | null
           clothing_type?: string | null
+          condition?: string | null
           created_at?: string
           description?: string | null
           id?: string
@@ -798,12 +754,14 @@ export type Database = {
           negotiation_expires_at?: string | null
           price?: number
           seller_id?: string | null
+          shipping_cost?: number | null
           size?: string | null
           size_clothing?: string | null
           size_shoes_cm?: string | null
           size_shoes_col?: string | null
           size_shoes_eu?: string | null
           size_shoes_us?: string | null
+          sizes_inventory?: Json | null
           status?: string | null
           stock_quantity?: number | null
           updated_at?: string
@@ -1001,50 +959,6 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "round_holes_round_id_fkey"
-            columns: ["round_id"]
-            isOneToOne: false
-            referencedRelation: "rounds"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      round_scores: {
-        Row: {
-          created_at: string
-          fairways_hit: boolean | null
-          gir: boolean | null
-          hole_number: number
-          id: string
-          par: number
-          putts: number | null
-          round_id: string
-          score: number
-        }
-        Insert: {
-          created_at?: string
-          fairways_hit?: boolean | null
-          gir?: boolean | null
-          hole_number: number
-          id?: string
-          par: number
-          putts?: number | null
-          round_id: string
-          score: number
-        }
-        Update: {
-          created_at?: string
-          fairways_hit?: boolean | null
-          gir?: boolean | null
-          hole_number?: number
-          id?: string
-          par?: number
-          putts?: number | null
-          round_id?: string
-          score?: number
-        }
-        Relationships: [
-          {
-            foreignKeyName: "round_scores_round_id_fkey"
             columns: ["round_id"]
             isOneToOne: false
             referencedRelation: "rounds"
@@ -1439,6 +1353,8 @@ export type Database = {
       }
       get_user_details: { Args: { target_user_id: string }; Returns: Json }
       is_group_member: { Args: { gid: string }; Returns: boolean }
+      is_saved_group_member: { Args: { _group_id: string }; Returns: boolean }
+      is_saved_group_owner: { Args: { _group_id: string }; Returns: boolean }
       reset_expired_negotiations: {
         Args: never
         Returns: {
@@ -1581,4 +1497,3 @@ export const Constants = {
     Enums: {},
   },
 } as const
-

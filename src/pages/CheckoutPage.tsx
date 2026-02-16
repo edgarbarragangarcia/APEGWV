@@ -15,11 +15,11 @@ import PageHero from '../components/PageHero';
 const CheckoutPage: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    const { cartItems, totalAmount: cartTotal, clearCart } = useCart();
+    const { cartItems, totalAmount: cartSubtotal, shippingTotal, clearCart } = useCart();
 
     const reservationData = location.state?.reservation;
     const isReservation = !!reservationData;
-    const totalAmount = isReservation ? reservationData.price : cartTotal;
+    const totalAmount = isReservation ? reservationData.price : (cartSubtotal + shippingTotal);
 
     const [step, setStep] = useState<1 | 2>(isReservation ? 2 : 1);
 
@@ -157,7 +157,9 @@ const CheckoutPage: React.FC = () => {
 
             // Create orders by seller
             for (const [sellerId, items] of Object.entries(ordersBySeller)) {
-                const sellerTotal = items.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+                const sellerSubtotal = items.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+                const sellerShipping = items.reduce((acc, item) => acc + (Number(item.shipping_cost) || 0), 0);
+                const sellerTotal = sellerSubtotal + sellerShipping;
 
                 // Address logic
                 const fullAddress = shipping.city && !shipping.address.toLowerCase().includes(shipping.city.toLowerCase())
@@ -196,6 +198,15 @@ const CheckoutPage: React.FC = () => {
                         name: item.name,
                         price: item.price,
                         quantity: item.quantity
+                    });
+                }
+
+                if (sellerShipping > 0) {
+                    allItemsForMp.push({
+                        id: `shipping-${sellerId}`,
+                        name: 'Gastos de Envío',
+                        price: sellerShipping,
+                        quantity: 1
                     });
                 }
             }
@@ -575,8 +586,14 @@ const CheckoutPage: React.FC = () => {
                             <div style={{ marginTop: '30px' }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
                                     <span style={{ color: 'var(--text-dim)' }}>Subtotal</span>
-                                    <span>$ {new Intl.NumberFormat('es-CO').format(totalAmount)}</span>
+                                    <span>$ {new Intl.NumberFormat('es-CO').format(isReservation ? totalAmount : cartSubtotal)}</span>
                                 </div>
+                                {!isReservation && shippingTotal > 0 && (
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
+                                        <span style={{ color: 'var(--text-dim)' }}>Envío</span>
+                                        <span>$ {new Intl.NumberFormat('es-CO').format(shippingTotal)}</span>
+                                    </div>
+                                )}
                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px', fontSize: '20px', fontWeight: '900' }}>
                                     <span>Total</span>
                                     <span style={{ color: 'var(--secondary)' }}>$ {new Intl.NumberFormat('es-CO').format(totalAmount)}</span>

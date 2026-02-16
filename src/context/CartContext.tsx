@@ -23,6 +23,7 @@ interface CartContextType {
     clearCart: () => Promise<void>;
     totalItems: number;
     totalAmount: number;
+    shippingTotal: number;
     isLoading: boolean;
 }
 
@@ -189,6 +190,11 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         [cartItems]
     );
 
+    const shippingTotal = useMemo(() =>
+        cartItems.reduce((acc, item) => acc + (Number(item.shipping_cost) || 0), 0),
+        [cartItems]
+    );
+
     return (
         <CartContext.Provider value={{
             cartItems,
@@ -198,6 +204,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
             clearCart,
             totalItems,
             totalAmount,
+            shippingTotal,
             isLoading
         }}>
             {children}

@@ -105,7 +105,9 @@ const MyStore: React.FC = () => {
         sizes_inventory: [] as { size: string; quantity: number }[],
         condition: 'Nuevo',
         is_negotiable: false,
-        selectedCouponId: ''
+        selectedCouponId: '',
+        shipping_cost: '0',
+        displayShippingCost: '0'
     });
 
     const [brandsList, setBrandsList] = useState<string[]>([]);
@@ -153,6 +155,16 @@ const MyStore: React.FC = () => {
             ...prev,
             price: numeric,
             displayPrice: formatPrice(numeric)
+        }));
+    };
+
+    const handleShippingCostChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const val = e.target.value;
+        const numeric = val.replace(/\D/g, '');
+        setFormData(prev => ({
+            ...prev,
+            shipping_cost: numeric,
+            displayShippingCost: formatPrice(numeric)
         }));
     };
 
@@ -503,6 +515,7 @@ const MyStore: React.FC = () => {
                         images: formData.images,
                         brand: formData.brand,
                         sizes_inventory: formData.sizes_inventory,
+                        shipping_cost: parseFloat(formData.shipping_cost) || 0,
                         updated_at: new Date().toISOString()
                     })
                     .eq('id', editingId)
@@ -530,7 +543,8 @@ const MyStore: React.FC = () => {
                         stock_quantity: formData.sizes_inventory.reduce((acc, curr) => acc + curr.quantity, 0),
                         brand: formData.brand,
                         sizes_inventory: formData.sizes_inventory,
-                        images: formData.images
+                        images: formData.images,
+                        shipping_cost: parseFloat(formData.shipping_cost) || 0
                     }])
                     .select()
                     .single();
@@ -577,7 +591,9 @@ const MyStore: React.FC = () => {
             images: [],
             brand: '',
             sizes_inventory: [],
-            condition: 'Nuevo'
+            condition: 'Nuevo',
+            shipping_cost: '0',
+            displayShippingCost: '0'
         });
         setEditingId(null);
     };
@@ -598,6 +614,8 @@ const MyStore: React.FC = () => {
             size_shoes_col: (product as any).size_shoes_col || '',
             size_shoes_cm: (product as any).size_shoes_cm || '',
             is_negotiable: (product as any).is_negotiable || false,
+            shipping_cost: product.shipping_cost?.toString() || '0',
+            displayShippingCost: formatPrice(product.shipping_cost?.toString() || '0'),
             selectedCouponId: coupons.find(c => c.product_id === product.id)?.id || '',
             images: Array.isArray((product as any).images) ? (product as any).images : (product.image_url ? [product.image_url] : []),
             brand: (product as any).brand || '',
@@ -1239,21 +1257,39 @@ const MyStore: React.FC = () => {
                                             {categories.map(c => <option key={c} value={c}>{c}</option>)}
                                         </select>
                                     </div>
-                                    <div>
-                                        <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Precio (COP)</label>
-                                        <div style={{ position: 'relative' }}>
-                                            <input
-                                                required
-                                                type="text"
-                                                inputMode="numeric"
-                                                value={formData.displayPrice}
-                                                onChange={handlePriceChange}
-                                                style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '12px', color: 'white', fontSize: '15px' }}
-                                                placeholder="0"
-                                            />
-                                            <span style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-dim)', fontSize: '12px', pointerEvents: 'none' }}>
-                                                $
-                                            </span>
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                                        <div>
+                                            <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Precio (COP)</label>
+                                            <div style={{ position: 'relative' }}>
+                                                <input
+                                                    required
+                                                    type="text"
+                                                    inputMode="numeric"
+                                                    value={formData.displayPrice}
+                                                    onChange={handlePriceChange}
+                                                    style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '12px', color: 'white', fontSize: '15px' }}
+                                                    placeholder="0"
+                                                />
+                                                <span style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-dim)', fontSize: '12px', pointerEvents: 'none' }}>
+                                                    $
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Envío (COP)</label>
+                                            <div style={{ position: 'relative' }}>
+                                                <input
+                                                    type="text"
+                                                    inputMode="numeric"
+                                                    value={formData.displayShippingCost}
+                                                    onChange={handleShippingCostChange}
+                                                    style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '12px', color: 'white', fontSize: '15px' }}
+                                                    placeholder="0"
+                                                />
+                                                <span style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-dim)', fontSize: '12px', pointerEvents: 'none' }}>
+                                                    $
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
 
@@ -2359,7 +2395,7 @@ const MyStore: React.FC = () => {
                                             </div>
                                         </div>
                                         <div style={{ marginTop: '15px', paddingTop: '15px', borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--text-dim)', fontWeight: '600' }}>
-                                            <span>USOS: {coupon.usage_count || 0} / {coupon.usage_limit || '∞'}</span>
+                                            <span>USOS: {coupon.used_count || 0} / {coupon.usage_limit || '∞'}</span>
                                             <span>MÍNIMO: ${coupon.min_purchase_amount?.toLocaleString() || 0}</span>
                                         </div>
                                     </Card>

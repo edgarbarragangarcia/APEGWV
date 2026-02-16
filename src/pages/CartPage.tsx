@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '../services/SupabaseManager';
 import {
     ShoppingBag, Trash2,
     Package, ShieldCheck, Ticket, CheckCircle2, XCircle
@@ -15,42 +16,59 @@ import PageHero from '../components/PageHero';
 const CartPage: React.FC = () => {
     const navigate = useNavigate();
     const { warning } = useToast();
-    const { cartItems, removeFromCart, updateQuantity, totalAmount, totalItems } = useCart();
+    const { cartItems, removeFromCart, updateQuantity, totalAmount, totalItems, shippingTotal } = useCart();
     const { user } = useAuth();
 
     // Coupon State
-    const [couponCode, setCouponCode] = React.useState('');
-    const [appliedDiscount, setAppliedDiscount] = React.useState(0);
-    const [isApplyingCoupon, setIsApplyingCoupon] = React.useState(false);
-    const [couponError, setCouponError] = React.useState<string | null>(null);
-    const [couponSuccess, setCouponSuccess] = React.useState<string | null>(null);
+    const [couponCode, setCouponCode] = useState('');
+    const [appliedDiscount, setAppliedDiscount] = useState(0);
+    const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
+    const [couponError, setCouponError] = useState<string | null>(null);
+    const [couponSuccess, setCouponSuccess] = useState<string | null>(null);
 
-    const handleApplyCoupon = () => {
+    const handleApplyCoupon = async () => {
+        if (!couponCode.trim()) return;
+
         setIsApplyingCoupon(true);
         setCouponError(null);
         setCouponSuccess(null);
 
-        // Simulate API delay
-        setTimeout(() => {
-            const code = couponCode.toUpperCase().trim();
-            if (code === 'APEG10') {
-                setAppliedDiscount(10);
-                setCouponSuccess('¡Cupón APEG10 aplicado con éxito! (10% de descuento)');
-                setCouponCode('');
-            } else if (code === 'BIENVENIDO') {
-                setAppliedDiscount(15);
-                setCouponSuccess('¡Cupón BIENVENIDO aplicado con éxito! (15% de descuento)');
-                setCouponCode('');
-            } else {
+        try {
+            const { data: coupon, error } = await supabase
+                .from('coupons')
+                .select('*')
+                .eq('code', couponCode.toUpperCase().trim())
+                .eq('is_active', true)
+                .single();
+
+            if (error || !coupon) {
                 setCouponError('El cupón ingresado no es válido o ha expirado.');
                 setAppliedDiscount(0);
+            } else {
+                // Check if coupon.valid_until is in the future if it exists
+                if (coupon.valid_until && new Date(coupon.valid_until) < new Date()) {
+                    setCouponError('Este cupón ha expirado.');
+                    setAppliedDiscount(0);
+                } else if (coupon.usage_limit && (coupon.used_count || 0) >= coupon.usage_limit) {
+                    setCouponError('Este cupón ha alcanzado su límite de usos.');
+                    setAppliedDiscount(0);
+                } else {
+                    const discountValue = Number(coupon.discount_value);
+                    setAppliedDiscount(discountValue);
+                    setCouponSuccess(`¡Cupón ${coupon.code} aplicado con éxito! (${discountValue}% de descuento)`);
+                    // We don't clear the code so user can see it's applied
+                }
             }
+        } catch (err) {
+            console.error('Error applying coupon:', err);
+            setCouponError('Error al validar el cupón. Reintenta más tarde.');
+        } finally {
             setIsApplyingCoupon(false);
-        }, 800);
+        }
     };
 
     const discountAmount = (totalAmount * appliedDiscount) / 100;
-    const finalTotal = totalAmount - discountAmount;
+    const finalTotal = totalAmount - discountAmount + shippingTotal;
 
     const handleCheckout = () => {
         if (!user) {
@@ -105,6 +123,7 @@ const CartPage: React.FC = () => {
                         discountAmount={discountAmount}
                         appliedDiscount={appliedDiscount}
                         finalTotal={finalTotal}
+                        shippingTotal={shippingTotal}
                         couponCode={couponCode}
                         setCouponCode={setCouponCode}
                         onApplyCoupon={handleApplyCoupon}
@@ -209,6 +228,7 @@ const OrderSummary = ({
     discountAmount,
     appliedDiscount,
     finalTotal,
+    shippingTotal,
     couponCode,
     setCouponCode,
     onApplyCoupon,
@@ -222,6 +242,7 @@ const OrderSummary = ({
     discountAmount: number,
     appliedDiscount: number,
     finalTotal: number,
+    shippingTotal: number,
     couponCode: string,
     setCouponCode: (c: string) => void,
     onApplyCoupon: () => void,
@@ -248,7 +269,11 @@ const OrderSummary = ({
 
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', color: 'var(--text-dim)' }}>
                 <span>Gastos de envío</span>
-                <span style={{ color: 'var(--secondary)', fontWeight: '700' }}>GRATIS</span>
+                {shippingTotal > 0 ? (
+                    <span style={{ color: 'white' }}>$ {new Intl.NumberFormat('es-CO').format(shippingTotal)}</span>
+                ) : (
+                    <span style={{ color: 'var(--secondary)', fontWeight: '700' }}>GRATIS</span>
+                )}
             </div>
 
             {/* Coupon Input Section */}
