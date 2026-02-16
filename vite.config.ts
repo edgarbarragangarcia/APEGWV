@@ -7,6 +7,7 @@ export default defineConfig({
   server: {
     port: 5180,
     strictPort: true,
+    host: true, // Permite acceso desde el móvil
     proxy: {
       '/supabase-proxy': {
         target: 'https://drqyvhwgnuvrcmwthwwn.supabase.co',

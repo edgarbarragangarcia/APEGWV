@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../services/SupabaseManager';
 import { Mail, Lock, User, Loader2, ArrowRight, Phone, Award, Hash, Trophy, Activity, Zap, Users } from 'lucide-react';
-import PageHero from '../components/PageHero';
+
 
 const Auth: React.FC = () => {
     const [isLogin, setIsLogin] = useState(true);
@@ -113,6 +113,20 @@ const Auth: React.FC = () => {
         }
     };
 
+    const [connStatus, setConnStatus] = useState<'testing' | 'ok' | 'fail'>('testing');
+
+    React.useEffect(() => {
+        const test = async () => {
+            try {
+                const res = await fetch('/supabase-proxy/auth/v1/health');
+                setConnStatus(res.ok || res.status === 401 ? 'ok' : 'fail');
+            } catch {
+                setConnStatus('fail');
+            }
+        };
+        test();
+    }, []);
+
     return (
         <div style={{
             minHeight: '100dvh',
@@ -126,14 +140,29 @@ const Auth: React.FC = () => {
             fontFamily: '"Outfit", sans-serif',
             overflow: 'hidden'
         }}>
-            <PageHero />
-            {/* Cinematic Video Background */}
-            {/* Modern Animated Background */}
-            <div className="modern-auth-bg">
-                <div className="grid-overlay" />
-                <div className="auth-orb orb-1" />
-                <div className="auth-orb orb-2" />
-                <div className="auth-orb orb-3" />
+            {/* Status Indicator */}
+            <div style={{
+                position: 'fixed',
+                top: 20,
+                right: 20,
+                zIndex: 100,
+                padding: '8px 12px',
+                borderRadius: '20px',
+                background: 'rgba(0,0,0,0.8)',
+                color: 'white',
+                fontSize: '12px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                border: '1px solid rgba(255,255,255,0.1)'
+            }}>
+                <div style={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: '50%',
+                    background: connStatus === 'ok' ? '#4ade80' : connStatus === 'fail' ? '#ef4444' : '#f59e0b'
+                }} />
+                {connStatus === 'ok' ? 'Servidor Conectado' : connStatus === 'fail' ? 'Error de Red Local' : 'Verificando red...'}
             </div>
 
             <motion.div
