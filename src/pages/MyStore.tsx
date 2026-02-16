@@ -848,10 +848,10 @@ const MyStore: React.FC = () => {
             const dataToSave = {
                 code: couponFormData.code.toUpperCase(),
                 discount_type: couponFormData.discount_type,
-                discount_value: parseFloat(couponFormData.discount_value),
+                value: parseFloat(couponFormData.discount_value),
                 usage_limit: couponFormData.usage_limit ? parseInt(couponFormData.usage_limit) : null,
                 min_purchase_amount: couponFormData.min_purchase_amount ? parseFloat(couponFormData.min_purchase_amount) : 0,
-                is_active: couponFormData.is_active,
+                active: couponFormData.is_active,
                 seller_id: user.id
             };
 
@@ -898,10 +898,10 @@ const MyStore: React.FC = () => {
         setCouponFormData({
             code: coupon.code,
             discount_type: coupon.discount_type as 'percentage' | 'fixed',
-            discount_value: coupon.discount_value.toString(),
+            discount_value: coupon.value.toString(),
             usage_limit: coupon.usage_limit?.toString() || '',
             min_purchase_amount: coupon.min_purchase_amount?.toString() || '',
-            is_active: coupon.is_active || true
+            is_active: coupon.active || true
         });
         setShowCouponForm(true);
     };
@@ -1571,7 +1571,7 @@ const MyStore: React.FC = () => {
                                             <option value="">Ningún cupón seleccionado</option>
                                             {coupons.map(coupon => (
                                                 <option key={coupon.id} value={coupon.id}>
-                                                    {coupon.code} - {coupon.discount_type === 'percentage' ? `${coupon.discount_value}% OFF` : `$${coupon.discount_value.toLocaleString()} OFF`}
+                                                    {coupon.code} - {coupon.discount_type === 'percentage' ? `${coupon.value}% OFF` : `$${coupon.value.toLocaleString()} OFF`}
                                                     {coupon.product_id && coupon.product_id !== editingId ? ' (Asignado a otro producto)' : ''}
                                                 </option>
                                             ))}
@@ -2419,12 +2419,12 @@ const MyStore: React.FC = () => {
                                                 <div>
                                                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                                         <span style={{ fontWeight: '900', fontSize: '16px', letterSpacing: '0.05em' }}>{coupon.code}</span>
-                                                        <span style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '6px', background: coupon.is_active ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)', color: coupon.is_active ? '#10b981' : '#ef4444', fontWeight: '800' }}>
-                                                            {coupon.is_active ? 'ACTIVO' : 'INACTIVO'}
+                                                        <span style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '6px', background: coupon.active ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)', color: coupon.active ? '#10b981' : '#ef4444', fontWeight: '800' }}>
+                                                            {coupon.active ? 'ACTIVO' : 'INACTIVO'}
                                                         </span>
                                                     </div>
                                                     <p style={{ fontSize: '12px', color: 'var(--text-dim)', marginTop: '2px' }}>
-                                                        {coupon.discount_type === 'percentage' ? `${coupon.discount_value}% de descuento` : `$${coupon.discount_value.toLocaleString()} de descuento`}
+                                                        {coupon.discount_type === 'percentage' ? `${coupon.value}% de descuento` : `$${coupon.value.toLocaleString()} de descuento`}
                                                     </p>
                                                 </div>
                                             </div>

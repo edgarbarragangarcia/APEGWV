@@ -104,46 +104,46 @@ export type Database = {
       }
       coupons: {
         Row: {
+          active: boolean | null
           code: string
           created_at: string | null
           discount_type: string
-          discount_value: number
           id: string
-          is_active: boolean | null
           min_purchase_amount: number | null
           product_id: string | null
           seller_id: string
           usage_limit: number | null
           used_count: number | null
           valid_until: string | null
+          value: number
         }
         Insert: {
+          active?: boolean | null
           code: string
           created_at?: string | null
           discount_type: string
-          discount_value: number
           id?: string
-          is_active?: boolean | null
           min_purchase_amount?: number | null
           product_id?: string | null
           seller_id: string
           usage_limit?: number | null
           used_count?: number | null
           valid_until?: string | null
+          value: number
         }
         Update: {
+          active?: boolean | null
           code?: string
           created_at?: string | null
           discount_type?: string
-          discount_value?: number
           id?: string
-          is_active?: boolean | null
           min_purchase_amount?: number | null
           product_id?: string | null
           seller_id?: string
           usage_limit?: number | null
           used_count?: number | null
           valid_until?: string | null
+          value?: number
         }
         Relationships: []
       }
@@ -651,6 +651,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      payment_methods: {
+        Row: {
+          card_holder: string
+          card_type: string
+          created_at: string | null
+          encrypted_cvv: string | null
+          encrypted_number: string | null
+          expiry: string
+          id: string
+          is_default: boolean | null
+          last_four: string
+          user_id: string
+        }
+        Insert: {
+          card_holder: string
+          card_type: string
+          created_at?: string | null
+          encrypted_cvv?: string | null
+          encrypted_number?: string | null
+          expiry: string
+          id?: string
+          is_default?: boolean | null
+          last_four: string
+          user_id: string
+        }
+        Update: {
+          card_holder?: string
+          card_type?: string
+          created_at?: string | null
+          encrypted_cvv?: string | null
+          encrypted_number?: string | null
+          expiry?: string
+          id?: string
+          is_default?: boolean | null
+          last_four?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       product_likes: {
         Row: {

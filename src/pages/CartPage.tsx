@@ -38,7 +38,7 @@ const CartPage: React.FC = () => {
                 .from('coupons')
                 .select('*')
                 .eq('code', couponCode.toUpperCase().trim())
-                .eq('is_active', true)
+                .eq('active', true)
                 .single();
 
             if (error || !coupon) {
@@ -53,7 +53,7 @@ const CartPage: React.FC = () => {
                     setCouponError('Este cupón ha alcanzado su límite de usos.');
                     setAppliedDiscount(0);
                 } else {
-                    const discountValue = Number(coupon.discount_value);
+                    const discountValue = Number(coupon.value);
                     setAppliedDiscount(discountValue);
                     setCouponSuccess(`¡Cupón ${coupon.code} aplicado con éxito! (${discountValue}% de descuento)`);
                     // We don't clear the code so user can see it's applied
