@@ -324,12 +324,15 @@ const CheckoutPage: React.FC = () => {
 
             // Try to extract more details from Supabase FunctionsHttpError
             try {
-                if (err.context && typeof err.context.json === 'function') {
+                if (err.context) {
                     const errorBody = await err.context.json();
-                    if (errorBody.error) errorMessage = errorBody.error;
-                    if (errorBody.details) errorMessage += `: ${errorBody.details}`;
+                    console.error('Edge Function Error Details:', errorBody);
+
+                    if (errorBody.error) errorMessage = `Error: ${errorBody.error}`;
+                    if (errorBody.details) errorMessage += `\n\nDetalles: ${errorBody.details}`;
                     if (errorBody.raw) {
-                        errorMessage += `\nRaw: ${JSON.stringify(errorBody.raw)}`;
+                        console.error('Mercado Pago Raw Response:', errorBody.raw);
+                        errorMessage += `\n\nRespuesta de MP: ${JSON.stringify(errorBody.raw, null, 2)}`;
                     }
                 }
             } catch (jsonErr) {
@@ -339,12 +342,13 @@ const CheckoutPage: React.FC = () => {
             if (err.code === '42501') {
                 setStatusMessage({ title: 'Permisos', message: 'Error de permisos en la base de datos. Por favor ejecuta el script SQL para habilitar la creación de pedidos.', type: 'error' });
             } else {
-                setStatusMessage({ title: 'Error', message: errorMessage, type: 'error' });
+                setStatusMessage({ title: 'Error de Pago', message: errorMessage, type: 'error' });
             }
             setShowStatusModal(true);
         } finally {
             setIsProcessing(false);
         }
+
     };
 
 
