@@ -159,7 +159,7 @@ const PremiumProductCard: React.FC<PremiumProductCardProps> = ({ product, onAddT
                         textTransform: 'uppercase',
                         letterSpacing: '0.5px'
                     }}>
-                        {product.brand || 'APEG'}
+                        {product.brand || ''}
                     </span>
                 </div>
 

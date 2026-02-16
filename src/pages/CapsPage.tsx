@@ -1,39 +1,20 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 import CategoryHero from '../components/CategoryHero';
 import PremiumProductCard from '../components/PremiumProductCard';
 import { useFeaturedProducts } from '../hooks/useHomeData';
 import { useCart } from '../context/CartContext';
 import { useNavigate } from 'react-router-dom';
-import FilterBar from '../components/FilterBar';
-import FilterModal from '../components/FilterModal';
 
 const CapsPage: React.FC = () => {
     const navigate = useNavigate();
     const { data: featuredProducts = [], isLoading } = useFeaturedProducts(50);
     const { addToCart } = useCart();
 
-    const [selectedBrand, setSelectedBrand] = useState('Todos');
-    const [selectedSize, setSelectedSize] = useState('Todos');
-    const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
-
     // Filter products for Gorras category
-    const capProducts = featuredProducts.filter((product: any) =>
+    const filteredProducts = featuredProducts.filter((product: any) =>
         (product.category || '').toLowerCase() === 'gorras'
     );
-
-    // Dynamic filters options
-    const brands = ['Todos', ...new Set(capProducts.map((p: any) => p.brand || 'APEG'))] as string[];
-    const sizes = ['Todos', ...new Set(capProducts.flatMap((p: any) =>
-        (p.sizes_inventory || []).map((s: any) => s.size)
-    ).filter(Boolean))] as string[];
-
-    const filteredProducts = capProducts.filter((p: any) => {
-        const brand = p.brand || 'APEG';
-        const matchesBrand = selectedBrand === 'Todos' || brand === selectedBrand;
-        const matchesSize = selectedSize === 'Todos' || (p.sizes_inventory || []).some((s: any) => s.size === selectedSize);
-        return matchesBrand && matchesSize;
-    });
 
     const handleAddToCart = (product: any) => {
         addToCart(product);
@@ -53,36 +34,8 @@ const CapsPage: React.FC = () => {
                 title="Gorras"
                 subtitle="El toque final de tu outfit. Estilo clásico y moderno para protegerte con elegancia."
                 image="/heros/golf_accessories_hero_1770415216840.png"
-                onFilterClick={() => setIsFilterModalOpen(true)}
-                hasFilters={brands.length > 1 || sizes.length > 1}
+                hasFilters={false}
             />
-
-            <FilterModal
-                isOpen={isFilterModalOpen}
-                onClose={() => setIsFilterModalOpen(false)}
-                onClear={() => {
-                    setSelectedBrand('Todos');
-                    setSelectedSize('Todos');
-                }}
-                resultsCount={filteredProducts.length}
-            >
-                {brands.length > 1 && (
-                    <FilterBar
-                        label="Marca"
-                        options={brands}
-                        selectedValue={selectedBrand}
-                        onSelect={setSelectedBrand}
-                    />
-                )}
-                {sizes.length > 1 && (
-                    <FilterBar
-                        label="Talla"
-                        options={sizes}
-                        selectedValue={selectedSize}
-                        onSelect={setSelectedSize}
-                    />
-                )}
-            </FilterModal>
 
             {/* Area de Scroll */}
             <div style={{
@@ -120,12 +73,9 @@ const CapsPage: React.FC = () => {
                             border: '1px dashed rgba(255,255,255,0.1)'
                         }}
                     >
-                        <p style={{ fontSize: '14px', marginBottom: '20px' }}>No hay productos que coincidan con los filtros seleccionados</p>
+                        <p style={{ fontSize: '14px', marginBottom: '20px' }}>No hay productos disponibles en esta categoría</p>
                         <button
-                            onClick={() => {
-                                setSelectedBrand('Todos');
-                                setSelectedSize('Todos');
-                            }}
+                            onClick={() => navigate('/')}
                             style={{
                                 color: 'var(--secondary)',
                                 fontSize: '14px',
@@ -133,7 +83,7 @@ const CapsPage: React.FC = () => {
                                 textDecoration: 'underline'
                             }}
                         >
-                            Limpiar filtros
+                            Volver al inicio
                         </button>
                     </motion.div>
                 ) : (

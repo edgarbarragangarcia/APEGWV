@@ -1,48 +1,23 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 import CategoryHero from '../components/CategoryHero';
 import PremiumProductCard from '../components/PremiumProductCard';
 import { useFeaturedProducts } from '../hooks/useHomeData';
 import { useCart } from '../context/CartContext';
 import { useNavigate } from 'react-router-dom';
-import FilterBar from '../components/FilterBar';
-import FilterSelector from '../components/FilterSelector';
-import FilterModal from '../components/FilterModal';
 
 const ShoesPage: React.FC = () => {
     const navigate = useNavigate();
     const { data: featuredProducts = [], isLoading } = useFeaturedProducts(50);
     const { addToCart } = useCart();
 
-    const [selectedBrand, setSelectedBrand] = useState('Todos');
-    const [selectedSize, setSelectedSize] = useState('Todos');
-    const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
-
     // Filter products for Zapatos category
-    const shoeProducts = featuredProducts.filter((product: any) =>
+    const filteredProducts = featuredProducts.filter((product: any) =>
         (product.category || '').toLowerCase() === 'zapatos'
     );
 
-    // Dynamic filters options
-    const brands = ['Todos', ...new Set(shoeProducts.map((p: any) => p.brand || 'APEG'))] as string[];
-    const sizes = ['Todos', ...new Set(shoeProducts.flatMap((p: any) =>
-        (p.sizes_inventory || []).map((s: any) => s.size)
-    ).filter(Boolean))] as string[];
-
-    const filteredProducts = shoeProducts.filter((p: any) => {
-        const brand = p.brand || 'APEG';
-        const matchesBrand = selectedBrand === 'Todos' || brand === selectedBrand;
-        const matchesSize = selectedSize === 'Todos' || (p.sizes_inventory || []).some((s: any) => s.size === selectedSize);
-        return matchesBrand && matchesSize;
-    });
-
     const handleAddToCart = (product: any) => {
         addToCart(product);
-    };
-
-    const handleClearFilters = () => {
-        setSelectedBrand('Todos');
-        setSelectedSize('Todos');
     };
 
     return (
@@ -59,33 +34,8 @@ const ShoesPage: React.FC = () => {
                 title="Zapatos"
                 subtitle="Comodidad y estabilidad superior para que camines con confianza cada hoyo."
                 image="/heros/golf_shoes_hero_1770415202682.png"
-                onFilterClick={() => setIsFilterModalOpen(true)}
-                hasFilters={brands.length > 1 || sizes.length > 1}
+                hasFilters={false}
             />
-
-            <FilterModal
-                isOpen={isFilterModalOpen}
-                onClose={() => setIsFilterModalOpen(false)}
-                onClear={handleClearFilters}
-                resultsCount={filteredProducts.length}
-            >
-                {brands.length > 1 && (
-                    <FilterBar
-                        label="Marca"
-                        options={brands}
-                        selectedValue={selectedBrand}
-                        onSelect={setSelectedBrand}
-                    />
-                )}
-                {sizes.length > 1 && (
-                    <FilterSelector
-                        label="Talla"
-                        options={sizes}
-                        selectedValue={selectedSize}
-                        onSelect={setSelectedSize}
-                    />
-                )}
-            </FilterModal>
 
             {/* Area de Scroll */}
             <div style={{
@@ -123,12 +73,9 @@ const ShoesPage: React.FC = () => {
                             border: '1px dashed rgba(255,255,255,0.1)'
                         }}
                     >
-                        <p style={{ fontSize: '14px', marginBottom: '20px' }}>No hay productos que coincidan con los filtros seleccionados</p>
+                        <p style={{ fontSize: '14px', marginBottom: '20px' }}>No hay productos disponibles en esta categoría</p>
                         <button
-                            onClick={() => {
-                                setSelectedBrand('Todos');
-                                setSelectedSize('Todos');
-                            }}
+                            onClick={() => navigate('/')}
                             style={{
                                 color: 'var(--secondary)',
                                 fontSize: '14px',
@@ -136,7 +83,7 @@ const ShoesPage: React.FC = () => {
                                 textDecoration: 'underline'
                             }}
                         >
-                            Limpiar filtros
+                            Volver al inicio
                         </button>
                     </motion.div>
                 ) : (

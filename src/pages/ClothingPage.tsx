@@ -1,52 +1,23 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import CategoryHero from '../components/CategoryHero';
 import PremiumProductCard from '../components/PremiumProductCard';
 import { useFeaturedProducts } from '../hooks/useHomeData';
 import { useCart } from '../context/CartContext';
 import { useNavigate } from 'react-router-dom';
-import FilterBar from '../components/FilterBar';
-import FilterSelector from '../components/FilterSelector';
-import FilterModal from '../components/FilterModal';
 
 const ClothingPage: React.FC = () => {
     const navigate = useNavigate();
     const { data: featuredProducts = [], isLoading } = useFeaturedProducts(100);
     const { addToCart } = useCart();
 
-    const [selectedType, setSelectedType] = useState('Todos');
-    const [selectedBrand, setSelectedBrand] = useState('Todos');
-    const [selectedSize, setSelectedSize] = useState('Todos');
-    const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
-
     // Filter products for Ropa category
-    const baseClothingProducts = featuredProducts.filter((product: any) =>
+    const filteredProducts = featuredProducts.filter((product: any) =>
         (product.category || '').toLowerCase() === 'ropa'
     );
 
-    // Dynamic filters options
-    const clothingTypes = ['Todos', ...new Set(baseClothingProducts.map((p: any) => p.clothing_type).filter(Boolean))] as string[];
-    const brands = ['Todos', ...new Set(baseClothingProducts.map((p: any) => p.brand || 'APEG'))] as string[];
-    const sizes = ['Todos', ...new Set(baseClothingProducts.flatMap((p: any) =>
-        (p.sizes_inventory || []).map((s: any) => s.size)
-    ).filter(Boolean))] as string[];
-
-    const filteredProducts = baseClothingProducts.filter((p: any) => {
-        const brand = p.brand || 'APEG';
-        const matchesType = selectedType === 'Todos' || (p as any).clothing_type === selectedType;
-        const matchesBrand = selectedBrand === 'Todos' || brand === selectedBrand;
-        const matchesSize = selectedSize === 'Todos' || (p.sizes_inventory || []).some((s: any) => s.size === selectedSize);
-        return matchesType && matchesBrand && matchesSize;
-    });
-
     const handleAddToCart = (product: any) => {
         addToCart(product);
-    };
-
-    const handleClearFilters = () => {
-        setSelectedType('Todos');
-        setSelectedBrand('Todos');
-        setSelectedSize('Todos');
     };
 
     return (
@@ -63,43 +34,9 @@ const ClothingPage: React.FC = () => {
                 title="Ropa"
                 subtitle="Estilo y rendimiento en el campo con nuestra colección exclusiva de prendas técnicas."
                 image="/heros/golf_apparel_hero_1770415189416.png"
-                onFilterClick={() => setIsFilterModalOpen(true)}
-                hasFilters={baseClothingProducts.length > 0}
+                hasFilters={false}
             />
 
-            <FilterModal
-                isOpen={isFilterModalOpen}
-                onClose={() => setIsFilterModalOpen(false)}
-                onClear={handleClearFilters}
-                resultsCount={filteredProducts.length}
-            >
-                {clothingTypes.length > 1 && (
-                    <FilterBar
-                        label="Tipo"
-                        options={clothingTypes}
-                        selectedValue={selectedType}
-                        onSelect={setSelectedType}
-                    />
-                )}
-
-                {brands.length > 1 && (
-                    <FilterBar
-                        label="Marca"
-                        options={brands}
-                        selectedValue={selectedBrand}
-                        onSelect={setSelectedBrand}
-                    />
-                )}
-
-                {sizes.length > 1 && (
-                    <FilterSelector
-                        label="Talla"
-                        options={sizes}
-                        selectedValue={selectedSize}
-                        onSelect={setSelectedSize}
-                    />
-                )}
-            </FilterModal>
 
             {/* Area de Scroll */}
             <div style={{
@@ -138,14 +75,10 @@ const ClothingPage: React.FC = () => {
                         }}
                     >
                         <p style={{ fontSize: '14px', marginBottom: '10px' }}>
-                            No hay productos que coincidan con los filtros seleccionados
+                            No hay productos disponibles en esta categoría
                         </p>
                         <button
-                            onClick={() => {
-                                setSelectedType('Todos');
-                                setSelectedBrand('Todos');
-                                setSelectedSize('Todos');
-                            }}
+                            onClick={() => navigate('/')}
                             style={{
                                 color: 'var(--secondary)',
                                 fontSize: '13px',
@@ -153,7 +86,7 @@ const ClothingPage: React.FC = () => {
                                 textDecoration: 'underline'
                             }}
                         >
-                            Limpiar filtros
+                            Volver al inicio
                         </button>
                     </motion.div>
                 ) : (

@@ -1,33 +1,20 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 import CategoryHero from '../components/CategoryHero';
 import PremiumProductCard from '../components/PremiumProductCard';
 import { useFeaturedProducts } from '../hooks/useHomeData';
 import { useCart } from '../context/CartContext';
 import { useNavigate } from 'react-router-dom';
-import FilterBar from '../components/FilterBar';
-import FilterModal from '../components/FilterModal';
 
 const BallsPage: React.FC = () => {
     const navigate = useNavigate();
     const { data: featuredProducts = [], isLoading } = useFeaturedProducts(50);
     const { addToCart } = useCart();
 
-    const [selectedBrand, setSelectedBrand] = useState('Todos');
-    const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
-
     // Filter products for Bolas category
-    const ballProducts = featuredProducts.filter((product: any) =>
+    const filteredProducts = featuredProducts.filter((product: any) =>
         (product.category || '').toLowerCase() === 'bolas'
     );
-
-    // Dynamic filters options
-    const brands = ['Todos', ...new Set(ballProducts.map((p: any) => p.brand || 'APEG'))] as string[];
-
-    const filteredProducts = ballProducts.filter((p: any) => {
-        const brand = p.brand || 'APEG';
-        return selectedBrand === 'Todos' || brand === selectedBrand;
-    });
 
     const handleAddToCart = (product: any) => {
         addToCart(product);
@@ -47,23 +34,8 @@ const BallsPage: React.FC = () => {
                 title="Bolas"
                 subtitle="Encuentra la bola perfecta para tu nivel de juego y maximiza tu distancia."
                 image="/heros/golf_balls_hero_177041563307.png"
-                onFilterClick={() => setIsFilterModalOpen(true)}
-                hasFilters={brands.length > 1}
+                hasFilters={false}
             />
-
-            <FilterModal
-                isOpen={isFilterModalOpen}
-                onClose={() => setIsFilterModalOpen(false)}
-                onClear={() => setSelectedBrand('Todos')}
-                resultsCount={filteredProducts.length}
-            >
-                <FilterBar
-                    label="Marca"
-                    options={brands}
-                    selectedValue={selectedBrand}
-                    onSelect={setSelectedBrand}
-                />
-            </FilterModal>
 
             {/* Area de Scroll */}
             <div style={{
@@ -101,12 +73,9 @@ const BallsPage: React.FC = () => {
                             border: '1px dashed rgba(255,255,255,0.1)'
                         }}
                     >
-                        <p style={{ fontSize: '14px', marginBottom: '20px' }}>No hay productos que coincidan con los filtros seleccionados</p>
+                        <p style={{ fontSize: '14px', marginBottom: '20px' }}>No hay productos disponibles en esta categoría</p>
                         <button
-                            onClick={() => {
-                                if (selectedBrand !== 'Todos') setSelectedBrand('Todos');
-                                else navigate('/');
-                            }}
+                            onClick={() => navigate('/')}
                             style={{
                                 color: 'var(--secondary)',
                                 fontSize: '14px',
@@ -114,7 +83,7 @@ const BallsPage: React.FC = () => {
                                 textDecoration: 'underline'
                             }}
                         >
-                            {selectedBrand !== 'Todos' ? 'Limpiar filtros' : 'Volver al inicio'}
+                            Volver al inicio
                         </button>
                     </motion.div>
                 ) : (

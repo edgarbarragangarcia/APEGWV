@@ -1,33 +1,20 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 import CategoryHero from '../components/CategoryHero';
 import PremiumProductCard from '../components/PremiumProductCard';
 import { useFeaturedProducts } from '../hooks/useHomeData';
 import { useCart } from '../context/CartContext';
 import { useNavigate } from 'react-router-dom';
-import FilterBar from '../components/FilterBar';
-import FilterModal from '../components/FilterModal';
 
 const ClubsPage: React.FC = () => {
     const navigate = useNavigate();
     const { data: featuredProducts = [], isLoading } = useFeaturedProducts(50);
     const { addToCart } = useCart();
 
-    const [selectedBrand, setSelectedBrand] = useState('Todos');
-    const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
-
     // Filter products for Palos category
-    const clubProducts = featuredProducts.filter((product: any) =>
+    const filteredProducts = featuredProducts.filter((product: any) =>
         (product.category || '').toLowerCase() === 'palos'
     );
-
-    // Dynamic filters options
-    const brands = ['Todos', ...new Set(clubProducts.map((p: any) => p.brand || 'APEG'))] as string[];
-
-    const filteredProducts = clubProducts.filter((p: any) => {
-        const brand = p.brand || 'APEG';
-        return selectedBrand === 'Todos' || brand === selectedBrand;
-    });
 
     const handleAddToCart = (product: any) => {
         addToCart(product);
@@ -47,23 +34,8 @@ const ClubsPage: React.FC = () => {
                 title="Palos"
                 subtitle="El corazón de tu juego. Tecnología de vanguardia para alcanzar tu máximo potencial."
                 image="/heros/golf_clubs_hero_1770415175713.png"
-                onFilterClick={() => setIsFilterModalOpen(true)}
-                hasFilters={brands.length > 1}
+                hasFilters={false}
             />
-
-            <FilterModal
-                isOpen={isFilterModalOpen}
-                onClose={() => setIsFilterModalOpen(false)}
-                onClear={() => setSelectedBrand('Todos')}
-                resultsCount={filteredProducts.length}
-            >
-                <FilterBar
-                    label="Marca"
-                    options={brands}
-                    selectedValue={selectedBrand}
-                    onSelect={setSelectedBrand}
-                />
-            </FilterModal>
 
             {/* Area de Scroll */}
             <div style={{
@@ -101,12 +73,9 @@ const ClubsPage: React.FC = () => {
                             border: '1px dashed rgba(255,255,255,0.1)'
                         }}
                     >
-                        <p style={{ fontSize: '14px', marginBottom: '20px' }}>No hay productos que coincidan con los filtros seleccionados</p>
+                        <p style={{ fontSize: '14px', marginBottom: '20px' }}>No hay productos disponibles en esta categoría</p>
                         <button
-                            onClick={() => {
-                                if (selectedBrand !== 'Todos') setSelectedBrand('Todos');
-                                else navigate('/');
-                            }}
+                            onClick={() => navigate('/')}
                             style={{
                                 color: 'var(--secondary)',
                                 fontSize: '14px',
@@ -114,7 +83,7 @@ const ClubsPage: React.FC = () => {
                                 textDecoration: 'underline'
                             }}
                         >
-                            {selectedBrand !== 'Todos' ? 'Limpiar filtros' : 'Volver al inicio'}
+                            Volver al inicio
                         </button>
                     </motion.div>
                 ) : (

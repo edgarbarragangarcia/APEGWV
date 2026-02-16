@@ -1,39 +1,20 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 import CategoryHero from '../components/CategoryHero';
 import PremiumProductCard from '../components/PremiumProductCard';
 import { useFeaturedProducts } from '../hooks/useHomeData';
 import { useCart } from '../context/CartContext';
 import { useNavigate } from 'react-router-dom';
-import FilterBar from '../components/FilterBar';
-import FilterModal from '../components/FilterModal';
 
 const GlovesPage: React.FC = () => {
     const navigate = useNavigate();
     const { data: featuredProducts = [], isLoading } = useFeaturedProducts(50);
     const { addToCart } = useCart();
 
-    const [selectedBrand, setSelectedBrand] = useState('Todos');
-    const [selectedSize, setSelectedSize] = useState('Todos');
-    const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
-
     // Filter products for Guantes category
-    const gloveProducts = featuredProducts.filter((product: any) =>
+    const filteredProducts = featuredProducts.filter((product: any) =>
         (product.category || '').toLowerCase() === 'guantes'
     );
-
-    // Dynamic filters options
-    const brands = ['Todos', ...new Set(gloveProducts.map((p: any) => p.brand || 'APEG'))] as string[];
-    const sizes = ['Todos', ...new Set(gloveProducts.flatMap((p: any) =>
-        (p.sizes_inventory || []).map((s: any) => s.size)
-    ).filter(Boolean))] as string[];
-
-    const filteredProducts = gloveProducts.filter((p: any) => {
-        const brand = p.brand || 'APEG';
-        const matchesBrand = selectedBrand === 'Todos' || brand === selectedBrand;
-        const matchesSize = selectedSize === 'Todos' || (p.sizes_inventory || []).some((s: any) => s.size === selectedSize);
-        return matchesBrand && matchesSize;
-    });
 
     const handleAddToCart = (product: any) => {
         addToCart(product);
@@ -53,36 +34,8 @@ const GlovesPage: React.FC = () => {
                 title="Guantes"
                 subtitle="El contacto perfecto. Piel premium para una sensación y agarre inigualables."
                 image="/heros/golf_gloves_hero_1770415231000.png"
-                onFilterClick={() => setIsFilterModalOpen(true)}
-                hasFilters={brands.length > 1 || sizes.length > 1}
+                hasFilters={false}
             />
-
-            <FilterModal
-                isOpen={isFilterModalOpen}
-                onClose={() => setIsFilterModalOpen(false)}
-                onClear={() => {
-                    setSelectedBrand('Todos');
-                    setSelectedSize('Todos');
-                }}
-                resultsCount={filteredProducts.length}
-            >
-                {brands.length > 1 && (
-                    <FilterBar
-                        label="Marca"
-                        options={brands}
-                        selectedValue={selectedBrand}
-                        onSelect={setSelectedBrand}
-                    />
-                )}
-                {sizes.length > 1 && (
-                    <FilterBar
-                        label="Talla"
-                        options={sizes}
-                        selectedValue={selectedSize}
-                        onSelect={setSelectedSize}
-                    />
-                )}
-            </FilterModal>
 
             {/* Area de Scroll */}
             <div style={{
@@ -120,12 +73,9 @@ const GlovesPage: React.FC = () => {
                             border: '1px dashed rgba(255,255,255,0.1)'
                         }}
                     >
-                        <p style={{ fontSize: '14px', marginBottom: '20px' }}>No hay productos que coincidan con los filtros seleccionados</p>
+                        <p style={{ fontSize: '14px', marginBottom: '20px' }}>No hay productos disponibles en esta categoría</p>
                         <button
-                            onClick={() => {
-                                setSelectedBrand('Todos');
-                                setSelectedSize('Todos');
-                            }}
+                            onClick={() => navigate('/')}
                             style={{
                                 color: 'var(--secondary)',
                                 fontSize: '14px',
@@ -133,7 +83,7 @@ const GlovesPage: React.FC = () => {
                                 textDecoration: 'underline'
                             }}
                         >
-                            Limpiar filtros
+                            Volver al inicio
                         </button>
                     </motion.div>
                 ) : (

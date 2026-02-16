@@ -756,6 +756,26 @@ const MyStore: React.FC = () => {
             setUpdatingOffer(null);
         }
     };
+
+    const deleteOffer = async (id: string) => {
+        if (!window.confirm('¿Estás seguro de que quieres eliminar esta oferta?')) return;
+
+        try {
+            const { error } = await supabase
+                .from('offers')
+                .delete()
+                .eq('id', id);
+
+            if (error) throw error;
+            setOffers(prev => prev.filter(o => o.id !== id));
+            if (navigator.vibrate) navigator.vibrate(50);
+        } catch (err) {
+            console.error('Error deleting offer:', err);
+            setSuccessMessage({ title: 'Error', message: 'No se pudo eliminar la oferta.', type: 'error' });
+            setShowSuccessModal(true);
+            setTimeout(() => setShowSuccessModal(false), 3000);
+        }
+    };
     const handleCouponSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!user) return;
@@ -2022,9 +2042,27 @@ const MyStore: React.FC = () => {
                                                 {offer.status === 'pending' ? 'PENDIENTE' :
                                                     offer.status === 'accepted' ? 'ACEPTADA' : 'RECHAZADA'}
                                             </span>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-dim)', fontSize: '11px', fontWeight: '600' }}>
-                                                <Calendar size={12} />
-                                                {offer.created_at ? new Date(offer.created_at).toLocaleDateString() : '---'}
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-dim)', fontSize: '11px', fontWeight: '600' }}>
+                                                    <Calendar size={12} />
+                                                    {offer.created_at ? new Date(offer.created_at).toLocaleDateString() : '---'}
+                                                </div>
+                                                <button
+                                                    onClick={() => deleteOffer(offer.id)}
+                                                    style={{
+                                                        background: 'none',
+                                                        border: 'none',
+                                                        color: 'rgba(239, 68, 68, 0.6)',
+                                                        padding: '4px',
+                                                        cursor: 'pointer',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        borderRadius: '8px'
+                                                    }}
+                                                >
+                                                    <Trash2 size={14} />
+                                                </button>
                                             </div>
                                         </div>
 

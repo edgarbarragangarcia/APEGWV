@@ -116,7 +116,7 @@ const Profile: React.FC = () => {
                             })()}
                         </h1>
                         <p style={styles.subText}>
-                            ID: {profile?.federation_code || 'APEG'} • Hcp {profile?.handicap ?? '--'}
+                            ID: {profile?.federation_code || '--'} • Hcp {profile?.handicap ?? '--'}
                         </p>
                     </div>
                 </div>
