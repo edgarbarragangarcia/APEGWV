@@ -3,28 +3,14 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import {
     MapPin, CreditCard,
     ShieldCheck, Loader2,
-    CheckCircle2, Sparkles, Plus, X, AlertCircle, User, Phone, Edit3
+    CheckCircle2, Sparkles, X, AlertCircle, User, Phone, Edit3
 } from 'lucide-react';
 import PageHeader from '../components/PageHeader';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '../context/CartContext';
 import { supabase } from '../services/SupabaseManager';
-import CardInput from '../components/CardInput';
 import PageHero from '../components/PageHero';
 
-import { encrypt } from '../services/EncryptionService';
-
-interface PaymentMethod {
-    id: string;
-    last_four: string;
-    card_type: string;
-    is_default: boolean | null;
-    user_id: string | null;
-    encrypted_number?: string;
-    encrypted_cvv?: string;
-    card_holder?: string;
-    expiry?: string;
-}
 
 const CheckoutPage: React.FC = () => {
     const navigate = useNavigate();
@@ -42,12 +28,8 @@ const CheckoutPage: React.FC = () => {
     const [showStatusModal, setShowStatusModal] = useState(false);
     const [statusMessage, setStatusMessage] = useState({ title: '', message: '', type: 'success' as 'success' | 'error' });
 
-    // Payment Methods State
-    const [savedMethods, setSavedMethods] = useState<PaymentMethod[]>([]);
-    // Initialize as null to indicate "not decided yet"
-    const [selectedMethodId, setSelectedMethodId] = useState<string | 'new' | null>(null);
-    const [newCard, setNewCard] = useState<any>(null);
-    const [loadingMethods, setLoadingMethods] = useState(true);
+    // Payment Methods State (Hardcoded to Mercado Pago)
+    const [selectedMethodId] = useState<string>('mercadopago');
 
     const [shipping, setShipping] = useState({
         name: '',
@@ -103,7 +85,6 @@ const CheckoutPage: React.FC = () => {
                         phone: session.user.user_metadata?.phone || ''
                     }));
                 }
-                fetchSavedMethods(session.user.id);
             } else {
                 navigate('/auth');
             }
@@ -111,30 +92,6 @@ const CheckoutPage: React.FC = () => {
         checkUser();
     }, [navigate]);
 
-    const fetchSavedMethods = async (userId: string) => {
-        setLoadingMethods(true);
-        try {
-            const { data } = await supabase
-                .from('payment_methods')
-                .select('id, last_four, card_type, is_default, card_holder, expiry, user_id')
-                .eq('user_id', userId);
-            setSavedMethods(data || []);
-
-            const defaultMethod = data?.find(m => m.is_default);
-            if (defaultMethod) {
-                setSelectedMethodId(defaultMethod.id);
-            } else if (data && data.length > 0) {
-                setSelectedMethodId(data[0].id);
-            } else {
-                setSelectedMethodId('new');
-            }
-        } catch (err) {
-            console.error('Error fetching methods:', err);
-            setSelectedMethodId('new');
-        } finally {
-            setLoadingMethods(false);
-        }
-    };
 
     const handlePlaceOrder = async () => {
         // Input validation - Only for actual orders, reservations use profile info or don't need shipping
@@ -163,65 +120,8 @@ const CheckoutPage: React.FC = () => {
             return;
         }
 
-        if (selectedMethodId === 'new' && !newCard) {
-            setStatusMessage({ title: 'Datos Incompletos', message: 'Por favor completa todos los campos de la tarjeta para continuar.', type: 'error' });
-            setShowStatusModal(true);
-            return;
-        }
-
         setIsProcessing(true);
         try {
-            // 1. Save New Payment Method if needed
-            if (selectedMethodId === 'new' && newCard) {
-                const lastFour = newCard.number.replace(/\s/g, '').slice(-4);
-                const cardType = newCard.number.startsWith('4') ? 'Visa' :
-                    newCard.number.startsWith('5') ? 'MasterCard' :
-                        newCard.number.startsWith('3') ? 'Amex' : 'Card';
-
-                // Encrypt sensitive data
-                const encryptedNumber = await encrypt(newCard.number.replace(/\s/g, ''), user.id);
-                const encryptedCVV = await encrypt(newCard.cvv, user.id);
-
-                const { error: methodError } = await supabase
-                    .from('payment_methods')
-                    .insert({
-                        user_id: user.id,
-                        last_four: lastFour,
-                        card_type: cardType,
-                        card_holder: newCard.name,
-                        expiry: newCard.expiry,
-                        encrypted_number: encryptedNumber,
-                        encrypted_cvv: encryptedCVV,
-                        is_default: savedMethods.length === 0
-                    } as any);
-
-                if (methodError) {
-                    console.error('Error saving payment method (full):', methodError);
-                    // PGRST204 or 42703 (undefined_column) means columns are missing in DB
-                    const isColumnError = methodError.code === 'PGRST204' || methodError.code === '42703' || methodError.message?.includes('column');
-
-                    if (isColumnError) {
-                        console.warn('Falling back to basic payment method save (no encryption columns)...');
-                        // Try saving with card_holder & expiry (NOT NULL columns)
-                        const { error: fallbackError } = await supabase
-                            .from('payment_methods')
-                            .insert({
-                                user_id: user.id,
-                                last_four: lastFour,
-                                card_type: cardType,
-                                card_holder: newCard.name || 'Sin nombre',
-                                expiry: newCard.expiry || '00/00',
-                                is_default: savedMethods.length === 0
-                            } as any);
-
-                        if (fallbackError) {
-                            console.error('Fallback save also failed:', fallbackError);
-                        }
-                    } else {
-                        throw methodError;
-                    }
-                }
-            }
 
             // Handle Reservation Payment
             if (isReservation) {
@@ -643,114 +543,34 @@ const CheckoutPage: React.FC = () => {
 
                             </div>
 
-                            {/* Loading Skeleton */}
-                            {loadingMethods && (
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                                    {[...Array(2)].map((_, i) => (
-                                        <div key={i} className="animate-pulse" style={{
-                                            height: '60px',
-                                            background: 'rgba(255,255,255,0.05)',
-                                            borderRadius: '16px'
-                                        }} />
-                                    ))}
-                                </div>
-                            )}
-
-                            {/* Saved Methods List */}
-                            {!loadingMethods && savedMethods.length > 0 && (
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '25px' }}>
-                                    <p style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text-dim)', marginBottom: '5px' }}>Tus tarjetas guardadas</p>
-                                    {savedMethods.map((method) => (
-                                        <div
-                                            key={method.id}
-                                            onClick={() => setSelectedMethodId(method.id)}
-                                            style={{
-                                                padding: '15px 20px',
-                                                borderRadius: '16px',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                gap: '15px',
-                                                cursor: 'pointer',
-                                                background: selectedMethodId === method.id ? 'rgba(163, 230, 53, 0.1)' : 'rgba(255,255,255,0.05)',
-                                                border: selectedMethodId === method.id ? '1px solid var(--secondary)' : '1px solid rgba(255,255,255,0.1)',
-                                                transition: '0.2s'
-                                            }}
-                                        >
-                                            <div style={{
-                                                width: '40px',
-                                                height: '28px',
-                                                background: 'white',
-                                                borderRadius: '4px',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                padding: '3px'
-                                            }}>
-                                                {method.card_type.toLowerCase() === 'visa' ? (
-                                                    <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" alt="Visa" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                                                ) : method.card_type.toLowerCase() === 'mastercard' ? (
-                                                    <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="MasterCard" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                                                ) : method.card_type.toLowerCase() === 'amex' ? (
-                                                    <img src="https://upload.wikimedia.org/wikipedia/commons/b/b3/American_Express_logo_%282018%29.svg" alt="Amex" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                                                ) : (
-                                                    <span style={{ fontSize: '7px', fontWeight: '900', color: 'var(--primary)' }}>{method.card_type.toUpperCase()}</span>
-                                                )}
-                                            </div>
-                                            <div style={{ flex: 1 }}>
-                                                <p style={{ fontWeight: '700', fontSize: '14px' }}>•••• {method.last_four}</p>
-                                                <p style={{ fontSize: '11px', color: 'var(--text-dim)' }}>{method.card_type}</p>
-                                            </div>
-                                            <div style={{
-                                                width: '20px',
-                                                height: '20px',
-                                                borderRadius: '50%',
-                                                border: '2px solid',
-                                                borderColor: selectedMethodId === method.id ? 'var(--secondary)' : 'rgba(255,255,255,0.2)',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                padding: '3px'
-                                            }}>
-                                                {selectedMethodId === method.id && <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: 'var(--secondary)' }} />}
-                                            </div>
-                                        </div>
-                                    ))}
-
-                                    <div
-                                        onClick={() => setSelectedMethodId('new')}
-                                        style={{
-                                            padding: '15px 20px',
-                                            borderRadius: '16px',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            gap: '15px',
-                                            cursor: 'pointer',
-                                            background: selectedMethodId === 'new' ? 'rgba(163, 230, 53, 0.1)' : 'rgba(255,255,255,0.05)',
-                                            border: selectedMethodId === 'new' ? '1px solid var(--secondary)' : '1px solid rgba(255,255,255,0.1)',
-                                            transition: '0.2s'
-                                        }}
-                                    >
-                                        <div style={{
-                                            width: '40px',
-                                            height: '28px',
-                                            background: 'rgba(255,255,255,0.1)',
-                                            borderRadius: '4px',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center'
-                                        }}>
-                                            <Plus size={16} />
-                                        </div>
-                                        <span style={{ fontWeight: '700', fontSize: '14px' }}>Usar otra tarjeta</span>
+                            {/* Mercado Pago Option Only */}
+                            <div className="animate-fade-up">
+                                <div style={{
+                                    padding: '25px',
+                                    borderRadius: '24px',
+                                    background: 'rgba(0, 158, 227, 0.05)',
+                                    border: '1px solid rgba(0, 158, 227, 0.2)',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
+                                    gap: '15px',
+                                    textAlign: 'center'
+                                }}>
+                                    <img
+                                        src="https://http2.mlstatic.com/frontend-assets/payment-help/logos/mercadopago.svg"
+                                        alt="Mercado Pago"
+                                        style={{ width: '180px', height: 'auto' }}
+                                    />
+                                    <div>
+                                        <p style={{ fontWeight: '800', fontSize: '16px', color: 'white', marginBottom: '4px' }}>
+                                            Pago Seguro con Mercado Pago
+                                        </p>
+                                        <p style={{ fontSize: '13px', color: 'var(--text-dim)', maxWidth: '250px' }}>
+                                            Paga con tarjeta de crédito, débito o efectivo a través de la plataforma más segura.
+                                        </p>
                                     </div>
                                 </div>
-                            )}
-
-                            {!loadingMethods && selectedMethodId === 'new' && (
-                                <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }}>
-                                    <CardInput onComplete={(data) => setNewCard(data)} />
-                                </motion.div>
-                            )}
+                            </div>
 
                             <div style={{ marginTop: '30px' }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>

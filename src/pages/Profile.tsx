@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../services/SupabaseManager';
-import { Settings, LogOut, Shield, CreditCard, ChevronRight, Edit2, Mail, Phone, MapPin, Store, Trophy, Ticket } from 'lucide-react';
+import { Settings, LogOut, Shield, ChevronRight, Edit2, Mail, Phone, MapPin, Store, Trophy } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import type { Database } from '../types/database.types';
@@ -159,11 +159,6 @@ const Profile: React.FC = () => {
                                     label="Configuración del Sistema"
                                     onClick={() => navigate('/settings')}
                                 />
-                                <ClickableInfoRow
-                                    icon={CreditCard}
-                                    label="Métodos de Pago"
-                                    onClick={() => navigate('/payment-methods')}
-                                />
                             </div>
                         </motion.div>
                     )}
@@ -176,7 +171,6 @@ const Profile: React.FC = () => {
                         onClick={() => navigate('/my-store')}
                     />
                     <MenuButton icon={Trophy} label="Mis Eventos Organizados" onClick={() => navigate('/my-events')} />
-                    <MenuButton icon={Ticket} label="Mis Cupones" onClick={() => navigate('/my-coupons')} />
 
                     <button
                         onClick={handleLogout}

@@ -30,11 +30,9 @@ import CourseReservation from './pages/CourseReservation';
 import MyReservations from './pages/MyReservations';
 import CartPage from './pages/CartPage';
 import NotificationsPage from './pages/NotificationsPage';
-import CouponManager from './pages/CouponManager';
 import TournamentManager from './pages/TournamentManager';
 import TournamentParticipants from './pages/TournamentParticipants';
 import CheckoutPage from './pages/CheckoutPage';
-import PaymentMethodsPage from './pages/PaymentMethodsPage';
 import BallsPage from './pages/BallsPage';
 import ClothingPage from './pages/ClothingPage';
 import AccessoriesPage from './pages/AccessoriesPage';
@@ -177,7 +175,6 @@ const AppContent: React.FC = () => {
               <Route path="/my-store" element={<MyStore />} />
               <Route path="/my-events" element={<TournamentManager />} />
               <Route path="/my-events/:id/participants" element={<TournamentParticipants />} />
-              <Route path="/my-coupons" element={<CouponManager />} />
               <Route path="/profile/edit" element={<EditProfile />} />
               <Route path="/profile/stats" element={<EditStats />} />
               <Route path="/rounds" element={<RoundHistory />} />
@@ -185,7 +182,6 @@ const AppContent: React.FC = () => {
               <Route path="/rounds/edit/:id" element={<EditRound />} />
               <Route path="/cart" element={<CartPage />} />
               <Route path="/checkout" element={<CheckoutPage />} />
-              <Route path="/payment-methods" element={<PaymentMethodsPage />} />
               <Route path="/category/bolas" element={<BallsPage />} />
               <Route path="/category/ropa" element={<ClothingPage />} />
               <Route path="/category/accesorios" element={<AccessoriesPage />} />
