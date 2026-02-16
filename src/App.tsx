@@ -7,7 +7,6 @@ import { OnboardingTour } from './components/OnboardingTour';
 import { supabase } from './services/SupabaseManager';
 
 import './index.css';
-import apegLogo from './assets/apeg_logo_v2.png';
 
 import Home from './pages/Home';
 import Round from './pages/Round';
