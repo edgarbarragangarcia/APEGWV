@@ -18,7 +18,7 @@ const Home: React.FC = () => {
     const { warning } = useToast();
     const { id: productId } = useParams();
     const { data: profile } = useProfile();
-    const { data: featuredProducts = [] } = useFeaturedProducts(10); // Fetch more for filtering
+    const { data: featuredProducts = [], isLoading: featuredLoading } = useFeaturedProducts(10); // Fetch more for filtering
     const { data: tournaments = [] } = useUpcomingTournaments(3);
 
     const [viewTab, setViewTab] = React.useState<'marketplace' | 'myorders'>('marketplace');
@@ -68,30 +68,47 @@ const Home: React.FC = () => {
 
     // Handle initial product from URL
     useEffect(() => {
-        if (productId && featuredProducts.length > 0) {
-            const product = featuredProducts.find(p => p.id === productId);
-            if (product) {
-                setSelectedProduct(product);
-            } else {
-                // Fetch product if not in featured
+        if (productId) {
+            if (featuredProducts.length > 0) {
+                const product = featuredProducts.find(p => p.id === productId);
+                if (product) {
+                    setSelectedProduct(product);
+                } else {
+                    const fetchProduct = async () => {
+                        try {
+                            const { data } = await supabase.from('products').select('*').eq('id', productId).single();
+                            if (data) setSelectedProduct(data);
+                        } catch (err) {
+                            console.error(err);
+                        }
+                    };
+                    fetchProduct();
+                }
+            } else if (!featuredLoading) {
                 const fetchProduct = async () => {
-                    const { data } = await supabase.from('products').select('*').eq('id', productId).single();
-                    if (data) setSelectedProduct(data);
+                    try {
+                        const { data } = await supabase.from('products').select('*').eq('id', productId).single();
+                        if (data) setSelectedProduct(data);
+                    } catch (err) {
+                        console.error(err);
+                    }
                 };
                 fetchProduct();
             }
+        } else {
+            setSelectedProduct(null);
         }
-    }, [productId, featuredProducts]);
+    }, [productId, featuredProducts, featuredLoading]);
 
     const handleProductSelect = (product: any) => {
         setSelectedProduct(product);
         setSelectedSize(null);
-        window.history.pushState({}, '', `/product/${product.id}`);
+        navigate(`/product/${product.id}`, { replace: false });
     };
 
     const handleCloseProduct = () => {
         setSelectedProduct(null);
-        window.history.pushState({}, '', '/');
+        navigate('/', { replace: true });
     };
 
     // Auto-scroll for featured carousel
@@ -223,6 +240,9 @@ const Home: React.FC = () => {
 
 
 
+    const isDeepLink = !!productId;
+    const isWaitingForProduct = isDeepLink && !selectedProduct;
+
     return (
         <div className="animate-fade" style={{
             position: 'absolute',
@@ -231,462 +251,544 @@ const Home: React.FC = () => {
             right: '0',
             bottom: '0',
             width: '100%',
-            overflow: 'hidden'
+            overflow: 'hidden',
+            background: 'var(--primary)'
         }}>
-            <PageHero />
-
-            {/* Header y Stats Fijos */}
-            <div style={{
-                position: 'absolute',
-                top: 'var(--header-offset-top)',
-                left: '0',
-                right: '0',
-                zIndex: 900,
-                background: 'transparent',
-                paddingBottom: '5px'
-            }}>
-                <div style={{ padding: '0 20px' }}>
-                    <PageHeader
-                        noMargin
-                        showBack={false}
-                        title={`Hola, ${profile?.full_name?.split(' ')[0] || 'Golfista'}`}
-                        subtitle="¿Listo para tu próxima victoria en el campo?"
-                    />
-                </div>
-
-                {/* Stats cards removed as per user request */}
-
-                {/* Category Filters - Now Static */}
+            {/* Si estamos esperando un producto por deep link, mostramos loader plano para evitar el glitch del home */}
+            {isWaitingForProduct && (
                 <div style={{
-                    marginTop: '12px',
-                    marginBottom: '12px'
+                    position: 'fixed',
+                    inset: 0,
+                    zIndex: 110000,
+                    background: 'var(--primary)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '20px'
                 }}>
-                    {/* Category Filters */}
-                    <div style={{
-                        display: 'flex',
-                        gap: '8px',
-                        overflowX: 'auto',
-                        paddingBottom: '8px',
-                        paddingLeft: '20px',
-                        paddingRight: '20px',
-                        scrollbarWidth: 'none',
-                        width: '100%',
-                        WebkitMaskImage: 'linear-gradient(to right, transparent, black 20px, black calc(100% - 20px), transparent)',
-                        maskImage: 'linear-gradient(to right, transparent, black 20px, black calc(100% - 20px), transparent)'
-                    }}>
-                        {categories.map(tab => (
-                            <button
-                                key={tab}
-                                onClick={() => {
-                                    if (tab === 'Todo') {
-                                        setActiveTab(tab);
-                                    } else {
-                                        const route = tab.toLowerCase().replace(' ', '-');
-                                        navigate(`/category/${route}`);
-                                    }
-                                }}
-                                style={{
-                                    padding: '6px 14px',
-                                    borderRadius: '20px',
-                                    background: activeTab === tab ? 'var(--secondary)' : 'rgba(255,255,255,0.05)',
-                                    color: activeTab === tab ? 'var(--primary)' : 'white',
-                                    fontSize: '11px',
-                                    fontWeight: '600',
-                                    border: '1px solid ' + (activeTab === tab ? 'var(--secondary)' : 'rgba(255,255,255,0.1)'),
-                                    whiteSpace: 'nowrap',
-                                    transition: 'all 0.3s ease'
-                                }}
-                            >
-                                {tab}
-                            </button>
-                        ))}
-                    </div>
+                    <Loader2 className="animate-spin" size={40} color="var(--secondary)" />
+                    <span style={{ color: 'white', fontSize: '14px', fontWeight: '600', opacity: 0.6 }}>Cargando producto...</span>
                 </div>
+            )}
 
-                {/* Featured Carousel */}
-                <div
-                    ref={carouselRef}
-                    style={{
-                        marginTop: '0px',
-                        marginBottom: '0px',
-                        overflowX: 'auto',
-                        scrollSnapType: 'x mandatory',
-                        WebkitOverflowScrolling: 'touch',
-                        scrollbarWidth: 'none',
-                        msOverflowStyle: 'none',
-                        WebkitMaskImage: 'linear-gradient(to right, transparent, black 20px, black calc(100% - 20px), transparent)',
-                        maskImage: 'linear-gradient(to right, transparent, black 20px, black calc(100% - 20px), transparent)'
-                    }}
-                >
+            {/* Contenido del Home - Solo visible si no estamos esperando un producto o si el producto ya está cargado */}
+            <div style={{
+                opacity: isWaitingForProduct ? 0 : 1,
+                transition: 'opacity 0.3s ease',
+                height: '100%',
+                width: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                overflow: 'hidden'
+            }}>
+                <PageHero />
+
+                {/* Header y Stats Fijos */}
+                <div style={{
+                    position: 'absolute',
+                    top: 'var(--header-offset-top)',
+                    left: '0',
+                    right: '0',
+                    zIndex: 900,
+                    background: 'transparent',
+                    paddingBottom: '5px'
+                }}>
+                    <div style={{ padding: '0 20px' }}>
+                        <PageHeader
+                            noMargin
+                            showBack={false}
+                            title={`Hola, ${profile?.full_name?.split(' ')[0] || 'Golfista'}`}
+                            subtitle="¿Listo para tu próxima victoria en el campo?"
+                        />
+                    </div>
+
+                    {/* Stats cards removed as per user request */}
+
+                    {/* Category Filters - Now Static */}
                     <div style={{
-                        display: 'flex',
-                        gap: '12px',
-                        paddingBottom: '8px',
-                        paddingLeft: '20px',
-                        paddingRight: '20px'
+                        marginTop: '12px',
+                        marginBottom: '12px'
                     }}>
-                        {promotions.map((promo, idx) => (
-                            <motion.div
-                                key={idx}
-                                whileTap={{ scale: 0.98 }}
-                                style={{
-                                    minWidth: '280px',
-                                    height: '90px',
-                                    borderRadius: '20px',
-                                    background: `linear-gradient(135deg, ${promo.color} 0%, rgba(0,0,0,0.6) 100%)`,
-                                    border: '1px solid rgba(255,255,255,0.1)',
-                                    padding: '12px',
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    justifyContent: 'center',
-                                    position: 'relative',
-                                    overflow: 'hidden',
-                                    scrollSnapAlign: 'start',
-                                    cursor: 'pointer'
-                                }}
-                            >
-                                {/* Background Image */}
-                                <div style={{
-                                    position: 'absolute',
-                                    inset: 0,
-                                    zIndex: 0,
-                                    opacity: 0.5
-                                }}>
-                                    <img
-                                        src={promo.image}
-                                        alt=""
-                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                    />
+                        {/* Category Filters */}
+                        <div style={{
+                            display: 'flex',
+                            gap: '8px',
+                            overflowX: 'auto',
+                            paddingBottom: '8px',
+                            paddingLeft: '20px',
+                            paddingRight: '20px',
+                            scrollbarWidth: 'none',
+                            width: '100%',
+                            WebkitMaskImage: 'linear-gradient(to right, transparent, black 20px, black calc(100% - 20px), transparent)',
+                            maskImage: 'linear-gradient(to right, transparent, black 20px, black calc(100% - 20px), transparent)'
+                        }}>
+                            {categories.map(tab => (
+                                <button
+                                    key={tab}
+                                    onClick={() => {
+                                        if (tab === 'Todo') {
+                                            setActiveTab(tab);
+                                        } else {
+                                            const route = tab.toLowerCase().replace(' ', '-');
+                                            navigate(`/category/${route}`);
+                                        }
+                                    }}
+                                    style={{
+                                        padding: '6px 14px',
+                                        borderRadius: '20px',
+                                        background: activeTab === tab ? 'var(--secondary)' : 'rgba(255,255,255,0.05)',
+                                        color: activeTab === tab ? 'var(--primary)' : 'white',
+                                        fontSize: '11px',
+                                        fontWeight: '600',
+                                        border: '1px solid ' + (activeTab === tab ? 'var(--secondary)' : 'rgba(255,255,255,0.1)'),
+                                        whiteSpace: 'nowrap',
+                                        transition: 'all 0.3s ease'
+                                    }}
+                                >
+                                    {tab}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Featured Carousel */}
+                    <div
+                        ref={carouselRef}
+                        style={{
+                            marginTop: '0px',
+                            marginBottom: '0px',
+                            overflowX: 'auto',
+                            scrollSnapType: 'x mandatory',
+                            WebkitOverflowScrolling: 'touch',
+                            scrollbarWidth: 'none',
+                            msOverflowStyle: 'none',
+                            WebkitMaskImage: 'linear-gradient(to right, transparent, black 20px, black calc(100% - 20px), transparent)',
+                            maskImage: 'linear-gradient(to right, transparent, black 20px, black calc(100% - 20px), transparent)'
+                        }}
+                    >
+                        <div style={{
+                            display: 'flex',
+                            gap: '12px',
+                            paddingBottom: '8px',
+                            paddingLeft: '20px',
+                            paddingRight: '20px'
+                        }}>
+                            {promotions.map((promo, idx) => (
+                                <motion.div
+                                    key={idx}
+                                    whileTap={{ scale: 0.98 }}
+                                    style={{
+                                        minWidth: '280px',
+                                        height: '90px',
+                                        borderRadius: '20px',
+                                        background: `linear-gradient(135deg, ${promo.color} 0%, rgba(0,0,0,0.6) 100%)`,
+                                        border: '1px solid rgba(255,255,255,0.1)',
+                                        padding: '12px',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        justifyContent: 'center',
+                                        position: 'relative',
+                                        overflow: 'hidden',
+                                        scrollSnapAlign: 'start',
+                                        cursor: 'pointer'
+                                    }}
+                                >
+                                    {/* Background Image */}
                                     <div style={{
                                         position: 'absolute',
                                         inset: 0,
-                                        background: `linear-gradient(to right, ${promo.color.replace('0.4', '0.8')} 0%, transparent 70%)`,
-                                    }} />
-                                </div>
-
-                                <div style={{ position: 'relative', zIndex: 1 }}>
-                                    <div style={{
-                                        fontSize: '9px',
-                                        fontWeight: '900',
-                                        color: 'white',
-                                        textTransform: 'uppercase',
-                                        letterSpacing: '0.1em',
-                                        marginBottom: '4px',
-                                        background: 'rgba(0,0,0,0.3)',
-                                        alignSelf: 'flex-start',
-                                        padding: '2px 6px',
-                                        borderRadius: '4px',
-                                        display: 'inline-block'
+                                        zIndex: 0,
+                                        opacity: 0.5
                                     }}>
-                                        {promo.badge}
+                                        <img
+                                            src={promo.image}
+                                            alt=""
+                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                        />
+                                        <div style={{
+                                            position: 'absolute',
+                                            inset: 0,
+                                            background: `linear-gradient(to right, ${promo.color.replace('0.4', '0.8')} 0%, transparent 70%)`,
+                                        }} />
                                     </div>
-                                    <h3 style={{
-                                        fontSize: '15px',
-                                        fontWeight: '900',
-                                        color: 'white',
-                                        margin: 0,
-                                        marginBottom: '2px',
-                                        lineHeight: 1.2,
-                                        textShadow: '0 2px 4px rgba(0,0,0,0.5)'
-                                    }}>
-                                        {promo.title}
-                                    </h3>
-                                    <p style={{
-                                        fontSize: '10px',
-                                        color: 'rgba(255,255,255,0.9)',
-                                        margin: 0,
-                                        lineHeight: 1.2,
-                                        textShadow: '0 1px 2px rgba(0,0,0,0.5)'
-                                    }}>
-                                        {promo.subtitle}
-                                    </p>
-                                </div>
-                            </motion.div>
-                        ))}
+
+                                    <div style={{ position: 'relative', zIndex: 1 }}>
+                                        <div style={{
+                                            fontSize: '9px',
+                                            fontWeight: '900',
+                                            color: 'white',
+                                            textTransform: 'uppercase',
+                                            letterSpacing: '0.1em',
+                                            marginBottom: '4px',
+                                            background: 'rgba(0,0,0,0.3)',
+                                            alignSelf: 'flex-start',
+                                            padding: '2px 6px',
+                                            borderRadius: '4px',
+                                            display: 'inline-block'
+                                        }}>
+                                            {promo.badge}
+                                        </div>
+                                        <h3 style={{
+                                            fontSize: '15px',
+                                            fontWeight: '900',
+                                            color: 'white',
+                                            margin: 0,
+                                            marginBottom: '2px',
+                                            lineHeight: 1.2,
+                                            textShadow: '0 2px 4px rgba(0,0,0,0.5)'
+                                        }}>
+                                            {promo.title}
+                                        </h3>
+                                        <p style={{
+                                            fontSize: '10px',
+                                            color: 'rgba(255,255,255,0.9)',
+                                            margin: 0,
+                                            lineHeight: 1.2,
+                                            textShadow: '0 1px 2px rgba(0,0,0,0.5)'
+                                        }}>
+                                            {promo.subtitle}
+                                        </p>
+                                    </div>
+                                </motion.div>
+                            ))}
+                        </div>
                     </div>
+
                 </div>
 
-            </div>
+
+                {/* Area de Scroll para el resto del contenido */}
+                <div style={{
+                    position: 'absolute',
+                    top: 'calc(var(--header-offset-top) + 210px)',
+                    left: '0',
+                    right: '0',
+                    bottom: 'calc(var(--nav-height) + 5px)',
+                    overflowY: 'auto',
+                    padding: '10px 20px 20px 20px',
+                    overflowX: 'hidden'
+                }}>
 
 
-            {/* Area de Scroll para el resto del contenido */}
-            <div style={{
-                position: 'absolute',
-                top: 'calc(var(--header-offset-top) + 210px)',
-                left: '0',
-                right: '0',
-                bottom: 'calc(var(--nav-height) + 5px)',
-                overflowY: 'auto',
-                padding: '10px 20px 20px 20px',
-                overflowX: 'hidden'
-            }}>
+                    {/* Content starts directly with the grid */}
 
+                    <div
+                        style={{
+                            display: 'grid',
+                            gridTemplateColumns: viewTab === "marketplace" ? "repeat(2, 1fr)" : "1fr",
+                            gap: '10px',
+                            paddingBottom: '20px'
+                        }}
+                    >
+                        {viewTab === 'marketplace' ? (
+                            // Show skeleton loaders while loading
+                            !featuredProducts || featuredProducts.length === 0 ? (
+                                // Skeleton Cards
+                                Array.from({ length: 6 }).map((_, index) => {
+                                    const groupIndex = index % 3;
+                                    const isBig = groupIndex === 0;
 
-                {/* Content starts directly with the grid */}
-
-                <div
-                    style={{
-                        display: 'grid',
-                        gridTemplateColumns: viewTab === "marketplace" ? "repeat(2, 1fr)" : "1fr",
-                        gap: '10px',
-                        paddingBottom: '20px'
-                    }}
-                >
-                    {viewTab === 'marketplace' ? (
-                        // Show skeleton loaders while loading
-                        !featuredProducts || featuredProducts.length === 0 ? (
-                            // Skeleton Cards
-                            Array.from({ length: 6 }).map((_, index) => {
-                                const groupIndex = index % 3;
-                                const isBig = groupIndex === 0;
-
-                                return (
-                                    <div
-                                        key={`skeleton-${index}`}
-                                        style={{
-                                            position: 'relative',
-                                            overflow: 'hidden',
-                                            borderRadius: '20px',
-                                            background: 'rgba(255, 255, 255, 0.03)',
-                                            border: '1px solid rgba(255, 255, 255, 0.05)',
-                                            gridRow: isBig ? 'span 2' : 'span 1',
-                                            gridColumn: isBig ? '1' : '2',
-                                            height: '100%',
-                                            minHeight: isBig ? '220px' : '110px'
-                                        }}
-                                    >
-                                        {/* Shimmer effect */}
+                                    return (
                                         <div
+                                            key={`skeleton-${index}`}
                                             style={{
-                                                position: 'absolute',
-                                                top: 0,
-                                                left: '-100%',
-                                                width: '100%',
+                                                position: 'relative',
+                                                overflow: 'hidden',
+                                                borderRadius: '20px',
+                                                background: 'rgba(255, 255, 255, 0.03)',
+                                                border: '1px solid rgba(255, 255, 255, 0.05)',
+                                                gridRow: isBig ? 'span 2' : 'span 1',
+                                                gridColumn: isBig ? '1' : '2',
                                                 height: '100%',
-                                                background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent)',
-                                                animation: 'shimmer 1.5s infinite'
+                                                minHeight: isBig ? '220px' : '110px'
                                             }}
-                                        />
-
-                                        {/* Skeleton content */}
-                                        <div style={{
-                                            height: isBig ? '100%' : '110px',
-                                            background: 'rgba(255,255,255,0.02)'
-                                        }} />
-
-                                        {!isBig && (
-                                            <div style={{ padding: '8px 10px' }}>
-                                                <div style={{
-                                                    height: '12px',
-                                                    background: 'rgba(255,255,255,0.05)',
-                                                    borderRadius: '4px',
-                                                    marginBottom: '6px',
-                                                    width: '70%'
-                                                }} />
-                                                <div style={{
-                                                    height: '10px',
-                                                    background: 'rgba(255,255,255,0.05)',
-                                                    borderRadius: '4px',
-                                                    width: '40%'
-                                                }} />
-                                            </div>
-                                        )}
-                                    </div>
-                                );
-                            })
-                        ) : filteredProducts.length > 0 ? (
-                            filteredProducts.map((product, index) => {
-                                const groupIndex = index % 3;
-                                const isBig = groupIndex === 0;
-
-                                return (
-                                    <motion.div
-                                        key={product.id}
-                                        initial={{ opacity: 0, y: 15 }}
-                                        whileInView={{ opacity: 1, y: 0 }}
-                                        whileTap={{
-                                            scale: 0.98,
-                                            opacity: 0.9,
-                                            transition: { duration: 0.1 }
-                                        }}
-                                        viewport={{ once: true, margin: "0px 0px -50px 0px" }}
-                                        style={{
-                                            position: 'relative',
-                                            overflow: 'hidden',
-                                            display: 'flex',
-                                            flexDirection: 'column',
-                                            borderRadius: '20px',
-                                            background: 'rgba(255, 255, 255, 0.03)',
-                                            border: '1px solid rgba(255, 255, 255, 0.05)',
-                                            boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
-                                            cursor: 'pointer',
-                                            WebkitTapHighlightColor: 'transparent',
-                                            touchAction: 'manipulation',
-                                            gridRow: isBig ? 'span 2' : 'span 1',
-                                            gridColumn: isBig ? '1' : '2',
-                                            height: '100%'
-                                        }}
-                                        onClick={() => handleProductSelect(product)}
-                                    >
-                                        <div style={{
-                                            position: 'relative',
-                                            width: '100%',
-                                            height: isBig ? '100%' : '110px',
-                                            minHeight: isBig ? '220px' : '110px',
-                                            overflow: 'hidden',
-                                            background: 'rgba(0,0,0,0.2)',
-                                        }}>
-                                            <motion.img
-                                                src={optimizeImage(product.image_url, { width: 500, height: 500 })}
-                                                alt={product.name}
-                                                onError={(e) => {
-                                                    const target = e.target as HTMLImageElement;
-                                                    const cat = (product.category || '').toLowerCase();
-                                                    if (cat.includes('bol')) target.src = 'https://images.unsplash.com/photo-1593111774240-d529f12cf4bb?auto=format&fit=crop&q=80&w=800';
-                                                    else if (cat.includes('zap')) target.src = 'https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?auto=format&fit=crop&q=80&w=800';
-                                                    else if (cat.includes('guant')) target.src = 'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?auto=format&fit=crop&q=80&w=800';
-                                                    else target.src = 'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?auto=format&fit=crop&q=80&w=800';
-                                                }}
-                                                whileHover={{ scale: 1.05 }}
-                                                transition={{ type: 'tween', duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
+                                        >
+                                            {/* Shimmer effect */}
+                                            <div
                                                 style={{
+                                                    position: 'absolute',
+                                                    top: 0,
+                                                    left: '-100%',
                                                     width: '100%',
                                                     height: '100%',
-                                                    objectFit: 'cover',
+                                                    background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent)',
+                                                    animation: 'shimmer 1.5s infinite'
                                                 }}
                                             />
 
-                                            {/* Gradient overlay for better text readability and depth */}
+                                            {/* Skeleton content */}
                                             <div style={{
-                                                position: 'absolute',
-                                                inset: 0,
-                                                background: isBig
-                                                    ? 'linear-gradient(to bottom, rgba(0,0,0,0) 50%, rgba(0,0,0,0.6) 100%)'
-                                                    : 'linear-gradient(to bottom, rgba(0,0,0,0) 60%, rgba(0,0,0,0.4) 100%)',
-                                                zIndex: 1
+                                                height: isBig ? '100%' : '110px',
+                                                background: 'rgba(255,255,255,0.02)'
                                             }} />
 
-                                            <motion.div
-                                                whileTap={{ scale: 1.2 }}
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    toggleLike(product.id);
-                                                }}
-                                                style={{
-                                                    position: 'absolute',
-                                                    top: '8px',
-                                                    right: '8px',
-                                                    background: 'rgba(0,0,0,0.3)',
-                                                    backdropFilter: 'blur(12px)',
-                                                    borderRadius: '50%',
-                                                    padding: '6px',
-                                                    zIndex: 2,
-                                                    border: '1px solid rgba(255,255,255,0.1)',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center'
-                                                }}
-                                            >
-                                                <Heart
-                                                    size={12}
-                                                    color={likedProducts.has(product.id) ? '#ef4444' : 'white'}
-                                                    fill={likedProducts.has(product.id) ? '#ef4444' : 'none'}
-                                                />
-                                            </motion.div>
+                                            {!isBig && (
+                                                <div style={{ padding: '8px 10px' }}>
+                                                    <div style={{
+                                                        height: '12px',
+                                                        background: 'rgba(255,255,255,0.05)',
+                                                        borderRadius: '4px',
+                                                        marginBottom: '6px',
+                                                        width: '70%'
+                                                    }} />
+                                                    <div style={{
+                                                        height: '10px',
+                                                        background: 'rgba(255,255,255,0.05)',
+                                                        borderRadius: '4px',
+                                                        width: '40%'
+                                                    }} />
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })
+                            ) : filteredProducts.length > 0 ? (
+                                filteredProducts.map((product, index) => {
+                                    const groupIndex = index % 3;
+                                    const isBig = groupIndex === 0;
 
-                                            {/* Floating Info for Big Cards */}
-                                            {isBig && (
+                                    return (
+                                        <motion.div
+                                            key={product.id}
+                                            initial={{ opacity: 0, y: 15 }}
+                                            whileInView={{ opacity: 1, y: 0 }}
+                                            whileTap={{
+                                                scale: 0.98,
+                                                opacity: 0.9,
+                                                transition: { duration: 0.1 }
+                                            }}
+                                            viewport={{ once: true, margin: "0px 0px -50px 0px" }}
+                                            style={{
+                                                position: 'relative',
+                                                overflow: 'hidden',
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                borderRadius: '20px',
+                                                background: 'rgba(255, 255, 255, 0.03)',
+                                                border: '1px solid rgba(255, 255, 255, 0.05)',
+                                                boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
+                                                cursor: 'pointer',
+                                                WebkitTapHighlightColor: 'transparent',
+                                                touchAction: 'manipulation',
+                                                gridRow: isBig ? 'span 2' : 'span 1',
+                                                gridColumn: isBig ? '1' : '2',
+                                                height: '100%'
+                                            }}
+                                            onClick={() => handleProductSelect(product)}
+                                        >
+                                            <div style={{
+                                                position: 'relative',
+                                                width: '100%',
+                                                height: isBig ? '100%' : '110px',
+                                                minHeight: isBig ? '220px' : '110px',
+                                                overflow: 'hidden',
+                                                background: 'rgba(0,0,0,0.2)',
+                                            }}>
+                                                <motion.img
+                                                    src={optimizeImage(product.image_url, { width: 500, height: 500 })}
+                                                    alt={product.name}
+                                                    onError={(e) => {
+                                                        const target = e.target as HTMLImageElement;
+                                                        const cat = (product.category || '').toLowerCase();
+                                                        if (cat.includes('bol')) target.src = 'https://images.unsplash.com/photo-1593111774240-d529f12cf4bb?auto=format&fit=crop&q=80&w=800';
+                                                        else if (cat.includes('zap')) target.src = 'https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?auto=format&fit=crop&q=80&w=800';
+                                                        else if (cat.includes('guant')) target.src = 'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?auto=format&fit=crop&q=80&w=800';
+                                                        else target.src = 'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?auto=format&fit=crop&q=80&w=800';
+                                                    }}
+                                                    whileHover={{ scale: 1.05 }}
+                                                    transition={{ type: 'tween', duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
+                                                    style={{
+                                                        width: '100%',
+                                                        height: '100%',
+                                                        objectFit: 'cover',
+                                                    }}
+                                                />
+
+                                                {/* Gradient overlay for better text readability and depth */}
                                                 <div style={{
                                                     position: 'absolute',
-                                                    bottom: '12px',
-                                                    left: '12px',
-                                                    right: '12px',
-                                                    zIndex: 3
-                                                }}>
+                                                    inset: 0,
+                                                    background: isBig
+                                                        ? 'linear-gradient(to bottom, rgba(0,0,0,0) 50%, rgba(0,0,0,0.6) 100%)'
+                                                        : 'linear-gradient(to bottom, rgba(0,0,0,0) 60%, rgba(0,0,0,0.4) 100%)',
+                                                    zIndex: 1
+                                                }} />
+
+                                                <motion.div
+                                                    whileTap={{ scale: 1.2 }}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        toggleLike(product.id);
+                                                    }}
+                                                    style={{
+                                                        position: 'absolute',
+                                                        top: '8px',
+                                                        right: '8px',
+                                                        background: 'rgba(0,0,0,0.3)',
+                                                        backdropFilter: 'blur(12px)',
+                                                        borderRadius: '50%',
+                                                        padding: '6px',
+                                                        zIndex: 2,
+                                                        border: '1px solid rgba(255,255,255,0.1)',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center'
+                                                    }}
+                                                >
+                                                    <Heart
+                                                        size={12}
+                                                        color={likedProducts.has(product.id) ? '#ef4444' : 'white'}
+                                                        fill={likedProducts.has(product.id) ? '#ef4444' : 'none'}
+                                                    />
+                                                </motion.div>
+
+                                                {/* Floating Info for Big Cards */}
+                                                {isBig && (
                                                     <div style={{
-                                                        fontSize: '8px',
-                                                        color: 'var(--secondary)',
-                                                        fontWeight: '900',
-                                                        textTransform: 'uppercase',
-                                                        letterSpacing: '0.1em',
-                                                        marginBottom: '2px'
+                                                        position: 'absolute',
+                                                        bottom: '12px',
+                                                        left: '12px',
+                                                        right: '12px',
+                                                        zIndex: 3
                                                     }}>
-                                                        {product.category}
+                                                        <div style={{
+                                                            fontSize: '8px',
+                                                            color: 'var(--secondary)',
+                                                            fontWeight: '900',
+                                                            textTransform: 'uppercase',
+                                                            letterSpacing: '0.1em',
+                                                            marginBottom: '2px'
+                                                        }}>
+                                                            {product.category}
+                                                        </div>
+                                                        <h4 style={{
+                                                            fontSize: '14px',
+                                                            fontWeight: '900',
+                                                            color: '#fff',
+                                                            margin: 0,
+                                                            lineHeight: 1.1,
+                                                            letterSpacing: '-0.3px',
+                                                            textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                                                        }}>
+                                                            {product.name}
+                                                        </h4>
+                                                        <div style={{
+                                                            color: 'white',
+                                                            fontSize: '15px',
+                                                            fontWeight: '900',
+                                                            marginTop: '4px'
+                                                        }}>
+                                                            ${new Intl.NumberFormat('es-CO').format(product.price)}
+                                                        </div>
                                                     </div>
+                                                )}
+                                            </div>
+
+                                            {!isBig && (
+                                                <div style={{
+                                                    padding: '8px 10px',
+                                                    display: 'flex',
+                                                    flexDirection: 'column',
+                                                    gap: '1px'
+                                                }}>
                                                     <h4 style={{
-                                                        fontSize: '14px',
-                                                        fontWeight: '900',
-                                                        color: '#fff',
+                                                        fontSize: '12px',
+                                                        fontWeight: '800',
+                                                        letterSpacing: '-0.2px',
                                                         margin: 0,
-                                                        lineHeight: 1.1,
-                                                        letterSpacing: '-0.3px',
-                                                        textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                                                        whiteSpace: 'nowrap',
+                                                        overflow: 'hidden',
+                                                        textOverflow: 'ellipsis',
+                                                        width: '100%',
+                                                        color: '#fff'
                                                     }}>
                                                         {product.name}
                                                     </h4>
+
                                                     <div style={{
-                                                        color: 'white',
-                                                        fontSize: '15px',
+                                                        color: 'var(--secondary)',
+                                                        fontSize: '13px',
                                                         fontWeight: '900',
-                                                        marginTop: '4px'
                                                     }}>
                                                         ${new Intl.NumberFormat('es-CO').format(product.price)}
                                                     </div>
                                                 </div>
                                             )}
-                                        </div>
-
-                                        {!isBig && (
-                                            <div style={{
-                                                padding: '8px 10px',
-                                                display: 'flex',
-                                                flexDirection: 'column',
-                                                gap: '1px'
-                                            }}>
-                                                <h4 style={{
-                                                    fontSize: '12px',
-                                                    fontWeight: '800',
-                                                    letterSpacing: '-0.2px',
-                                                    margin: 0,
-                                                    whiteSpace: 'nowrap',
-                                                    overflow: 'hidden',
-                                                    textOverflow: 'ellipsis',
-                                                    width: '100%',
-                                                    color: '#fff'
-                                                }}>
-                                                    {product.name}
-                                                </h4>
-
-                                                <div style={{
-                                                    color: 'var(--secondary)',
-                                                    fontSize: '13px',
-                                                    fontWeight: '900',
-                                                }}>
-                                                    ${new Intl.NumberFormat('es-CO').format(product.price)}
-                                                </div>
+                                        </motion.div>
+                                    );
+                                })
+                            ) : (
+                                <div style={{ color: 'var(--text-dim)', fontSize: '14px', padding: '20px 0', width: '100%', textAlign: 'center' }}>No se encontraron productos.</div>
+                            )
+                        ) : (
+                            ordersLoading ? (
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', padding: '20px' }}>
+                                    <Loader2 className="animate-spin" size={24} color="var(--secondary)" />
+                                </div>
+                            ) : (
+                                <div style={{ width: '100%' }}>
+                                    {/* Mis Ofertas */}
+                                    {myOffers.length > 0 && (
+                                        <div style={{ marginBottom: '24px' }}>
+                                            <h4 style={{ fontSize: '16px', fontWeight: '800', color: 'white', marginBottom: '12px', paddingLeft: '4px' }}>Mis Ofertas</h4>
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', paddingBottom: '10px' }}>
+                                                {myOffers.map((offer) => (
+                                                    <motion.div
+                                                        key={offer.id}
+                                                        whileTap={{ scale: 0.98 }}
+                                                        style={{
+                                                            width: '100%',
+                                                            padding: '16px',
+                                                            borderRadius: '24px',
+                                                            background: 'rgba(255, 255, 255, 0.03)',
+                                                            border: '1px solid rgba(255, 255, 255, 0.05)',
+                                                            display: 'flex',
+                                                            flexDirection: 'column',
+                                                            gap: '8px'
+                                                        }}
+                                                    >
+                                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                            <span style={{
+                                                                background: offer.status === 'accepted' ? '#10b981' : (offer.status === 'rejected' ? '#ef4444' : '#f59e0b'),
+                                                                padding: '4px 8px',
+                                                                borderRadius: '6px',
+                                                                fontSize: '10px',
+                                                                fontWeight: '900',
+                                                                color: 'white'
+                                                            }}>
+                                                                {offer.status?.toUpperCase()}
+                                                            </span>
+                                                            <span style={{ fontSize: '10px', color: 'var(--text-dim)' }}>{new Date(offer.created_at).toLocaleDateString()}</span>
+                                                        </div>
+                                                        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                                                            <img
+                                                                src={offer.product?.image_url || ''}
+                                                                style={{ width: '40px', height: '40px', borderRadius: '8px', objectFit: 'cover' }}
+                                                                alt=""
+                                                            />
+                                                            <div style={{ overflow: 'hidden' }}>
+                                                                <div style={{ fontSize: '14px', fontWeight: '800', color: 'white', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                                                    {offer.product?.name}
+                                                                </div>
+                                                                <div style={{ fontSize: '12px', fontWeight: '700', color: 'var(--secondary)' }}>
+                                                                    Oferta: ${offer.amount?.toLocaleString()}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </motion.div>
+                                                ))}
                                             </div>
-                                        )}
-                                    </motion.div>
-                                );
-                            })
-                        ) : (
-                            <div style={{ color: 'var(--text-dim)', fontSize: '14px', padding: '20px 0', width: '100%', textAlign: 'center' }}>No se encontraron productos.</div>
-                        )
-                    ) : (
-                        ordersLoading ? (
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', padding: '20px' }}>
-                                <Loader2 className="animate-spin" size={24} color="var(--secondary)" />
-                            </div>
-                        ) : (
-                            <div style={{ width: '100%' }}>
-                                {/* Mis Ofertas */}
-                                {myOffers.length > 0 && (
-                                    <div style={{ marginBottom: '24px' }}>
-                                        <h4 style={{ fontSize: '16px', fontWeight: '800', color: 'white', marginBottom: '12px', paddingLeft: '4px' }}>Mis Ofertas</h4>
-                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', paddingBottom: '10px' }}>
-                                            {myOffers.map((offer) => (
+                                        </div>
+                                    )}
+
+                                    {/* Mis Pedidos */}
+                                    <h4 style={{ fontSize: '16px', fontWeight: '800', color: 'white', marginBottom: '12px', paddingLeft: '4px' }}>Mis Pedidos</h4>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', paddingBottom: '10px' }}>
+                                        {myOrders.length > 0 ? (
+                                            myOrders.map((order) => (
                                                 <motion.div
-                                                    key={offer.id}
+                                                    key={order.id}
                                                     whileTap={{ scale: 0.98 }}
                                                     style={{
                                                         width: '100%',
@@ -696,194 +798,142 @@ const Home: React.FC = () => {
                                                         border: '1px solid rgba(255, 255, 255, 0.05)',
                                                         display: 'flex',
                                                         flexDirection: 'column',
-                                                        gap: '8px'
+                                                        gap: '12px'
                                                     }}
                                                 >
                                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                                         <span style={{
-                                                            background: offer.status === 'accepted' ? '#10b981' : (offer.status === 'rejected' ? '#ef4444' : '#f59e0b'),
+                                                            background: '#f59e0b',
                                                             padding: '4px 8px',
                                                             borderRadius: '6px',
                                                             fontSize: '10px',
                                                             fontWeight: '900',
                                                             color: 'white'
                                                         }}>
-                                                            {offer.status?.toUpperCase()}
+                                                            {order.status?.toUpperCase() || 'PAGADO'}
                                                         </span>
-                                                        <span style={{ fontSize: '10px', color: 'var(--text-dim)' }}>{new Date(offer.created_at).toLocaleDateString()}</span>
+                                                        <span style={{ fontSize: '10px', color: 'var(--text-dim)' }}>{new Date(order.created_at).toLocaleDateString()}</span>
                                                     </div>
                                                     <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
                                                         <img
-                                                            src={offer.product?.image_url || ''}
+                                                            src={order.product?.image_url || ''}
                                                             style={{ width: '40px', height: '40px', borderRadius: '8px', objectFit: 'cover' }}
                                                             alt=""
                                                         />
                                                         <div style={{ overflow: 'hidden' }}>
                                                             <div style={{ fontSize: '14px', fontWeight: '800', color: 'white', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                                                {offer.product?.name}
+                                                                {order.product?.name}
                                                             </div>
                                                             <div style={{ fontSize: '12px', fontWeight: '700', color: 'var(--secondary)' }}>
-                                                                Oferta: ${offer.amount?.toLocaleString()}
+                                                                ${order.total_amount?.toLocaleString()}
                                                             </div>
                                                         </div>
                                                     </div>
                                                 </motion.div>
-                                            ))}
-                                        </div>
+                                            ))
+                                        ) : (
+                                            <div style={{ color: 'var(--text-dim)', fontSize: '14px', padding: '20px 0', width: '100%', textAlign: 'center' }}>No tienes pedidos aún.</div>
+                                        )}
                                     </div>
-                                )}
-
-                                {/* Mis Pedidos */}
-                                <h4 style={{ fontSize: '16px', fontWeight: '800', color: 'white', marginBottom: '12px', paddingLeft: '4px' }}>Mis Pedidos</h4>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', paddingBottom: '10px' }}>
-                                    {myOrders.length > 0 ? (
-                                        myOrders.map((order) => (
-                                            <motion.div
-                                                key={order.id}
-                                                whileTap={{ scale: 0.98 }}
-                                                style={{
-                                                    width: '100%',
-                                                    padding: '16px',
-                                                    borderRadius: '24px',
-                                                    background: 'rgba(255, 255, 255, 0.03)',
-                                                    border: '1px solid rgba(255, 255, 255, 0.05)',
-                                                    display: 'flex',
-                                                    flexDirection: 'column',
-                                                    gap: '12px'
-                                                }}
-                                            >
-                                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                    <span style={{
-                                                        background: '#f59e0b',
-                                                        padding: '4px 8px',
-                                                        borderRadius: '6px',
-                                                        fontSize: '10px',
-                                                        fontWeight: '900',
-                                                        color: 'white'
-                                                    }}>
-                                                        {order.status?.toUpperCase() || 'PAGADO'}
-                                                    </span>
-                                                    <span style={{ fontSize: '10px', color: 'var(--text-dim)' }}>{new Date(order.created_at).toLocaleDateString()}</span>
-                                                </div>
-                                                <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                                                    <img
-                                                        src={order.product?.image_url || ''}
-                                                        style={{ width: '40px', height: '40px', borderRadius: '8px', objectFit: 'cover' }}
-                                                        alt=""
-                                                    />
-                                                    <div style={{ overflow: 'hidden' }}>
-                                                        <div style={{ fontSize: '14px', fontWeight: '800', color: 'white', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                                            {order.product?.name}
-                                                        </div>
-                                                        <div style={{ fontSize: '12px', fontWeight: '700', color: 'var(--secondary)' }}>
-                                                            ${order.total_amount?.toLocaleString()}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </motion.div>
-                                        ))
-                                    ) : (
-                                        <div style={{ color: 'var(--text-dim)', fontSize: '14px', padding: '20px 0', width: '100%', textAlign: 'center' }}>No tienes pedidos aún.</div>
-                                    )}
                                 </div>
-                            </div>
+                            )
                         )
-                    )
-                    }
-                </div>
-
-
-                {/* Featured Caddies / Tournaments */}
-                <div style={{ marginBottom: '40px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', paddingRight: '5px' }}>
-                        <h3 style={{ fontSize: '22px', fontWeight: '900', letterSpacing: '-0.8px', color: 'white' }}>Torneos <span style={{ color: 'rgba(255,255,255,0.3)', fontWeight: '500' }}>Populares</span></h3>
-                        <motion.button
-                            whileTap={{ scale: 0.95 }}
-                            onClick={() => navigate('/tournaments')}
-                            style={{
-                                background: 'rgba(255, 255, 255, 0.05)',
-                                backdropFilter: 'blur(10px)',
-                                WebkitBackdropFilter: 'blur(10px)',
-                                border: '1px solid rgba(255, 255, 255, 0.1)',
-                                color: 'rgba(255,255,255,0.6)',
-                                fontSize: '13px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '6px',
-                                cursor: 'pointer',
-                                fontWeight: '800',
-                                padding: '6px 14px',
-                                borderRadius: '20px'
-                            }}
-                        >
-                            Calendario <ChevronRight size={14} />
-                        </motion.button>
+                        }
                     </div>
 
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                        {tournaments.length > 0 ? (
-                            tournaments.map(tournament => (
-                                <motion.div
-                                    key={tournament.id}
-                                    whileTap={{ scale: 0.98 }}
-                                    onClick={() => navigate('/tournaments')}
-                                    style={{
-                                        display: 'flex',
-                                        gap: '16px',
-                                        alignItems: 'center',
-                                        padding: '12px',
-                                        borderRadius: '24px',
-                                        background: 'rgba(255,255,255,0.04)',
-                                        backdropFilter: 'blur(12px)',
-                                        WebkitBackdropFilter: 'blur(12px)',
-                                        border: '1px solid rgba(255,255,255,0.08)',
-                                        cursor: 'pointer',
-                                        boxShadow: '0 8px 32px rgba(0,0,0,0.1)'
-                                    }}
-                                >
-                                    <div style={{
-                                        width: '60px',
-                                        height: '60px',
-                                        background: 'rgba(255,255,255,0.05)',
-                                        borderRadius: '16px',
-                                        backgroundImage: tournament.image_url ? `url(${tournament.image_url})` : 'none',
-                                        backgroundSize: 'cover',
-                                        backgroundPosition: 'center',
-                                        border: '1px solid rgba(255,255,255,0.1)'
-                                    }} />
-                                    <div style={{ flex: 1 }}>
-                                        <div style={{ fontWeight: '900', fontSize: '16px', color: 'white', marginBottom: '2px', letterSpacing: '-0.3px' }}>{tournament.name}</div>
-                                        <div style={{ fontSize: '13px', color: 'var(--secondary)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                                            {new Date(tournament.date).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}
+
+                    {/* Featured Caddies / Tournaments */}
+                    <div style={{ marginBottom: '40px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', paddingRight: '5px' }}>
+                            <h3 style={{ fontSize: '22px', fontWeight: '900', letterSpacing: '-0.8px', color: 'white' }}>Torneos <span style={{ color: 'rgba(255,255,255,0.3)', fontWeight: '500' }}>Populares</span></h3>
+                            <motion.button
+                                whileTap={{ scale: 0.95 }}
+                                onClick={() => navigate('/tournaments')}
+                                style={{
+                                    background: 'rgba(255, 255, 255, 0.05)',
+                                    backdropFilter: 'blur(10px)',
+                                    WebkitBackdropFilter: 'blur(10px)',
+                                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                                    color: 'rgba(255,255,255,0.6)',
+                                    fontSize: '13px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '6px',
+                                    cursor: 'pointer',
+                                    fontWeight: '800',
+                                    padding: '6px 14px',
+                                    borderRadius: '20px'
+                                }}
+                            >
+                                Calendario <ChevronRight size={14} />
+                            </motion.button>
+                        </div>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                            {tournaments.length > 0 ? (
+                                tournaments.map(tournament => (
+                                    <motion.div
+                                        key={tournament.id}
+                                        whileTap={{ scale: 0.98 }}
+                                        onClick={() => navigate('/tournaments')}
+                                        style={{
+                                            display: 'flex',
+                                            gap: '16px',
+                                            alignItems: 'center',
+                                            padding: '12px',
+                                            borderRadius: '24px',
+                                            background: 'rgba(255,255,255,0.04)',
+                                            backdropFilter: 'blur(12px)',
+                                            WebkitBackdropFilter: 'blur(12px)',
+                                            border: '1px solid rgba(255,255,255,0.08)',
+                                            cursor: 'pointer',
+                                            boxShadow: '0 8px 32px rgba(0,0,0,0.1)'
+                                        }}
+                                    >
+                                        <div style={{
+                                            width: '60px',
+                                            height: '60px',
+                                            background: 'rgba(255,255,255,0.05)',
+                                            borderRadius: '16px',
+                                            backgroundImage: tournament.image_url ? `url(${tournament.image_url})` : 'none',
+                                            backgroundSize: 'cover',
+                                            backgroundPosition: 'center',
+                                            border: '1px solid rgba(255,255,255,0.1)'
+                                        }} />
+                                        <div style={{ flex: 1 }}>
+                                            <div style={{ fontWeight: '900', fontSize: '16px', color: 'white', marginBottom: '2px', letterSpacing: '-0.3px' }}>{tournament.name}</div>
+                                            <div style={{ fontSize: '13px', color: 'var(--secondary)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                                                {new Date(tournament.date).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div style={{
-                                        width: '32px',
-                                        height: '32px',
-                                        borderRadius: '50%',
-                                        background: 'rgba(255,255,255,0.05)',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        color: 'rgba(255,255,255,0.3)'
-                                    }}>
-                                        <ChevronRight size={18} />
-                                    </div>
-                                </motion.div>
-                            ))
-                        ) : (
-                            <div style={{
-                                padding: '30px',
-                                textAlign: 'center',
-                                background: 'rgba(255,255,255,0.02)',
-                                borderRadius: '24px',
-                                border: '1px dashed rgba(255,255,255,0.1)'
-                            }}>
-                                <p style={{ fontSize: '14px', color: 'var(--text-dim)', fontWeight: '500' }}>
-                                    No hay torneos programados próximamente.
-                                </p>
-                            </div>
-                        )}
+                                        <div style={{
+                                            width: '32px',
+                                            height: '32px',
+                                            borderRadius: '50%',
+                                            background: 'rgba(255,255,255,0.05)',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            color: 'rgba(255,255,255,0.3)'
+                                        }}>
+                                            <ChevronRight size={18} />
+                                        </div>
+                                    </motion.div>
+                                ))
+                            ) : (
+                                <div style={{
+                                    padding: '30px',
+                                    textAlign: 'center',
+                                    background: 'rgba(255,255,255,0.02)',
+                                    borderRadius: '24px',
+                                    border: '1px dashed rgba(255,255,255,0.1)'
+                                }}>
+                                    <p style={{ fontSize: '14px', color: 'var(--text-dim)', fontWeight: '500' }}>
+                                        No hay torneos programados próximamente.
+                                    </p>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>

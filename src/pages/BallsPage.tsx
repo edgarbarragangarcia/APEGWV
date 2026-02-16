@@ -50,29 +50,27 @@ const BallsPage: React.FC = () => {
             {/* Filtros */}
             <div style={{
                 position: 'absolute',
-                top: 'calc(var(--header-offset-top) + 100px)', // Movido arriba
+                top: 'calc(var(--header-offset-top) + 110px)',
                 left: 0,
                 right: 0,
                 zIndex: 20,
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '8px',
+                gap: '4px',
                 background: 'transparent'
             }}>
-                {brands.length > 1 && (
-                    <FilterBar
-                        label="Marca"
-                        options={brands}
-                        selectedValue={selectedBrand}
-                        onSelect={setSelectedBrand}
-                    />
-                )}
+                <FilterBar
+                    label="Marca"
+                    options={brands}
+                    selectedValue={selectedBrand}
+                    onSelect={setSelectedBrand}
+                />
             </div>
 
             {/* Area de Scroll */}
             <div style={{
                 position: 'absolute',
-                top: 'calc(var(--header-offset-top) + 180px)', // Ajustado
+                top: `calc(var(--header-offset-top) + ${110 + (brands.length > 1 ? 75 : 10)}px)`,
                 left: '0',
                 right: '0',
                 bottom: 0,

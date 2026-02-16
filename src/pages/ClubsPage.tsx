@@ -50,7 +50,7 @@ const ClubsPage: React.FC = () => {
             {/* Filtros */}
             <div style={{
                 position: 'absolute',
-                top: 'calc(var(--header-offset-top) + 100px)',
+                top: 'calc(var(--header-offset-top) + 110px)',
                 left: 0,
                 right: 0,
                 zIndex: 20,
@@ -72,7 +72,7 @@ const ClubsPage: React.FC = () => {
             {/* Area de Scroll */}
             <div style={{
                 position: 'absolute',
-                top: 'calc(var(--header-offset-top) + 180px)',
+                top: `calc(var(--header-offset-top) + ${110 + (brands.length > 1 ? 75 : 10)}px)`,
                 left: '0',
                 right: '0',
                 bottom: 0,

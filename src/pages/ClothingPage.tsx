@@ -60,7 +60,7 @@ const ClothingPage: React.FC = () => {
             {/* Filtros */}
             <div style={{
                 position: 'absolute',
-                top: 'calc(var(--header-offset-top) + 90px)', // Movido arriba
+                top: 'calc(var(--header-offset-top) + 110px)',
                 left: 0,
                 right: 0,
                 zIndex: 20,
@@ -76,29 +76,25 @@ const ClothingPage: React.FC = () => {
                     onSelect={setSelectedType}
                 />
 
-                {brands.length > 1 && (
-                    <FilterBar
-                        label="Marca"
-                        options={brands}
-                        selectedValue={selectedBrand}
-                        onSelect={setSelectedBrand}
-                    />
-                )}
+                <FilterBar
+                    label="Marca"
+                    options={brands}
+                    selectedValue={selectedBrand}
+                    onSelect={setSelectedBrand}
+                />
 
-                {sizes.length > 1 && (
-                    <FilterBar
-                        label="Talla"
-                        options={sizes}
-                        selectedValue={selectedSize}
-                        onSelect={setSelectedSize}
-                    />
-                )}
+                <FilterBar
+                    label="Talla"
+                    options={sizes}
+                    selectedValue={selectedSize}
+                    onSelect={setSelectedSize}
+                />
             </div>
 
             {/* Area de Scroll */}
             <div style={{
                 position: 'absolute',
-                top: 'calc(var(--header-offset-top) + 260px)', // Ajustado para los filtros
+                top: `calc(var(--header-offset-top) + ${110 + 75 + (brands.length > 1 ? 75 : 0) + (sizes.length > 1 ? 75 : 0)}px)`,
                 left: '0',
                 right: '0',
                 bottom: 0,

@@ -56,7 +56,7 @@ const ShoesPage: React.FC = () => {
             {/* Filtros */}
             <div style={{
                 position: 'absolute',
-                top: 'calc(var(--header-offset-top) + 100px)',
+                top: 'calc(var(--header-offset-top) + 110px)',
                 left: 0,
                 right: 0,
                 zIndex: 20,
@@ -86,7 +86,7 @@ const ShoesPage: React.FC = () => {
             {/* Area de Scroll */}
             <div style={{
                 position: 'absolute',
-                top: 'calc(var(--header-offset-top) + 180px)', // Ajustado si hay filtros
+                top: `calc(var(--header-offset-top) + ${110 + (brands.length > 1 ? 75 : 0) + (sizes.length > 1 ? 75 : 0)}px)`,
                 left: '0',
                 right: '0',
                 bottom: 0,

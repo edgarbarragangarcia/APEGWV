@@ -18,7 +18,7 @@ const CategoryHero: React.FC<CategoryHeroProps> = ({ title, subtitle, image }) =
             top: 0,
             left: 0,
             right: 0,
-            height: '400px',
+            height: '320px', // Reducido de 400px
             zIndex: 0,
             overflow: 'hidden',
         }}>
@@ -41,7 +41,7 @@ const CategoryHero: React.FC<CategoryHeroProps> = ({ title, subtitle, image }) =
                         height: '100%',
                         objectFit: 'cover',
                         objectPosition: 'center',
-                        filter: 'brightness(0.7)',
+                        filter: 'brightness(0.6)', // Un poco más oscuro
                         display: image ? 'block' : 'none'
                     }}
                     onError={(e) => {
@@ -51,11 +51,11 @@ const CategoryHero: React.FC<CategoryHeroProps> = ({ title, subtitle, image }) =
                 <div style={{
                     position: 'absolute',
                     inset: 0,
-                    background: 'linear-gradient(to bottom, rgba(14, 47, 31, 0.4) 0%, rgba(14, 47, 31, 0.8) 70%, var(--primary) 100%)',
+                    background: 'linear-gradient(to bottom, rgba(14, 47, 31, 0.2) 0%, rgba(14, 47, 31, 0.7) 60%, var(--primary) 100%)',
                 }} />
             </motion.div>
 
-            {/* Back Button - Positioned to handle safe areas if needed, but simple for now */}
+            {/* Back Button */}
             <motion.button
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -84,7 +84,7 @@ const CategoryHero: React.FC<CategoryHeroProps> = ({ title, subtitle, image }) =
             {/* Content */}
             <div style={{
                 position: 'absolute',
-                top: 'calc(var(--header-offset-top) + 20px)',
+                top: 'calc(var(--header-offset-top) + 15px)', // Más arriba
                 left: '20px',
                 right: '20px',
                 zIndex: 5
@@ -94,23 +94,22 @@ const CategoryHero: React.FC<CategoryHeroProps> = ({ title, subtitle, image }) =
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2 }}
                 >
-
                     <h1 style={{
-                        fontSize: '48px',
+                        fontSize: '40px', // Reducido de 48px
                         fontWeight: '900',
                         color: 'white',
                         lineHeight: '0.9',
-                        marginBottom: '10px',
-                        letterSpacing: '-2px'
+                        marginBottom: '8px',
+                        letterSpacing: '-1.5px'
                     }}>
                         {title}
                     </h1>
                     <p style={{
-                        fontSize: '15px',
-                        color: 'rgba(255, 255, 255, 0.9)',
-                        maxWidth: '85%',
+                        fontSize: '14px', // Reducido de 15px
+                        color: 'rgba(255, 255, 255, 0.8)',
+                        maxWidth: '90%',
                         fontWeight: '500',
-                        lineHeight: '1.3'
+                        lineHeight: '1.2'
                     }}>
                         {subtitle}
                     </p>
