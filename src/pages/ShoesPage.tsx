@@ -6,7 +6,8 @@ import { useFeaturedProducts } from '../hooks/useHomeData';
 import { useCart } from '../context/CartContext';
 import { useNavigate } from 'react-router-dom';
 import FilterBar from '../components/FilterBar';
-
+import FilterSelector from '../components/FilterSelector';
+import FilterModal from '../components/FilterModal';
 
 const ShoesPage: React.FC = () => {
     const navigate = useNavigate();
@@ -15,6 +16,7 @@ const ShoesPage: React.FC = () => {
 
     const [selectedBrand, setSelectedBrand] = useState('Todos');
     const [selectedSize, setSelectedSize] = useState('Todos');
+    const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
 
     // Filter products for Zapatos category
     const shoeProducts = featuredProducts.filter((product: any) =>
@@ -22,19 +24,25 @@ const ShoesPage: React.FC = () => {
     );
 
     // Dynamic filters options
-    const brands = ['Todos', ...new Set(shoeProducts.map((p: any) => p.brand).filter(Boolean))] as string[];
+    const brands = ['Todos', ...new Set(shoeProducts.map((p: any) => p.brand || 'APEG'))] as string[];
     const sizes = ['Todos', ...new Set(shoeProducts.flatMap((p: any) =>
         (p.sizes_inventory || []).map((s: any) => s.size)
     ).filter(Boolean))] as string[];
 
     const filteredProducts = shoeProducts.filter((p: any) => {
-        const matchesBrand = selectedBrand === 'Todos' || p.brand === selectedBrand;
+        const brand = p.brand || 'APEG';
+        const matchesBrand = selectedBrand === 'Todos' || brand === selectedBrand;
         const matchesSize = selectedSize === 'Todos' || (p.sizes_inventory || []).some((s: any) => s.size === selectedSize);
         return matchesBrand && matchesSize;
     });
 
     const handleAddToCart = (product: any) => {
         addToCart(product);
+    };
+
+    const handleClearFilters = () => {
+        setSelectedBrand('Todos');
+        setSelectedSize('Todos');
     };
 
     return (
@@ -51,20 +59,16 @@ const ShoesPage: React.FC = () => {
                 title="Zapatos"
                 subtitle="Comodidad y estabilidad superior para que camines con confianza cada hoyo."
                 image="/heros/golf_shoes_hero_1770415202682.png"
+                onFilterClick={() => setIsFilterModalOpen(true)}
+                hasFilters={brands.length > 1 || sizes.length > 1}
             />
 
-            {/* Filtros */}
-            <div style={{
-                position: 'absolute',
-                top: 'calc(var(--header-offset-top) + 110px)',
-                left: 0,
-                right: 0,
-                zIndex: 20,
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '8px',
-                background: 'transparent'
-            }}>
+            <FilterModal
+                isOpen={isFilterModalOpen}
+                onClose={() => setIsFilterModalOpen(false)}
+                onClear={handleClearFilters}
+                resultsCount={filteredProducts.length}
+            >
                 {brands.length > 1 && (
                     <FilterBar
                         label="Marca"
@@ -74,19 +78,19 @@ const ShoesPage: React.FC = () => {
                     />
                 )}
                 {sizes.length > 1 && (
-                    <FilterBar
+                    <FilterSelector
                         label="Talla"
                         options={sizes}
                         selectedValue={selectedSize}
                         onSelect={setSelectedSize}
                     />
                 )}
-            </div>
+            </FilterModal>
 
             {/* Area de Scroll */}
             <div style={{
                 position: 'absolute',
-                top: `calc(var(--header-offset-top) + ${110 + (brands.length > 1 ? 75 : 0) + (sizes.length > 1 ? 75 : 0)}px)`,
+                top: 'calc(var(--header-offset-top) + 120px)',
                 left: '0',
                 right: '0',
                 bottom: 0,
@@ -147,6 +151,7 @@ const ShoesPage: React.FC = () => {
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: index * 0.1 }}
+                                style={{ height: '100%' }}
                             >
                                 <PremiumProductCard
                                     product={product}

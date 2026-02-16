@@ -6,7 +6,7 @@ import { useFeaturedProducts } from '../hooks/useHomeData';
 import { useCart } from '../context/CartContext';
 import { useNavigate } from 'react-router-dom';
 import FilterBar from '../components/FilterBar';
-
+import FilterModal from '../components/FilterModal';
 
 const ClubsPage: React.FC = () => {
     const navigate = useNavigate();
@@ -14,6 +14,7 @@ const ClubsPage: React.FC = () => {
     const { addToCart } = useCart();
 
     const [selectedBrand, setSelectedBrand] = useState('Todos');
+    const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
 
     // Filter products for Palos category
     const clubProducts = featuredProducts.filter((product: any) =>
@@ -21,10 +22,11 @@ const ClubsPage: React.FC = () => {
     );
 
     // Dynamic filters options
-    const brands = ['Todos', ...new Set(clubProducts.map((p: any) => p.brand).filter(Boolean))] as string[];
+    const brands = ['Todos', ...new Set(clubProducts.map((p: any) => p.brand || 'APEG'))] as string[];
 
     const filteredProducts = clubProducts.filter((p: any) => {
-        return selectedBrand === 'Todos' || p.brand === selectedBrand;
+        const brand = p.brand || 'APEG';
+        return selectedBrand === 'Todos' || brand === selectedBrand;
     });
 
     const handleAddToCart = (product: any) => {
@@ -45,34 +47,28 @@ const ClubsPage: React.FC = () => {
                 title="Palos"
                 subtitle="El corazón de tu juego. Tecnología de vanguardia para alcanzar tu máximo potencial."
                 image="/heros/golf_clubs_hero_1770415175713.png"
+                onFilterClick={() => setIsFilterModalOpen(true)}
+                hasFilters={brands.length > 1}
             />
 
-            {/* Filtros */}
-            <div style={{
-                position: 'absolute',
-                top: 'calc(var(--header-offset-top) + 110px)',
-                left: 0,
-                right: 0,
-                zIndex: 20,
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '8px',
-                background: 'transparent'
-            }}>
-                {brands.length > 1 && (
-                    <FilterBar
-                        label="Marca"
-                        options={brands}
-                        selectedValue={selectedBrand}
-                        onSelect={setSelectedBrand}
-                    />
-                )}
-            </div>
+            <FilterModal
+                isOpen={isFilterModalOpen}
+                onClose={() => setIsFilterModalOpen(false)}
+                onClear={() => setSelectedBrand('Todos')}
+                resultsCount={filteredProducts.length}
+            >
+                <FilterBar
+                    label="Marca"
+                    options={brands}
+                    selectedValue={selectedBrand}
+                    onSelect={setSelectedBrand}
+                />
+            </FilterModal>
 
             {/* Area de Scroll */}
             <div style={{
                 position: 'absolute',
-                top: `calc(var(--header-offset-top) + ${110 + (brands.length > 1 ? 75 : 10)}px)`,
+                top: 'calc(var(--header-offset-top) + 120px)',
                 left: '0',
                 right: '0',
                 bottom: 0,
@@ -133,6 +129,7 @@ const ClubsPage: React.FC = () => {
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: index * 0.1 }}
+                                style={{ height: '100%' }}
                             >
                                 <PremiumProductCard
                                     product={product}

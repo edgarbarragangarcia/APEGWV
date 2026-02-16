@@ -6,7 +6,7 @@ import { useFeaturedProducts } from '../hooks/useHomeData';
 import { useCart } from '../context/CartContext';
 import { useNavigate } from 'react-router-dom';
 import FilterBar from '../components/FilterBar';
-
+import FilterModal from '../components/FilterModal';
 
 const CapsPage: React.FC = () => {
     const navigate = useNavigate();
@@ -15,6 +15,7 @@ const CapsPage: React.FC = () => {
 
     const [selectedBrand, setSelectedBrand] = useState('Todos');
     const [selectedSize, setSelectedSize] = useState('Todos');
+    const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
 
     // Filter products for Gorras category
     const capProducts = featuredProducts.filter((product: any) =>
@@ -22,13 +23,14 @@ const CapsPage: React.FC = () => {
     );
 
     // Dynamic filters options
-    const brands = ['Todos', ...new Set(capProducts.map((p: any) => p.brand).filter(Boolean))] as string[];
+    const brands = ['Todos', ...new Set(capProducts.map((p: any) => p.brand || 'APEG'))] as string[];
     const sizes = ['Todos', ...new Set(capProducts.flatMap((p: any) =>
         (p.sizes_inventory || []).map((s: any) => s.size)
     ).filter(Boolean))] as string[];
 
     const filteredProducts = capProducts.filter((p: any) => {
-        const matchesBrand = selectedBrand === 'Todos' || p.brand === selectedBrand;
+        const brand = p.brand || 'APEG';
+        const matchesBrand = selectedBrand === 'Todos' || brand === selectedBrand;
         const matchesSize = selectedSize === 'Todos' || (p.sizes_inventory || []).some((s: any) => s.size === selectedSize);
         return matchesBrand && matchesSize;
     });
@@ -51,20 +53,19 @@ const CapsPage: React.FC = () => {
                 title="Gorras"
                 subtitle="El toque final de tu outfit. Estilo clásico y moderno para protegerte con elegancia."
                 image="/heros/golf_accessories_hero_1770415216840.png"
+                onFilterClick={() => setIsFilterModalOpen(true)}
+                hasFilters={brands.length > 1 || sizes.length > 1}
             />
 
-            {/* Filtros */}
-            <div style={{
-                position: 'absolute',
-                top: 'calc(var(--header-offset-top) + 110px)',
-                left: 0,
-                right: 0,
-                zIndex: 20,
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '8px',
-                background: 'transparent'
-            }}>
+            <FilterModal
+                isOpen={isFilterModalOpen}
+                onClose={() => setIsFilterModalOpen(false)}
+                onClear={() => {
+                    setSelectedBrand('Todos');
+                    setSelectedSize('Todos');
+                }}
+                resultsCount={filteredProducts.length}
+            >
                 {brands.length > 1 && (
                     <FilterBar
                         label="Marca"
@@ -81,12 +82,12 @@ const CapsPage: React.FC = () => {
                         onSelect={setSelectedSize}
                     />
                 )}
-            </div>
+            </FilterModal>
 
             {/* Area de Scroll */}
             <div style={{
                 position: 'absolute',
-                top: `calc(var(--header-offset-top) + ${110 + (brands.length > 1 ? 75 : 0) + (sizes.length > 1 ? 75 : 0)}px)`,
+                top: 'calc(var(--header-offset-top) + 120px)',
                 left: '0',
                 right: '0',
                 bottom: 0,
@@ -147,6 +148,7 @@ const CapsPage: React.FC = () => {
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: index * 0.1 }}
+                                style={{ height: '100%' }}
                             >
                                 <PremiumProductCard
                                     product={product}

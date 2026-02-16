@@ -1,15 +1,17 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, SlidersHorizontal } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 interface CategoryHeroProps {
     title: string;
     subtitle: string;
     image: string;
+    onFilterClick?: () => void;
+    hasFilters?: boolean;
 }
 
-const CategoryHero: React.FC<CategoryHeroProps> = ({ title, subtitle, image }) => {
+const CategoryHero: React.FC<CategoryHeroProps> = ({ title, subtitle, image, onFilterClick, hasFilters }) => {
     const navigate = useNavigate();
 
     return (
@@ -55,31 +57,66 @@ const CategoryHero: React.FC<CategoryHeroProps> = ({ title, subtitle, image }) =
                 }} />
             </motion.div>
 
-            {/* Back Button */}
-            <motion.button
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                onClick={() => navigate('/')}
-                style={{
-                    position: 'absolute',
-                    top: 'calc(var(--header-offset-top) + 12px)',
-                    right: '20px',
-                    zIndex: 2000,
-                    width: '36px',
-                    height: '36px',
-                    borderRadius: '50%',
-                    background: 'rgba(255, 255, 255, 0.1)',
-                    backdropFilter: 'blur(10px)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    border: '1px solid rgba(255, 255, 255, 0.2)',
-                    color: 'white',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
-                }}
-            >
-                <ArrowLeft size={18} />
-            </motion.button>
+            {/* Top Buttons Bar */}
+            <div style={{
+                position: 'absolute',
+                top: 'calc(var(--header-offset-top) + 12px)',
+                left: '20px',
+                right: '20px',
+                zIndex: 2000,
+                display: 'flex',
+                justifyContent: 'space-between',
+                pointerEvents: 'none'
+            }}>
+                <div style={{ flex: 1 }} /> {/* Spacer */}
+
+                <div style={{ display: 'flex', gap: '8px', pointerEvents: 'auto' }}>
+                    {onFilterClick && hasFilters && (
+                        <motion.button
+                            initial={{ opacity: 0, scale: 0.8 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            onClick={onFilterClick}
+                            style={{
+                                width: '36px',
+                                height: '36px',
+                                borderRadius: '50%',
+                                background: 'rgba(255, 255, 255, 0.1)',
+                                backdropFilter: 'blur(10px)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                border: '1px solid rgba(255, 255, 255, 0.2)',
+                                color: 'white',
+                                boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
+                            }}
+                        >
+                            <SlidersHorizontal size={18} />
+                        </motion.button>
+                    )}
+
+                    {/* Back Button */}
+                    <motion.button
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        onClick={() => navigate('/')}
+                        style={{
+                            width: '36px',
+                            height: '36px',
+                            borderRadius: '50%',
+                            background: 'rgba(255, 255, 255, 0.1)',
+                            backdropFilter: 'blur(10px)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            border: '1px solid rgba(255, 255, 255, 0.2)',
+                            color: 'white',
+                            boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
+                        }}
+                    >
+                        <ArrowLeft size={18} />
+                    </motion.button>
+                </div>
+            </div>
 
             {/* Content */}
             <div style={{

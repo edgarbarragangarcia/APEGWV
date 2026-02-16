@@ -15,8 +15,7 @@ const PremiumProductCard: React.FC<PremiumProductCardProps> = ({ product, onAddT
     const { likedProducts, toggleLike } = useLikes();
     const isLiked = likedProducts.has(product.id);
     // Generate a pseudo-random rating for aesthetics
-    const rating = 4 + (Math.floor(Math.random() * 10) / 10);
-    const reviews = 10 + Math.floor(Math.random() * 50);
+    const rating = (4 + (Math.floor(Math.random() * 10) / 10)).toFixed(1);
 
     return (
         <motion.div
@@ -35,11 +34,11 @@ const PremiumProductCard: React.FC<PremiumProductCardProps> = ({ product, onAddT
                 height: '100%'
             }}
         >
-            {/* Image Container */}
+            {/* Image Container - Fixed height for uniformity */}
             <div style={{
                 position: 'relative',
                 width: '100%',
-                aspectRatio: '1',
+                height: '180px', // Fixed height for consistent image size
                 padding: '12px',
                 display: 'flex',
                 alignItems: 'center',
@@ -141,87 +140,87 @@ const PremiumProductCard: React.FC<PremiumProductCardProps> = ({ product, onAddT
 
             {/* Info Section */}
             <div style={{
-                padding: '16px',
+                padding: '0 16px 16px 16px', // Reduced top padding
                 flex: 1,
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '6px'
             }}>
-                {/* Brand & Category & Rating */}
+                {/* Brand - Fixed height */}
+                <div style={{
+                    height: '14px',
+                    marginBottom: '2px',
+                    display: 'flex',
+                    alignItems: 'center'
+                }}>
+                    <span style={{
+                        fontSize: '10px',
+                        fontWeight: '800',
+                        color: 'rgba(255,255,255,0.4)',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.5px'
+                    }}>
+                        {product.brand || 'APEG'}
+                    </span>
+                </div>
+
+                {/* Category & Rating - Fixed height */}
                 <div style={{
                     display: 'flex',
-                    flexDirection: 'column',
-                    gap: '2px'
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    height: '18px',
+                    marginBottom: '8px'
                 }}>
-                    {product.brand && (
-                        <span style={{
-                            fontSize: '9px',
-                            fontWeight: '800',
-                            color: 'rgba(255,255,255,0.4)',
-                            textTransform: 'uppercase',
-                            letterSpacing: '0.5px'
-                        }}>
-                            {product.brand}
-                        </span>
-                    )}
+                    <span style={{
+                        fontSize: '10px',
+                        fontWeight: '700',
+                        color: 'var(--secondary)',
+                        textTransform: 'uppercase',
+                        letterSpacing: '1px'
+                    }}>
+                        {product.category} {product.clothing_type ? `• ${product.clothing_type}` : ''}
+                    </span>
                     <div style={{
                         display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center'
+                        alignItems: 'center',
+                        gap: '2px',
+                        background: 'rgba(255,255,255,0.05)',
+                        padding: '2px 6px',
+                        borderRadius: '6px'
                     }}>
-                        <span style={{
-                            fontSize: '10px',
-                            fontWeight: '700',
-                            color: 'var(--secondary)',
-                            textTransform: 'uppercase',
-                            letterSpacing: '1px'
-                        }}>
-                            {product.category} {(product as any).clothing_type ? `• ${(product as any).clothing_type}` : ''}
-                        </span>
-                        <div style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '2px',
-                            background: 'rgba(255,255,255,0.05)',
-                            padding: '2px 6px',
-                            borderRadius: '6px'
-                        }}>
-                            <Star size={10} color="var(--accent)" fill="var(--accent)" />
-                            <span style={{ fontSize: '10px', fontWeight: '600', color: 'white' }}>{rating}</span>
-                            <span style={{ fontSize: '10px', fontWeight: '500', color: 'rgba(255,255,255,0.4)', marginLeft: '2px' }}>({reviews})</span>
-                        </div>
+                        <Star size={10} color="var(--accent)" fill="var(--accent)" />
+                        <span style={{ fontSize: '10px', fontWeight: '600', color: 'white' }}>{rating}</span>
                     </div>
                 </div>
 
-                {/* Name */}
+                {/* Name - Fixed height with 2 lines */}
                 <h3 style={{
                     fontSize: '15px',
                     fontWeight: '700',
                     color: 'white',
-                    lineHeight: '1.3',
-                    margin: 0,
+                    lineHeight: '1.2',
+                    margin: '0 0 12px 0',
                     display: '-webkit-box',
                     WebkitLineClamp: 2,
                     WebkitBoxOrient: 'vertical',
                     overflow: 'hidden',
-                    height: '40px'
+                    height: '36px',
                 }}>
                     {product.name}
                 </h3>
 
-                {/* Price */}
+                {/* Price - Bottom aligned */}
                 <div style={{
                     marginTop: 'auto',
                     display: 'flex',
-                    alignItems: 'baseline',
-                    gap: '4px'
+                    alignItems: 'center'
                 }}>
                     <span style={{
                         fontSize: '18px',
                         fontWeight: '900',
                         color: 'white'
                     }}>
-                        ${product.price}
+                        ${Number(product.price).toLocaleString()}
                     </span>
                 </div>
             </div>

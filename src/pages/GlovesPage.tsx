@@ -6,7 +6,7 @@ import { useFeaturedProducts } from '../hooks/useHomeData';
 import { useCart } from '../context/CartContext';
 import { useNavigate } from 'react-router-dom';
 import FilterBar from '../components/FilterBar';
-
+import FilterModal from '../components/FilterModal';
 
 const GlovesPage: React.FC = () => {
     const navigate = useNavigate();
@@ -15,6 +15,7 @@ const GlovesPage: React.FC = () => {
 
     const [selectedBrand, setSelectedBrand] = useState('Todos');
     const [selectedSize, setSelectedSize] = useState('Todos');
+    const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
 
     // Filter products for Guantes category
     const gloveProducts = featuredProducts.filter((product: any) =>
@@ -22,13 +23,14 @@ const GlovesPage: React.FC = () => {
     );
 
     // Dynamic filters options
-    const brands = ['Todos', ...new Set(gloveProducts.map((p: any) => p.brand).filter(Boolean))] as string[];
+    const brands = ['Todos', ...new Set(gloveProducts.map((p: any) => p.brand || 'APEG'))] as string[];
     const sizes = ['Todos', ...new Set(gloveProducts.flatMap((p: any) =>
         (p.sizes_inventory || []).map((s: any) => s.size)
     ).filter(Boolean))] as string[];
 
     const filteredProducts = gloveProducts.filter((p: any) => {
-        const matchesBrand = selectedBrand === 'Todos' || p.brand === selectedBrand;
+        const brand = p.brand || 'APEG';
+        const matchesBrand = selectedBrand === 'Todos' || brand === selectedBrand;
         const matchesSize = selectedSize === 'Todos' || (p.sizes_inventory || []).some((s: any) => s.size === selectedSize);
         return matchesBrand && matchesSize;
     });
@@ -51,20 +53,19 @@ const GlovesPage: React.FC = () => {
                 title="Guantes"
                 subtitle="El contacto perfecto. Piel premium para una sensación y agarre inigualables."
                 image="/heros/golf_gloves_hero_1770415231000.png"
+                onFilterClick={() => setIsFilterModalOpen(true)}
+                hasFilters={brands.length > 1 || sizes.length > 1}
             />
 
-            {/* Filtros */}
-            <div style={{
-                position: 'absolute',
-                top: 'calc(var(--header-offset-top) + 110px)',
-                left: 0,
-                right: 0,
-                zIndex: 20,
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '8px',
-                background: 'transparent'
-            }}>
+            <FilterModal
+                isOpen={isFilterModalOpen}
+                onClose={() => setIsFilterModalOpen(false)}
+                onClear={() => {
+                    setSelectedBrand('Todos');
+                    setSelectedSize('Todos');
+                }}
+                resultsCount={filteredProducts.length}
+            >
                 {brands.length > 1 && (
                     <FilterBar
                         label="Marca"
@@ -81,12 +82,12 @@ const GlovesPage: React.FC = () => {
                         onSelect={setSelectedSize}
                     />
                 )}
-            </div>
+            </FilterModal>
 
             {/* Area de Scroll */}
             <div style={{
                 position: 'absolute',
-                top: `calc(var(--header-offset-top) + ${110 + (brands.length > 1 ? 75 : 0) + (sizes.length > 1 ? 75 : 0)}px)`,
+                top: 'calc(var(--header-offset-top) + 120px)',
                 left: '0',
                 right: '0',
                 bottom: 0,
@@ -147,6 +148,7 @@ const GlovesPage: React.FC = () => {
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: index * 0.1 }}
+                                style={{ height: '100%' }}
                             >
                                 <PremiumProductCard
                                     product={product}

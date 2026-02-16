@@ -6,7 +6,7 @@ import { useFeaturedProducts } from '../hooks/useHomeData';
 import { useCart } from '../context/CartContext';
 import { useNavigate } from 'react-router-dom';
 import FilterBar from '../components/FilterBar';
-
+import FilterModal from '../components/FilterModal';
 
 const AccessoriesPage: React.FC = () => {
     const navigate = useNavigate();
@@ -14,6 +14,7 @@ const AccessoriesPage: React.FC = () => {
     const { addToCart } = useCart();
 
     const [selectedBrand, setSelectedBrand] = useState('Todos');
+    const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
 
     // Filter products for Accesorios category
     const accessoryProducts = featuredProducts.filter((product: any) =>
@@ -21,10 +22,11 @@ const AccessoriesPage: React.FC = () => {
     );
 
     // Dynamic filters options
-    const brands = ['Todos', ...new Set(accessoryProducts.map((p: any) => p.brand).filter(Boolean))] as string[];
+    const brands = ['Todos', ...new Set(accessoryProducts.map((p: any) => p.brand || 'APEG'))] as string[];
 
     const filteredProducts = accessoryProducts.filter((p: any) => {
-        return selectedBrand === 'Todos' || p.brand === selectedBrand;
+        const brand = p.brand || 'APEG';
+        return selectedBrand === 'Todos' || brand === selectedBrand;
     });
 
     const handleAddToCart = (product: any) => {
@@ -45,32 +47,28 @@ const AccessoriesPage: React.FC = () => {
                 title="Accesorios"
                 subtitle="Los detalles que marcan la diferencia. Todo lo que necesitas para complementar tu equipo."
                 image="/heros/golf_accessories_hero_1770415216840.png"
+                onFilterClick={() => setIsFilterModalOpen(true)}
+                hasFilters={brands.length > 1}
             />
 
-            {/* Filtros */}
-            <div style={{
-                position: 'absolute',
-                top: 'calc(var(--header-offset-top) + 110px)',
-                left: 0,
-                right: 0,
-                zIndex: 20,
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '4px',
-                background: 'transparent'
-            }}>
+            <FilterModal
+                isOpen={isFilterModalOpen}
+                onClose={() => setIsFilterModalOpen(false)}
+                onClear={() => setSelectedBrand('Todos')}
+                resultsCount={filteredProducts.length}
+            >
                 <FilterBar
                     label="Marca"
                     options={brands}
                     selectedValue={selectedBrand}
                     onSelect={setSelectedBrand}
                 />
-            </div>
+            </FilterModal>
 
             {/* Area de Scroll */}
             <div style={{
                 position: 'absolute',
-                top: `calc(var(--header-offset-top) + ${110 + (brands.length > 1 ? 75 : 10)}px)`,
+                top: 'calc(var(--header-offset-top) + 120px)',
                 left: '0',
                 right: '0',
                 bottom: 0,
@@ -131,6 +129,7 @@ const AccessoriesPage: React.FC = () => {
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: index * 0.1 }}
+                                style={{ height: '100%' }}
                             >
                                 <PremiumProductCard
                                     product={product}
