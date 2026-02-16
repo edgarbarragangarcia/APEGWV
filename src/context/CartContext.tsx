@@ -1,6 +1,14 @@
 import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
 import { supabase } from '../services/SupabaseManager';
-import type { Product } from '../services/SupabaseManager';
+
+
+interface Product {
+    id: string;
+    name: string;
+    price: number;
+    image_url: string | null;
+    [key: string]: any;
+}
 
 interface CartItem extends Product {
     quantity: number;
@@ -9,7 +17,7 @@ interface CartItem extends Product {
 
 interface CartContextType {
     cartItems: CartItem[];
-    addToCart: (product: Product, selectedSize?: string | null) => Promise<void>;
+    addToCart: (product: any, selectedSize?: string | null) => Promise<void>;
     removeFromCart: (productId: string, selectedSize?: string | null) => Promise<void>;
     updateQuantity: (productId: string, quantity: number, selectedSize?: string | null) => Promise<void>;
     clearCart: () => Promise<void>;
@@ -66,7 +74,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         syncLocal();
     }, [cartItems]);
 
-    const addToCart = async (product: Product, selectedSize?: string | null) => {
+    const addToCart = async (product: any, selectedSize?: string | null) => {
         const { data: { session } } = await supabase.auth.getSession();
 
         const existingItem = cartItems.find(item =>

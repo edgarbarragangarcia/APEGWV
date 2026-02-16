@@ -2,12 +2,12 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { ShoppingCart, Star, Heart } from 'lucide-react';
 import { useLikes } from '../hooks/useLikes';
-import type { Product } from '../services/SupabaseManager';
+
 import { optimizeImage } from '../services/SupabaseManager';
 
 interface PremiumProductCardProps {
-    product: Product;
-    onAddToCart: (product: Product) => void;
+    product: any;
+    onAddToCart: (product: any) => void;
     onClick: () => void;
 }
 

@@ -5,6 +5,8 @@ import PremiumProductCard from '../components/PremiumProductCard';
 import { useFeaturedProducts } from '../hooks/useHomeData';
 import { useCart } from '../context/CartContext';
 import { useNavigate } from 'react-router-dom';
+import FilterBar from '../components/FilterBar';
+
 
 const ClothingPage: React.FC = () => {
     const navigate = useNavigate();
@@ -12,17 +14,28 @@ const ClothingPage: React.FC = () => {
     const { addToCart } = useCart();
 
     const [selectedType, setSelectedType] = useState('Todos');
+    const [selectedBrand, setSelectedBrand] = useState('Todos');
+    const [selectedSize, setSelectedSize] = useState('Todos');
 
     const clothingTypes = ['Todos', 'Camisa', 'Camiseta', 'Pantalón', 'Short', 'Buso / Chaqueta', 'Gorra', 'Otro'];
 
-    // Filter products for Ropa category and by clothing_type if selected
-    const baseClothingProducts = featuredProducts.filter(product =>
+    // Filter products for Ropa category
+    const baseClothingProducts = featuredProducts.filter((product: any) =>
         (product.category || '').toLowerCase() === 'ropa'
     );
 
-    const filteredProducts = selectedType === 'Todos'
-        ? baseClothingProducts
-        : baseClothingProducts.filter(p => (p as any).clothing_type === selectedType);
+    // Dynamic filters options
+    const brands = ['Todos', ...new Set(baseClothingProducts.map((p: any) => p.brand).filter(Boolean))] as string[];
+    const sizes = ['Todos', ...new Set(baseClothingProducts.flatMap((p: any) =>
+        (p.sizes_inventory || []).map((s: any) => s.size)
+    ).filter(Boolean))] as string[];
+
+    const filteredProducts = baseClothingProducts.filter((p: any) => {
+        const matchesType = selectedType === 'Todos' || (p as any).clothing_type === selectedType;
+        const matchesBrand = selectedBrand === 'Todos' || p.brand === selectedBrand;
+        const matchesSize = selectedSize === 'Todos' || (p.sizes_inventory || []).some((s: any) => s.size === selectedSize);
+        return matchesType && matchesBrand && matchesSize;
+    });
 
     const handleAddToCart = (product: any) => {
         addToCart(product);
@@ -44,56 +57,48 @@ const ClothingPage: React.FC = () => {
                 image="/heros/golf_apparel_hero_1770415189416.png"
             />
 
-            {/* Selector de Tipo de Prenda */}
+            {/* Filtros */}
             <div style={{
                 position: 'absolute',
-                top: 'calc(var(--header-offset-top) + 115px)',
+                top: 'calc(var(--header-offset-top) + 90px)', // Movido arriba
                 left: 0,
                 right: 0,
                 zIndex: 20,
-                padding: '12px 0',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '4px',
                 background: 'transparent'
             }}>
-                <div style={{
-                    display: 'flex',
-                    gap: '8px',
-                    overflowX: 'auto',
-                    paddingBottom: '8px',
-                    paddingLeft: '20px',
-                    paddingRight: '20px',
-                    scrollbarWidth: 'none',
-                    width: '100%',
-                    WebkitMaskImage: 'linear-gradient(to right, transparent, black 20px, black calc(100% - 20px), transparent)',
-                    maskImage: 'linear-gradient(to right, transparent, black 20px, black calc(100% - 20px), transparent)',
-                    WebkitOverflowScrolling: 'touch'
-                }} className="no-scrollbar">
-                    {clothingTypes.map((tab) => (
-                        <motion.button
-                            key={tab}
-                            onClick={() => setSelectedType(tab)}
-                            whileTap={{ scale: 0.95 }}
-                            style={{
-                                padding: '6px 14px',
-                                borderRadius: '20px',
-                                background: selectedType === tab ? 'var(--secondary)' : 'rgba(255,255,255,0.05)',
-                                color: selectedType === tab ? 'var(--primary)' : 'white',
-                                fontSize: '11px',
-                                fontWeight: '600',
-                                border: '1px solid ' + (selectedType === tab ? 'var(--secondary)' : 'rgba(255,255,255,0.1)'),
-                                whiteSpace: 'nowrap',
-                                transition: 'all 0.3s ease'
-                            }}
-                        >
-                            {tab === 'Todos' ? 'Todo' : tab}
-                        </motion.button>
-                    ))}
-                </div>
+                <FilterBar
+                    label="Tipo"
+                    options={clothingTypes}
+                    selectedValue={selectedType}
+                    onSelect={setSelectedType}
+                />
+
+                {brands.length > 1 && (
+                    <FilterBar
+                        label="Marca"
+                        options={brands}
+                        selectedValue={selectedBrand}
+                        onSelect={setSelectedBrand}
+                    />
+                )}
+
+                {sizes.length > 1 && (
+                    <FilterBar
+                        label="Talla"
+                        options={sizes}
+                        selectedValue={selectedSize}
+                        onSelect={setSelectedSize}
+                    />
+                )}
             </div>
 
             {/* Area de Scroll */}
             <div style={{
                 position: 'absolute',
-                top: 'calc(var(--header-offset-top) + 180px)',
+                top: 'calc(var(--header-offset-top) + 260px)', // Ajustado para los filtros
                 left: '0',
                 right: '0',
                 bottom: 0,
@@ -119,32 +124,30 @@ const ClothingPage: React.FC = () => {
                         animate={{ opacity: 1 }}
                         style={{
                             textAlign: 'center',
-                            padding: '60px 20px',
+                            padding: '40px 20px',
                             color: 'var(--text-dim)',
                             background: 'rgba(255,255,255,0.02)',
                             borderRadius: '32px',
                             border: '1px dashed rgba(255,255,255,0.1)'
                         }}
                     >
-                        <p style={{ fontSize: '16px', marginBottom: '10px' }}>
-                            {selectedType === 'Todos'
-                                ? 'No hay productos disponibles en esta categoría'
-                                : `No hay ${selectedType.toLowerCase()} disponibles actualmente`
-                            }
+                        <p style={{ fontSize: '14px', marginBottom: '10px' }}>
+                            No hay productos que coincidan con los filtros seleccionados
                         </p>
                         <button
                             onClick={() => {
-                                if (selectedType !== 'Todos') setSelectedType('Todos');
-                                else navigate('/');
+                                setSelectedType('Todos');
+                                setSelectedBrand('Todos');
+                                setSelectedSize('Todos');
                             }}
                             style={{
                                 color: 'var(--secondary)',
-                                fontSize: '14px',
+                                fontSize: '13px',
                                 fontWeight: '700',
                                 textDecoration: 'underline'
                             }}
                         >
-                            {selectedType !== 'Todos' ? 'Ver todas las prendas' : 'Volver al inicio'}
+                            Limpiar filtros
                         </button>
                     </motion.div>
                 ) : (

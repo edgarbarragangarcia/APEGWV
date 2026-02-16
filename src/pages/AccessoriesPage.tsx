@@ -1,20 +1,31 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import CategoryHero from '../components/CategoryHero';
 import PremiumProductCard from '../components/PremiumProductCard';
 import { useFeaturedProducts } from '../hooks/useHomeData';
 import { useCart } from '../context/CartContext';
 import { useNavigate } from 'react-router-dom';
+import FilterBar from '../components/FilterBar';
+
 
 const AccessoriesPage: React.FC = () => {
     const navigate = useNavigate();
     const { data: featuredProducts = [], isLoading } = useFeaturedProducts(50);
     const { addToCart } = useCart();
 
+    const [selectedBrand, setSelectedBrand] = useState('Todos');
+
     // Filter products for Accesorios category
-    const accessoryProducts = featuredProducts.filter(product =>
+    const accessoryProducts = featuredProducts.filter((product: any) =>
         (product.category || '').toLowerCase() === 'accesorios'
     );
+
+    // Dynamic filters options
+    const brands = ['Todos', ...new Set(accessoryProducts.map((p: any) => p.brand).filter(Boolean))] as string[];
+
+    const filteredProducts = accessoryProducts.filter((p: any) => {
+        return selectedBrand === 'Todos' || p.brand === selectedBrand;
+    });
 
     const handleAddToCart = (product: any) => {
         addToCart(product);
@@ -36,10 +47,32 @@ const AccessoriesPage: React.FC = () => {
                 image="/heros/golf_accessories_hero_1770415216840.png"
             />
 
+            {/* Filtros */}
+            <div style={{
+                position: 'absolute',
+                top: 'calc(var(--header-offset-top) + 100px)',
+                left: 0,
+                right: 0,
+                zIndex: 20,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '8px',
+                background: 'transparent'
+            }}>
+                {brands.length > 1 && (
+                    <FilterBar
+                        label="Marca"
+                        options={brands}
+                        selectedValue={selectedBrand}
+                        onSelect={setSelectedBrand}
+                    />
+                )}
+            </div>
+
             {/* Area de Scroll */}
             <div style={{
                 position: 'absolute',
-                top: 'calc(var(--header-offset-top) + 200px)',
+                top: 'calc(var(--header-offset-top) + 180px)',
                 left: '0',
                 right: '0',
                 bottom: 0,
@@ -59,22 +92,25 @@ const AccessoriesPage: React.FC = () => {
                             <div key={i} className="skeleton" style={{ height: '260px', borderRadius: '32px' }} />
                         ))}
                     </div>
-                ) : accessoryProducts.length === 0 ? (
+                ) : filteredProducts.length === 0 ? (
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         style={{
                             textAlign: 'center',
-                            padding: '60px 20px',
+                            padding: '40px 20px',
                             color: 'var(--text-dim)',
                             background: 'rgba(255,255,255,0.02)',
                             borderRadius: '32px',
                             border: '1px dashed rgba(255,255,255,0.1)'
                         }}
                     >
-                        <p style={{ fontSize: '16px', marginBottom: '20px' }}>No hay productos disponibles en esta categoría</p>
+                        <p style={{ fontSize: '14px', marginBottom: '20px' }}>No hay productos que coincidan con los filtros seleccionados</p>
                         <button
-                            onClick={() => navigate('/')}
+                            onClick={() => {
+                                if (selectedBrand !== 'Todos') setSelectedBrand('Todos');
+                                else navigate('/');
+                            }}
                             style={{
                                 color: 'var(--secondary)',
                                 fontSize: '14px',
@@ -82,7 +118,7 @@ const AccessoriesPage: React.FC = () => {
                                 textDecoration: 'underline'
                             }}
                         >
-                            Volver al inicio
+                            {selectedBrand !== 'Todos' ? 'Limpiar filtros' : 'Volver al inicio'}
                         </button>
                     </motion.div>
                 ) : (
@@ -91,7 +127,7 @@ const AccessoriesPage: React.FC = () => {
                         gridTemplateColumns: 'repeat(2, 1fr)',
                         gap: '16px',
                     }}>
-                        {accessoryProducts.map((product, index) => (
+                        {filteredProducts.map((product, index) => (
                             <motion.div
                                 key={product.id}
                                 initial={{ opacity: 0, y: 20 }}
