@@ -557,9 +557,9 @@ const CheckoutPage: React.FC = () => {
                                     textAlign: 'center'
                                 }}>
                                     <img
-                                        src="https://http2.mlstatic.com/frontend-assets/payment-help/logos/mercadopago.svg"
+                                        src="https://logodownload.org/wp-content/uploads/2019/06/mercado-pago-logo-1.png"
                                         alt="Mercado Pago"
-                                        style={{ width: '180px', height: 'auto' }}
+                                        style={{ width: '160px', height: 'auto', filter: 'brightness(1.2)' }}
                                     />
                                     <div>
                                         <p style={{ fontWeight: '800', fontSize: '16px', color: 'white', marginBottom: '4px' }}>
