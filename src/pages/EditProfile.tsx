@@ -24,7 +24,9 @@ const EditProfile: React.FC = () => {
         id_photo_url: '',
         email: '',
         phone: '',
-        address: ''
+        address: '',
+        department_id: null as number | null,
+        city_id: null as number | null
     });
 
     const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
@@ -40,7 +42,9 @@ const EditProfile: React.FC = () => {
                 id_photo_url: profile.id_photo_url || '',
                 email: profile.email || '',
                 phone: profile.phone || '',
-                address: profile.address || ''
+                address: profile.address || '',
+                department_id: profile.department_id || null,
+                city_id: profile.city_id || null
             });
         }
     }, [profile]);
@@ -95,6 +99,8 @@ const EditProfile: React.FC = () => {
                 email: formData.email,
                 phone: formData.phone,
                 address: formData.address,
+                department_id: formData.department_id,
+                city_id: formData.city_id,
                 updated_at: new Date().toISOString(),
             };
 
@@ -227,7 +233,12 @@ const EditProfile: React.FC = () => {
                     isOpen={isAddressModalOpen}
                     onClose={() => setIsAddressModalOpen(false)}
                     currentAddress={formData.address}
-                    onConfirm={(addr) => setFormData(p => ({ ...p, address: addr }))}
+                    onConfirm={(addr, deptId, cityId) => setFormData(p => ({
+                        ...p,
+                        address: addr,
+                        department_id: deptId || null,
+                        city_id: cityId || null
+                    }))}
                 />
             </div>
 
