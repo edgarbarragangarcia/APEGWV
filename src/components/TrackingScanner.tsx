@@ -18,39 +18,15 @@ const TrackingScanner: React.FC<TrackingScannerProps> = ({ onScanComplete, onClo
     const [isCameraOpen, setIsCameraOpen] = useState(false);
 
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const videoRef = useRef<HTMLVideoElement>(null);
+
 
     // --- Media Helpers ---
 
     const stopCamera = useCallback(() => {
-        if (videoRef.current && videoRef.current.srcObject) {
-            const stream = videoRef.current.srcObject as MediaStream;
-            stream.getTracks().forEach(track => track.stop());
-            videoRef.current.srcObject = null;
-        }
         setIsCameraOpen(false);
     }, []);
 
-    const startWebCamera = async () => {
-        setIsCameraOpen(true);
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({
-                video: {
-                    facingMode: 'environment',
-                    width: { ideal: 1920 },
-                    height: { ideal: 1080 }
-                }
-            });
-            if (videoRef.current) {
-                videoRef.current.srcObject = stream;
-            }
-            await Haptics.impact({ style: ImpactStyle.Light });
-        } catch (err) {
-            console.error("Error accessing camera:", err);
-            alert("No se pudo acceder a la cámara via web. Intenta subir una foto.");
-            setIsCameraOpen(false);
-        }
-    };
+
 
     const takeNativePhoto = async () => {
         try {
@@ -115,19 +91,7 @@ const TrackingScanner: React.FC<TrackingScannerProps> = ({ onScanComplete, onClo
         }
     };
 
-    const captureWebPhoto = () => {
-        if (videoRef.current) {
-            const canvas = document.createElement('canvas');
-            canvas.width = videoRef.current.videoWidth;
-            canvas.height = videoRef.current.videoHeight;
-            const ctx = canvas.getContext('2d');
-            ctx?.drawImage(videoRef.current, 0, 0);
-            const dataUrl = canvas.toDataURL('image/jpeg');
-            setImage(dataUrl);
-            stopCamera();
-            processImage(dataUrl);
-        }
-    };
+
 
     const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -198,20 +162,6 @@ const TrackingScanner: React.FC<TrackingScannerProps> = ({ onScanComplete, onClo
                             Usar Cámara Nativa
                         </button>
 
-                        <button
-                            onClick={startWebCamera}
-                            style={{
-                                ...actionButtonStyle,
-                                background: 'rgba(255,255,255,0.05)',
-                                color: 'white',
-                                border: '1px solid rgba(255,255,255,0.1)',
-                                fontSize: '14px'
-                            }}
-                        >
-                            <LucideCamera size={20} />
-                            Cámara Web (Live)
-                        </button>
-
                         <div style={{ position: 'relative' }}>
                             <input
                                 type="file"
@@ -236,22 +186,7 @@ const TrackingScanner: React.FC<TrackingScannerProps> = ({ onScanComplete, onClo
                     </div>
                 )}
 
-                {/* Web Camera View */}
-                {isCameraOpen && (
-                    <div style={{ position: 'relative', width: '100%', height: '100%', background: 'black', display: 'flex', flexDirection: 'column' }}>
-                        <video ref={videoRef} autoPlay playsInline style={{ width: '100%', flex: 1, objectFit: 'cover' }} />
-                        <div style={{ padding: '20px', display: 'flex', justifyContent: 'center', background: 'rgba(0,0,0,0.5)', position: 'absolute', bottom: 0, left: 0, right: 0 }}>
-                            <button
-                                onClick={captureWebPhoto}
-                                style={{
-                                    width: '60px', height: '60px', borderRadius: '50%',
-                                    background: 'white', border: '4px solid rgba(0,0,0,0.2)',
-                                    boxShadow: '0 0 0 4px white', cursor: 'pointer'
-                                }}
-                            />
-                        </div>
-                    </div>
-                )}
+
 
                 {/* Result View */}
                 {image && (

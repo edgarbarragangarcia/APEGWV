@@ -20,7 +20,7 @@ import type { Database } from '../types/database.types';
 
 type SellerProfile = Database['public']['Tables']['seller_profiles']['Row'];
 type Product = Database['public']['Tables']['products']['Row'];
-type Order = Pick<Database['public']['Tables']['orders']['Row'], 'id' | 'created_at' | 'status' | 'total_amount' | 'tracking_number' | 'shipping_provider'> & {
+type Order = Pick<Database['public']['Tables']['orders']['Row'], 'id' | 'created_at' | 'status' | 'total_amount' | 'tracking_number' | 'shipping_provider' | 'order_number'> & {
     seller_net_amount?: number;
     shipping_address?: string;
     buyer_name?: string;
@@ -86,6 +86,18 @@ const MyStore: React.FC = () => {
     const [counterMessage, setCounterMessage] = useState('');
     const [activeTab, setActiveTab] = useState<'products' | 'orders' | 'offers' | 'coupons' | 'profile'>('products');
     const [editingTrackingId, setEditingTrackingId] = useState<string | null>(null);
+    const [showOrderEditModal, setShowOrderEditModal] = useState(false);
+    const [selectedOrderForEdit, setSelectedOrderForEdit] = useState<Order | null>(null);
+    const [orderEditFormData, setOrderEditFormData] = useState({
+        order_number: '',
+        status: '',
+        tracking_number: '',
+        shipping_provider: '',
+        buyer_name: '',
+        buyer_phone: '',
+        shipping_address: '',
+        seller_net_amount: ''
+    });
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [successMessage, setSuccessMessage] = useState({ title: '', message: '', type: 'success' as 'success' | 'error' });
     const [searchTerm, setSearchTerm] = useState('');
@@ -207,23 +219,32 @@ const MyStore: React.FC = () => {
     };
 
     const handleScanComplete = (trackingNumber: string, provider?: string) => {
+        // Option 1: Update modal state if modal is open
+        if (showOrderEditModal) {
+            setOrderEditFormData(prev => ({
+                ...prev,
+                tracking_number: trackingNumber,
+                shipping_provider: provider || prev.shipping_provider
+            }));
+        }
+
+        // Option 2: Update legacy DOM elements (keep for compatibility if needed)
         if (scanningOrderId) {
             const trackingInput = document.getElementById(`tracking-${scanningOrderId}`) as HTMLInputElement;
             const providerInput = document.getElementById(`provider-${scanningOrderId}`) as HTMLInputElement;
 
             if (trackingInput) {
                 trackingInput.value = trackingNumber;
-                // Force triggering any change listeners if necessary
                 trackingInput.dispatchEvent(new Event('change', { bubbles: true }));
             }
             if (providerInput && provider) {
                 providerInput.value = provider;
                 providerInput.dispatchEvent(new Event('change', { bubbles: true }));
             }
-
-            setShowScanner(false);
-            setScanningOrderId(null);
         }
+
+        setShowScanner(false);
+        setScanningOrderId(null);
     };
 
     const fetchOrders = async (userId: string) => {
@@ -242,6 +263,7 @@ const MyStore: React.FC = () => {
                     buyer_phone,
                     tracking_number, 
                     shipping_provider, 
+                    order_number,
                     order_items(
                         product:products(name, image_url)
                     ), 
@@ -738,6 +760,64 @@ const MyStore: React.FC = () => {
         } catch (err) {
             console.error('Error updating tracking:', err);
             setSuccessMessage({ title: 'Error', message: 'No se pudo actualizar la guía de seguimiento.', type: 'error' });
+            setShowSuccessModal(true);
+            setTimeout(() => setShowSuccessModal(false), 3000);
+        } finally {
+            setUpdatingOrder(null);
+        }
+    };
+
+    const handleOrderEditClick = (order: Order) => {
+        setSelectedOrderForEdit(order);
+        setOrderEditFormData({
+            order_number: order.order_number || '',
+            status: order.status || '',
+            tracking_number: order.tracking_number || '',
+            shipping_provider: order.shipping_provider || '',
+            buyer_name: order.buyer_name || order.buyer?.full_name || '',
+            buyer_phone: order.buyer_phone || order.buyer?.phone || '',
+            shipping_address: order.shipping_address || '',
+            seller_net_amount: order.seller_net_amount?.toString() || ''
+        });
+        setShowOrderEditModal(true);
+    };
+
+    const handleOrderEditSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!selectedOrderForEdit) return;
+
+        setUpdatingOrder(selectedOrderForEdit.id);
+        try {
+            const { error } = await supabase
+                .from('orders')
+                .update({
+                    order_number: orderEditFormData.order_number,
+                    status: orderEditFormData.status,
+                    tracking_number: orderEditFormData.tracking_number,
+                    shipping_provider: orderEditFormData.shipping_provider,
+                    buyer_name: orderEditFormData.buyer_name,
+                    buyer_phone: orderEditFormData.buyer_phone,
+                    shipping_address: orderEditFormData.shipping_address,
+                    seller_net_amount: parseFloat(orderEditFormData.seller_net_amount) || 0,
+                    updated_at: new Date().toISOString()
+                })
+                .eq('id', selectedOrderForEdit.id);
+
+            if (error) throw error;
+
+            setOrders(orders.map(o => o.id === selectedOrderForEdit.id ? {
+                ...o,
+                ...orderEditFormData,
+                seller_net_amount: parseFloat(orderEditFormData.seller_net_amount) || 0
+            } as Order : o));
+
+            setShowOrderEditModal(false);
+            setSuccessMessage({ title: 'Éxito', message: 'Pedido actualizado correctamente', type: 'success' });
+            setShowSuccessModal(true);
+            setTimeout(() => setShowSuccessModal(false), 2000);
+        } catch (err) {
+            console.error('Error updating order:', err);
+            setSuccessMessage({ title: 'Error', message: 'No se pudo actualizar el pedido', type: 'error' });
             setShowSuccessModal(true);
             setTimeout(() => setShowSuccessModal(false), 3000);
         } finally {
@@ -2099,21 +2179,53 @@ const MyStore: React.FC = () => {
                                         .map(order => (
                                             <Card key={order.id} style={{ padding: '20px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px' }}>
                                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '18px', alignItems: 'center' }}>
-                                                    <span style={{
-                                                        padding: '6px 14px',
-                                                        borderRadius: '12px',
-                                                        fontSize: '10px',
-                                                        fontWeight: '900',
-                                                        background: order.status === 'Pendiente' ? 'rgba(245, 158, 11, 0.15)' : 'rgba(16, 185, 129, 0.15)',
-                                                        color: order.status === 'Pendiente' ? '#f59e0b' : '#10b981',
-                                                        border: `1px solid ${order.status === 'Pendiente' ? 'rgba(245, 158, 11, 0.3)' : 'rgba(16, 185, 129, 0.3)'}`,
-                                                        letterSpacing: '0.05em'
-                                                    }}>
-                                                        {order.status?.toUpperCase() || 'PENDIENTE'}
-                                                    </span>
-                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-dim)', fontSize: '11px', fontWeight: '600' }}>
-                                                        <Calendar size={12} />
-                                                        {order.created_at ? new Date(order.created_at).toLocaleDateString() : '---'}
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                        <span style={{
+                                                            padding: '6px 14px',
+                                                            borderRadius: '12px',
+                                                            fontSize: '10px',
+                                                            fontWeight: '900',
+                                                            background: order.status === 'Pendiente' ? 'rgba(245, 158, 11, 0.15)' : 'rgba(16, 185, 129, 0.15)',
+                                                            color: order.status === 'Pendiente' ? '#f59e0b' : '#10b981',
+                                                            border: `1px solid ${order.status === 'Pendiente' ? 'rgba(245, 158, 11, 0.3)' : 'rgba(16, 185, 129, 0.3)'}`,
+                                                            letterSpacing: '0.05em'
+                                                        }}>
+                                                            {order.status?.toUpperCase() || 'PENDIENTE'}
+                                                        </span>
+                                                        {order.order_number && (
+                                                            <span style={{ fontSize: '11px', fontWeight: '800', color: 'var(--secondary)' }}>
+                                                                {order.order_number}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-dim)', fontSize: '11px', fontWeight: '600' }}>
+                                                            <Calendar size={12} />
+                                                            {order.created_at ? new Date(order.created_at).toLocaleDateString() : '---'}
+                                                        </div>
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleOrderEditClick(order);
+                                                            }}
+                                                            style={{
+                                                                padding: '8px',
+                                                                borderRadius: '12px',
+                                                                background: 'rgba(163, 230, 53, 0.1)',
+                                                                border: '1px solid rgba(163, 230, 53, 0.2)',
+                                                                color: 'var(--secondary)',
+                                                                cursor: 'pointer',
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                justifyContent: 'center',
+                                                                transition: '0.2s',
+                                                                boxShadow: '0 4px 10px rgba(0,0,0,0.2)'
+                                                            }}
+                                                            onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(163, 230, 53, 0.2)'}
+                                                            onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(163, 230, 53, 0.1)'}
+                                                        >
+                                                            <Settings size={16} />
+                                                        </button>
                                                     </div>
                                                 </div>
 
@@ -2300,17 +2412,24 @@ const MyStore: React.FC = () => {
                                                             </div>
                                                         </div>
                                                         <button
-                                                            onClick={() => setEditingTrackingId(order.id)}
+                                                            onClick={() => handleOrderEditClick(order)}
                                                             style={{
                                                                 padding: '8px',
                                                                 borderRadius: '8px',
                                                                 background: 'rgba(255,255,255,0.05)',
                                                                 color: 'var(--text-dim)',
                                                                 border: 'none',
-                                                                cursor: 'pointer'
+                                                                cursor: 'pointer',
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                justifyContent: 'center',
+                                                                transition: '0.2s'
                                                             }}
+                                                            onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
+                                                            onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+                                                            title="Gestionar Pedido"
                                                         >
-                                                            <Pencil size={16} />
+                                                            <Settings size={16} />
                                                         </button>
                                                     </div>
                                                 )}
@@ -3274,6 +3393,171 @@ const MyStore: React.FC = () => {
             }
 
             <AnimatePresence>
+                {showOrderEditModal && (
+                    <div style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)', padding: '20px' }}>
+                        <motion.div
+                            initial={{ y: 50, opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            exit={{ y: 50, opacity: 0 }}
+                            style={{
+                                background: '#0e2f1f',
+                                width: '100%',
+                                maxWidth: '500px',
+                                borderRadius: '30px',
+                                padding: '30px',
+                                border: '1px solid rgba(255,255,255,0.1)',
+                                maxHeight: '90vh',
+                                overflowY: 'auto'
+                            }}
+                        >
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px' }}>
+                                <h2 style={{ fontSize: '20px', fontWeight: '900', color: 'white' }}>Gestionar Pedido</h2>
+                                <button onClick={() => setShowOrderEditModal(false)} className="glass" style={{ padding: '8px', borderRadius: '12px' }}>
+                                    <X size={20} />
+                                </button>
+                            </div>
+
+                            <form onSubmit={handleOrderEditSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: 'var(--text-dim)', marginBottom: '8px' }}>NÚMERO DE ORDEN</label>
+                                    <input
+                                        type="text"
+                                        value={orderEditFormData.order_number}
+                                        onChange={(e) => setOrderEditFormData({ ...orderEditFormData, order_number: e.target.value })}
+                                        placeholder="Ej: #1001"
+                                        style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', padding: '14px', color: 'white' }}
+                                    />
+                                </div>
+
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: 'var(--text-dim)', marginBottom: '8px' }}>ESTADO</label>
+                                    <select
+                                        value={orderEditFormData.status}
+                                        onChange={(e) => setOrderEditFormData({ ...orderEditFormData, status: e.target.value })}
+                                        style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', padding: '14px', color: 'white' }}
+                                    >
+                                        <option value="Pendiente de Pago">Pendiente de Pago</option>
+                                        <option value="shipped">Enviado (shipped)</option>
+                                        <option value="Pagado">Pagado / Preparando</option>
+                                        <option value="Enviado">Enviado</option>
+                                        <option value="Entregado">Entregado</option>
+                                        <option value="delivered">Entregado (delivered)</option>
+                                        <option value="Cancelado">Cancelado</option>
+                                    </select>
+                                </div>
+
+                                <div style={{ background: 'rgba(163, 230, 53, 0.05)', borderRadius: '20px', padding: '20px', border: '1px dashed rgba(163, 230, 53, 0.3)' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+                                        <label style={{ fontSize: '12px', fontWeight: '700', color: 'var(--secondary)' }}>DATOS DE ENVÍO</label>
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setScanningOrderId(selectedOrderForEdit?.id || null);
+                                                setShowScanner(true);
+                                            }}
+                                            style={{
+                                                background: 'var(--secondary)',
+                                                color: 'var(--primary)',
+                                                border: 'none',
+                                                borderRadius: '10px',
+                                                padding: '6px 12px',
+                                                fontSize: '11px',
+                                                fontWeight: '900',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '6px'
+                                            }}
+                                        >
+                                            <Camera size={14} /> ESCANEAR GUÍA
+                                        </button>
+                                    </div>
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                                        <div>
+                                            <label style={{ display: 'block', fontSize: '11px', fontWeight: '700', color: 'var(--text-dim)', marginBottom: '6px' }}>TRANSPORTADORA</label>
+                                            <input
+                                                type="text"
+                                                value={orderEditFormData.shipping_provider}
+                                                onChange={(e) => setOrderEditFormData({ ...orderEditFormData, shipping_provider: e.target.value })}
+                                                placeholder="Ej: Servientrega"
+                                                style={{ width: '100%', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '12px', color: 'white', fontSize: '13px' }}
+                                            />
+                                        </div>
+                                        <div>
+                                            <label style={{ display: 'block', fontSize: '11px', fontWeight: '700', color: 'var(--text-dim)', marginBottom: '6px' }}>GUÍA</label>
+                                            <input
+                                                type="text"
+                                                value={orderEditFormData.tracking_number}
+                                                onChange={(e) => setOrderEditFormData({ ...orderEditFormData, tracking_number: e.target.value })}
+                                                placeholder="No. de Guía"
+                                                style={{ width: '100%', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '12px', color: 'white', fontSize: '13px' }}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: 'var(--text-dim)', marginBottom: '8px' }}>DATOS DEL COMPRADOR (NOMBRE Y TEL)</label>
+                                    <div style={{ display: 'flex', gap: '10px' }}>
+                                        <input
+                                            type="text"
+                                            value={orderEditFormData.buyer_name}
+                                            onChange={(e) => setOrderEditFormData({ ...orderEditFormData, buyer_name: e.target.value })}
+                                            placeholder="Nombre"
+                                            style={{ flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', padding: '14px', color: 'white' }}
+                                        />
+                                        <input
+                                            type="text"
+                                            value={orderEditFormData.buyer_phone}
+                                            onChange={(e) => setOrderEditFormData({ ...orderEditFormData, buyer_phone: e.target.value })}
+                                            placeholder="Teléfono"
+                                            style={{ width: '120px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', padding: '14px', color: 'white' }}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: 'var(--text-dim)', marginBottom: '8px' }}>DIRECCIÓN DE ENVÍO</label>
+                                    <textarea
+                                        value={orderEditFormData.shipping_address}
+                                        onChange={(e) => setOrderEditFormData({ ...orderEditFormData, shipping_address: e.target.value })}
+                                        style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', padding: '14px', color: 'white', minHeight: '80px', resize: 'none' }}
+                                    />
+                                </div>
+
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: 'var(--text-dim)', marginBottom: '8px' }}>MONTO NETO ($)</label>
+                                    <input
+                                        type="number"
+                                        value={orderEditFormData.seller_net_amount}
+                                        onChange={(e) => setOrderEditFormData({ ...orderEditFormData, seller_net_amount: e.target.value })}
+                                        style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', padding: '14px', color: 'white' }}
+                                    />
+                                </div>
+
+                                <button
+                                    type="submit"
+                                    disabled={updatingOrder === selectedOrderForEdit?.id}
+                                    style={{
+                                        marginTop: '10px',
+                                        background: 'var(--secondary)',
+                                        color: 'var(--primary)',
+                                        padding: '18px',
+                                        borderRadius: '16px',
+                                        fontWeight: '900',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        gap: '10px'
+                                    }}
+                                >
+                                    {updatingOrder === selectedOrderForEdit?.id ? <Loader2 size={20} className="animate-spin" /> : <CheckCircle2 size={20} />}
+                                    GUARDAR CAMBIOS
+                                </button>
+                            </form>
+                        </motion.div>
+                    </div>
+                )}
+
                 {showSuccessModal && (
                     <div style={{ position: 'fixed', inset: 0, zIndex: 3000, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)' }}>
                         <motion.div

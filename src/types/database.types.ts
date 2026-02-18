@@ -603,6 +603,7 @@ export type Database = {
           id: string
           items: Json | null
           platform_fee: number | null
+          order_number: string | null
           product_id: string | null
           seller_id: string | null
           seller_net_amount: number | null
@@ -626,6 +627,7 @@ export type Database = {
           id?: string
           items?: Json | null
           platform_fee?: number | null
+          order_number?: string | null
           product_id?: string | null
           seller_id?: string | null
           seller_net_amount?: number | null
@@ -649,6 +651,7 @@ export type Database = {
           id?: string
           items?: Json | null
           platform_fee?: number | null
+          order_number?: string | null
           product_id?: string | null
           seller_id?: string | null
           seller_net_amount?: number | null
