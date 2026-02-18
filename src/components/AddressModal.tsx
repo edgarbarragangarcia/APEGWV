@@ -142,12 +142,25 @@ const AddressModal: React.FC<AddressModalProps> = ({ isOpen, onClose, currentAdd
                             flexDirection: 'column'
                         }}
                     >
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px', paddingBottom: '15px', borderBottom: '1px solid rgba(255,255,255,0.05)', flexShrink: 0 }}>
-                            <h2 style={{ fontSize: '20px', fontWeight: '900', color: 'white' }}>
-                                <MapPin size={20} style={{ verticalAlign: 'middle', marginRight: '8px', color: 'var(--secondary)' }} />
-                                DIRECCIÓN <span style={{ color: 'var(--secondary)' }}>de</span> ENTREGA
+                        <div style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            marginBottom: '20px',
+                            paddingBottom: '15px',
+                            borderBottom: '1px solid rgba(255,255,255,0.08)',
+                            flexShrink: 0,
+                            position: 'relative',
+                            zIndex: 10
+                        }}>
+                            <h2 style={{ fontSize: '18px', fontWeight: '900', color: '#FFFFFF', margin: 0, display: 'flex', alignItems: 'center' }}>
+                                <MapPin size={20} style={{ marginRight: '10px', color: 'var(--secondary)' }} />
+                                DIRECCIÓN <span style={{ color: 'var(--secondary)', margin: '0 5px' }}>de</span> ENTREGA
                             </h2>
-                            <button onClick={onClose} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', color: 'white', padding: '8px', borderRadius: '50%' }}>
+                            <button
+                                onClick={(e) => { e.stopPropagation(); onClose(); }}
+                                style={{ background: 'rgba(255,255,255,0.1)', border: 'none', color: 'white', padding: '10px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                            >
                                 <X size={20} />
                             </button>
                         </div>

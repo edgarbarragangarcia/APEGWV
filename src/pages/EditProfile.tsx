@@ -229,18 +229,19 @@ const EditProfile: React.FC = () => {
                     </button>
                 </form>
 
-                <AddressModal
-                    isOpen={isAddressModalOpen}
-                    onClose={() => setIsAddressModalOpen(false)}
-                    currentAddress={formData.address}
-                    onConfirm={(addr, deptId, cityId) => setFormData(p => ({
-                        ...p,
-                        address: addr,
-                        department_id: deptId || null,
-                        city_id: cityId || null
-                    }))}
-                />
             </div>
+
+            <AddressModal
+                isOpen={isAddressModalOpen}
+                onClose={() => setIsAddressModalOpen(false)}
+                currentAddress={formData.address}
+                onConfirm={(addr, deptId, cityId) => setFormData(p => ({
+                    ...p,
+                    address: addr,
+                    department_id: deptId || null,
+                    city_id: cityId || null
+                }))}
+            />
 
             <AnimatePresence>
                 {showSuccessModal && (
