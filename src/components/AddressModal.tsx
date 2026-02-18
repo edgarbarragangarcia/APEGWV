@@ -153,7 +153,16 @@ const AddressModal: React.FC<AddressModalProps> = ({ isOpen, onClose, currentAdd
                             </button>
                         </div>
 
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '18px', overflowY: 'auto', paddingRight: '10px', flex: 1, marginBottom: '10px' }}>
+                        <div style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '18px',
+                            overflowY: 'auto',
+                            paddingRight: '8px',
+                            flex: '1 1 auto',
+                            minHeight: 0,
+                            marginBottom: '10px'
+                        }}>
                             <FormInput
                                 label="Calle / Carrera / Apto"
                                 value={details.street}
