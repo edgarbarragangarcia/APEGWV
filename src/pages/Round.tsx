@@ -1,11 +1,11 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, Target, History } from 'lucide-react';
+import { ChevronLeft, ChevronRight, History } from 'lucide-react';
 import type { GolfCourse } from '../data/courses';
 import { supabase } from '../services/SupabaseManager';
 import { useGeoLocation } from '../hooks/useGeoLocation';
 import { fetchWeather, type WeatherData } from '../services/WeatherService';
-import { Wind, Navigation, Trophy, Award, Thermometer, Droplets, Sun, CloudRain } from 'lucide-react';
+import { Wind, Navigation, Trophy, Thermometer, Droplets, Sun, CloudRain } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { COLOMBIAN_COURSES } from '../data/courses';
 const getWindDirection = (degrees?: number) => {
@@ -127,36 +127,7 @@ const Round: React.FC = () => {
         });
     }, []);
 
-    const getDynamicCaddieMessage = () => {
-        if (!distanceToHole) return "Localizando tu posición para darte el mejor consejo...";
 
-        const club = getClubRecommendation(distanceToHole, weather?.wind, getWindDirection(weather?.windDirection));
-        const wind = weather?.wind || 0;
-        const dir = getWindDirection(weather?.windDirection);
-
-        if (wind > 15) {
-            return `¡Mucho viento (${wind}km/h ${dir})! El ${club} te dará el control que necesitas para estos ${distanceToHole}m.`;
-        }
-
-        if (distanceToHole < 100) {
-            return `Estás a tiro de piedra (${distanceToHole}m). Un golpe suave con el ${club} y a cobrar ese putt.`;
-        }
-
-        if (distanceToHole > 220) {
-            return `Hoyo largo. Dale con todo al ${club}, mantén el ritmo y busca el fairway.`;
-        }
-
-        return `Para estos ${distanceToHole}m con viento ${dir}, mi apuesta es el ${club}. ¡Confía en tu swing!`;
-    };
-
-    const [caddieMessage, setCaddieMessage] = React.useState(getDynamicCaddieMessage());
-
-    React.useEffect(() => {
-        const interval = setInterval(() => {
-            setCaddieMessage(getDynamicCaddieMessage());
-        }, 10000);
-        return () => clearInterval(interval);
-    }, [distanceToHole, weather]);
 
     const currentStrokes = strokes[currentHole] || 0;
 
@@ -1009,20 +980,7 @@ const Round: React.FC = () => {
                 </div>
             </div>
 
-            <div className="glass" style={{ padding: '10px', border: '1px solid rgba(163, 230, 53, 0.2)', background: 'rgba(163, 230, 53, 0.05)', flexShrink: 0, marginBottom: '20px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                    <Award size={14} color="var(--secondary)" />
-                    <span style={{ fontSize: '10px', fontWeight: '800', color: 'var(--secondary)', textTransform: 'uppercase' }}>Caddie <span style={{ color: 'white' }}>Virtual</span></span>
-                </div>
-                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                    <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'var(--secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                        <Target size={16} color="var(--primary)" />
-                    </div>
-                    <p style={{ fontSize: '11px', color: 'white', fontStyle: 'italic', lineHeight: '1.3' }}>
-                        "{caddieMessage}"
-                    </p>
-                </div>
-            </div>
+
 
             {showFinishModal && (
                 <div style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'flex-start', background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(8px)' }} onClick={() => setShowFinishModal(false)}>
