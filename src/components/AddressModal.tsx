@@ -133,12 +133,11 @@ const AddressModal: React.FC<AddressModalProps> = ({ isOpen, onClose, currentAdd
                             background: '#0E1A11',
                             borderTop: '1px solid rgba(163, 230, 53, 0.2)',
                             borderRadius: '32px 32px 0 0',
-                            padding: '30px',
-                            paddingBottom: 'calc(env(safe-area-inset-bottom) + 110px)',
+                            padding: '24px 24px calc(env(safe-area-inset-bottom) + 20px) 24px',
                             zIndex: 9999,
                             maxWidth: '768px',
                             margin: '0 auto',
-                            maxHeight: '90vh',
+                            maxHeight: '85vh',
                             display: 'flex',
                             flexDirection: 'column'
                         }}
@@ -343,15 +342,11 @@ const styles = {
         cursor: 'pointer'
     },
     dropdownList: {
-        position: 'absolute' as 'absolute',
-        top: 'calc(100% + 8px)',
-        left: 0,
-        right: 0,
-        background: '#1A2E1F',
+        marginTop: '8px',
+        background: 'rgba(255,255,255,0.03)',
         borderRadius: '16px',
         border: '1px solid rgba(163, 230, 53, 0.2)',
         zIndex: 10,
-        boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
         overflow: 'hidden'
     },
     searchWrapper: {
@@ -381,7 +376,7 @@ const styles = {
     },
     footer: {
         paddingTop: '20px',
-        paddingBottom: '10px',
+        paddingBottom: '110px', // Raised specifically here to clear BottomNav
         borderTop: '1px solid rgba(255,255,255,0.05)',
         background: '#0E1A11',
         flexShrink: 0
