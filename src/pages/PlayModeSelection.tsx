@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, Users, ChevronRight, BarChart3, X, History } from 'lucide-react';
+import { User, Users, ChevronRight, BarChart3, X, History, Video, Shield, Trophy, Target, MessageSquare } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import PageHeader from '../components/PageHeader';
 import { supabase } from '../services/SupabaseManager';
@@ -358,88 +358,123 @@ const PlayModeSelection: React.FC = () => {
                         <p>Reanudando partida...</p>
                     </div>
                 ) : (
-                    // UI normal de selección de modo con Grid Responsivo
-                    <div className="play-mode-grid" style={{ pointerEvents: 'auto' }}>
-                        {modes.map((mode) => (
-                            <motion.div
-                                key={mode.id}
-                                whileTap={{ scale: 0.97 }}
-                                onClick={() => {
-                                    console.log('Navigating to:', mode.path);
-                                    navigate(mode.path);
-                                }}
-                                style={{
-                                    position: 'relative',
-                                    borderRadius: '24px',
-                                    padding: '2px',
-                                    overflow: 'hidden',
-                                    background: 'rgba(255, 255, 255, 0.05)',
-                                    display: 'flex',
-                                    alignItems: 'stretch',
-                                    cursor: 'pointer',
-                                    transition: 'background 0.3s ease',
-                                    height: '100%', // Ensure grid items stretch
-                                }}
-                            >
-                                {/* THE ANIMATED BORDER: A rotating gradient behind the card */}
-                                <div style={{
-                                    position: 'absolute',
-                                    top: '-50%',
-                                    left: '-50%',
-                                    width: '200%',
-                                    height: '200%',
-                                    background: `conic-gradient(from 0deg at 50% 50%, transparent 0%, ${mode.accent} 25%, transparent 50%, ${mode.accent} 75%, transparent 100%)`,
-                                    animation: 'border-run 6s linear infinite',
-                                    opacity: 0.3,
-                                    zIndex: 0
-                                }} />
-
-                                {/* Internal Grid Content */}
-                                <div style={{
-                                    position: 'relative',
-                                    flex: 1,
-                                    background: 'rgba(14, 47, 31, 0.98)',
-                                    borderRadius: '22px', // Slightly smaller than parent to show border
-                                    margin: '1px',
-                                    zIndex: 1,
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    overflow: 'hidden'
-                                }}>
+                    <>
+                        {/* UI normal de selección de modo con Grid Responsivo */}
+                        <div className="play-mode-grid" style={{ pointerEvents: 'auto', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                            {modes.map((mode) => (
+                                <motion.div
+                                    key={mode.id}
+                                    whileTap={{ scale: 0.97 }}
+                                    onClick={() => {
+                                        console.log('Navigating to:', mode.path);
+                                        navigate(mode.path);
+                                    }}
+                                    style={{
+                                        position: 'relative',
+                                        borderRadius: '24px',
+                                        padding: '2px',
+                                        overflow: 'hidden',
+                                        background: 'rgba(255, 255, 255, 0.05)',
+                                        display: 'flex',
+                                        alignItems: 'stretch',
+                                        cursor: 'pointer',
+                                        transition: 'background 0.3s ease',
+                                        height: '110px',
+                                    }}
+                                >
                                     <div style={{
-                                        padding: '16px',
+                                        position: 'absolute',
+                                        inset: 0,
+                                        background: `conic-gradient(from 0deg at 50% 50%, transparent 0%, ${mode.accent} 25%, transparent 50%, ${mode.accent} 75%, transparent 100%)`,
+                                        animation: 'border-run 6s linear infinite',
+                                        opacity: 0.2,
+                                        zIndex: 0
+                                    }} />
+
+                                    <div style={{
+                                        position: 'relative',
+                                        flex: 1,
+                                        background: 'rgba(14, 47, 31, 0.98)',
+                                        borderRadius: '22px',
+                                        margin: '1px',
+                                        zIndex: 1,
                                         display: 'flex',
                                         flexDirection: 'column',
-                                        height: '100%',
-                                        gap: '12px'
+                                        justifyContent: 'center',
+                                        padding: '12px'
                                     }}>
                                         <div style={{
-                                            width: '40px',
-                                            height: '40px',
-                                            borderRadius: '12px',
-                                            background: `linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%)`,
                                             display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            color: mode.color,
-                                            border: '1px solid rgba(255,255,255,0.08)'
+                                            flexDirection: 'column',
+                                            gap: '8px'
                                         }}>
-                                            <mode.icon size={20} />
-                                        </div>
-
-                                        <div style={{ flex: 1 }}>
-                                            <h3 style={{ fontSize: '15px', fontWeight: '900', color: '#fff', marginBottom: '2px', letterSpacing: '-0.3px' }}>
-                                                {mode.title}
-                                            </h3>
-                                            <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.3)', fontWeight: '600', lineHeight: '1.2' }}>
-                                                {mode.description}
-                                            </p>
+                                            <div style={{
+                                                width: '32px',
+                                                height: '32px',
+                                                borderRadius: '10px',
+                                                background: `rgba(255,255,255,0.05)`,
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                color: mode.color,
+                                                border: '1px solid rgba(255,255,255,0.08)'
+                                            }}>
+                                                <mode.icon size={16} />
+                                            </div>
+                                            <div>
+                                                <h3 style={{ fontSize: '13px', fontWeight: '900', color: '#fff', marginBottom: '2px' }}>{mode.title}</h3>
+                                                <p style={{ fontSize: '9px', color: 'rgba(255,255,255,0.3)', fontWeight: '600', lineHeight: 1 }}>{mode.id === 'individual' ? 'Juega solo' : 'Con amigos'}</p>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            </motion.div>
-                        ))}
-                    </div>
+                                </motion.div>
+                            ))}
+                        </div>
+
+                        {/* New Hub Sections */}
+                        <div style={{ flexShrink: 0, fontSize: '11px', fontWeight: '800', color: 'rgba(255,255,255,0.2)', textTransform: 'uppercase', letterSpacing: '2px', marginLeft: '4px', marginTop: '10px' }}>Herramientas de Golf</div>
+
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                            <HubCard
+                                icon={Video}
+                                title="Swing IA"
+                                subtitle="Análisis técnico"
+                                color="var(--secondary)"
+                                onClick={() => navigate('/swing-analysis')}
+                            />
+                            <HubCard
+                                icon={Shield}
+                                title="Mi Talega"
+                                subtitle="Palos y distancias"
+                                color="#fbbf24"
+                                onClick={() => navigate('/my-bag')}
+                            />
+                        </div>
+
+                        <div style={{ flexShrink: 0, fontSize: '11px', fontWeight: '800', color: 'rgba(255,255,255,0.2)', textTransform: 'uppercase', letterSpacing: '2px', marginLeft: '4px', marginTop: '10px' }}>Competencia y Social</div>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                            <HubListButton
+                                icon={Target}
+                                title="Apuestas en Vivo"
+                                subtitle="Nassau, Skins y más"
+                                badge="Próximamente"
+                                onClick={() => { }}
+                            />
+                            <HubListButton
+                                icon={MessageSquare}
+                                title="Comunidad APEG"
+                                subtitle="Muro social y noticias"
+                                onClick={() => navigate('/community')}
+                            />
+                            <HubListButton
+                                icon={Trophy}
+                                title="Medallas y Logros"
+                                subtitle="Tu carrera en APEG"
+                                onClick={() => { }}
+                            />
+                        </div>
+                    </>
                 )}
             </div>
 
@@ -559,5 +594,63 @@ const PlayModeSelection: React.FC = () => {
         </div>
     );
 };
+
+// --- Subcomponents for Hub ---
+
+const HubCard = ({ icon: Icon, title, subtitle, color, onClick }: any) => (
+    <motion.div
+        whileTap={{ scale: 0.95 }}
+        onClick={onClick}
+        style={{
+            background: 'rgba(255,255,255,0.03)',
+            borderRadius: '20px',
+            padding: '16px',
+            border: '1px solid rgba(255,255,255,0.05)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '10px',
+            cursor: 'pointer'
+        }}
+    >
+        <div style={{ background: color + '20', padding: '8px', borderRadius: '10px', width: 'fit-content' }}>
+            <Icon size={18} color={color} />
+        </div>
+        <div>
+            <h4 style={{ fontSize: '14px', fontWeight: '900', color: 'white', margin: 0 }}>{title}</h4>
+            <p style={{ fontSize: '9px', color: 'rgba(255,255,255,0.4)', margin: 0, fontWeight: '600' }}>{subtitle}</p>
+        </div>
+    </motion.div>
+);
+
+const HubListButton = ({ icon: Icon, title, subtitle, onClick, badge }: any) => (
+    <motion.div
+        whileTap={{ scale: 0.98 }}
+        onClick={onClick}
+        style={{
+            background: 'rgba(255,255,255,0.03)',
+            borderRadius: '20px',
+            padding: '12px 16px',
+            border: '1px solid rgba(255,255,255,0.05)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            cursor: 'pointer'
+        }}
+    >
+        <div style={{ padding: '8px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)' }}>
+            <Icon size={18} color="rgba(255,255,255,0.6)" />
+        </div>
+        <div style={{ flex: 1 }}>
+            <h4 style={{ fontSize: '14px', fontWeight: '800', color: 'white', margin: 0 }}>{title}</h4>
+            <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', margin: 0 }}>{subtitle}</p>
+        </div>
+        {badge && (
+            <span style={{ fontSize: '8px', fontWeight: '900', color: 'var(--secondary)', background: 'rgba(163, 230, 53, 0.1)', padding: '2px 6px', borderRadius: '4px' }}>
+                {badge}
+            </span>
+        )}
+        <ChevronRight size={16} color="rgba(255,255,255,0.2)" />
+    </motion.div>
+);
 
 export default PlayModeSelection;

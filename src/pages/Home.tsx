@@ -457,7 +457,6 @@ const Home: React.FC = () => {
 
                 </div>
 
-
                 {/* Area de Scroll para el resto del contenido */}
                 <div style={{
                     position: 'absolute',
