@@ -133,7 +133,7 @@ const AddressModal: React.FC<AddressModalProps> = ({ isOpen, onClose, currentAdd
                             background: '#0E1A11',
                             borderTop: '1px solid rgba(163, 230, 53, 0.2)',
                             borderRadius: '32px 32px 0 0',
-                            padding: '24px 24px calc(env(safe-area-inset-bottom) + 20px) 24px',
+                            padding: '16px 24px calc(env(safe-area-inset-bottom) + 20px) 24px',
                             zIndex: 9999,
                             maxWidth: '768px',
                             margin: '0 auto',
@@ -142,7 +142,7 @@ const AddressModal: React.FC<AddressModalProps> = ({ isOpen, onClose, currentAdd
                             flexDirection: 'column'
                         }}
                     >
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px', flexShrink: 0 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px', paddingBottom: '15px', borderBottom: '1px solid rgba(255,255,255,0.05)', flexShrink: 0 }}>
                             <h2 style={{ fontSize: '20px', fontWeight: '900', color: 'white' }}>
                                 <MapPin size={20} style={{ verticalAlign: 'middle', marginRight: '8px', color: 'var(--secondary)' }} />
                                 DIRECCIÓN <span style={{ color: 'var(--secondary)' }}>de</span> ENTREGA
