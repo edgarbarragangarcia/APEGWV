@@ -6,6 +6,14 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[]
 
+export type JsonValue =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: JsonValue | undefined }
+  | JsonValue[];
+
 export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
@@ -14,6 +22,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      achievements: {
+        Row: {
+          category: string | null
+          created_at: string
+          description: string
+          icon_url: string | null
+          id: string
+          name: string
+          requirement_type: string | null
+          requirement_value: number | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          description: string
+          icon_url?: string | null
+          id?: string
+          name: string
+          requirement_type?: string | null
+          requirement_value?: number | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          description?: string
+          icon_url?: string | null
+          id?: string
+          name?: string
+          requirement_type?: string | null
+          requirement_value?: number | null
+        }
+        Relationships: []
+      }
       brands: {
         Row: {
           category: string | null
@@ -602,8 +643,8 @@ export type Database = {
           created_at: string
           id: string
           items: Json | null
-          platform_fee: number | null
           order_number: string | null
+          platform_fee: number | null
           product_id: string | null
           seller_id: string | null
           seller_net_amount: number | null
@@ -626,8 +667,8 @@ export type Database = {
           created_at?: string
           id?: string
           items?: Json | null
-          platform_fee?: number | null
           order_number?: string | null
+          platform_fee?: number | null
           product_id?: string | null
           seller_id?: string | null
           seller_net_amount?: number | null
@@ -650,8 +691,8 @@ export type Database = {
           created_at?: string
           id?: string
           items?: Json | null
-          platform_fee?: number | null
           order_number?: string | null
+          platform_fee?: number | null
           product_id?: string | null
           seller_id?: string | null
           seller_net_amount?: number | null
@@ -734,6 +775,108 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      post_comments: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      post_likes: {
+        Row: {
+          created_at: string
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_likes_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      posts: {
+        Row: {
+          comments_count: number | null
+          content: string | null
+          created_at: string
+          id: string
+          likes_count: number | null
+          media_type: string | null
+          media_url: string | null
+          round_id: string | null
+          user_id: string
+        }
+        Insert: {
+          comments_count?: number | null
+          content?: string | null
+          created_at?: string
+          id?: string
+          likes_count?: number | null
+          media_type?: string | null
+          media_url?: string | null
+          round_id?: string | null
+          user_id: string
+        }
+        Update: {
+          comments_count?: number | null
+          content?: string | null
+          created_at?: string
+          id?: string
+          likes_count?: number | null
+          media_type?: string | null
+          media_url?: string | null
+          round_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "posts_round_id_fkey"
+            columns: ["round_id"]
+            isOneToOne: false
+            referencedRelation: "rounds"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       product_likes: {
         Row: {
@@ -1029,6 +1172,39 @@ export type Database = {
           },
         ]
       }
+      round_bets: {
+        Row: {
+          amount_per_point: number | null
+          bet_type: string
+          created_at: string
+          creator_id: string
+          id: string
+          metadata: JsonValue | null
+          round_group_id: string
+          status: string | null
+        }
+        Insert: {
+          amount_per_point?: number | null
+          bet_type: string
+          created_at?: string
+          creator_id: string
+          id?: string
+          metadata?: JsonValue | null
+          round_group_id: string
+          status?: string | null
+        }
+        Update: {
+          amount_per_point?: number | null
+          bet_type?: string
+          created_at?: string
+          creator_id?: string
+          id?: string
+          metadata?: JsonValue | null
+          round_group_id?: string
+          status?: string | null
+        }
+        Relationships: []
+      }
       round_holes: {
         Row: {
           created_at: string | null
@@ -1271,6 +1447,33 @@ export type Database = {
         }
         Relationships: []
       }
+      swing_analyses: {
+        Row: {
+          analyzed_at: string
+          feedback: JsonValue | null
+          id: string
+          swing_score: number | null
+          user_id: string
+          video_url: string
+        }
+        Insert: {
+          analyzed_at?: string
+          feedback?: JsonValue | null
+          id?: string
+          swing_score?: number | null
+          user_id: string
+          video_url: string
+        }
+        Update: {
+          analyzed_at?: string
+          feedback?: JsonValue | null
+          id?: string
+          swing_score?: number | null
+          user_id?: string
+          video_url?: string
+        }
+        Relationships: []
+      }
       tournament_registrations: {
         Row: {
           created_at: string | null
@@ -1313,7 +1516,7 @@ export type Database = {
       tournaments: {
         Row: {
           address: string | null
-          budget_items: Json | null
+          budget_items: JsonValue | null
           budget_operational: number | null
           budget_per_player: number | null
           budget_prizes: number | null
@@ -1334,7 +1537,7 @@ export type Database = {
         }
         Insert: {
           address?: string | null
-          budget_items?: Json | null
+          budget_items?: JsonValue | null
           budget_operational?: number | null
           budget_per_player?: number | null
           budget_prizes?: number | null
@@ -1355,7 +1558,7 @@ export type Database = {
         }
         Update: {
           address?: string | null
-          budget_items?: Json | null
+          budget_items?: JsonValue | null
           budget_operational?: number | null
           budget_per_player?: number | null
           budget_prizes?: number | null
@@ -1383,6 +1586,68 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_achievements: {
+        Row: {
+          achievement_id: string
+          awarded_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          achievement_id: string
+          awarded_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          achievement_id?: string
+          awarded_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_achievements_achievement_id_fkey"
+            columns: ["achievement_id"]
+            isOneToOne: false
+            referencedRelation: "achievements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_clubs: {
+        Row: {
+          average_distance: number | null
+          brand: string | null
+          club_name: string
+          created_at: string
+          id: string
+          is_active: boolean | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          average_distance?: number | null
+          brand?: string | null
+          club_name: string
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          average_distance?: number | null
+          brand?: string | null
+          club_name?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
     }
     Views: {

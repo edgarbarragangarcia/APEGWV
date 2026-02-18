@@ -40,6 +40,8 @@ import ClubsPage from './pages/ClubsPage';
 import GlovesPage from './pages/GlovesPage';
 import CapsPage from './pages/CapsPage';
 import CommunityPage from './pages/CommunityPage';
+import MyBag from './pages/MyBag';
+import SwingAnalysis from './pages/SwingAnalysis';
 import { useOnlineStatus } from './hooks/useOnlineStatus';
 import OfflineOverlay from './components/OfflineOverlay';
 
@@ -179,6 +181,8 @@ const AppContent: React.FC = () => {
               <Route path="/category/palos" element={<ClubsPage />} />
               <Route path="/category/guantes" element={<GlovesPage />} />
               <Route path="/category/gorras" element={<CapsPage />} />
+              <Route path="/my-bag" element={<MyBag />} />
+              <Route path="/swing-analysis" element={<SwingAnalysis />} />
               <Route path="/notifications" element={<NotificationsPage />} />
               <Route path="/auth" element={<Navigate to="/" replace />} />
               <Route path="*" element={<Navigate to="/" replace />} />

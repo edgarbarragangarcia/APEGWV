@@ -1,14 +1,54 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Instagram, Youtube, ExternalLink, Play } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Instagram, Youtube, ExternalLink, Play, Users, MessageSquare, Heart, Video, Share2, Camera, Target } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import PageHeader from '../components/PageHeader';
 import PageHero from '../components/PageHero';
+import { supabase } from '../services/SupabaseManager';
+
+
+interface Post {
+    id: string;
+    content: string | null;
+    media_url: string | null;
+    media_type: string | null;
+    created_at: string;
+    likes_count: number;
+    comments_count: number;
+    user: {
+        full_name: string | null;
+        avatar_url: string | null;
+    };
+}
 
 const CommunityPage: React.FC = () => {
-    const [showVideo, setShowVideo] = useState(false);
+    const navigate = useNavigate();
+    const [activeTab, setActiveTab] = useState<'feed' | 'swing' | 'social'>('feed');
+    const [posts, setPosts] = useState<Post[]>([]);
+    const [loading, setLoading] = useState(true);
 
-    // Video ID (Updated to user provided Short)
-    const videoId = "wtBXAaQhHoc";
+    useEffect(() => {
+        if (activeTab === 'feed') {
+            fetchPosts();
+        }
+    }, [activeTab]);
+
+    const fetchPosts = async () => {
+        setLoading(true);
+        try {
+            const { data, error } = await supabase
+                .from('posts')
+                .select('*, user:profiles(full_name, avatar_url)')
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+            setPosts((data as any) || []);
+        } catch (err) {
+            console.error('Error fetching posts:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
         <div className="animate-fade" style={{
@@ -22,7 +62,7 @@ const CommunityPage: React.FC = () => {
         }}>
             <PageHero />
 
-            {/* Header Fijo */}
+            {/* Header Fijo con Tabs */}
             <div style={{
                 position: 'absolute',
                 top: 'var(--header-offset-top)',
@@ -37,15 +77,53 @@ const CommunityPage: React.FC = () => {
                         noMargin
                         showBack={false}
                         title="Comunidad APEG"
-                        subtitle="Únete a nuestra pasión por el golf"
+                        subtitle="Conecta con otros golfistas"
                     />
+                </div>
+
+                {/* Tab Switcher */}
+                <div style={{
+                    display: 'flex',
+                    margin: '15px 20px 0',
+                    background: 'rgba(255,255,255,0.05)',
+                    padding: '4px',
+                    borderRadius: '16px',
+                    border: '1px solid rgba(255,255,255,0.1)'
+                }}>
+                    {(['feed', 'swing', 'social'] as const).map((tab) => (
+                        <button
+                            key={tab}
+                            onClick={() => setActiveTab(tab)}
+                            style={{
+                                flex: 1,
+                                padding: '10px',
+                                borderRadius: '12px',
+                                border: 'none',
+                                background: activeTab === tab ? 'var(--secondary)' : 'transparent',
+                                color: activeTab === tab ? 'var(--primary)' : 'rgba(255,255,255,0.6)',
+                                fontSize: '12px',
+                                fontWeight: '800',
+                                textTransform: 'uppercase',
+                                transition: 'all 0.2s ease',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '8px'
+                            }}
+                        >
+                            {tab === 'feed' && <Users size={14} />}
+                            {tab === 'swing' && <Video size={14} />}
+                            {tab === 'social' && <Share2 size={14} />}
+                            {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                        </button>
+                    ))}
                 </div>
             </div>
 
             {/* Content Area */}
             <div style={{
                 position: 'absolute',
-                top: 'calc(var(--header-offset-top) + 80px)',
+                top: 'calc(var(--header-offset-top) + 140px)',
                 left: '0',
                 right: '0',
                 bottom: 'calc(var(--nav-height) + 10px)',
@@ -56,220 +134,202 @@ const CommunityPage: React.FC = () => {
                 gap: '20px',
                 zIndex: 10
             }}>
-
-                {/* YouTube Featured Video Card */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 }}
-                    style={{
-                        position: 'relative',
-                        borderRadius: '24px',
-                        overflow: 'hidden',
-                        boxShadow: '0 15px 40px rgba(0,0,0,0.4)',
-                        border: '1px solid rgba(255,255,255,0.15)',
-                        background: '#000',
-                        aspectRatio: '9/16',
-                    }}
-                >
-                    {showVideo ? (
-                        <iframe
-                            width="100%"
-                            height="100%"
-                            src={`https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`}
-                            title="YouTube video player"
-                            frameBorder="0"
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                            allowFullScreen
-                            style={{
-                                border: 'none',
-                                display: 'block'
-                            }}
-                        ></iframe>
-                    ) : (
-                        <div
-                            onClick={() => setShowVideo(true)}
-                            style={{
-                                position: 'absolute',
-                                inset: 0,
-                                cursor: 'pointer',
-                                backgroundSize: 'cover',
-                                backgroundPosition: 'center',
-                                backgroundImage: `url(https://img.youtube.com/vi/${videoId}/maxresdefault.jpg)`,
-                            }}
+                <AnimatePresence mode="wait">
+                    {activeTab === 'feed' && (
+                        <motion.div
+                            key="feed"
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}
                         >
+                            {/* Create Post Placeholder */}
                             <div style={{
-                                position: 'absolute',
-                                inset: 0,
-                                background: 'rgba(0,0,0,0.3)',
+                                background: 'rgba(255,255,255,0.05)',
+                                borderRadius: '20px',
+                                padding: '15px',
                                 display: 'flex',
                                 alignItems: 'center',
-                                justifyContent: 'center',
-                                transition: 'background 0.3s'
+                                gap: '15px',
+                                border: '1px solid rgba(255,255,255,0.1)'
                             }}>
-                                <motion.div
-                                    whileHover={{ scale: 1.1 }}
-                                    whileTap={{ scale: 0.95 }}
-                                    style={{
-                                        width: '60px',
-                                        height: '60px',
-                                        borderRadius: '50%',
-                                        background: 'rgba(255, 0, 0, 0.9)',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        boxShadow: '0 8px 20px rgba(255,0,0,0.4)',
-                                    }}
-                                >
-                                    <Play size={28} fill="white" color="white" style={{ marginLeft: '4px' }} />
-                                </motion.div>
+                                <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'var(--primary-light)' }}></div>
+                                <div style={{ flex: 1, background: 'rgba(255,255,255,0.05)', padding: '12px 15px', borderRadius: '25px', color: 'rgba(255,255,255,0.4)', fontSize: '13px' }}>
+                                    ¿Qué hay de nuevo en el campo?
+                                </div>
+                                <Camera color="var(--secondary)" size={20} />
                             </div>
 
-                            {/* Badge */}
-                            <div style={{
-                                position: 'absolute',
-                                top: '15px',
-                                left: '15px',
-                                background: 'rgba(255,0,0,0.9)',
-                                color: 'white',
-                                padding: '4px 10px',
-                                borderRadius: '12px',
-                                fontSize: '10px',
-                                fontWeight: '700',
-                                textTransform: 'uppercase',
-                                boxShadow: '0 4px 10px rgba(0,0,0,0.3)'
-                            }}>
-                                Video Destacado
-                            </div>
-                        </div>
+                            {loading ? (
+                                <div style={{ textAlign: 'center', padding: '40px', color: 'rgba(255,255,255,0.5)' }}>Cargando muro...</div>
+                            ) : posts.length === 0 ? (
+                                <div style={{ textAlign: 'center', padding: '60px 20px', background: 'rgba(255,255,255,0.03)', borderRadius: '24px' }}>
+                                    <MessageSquare size={40} color="rgba(255,255,255,0.2)" style={{ marginBottom: '15px' }} />
+                                    <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '13px' }}>El muro está tranquilo. ¡Sé el primero en publicar algo!</p>
+                                </div>
+                            ) : (
+                                posts.map((post) => (
+                                    <PostCard key={post.id} post={post} />
+                                ))
+                            )}
+                        </motion.div>
                     )}
-                </motion.div>
 
-                {/* Channel Link */}
-                <motion.a
-                    href="https://www.youtube.com/@Amorporelgolf"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 }}
-                    whileTap={{ scale: 0.98 }}
-                    style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        background: 'linear-gradient(90deg, #282828 0%, #1a1a1a 100%)',
-                        padding: '16px 20px',
-                        borderRadius: '20px',
-                        textDecoration: 'none',
-                        border: '1px solid rgba(255,255,255,0.1)'
-                    }}
-                >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <div style={{
-                            background: '#FF0000',
-                            padding: '8px',
-                            borderRadius: '50%',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center'
-                        }}>
-                            <Youtube size={20} color="white" />
-                        </div>
-                        <div>
-                            <h3 style={{ margin: 0, color: 'white', fontSize: '15px', fontWeight: 'bold' }}>
-                                Más videos en YouTube
-                            </h3>
-                            <p style={{ margin: 0, color: 'rgba(255,255,255,0.6)', fontSize: '12px' }}>
-                                @Amorporelgolf
-                            </p>
-                        </div>
-                    </div>
-                    <ExternalLink size={18} color="rgba(255,255,255,0.5)" />
-                </motion.a>
-
-                {/* Instagram Card (Condensed) */}
-                <motion.a
-                    href="https://www.instagram.com/amorporelgolf/reels/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3 }}
-                    whileTap={{ scale: 0.98 }}
-                    style={{
-                        display: 'block',
-                        textDecoration: 'none',
-                        position: 'relative',
-                        borderRadius: '24px',
-                        overflow: 'hidden',
-                        height: '140px',
-                        boxShadow: '0 10px 30px rgba(0,0,0,0.3)',
-                        border: '1px solid rgba(255,255,255,0.1)'
-                    }}
-                >
-                    <div style={{
-                        position: 'absolute',
-                        inset: 0,
-                        background: 'linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)',
-                        opacity: 0.9
-                    }} />
-
-                    <div style={{
-                        position: 'relative',
-                        zIndex: 1,
-                        padding: '20px',
-                        height: '100%',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between'
-                    }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                    {activeTab === 'swing' && (
+                        <motion.div
+                            key="swing"
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}
+                        >
                             <div style={{
-                                background: 'white',
-                                padding: '10px',
-                                borderRadius: '50%',
-                                boxShadow: '0 8px 20px rgba(0,0,0,0.2)'
+                                background: 'linear-gradient(135deg, rgba(163, 230, 53, 0.1) 0%, rgba(20, 45, 30, 0.4) 100%)',
+                                borderRadius: '24px',
+                                padding: '25px',
+                                border: '1px solid rgba(163, 230, 53, 0.2)',
+                                textAlign: 'center'
                             }}>
-                                <Instagram size={28} color="#cc2366" />
-                            </div>
-                            <div>
-                                <h2 style={{
-                                    fontSize: '20px',
-                                    fontWeight: '900',
-                                    color: 'white',
-                                    margin: 0,
-                                    textShadow: '0 2px 4px rgba(0,0,0,0.2)'
-                                }}>
-                                    Instagram Reels
-                                </h2>
-                                <p style={{
-                                    fontSize: '13px',
-                                    color: 'rgba(255,255,255,0.9)',
-                                    margin: '4px 0 0 0',
-                                    fontWeight: '500'
-                                }}>
-                                    Vive los mejores momentos
+                                <h2 style={{ fontSize: '18px', fontWeight: '900', color: 'white', margin: '0 0 10px' }}>Análisis de Swing con IA</h2>
+                                <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.7)', lineHeight: '1.5', marginBottom: '20px' }}>
+                                    Usa el poder de la Inteligencia Artificial para perfeccionar tu técnica.
                                 </p>
+                                <button
+                                    onClick={() => navigate('/swing-analysis')}
+                                    style={{ width: '100%', padding: '15px', borderRadius: '15px', background: 'var(--secondary)', color: 'var(--primary)', border: 'none', fontWeight: '900' }}
+                                >
+                                    IR A MIS ANÁLISIS
+                                </button>
                             </div>
-                        </div>
 
-                        <div style={{
-                            background: 'rgba(255,255,255,0.2)',
-                            padding: '8px',
-                            borderRadius: '50%',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center'
-                        }}>
-                            <ExternalLink size={16} color="white" />
-                        </div>
-                    </div>
-                </motion.a>
+                            {/* Info Cards */}
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                                <div style={{ background: 'rgba(255,255,255,0.05)', padding: '15px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                    <Target size={20} color="var(--secondary)" />
+                                    <h4 style={{ margin: '10px 0 5px', color: 'white', fontSize: '13px' }}>Postura</h4>
+                                    <p style={{ margin: 0, fontSize: '11px', color: 'rgba(255,255,255,0.5)' }}>Corrige tu alineación automáticamente.</p>
+                                </div>
+                                <div style={{ background: 'rgba(255,255,255,0.05)', padding: '15px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                    <Play size={20} color="var(--secondary)" />
+                                    <h4 style={{ margin: '10px 0 5px', color: 'white', fontSize: '13px' }}>Velocidad</h4>
+                                    <p style={{ margin: 0, fontSize: '11px', color: 'rgba(255,255,255,0.5)' }}>Mide tu palo en la zona de impacto.</p>
+                                </div>
+                            </div>
+                        </motion.div>
+                    )}
 
+                    {activeTab === 'social' && (
+                        <motion.div
+                            key="social"
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}
+                        >
+                            <YoutubeCard />
+                            <InstagramCard />
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </div>
         </div>
     );
 };
+
+// Sub-components
+const PostCard: React.FC<{ post: Post }> = ({ post }) => (
+    <div style={{
+        background: 'rgba(255,255,255,0.05)',
+        borderRadius: '24px',
+        overflow: 'hidden',
+        border: '1px solid rgba(255,255,255,0.1)',
+        boxShadow: '0 10px 30px rgba(0,0,0,0.2)'
+    }}>
+        <div style={{ padding: '15px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--primary-light)', border: '1px solid var(--secondary)' }}>
+                {post.user.avatar_url && <img src={post.user.avatar_url} style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />}
+            </div>
+            <div>
+                <h4 style={{ margin: 0, fontSize: '14px', fontWeight: '800', color: 'white' }}>{post.user.full_name || 'Golfista APEG'}</h4>
+                <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>{new Date(post.created_at).toLocaleDateString()}</span>
+            </div>
+        </div>
+        {post.content && <p style={{ margin: '0 15px 15px', fontSize: '13px', color: 'rgba(255,255,255,0.8)', lineHeight: '1.4' }}>{post.content}</p>}
+        {post.media_url && (
+            <div style={{ height: '300px', background: '#000' }}>
+                <img src={post.media_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            </div>
+        )}
+        <div style={{ padding: '12px 20px', borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', gap: '20px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Heart size={18} color="rgba(255,255,255,0.4)" />
+                <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.6)' }}>{post.likes_count}</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <MessageSquare size={18} color="rgba(255,255,255,0.4)" />
+                <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.6)' }}>{post.comments_count}</span>
+            </div>
+            <Share2 size={18} color="rgba(255,255,255,0.4)" style={{ marginLeft: 'auto' }} />
+        </div>
+    </div>
+);
+
+const YoutubeCard = () => (
+    <motion.a
+        href="https://www.youtube.com/@Amorporelgolf"
+        target="_blank"
+        whileTap={{ scale: 0.98 }}
+        style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            background: 'linear-gradient(90deg, #282828 0%, #1a1a1a 100%)',
+            padding: '16px 20px',
+            borderRadius: '20px',
+            textDecoration: 'none',
+            border: '1px solid rgba(255,255,255,0.1)'
+        }}
+    >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ background: '#FF0000', padding: '8px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Youtube size={20} color="white" />
+            </div>
+            <div>
+                <h3 style={{ margin: 0, color: 'white', fontSize: '15px', fontWeight: 'bold' }}>Canal APEG</h3>
+                <p style={{ margin: 0, color: 'rgba(255,255,255,0.6)', fontSize: '12px' }}>YouTube Shorts</p>
+            </div>
+        </div>
+        <ExternalLink size={18} color="rgba(255,255,255,0.5)" />
+    </motion.a>
+);
+
+const InstagramCard = () => (
+    <motion.a
+        href="https://www.instagram.com/amorporelgolf/reels/"
+        target="_blank"
+        whileTap={{ scale: 0.98 }}
+        style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            background: 'linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)',
+            padding: '16px 20px',
+            borderRadius: '20px',
+            textDecoration: 'none',
+            border: '1px solid rgba(255,255,255,0.1)'
+        }}
+    >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ background: 'white', padding: '8px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Instagram size={20} color="#dc2743" />
+            </div>
+            <div>
+                <h3 style={{ margin: 0, color: 'white', fontSize: '15px', fontWeight: 'bold' }}>Instagram APEG</h3>
+                <p style={{ margin: 0, color: 'rgba(255,255,255,0.9)', fontSize: '12px' }}>Sigue nuestras historias</p>
+            </div>
+        </div>
+        <ExternalLink size={18} color="white" />
+    </motion.a>
+);
 
 export default CommunityPage;
