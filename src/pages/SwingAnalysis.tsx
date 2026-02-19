@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Video, Upload, Play, BarChart3, X, ChevronRight, Zap, Target, TrendingUp, AlertTriangle, CheckCircle, Pause } from 'lucide-react';
+import { Video, Upload, Play, X, ChevronRight, Zap, TrendingUp, AlertTriangle, CheckCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../services/SupabaseManager';
 import { useAuth } from '../context/AuthContext';
