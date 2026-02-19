@@ -718,28 +718,33 @@ const AnalysisCard = ({ item, isExpanded, onToggle, onDelete }: { item: SwingAna
                             initial={{ height: 0, opacity: 0 }}
                             animate={{ height: 'auto', opacity: 1 }}
                             exit={{ height: 0, opacity: 0 }}
-                            style={{ overflow: 'hidden', marginTop: '10px' }}
+                            transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
+                            style={{ overflow: 'hidden', marginTop: '12px' }}
                         >
-                            {/* All Metrics */}
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px', marginBottom: '12px' }}>
+                            {/* Detailed Metrics Grid */}
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginBottom: '16px' }}>
                                 <MetricBox label="Ataque" value={feedback.metrics?.attack_angle || '--'} />
                                 <MetricBox label="Columna" value={feedback.metrics?.spine_angle || '--'} />
                                 <MetricBox label="Cadera" value={feedback.metrics?.hip_rotation || '--'} />
                             </div>
 
-                            {/* Technical Sections */}
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '12px' }}>
+                            {/* Phase Analysis Accordion */}
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '16px' }}>
+                                <p style={{ fontSize: '9px', fontWeight: '900', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px', paddingLeft: '4px' }}>
+                                    Desglose Técnico
+                                </p>
+
                                 {feedback.setup_analysis && (
-                                    <TechnicalBox title="Setup & Postura" content={feedback.setup_analysis} color="#a3e635" />
+                                    <ModernTechnicalCard title="Setup & Colocación" content={feedback.setup_analysis} icon={<Video size={14} />} color="#a3e635" />
                                 )}
                                 {feedback.grip_analysis && (
-                                    <TechnicalBox title="Análisis del Grip" content={feedback.grip_analysis} color="#a3e635" />
+                                    <ModernTechnicalCard title="Control del Grip" content={feedback.grip_analysis} icon={<CheckCircle size={14} />} color="#60a5fa" />
                                 )}
                                 {feedback.backswing_analysis && (
-                                    <TechnicalBox title="Backswing (Subida)" content={feedback.backswing_analysis} color="#fbbf24" />
+                                    <ModernTechnicalCard title="Fase de Backswing" content={feedback.backswing_analysis} icon={<TrendingUp size={14} />} color="#fbbf24" />
                                 )}
                                 {feedback.downswing_analysis && (
-                                    <TechnicalBox title="Downswing & Impacto" content={feedback.downswing_analysis} color="#60a5fa" />
+                                    <ModernTechnicalCard title="Impacto y Release" content={feedback.downswing_analysis} icon={<Zap size={14} />} color="#f87171" />
                                 )}
                             </div>
 
@@ -814,7 +819,54 @@ const MetricBox = ({ label, value }: { label: string; value: string }) => (
     </div>
 );
 
-// --- Technical Info Box ---
+// --- Modern Technical Content Item ---
+const ModernTechnicalCard = ({ title, content, icon, color }: { title: string; content: string; icon: React.ReactNode; color: string }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    return (
+        <motion.div
+            onClick={() => setIsOpen(!isOpen)}
+            style={{
+                background: 'rgba(255,255,255,0.03)',
+                borderRadius: '16px',
+                border: '1px solid rgba(255,255,255,0.05)',
+                overflow: 'hidden',
+                cursor: 'pointer'
+            }}
+        >
+            <div style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{
+                    width: '32px', height: '32px', borderRadius: '10px',
+                    background: `${color}15`, display: 'flex', alignItems: 'center',
+                    justifyContent: 'center', color: color
+                }}>
+                    {icon}
+                </div>
+                <div style={{ flex: 1 }}>
+                    <p style={{ fontSize: '12px', fontWeight: '800', color: 'white', margin: 0 }}>{title}</p>
+                </div>
+                <ChevronRight size={16} color="rgba(255,255,255,0.3)" style={{ transform: isOpen ? 'rotate(90deg)' : 'none', transition: 'transform 0.3s' }} />
+            </div>
+            <AnimatePresence>
+                {isOpen && (
+                    <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        style={{ overflow: 'hidden' }}
+                    >
+                        <div style={{ padding: '0 16px 16px 60px' }}>
+                            <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.6)', margin: 0, lineHeight: 1.5 }}>
+                                {content}
+                            </p>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </motion.div>
+    );
+};
+
+// --- Technical Info Box (Legacy for compatibility) ---
 const TechnicalBox = ({ title, content, color }: { title: string; content: string; color: string }) => (
     <div style={{
         padding: '10px 12px',
