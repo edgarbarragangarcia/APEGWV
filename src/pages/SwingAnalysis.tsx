@@ -597,7 +597,7 @@ const AnalysisCard = ({ item, isExpanded, onToggle, onDelete }: { item: SwingAna
             }}
         >
             {/* Video + Score Header */}
-            <div style={{ position: 'relative', height: '160px', background: '#000' }} onClick={togglePlay}>
+            <div style={{ position: 'relative', height: '240px', background: '#000' }} onClick={togglePlay}>
                 <video
                     ref={videoRef}
                     src={item.video_url}
@@ -866,19 +866,7 @@ const ModernTechnicalCard = ({ title, content, icon, color }: { title: string; c
     );
 };
 
-// --- Technical Info Box (Legacy for compatibility) ---
-const TechnicalBox = ({ title, content, color }: { title: string; content: string; color: string }) => (
-    <div style={{
-        padding: '10px 12px',
-        borderRadius: '12px',
-        background: 'rgba(255,255,255,0.02)',
-        border: '1px solid rgba(255,255,255,0.05)',
-        borderLeft: `3px solid ${color}`
-    }}>
-        <p style={{ fontSize: '8px', color: 'rgba(255,255,255,0.3)', fontWeight: '800', textTransform: 'uppercase', margin: '0 0 4px', letterSpacing: '0.5px' }}>{title}</p>
-        <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.8)', margin: 0, lineHeight: 1.4 }}>{content}</p>
-    </div>
-);
+
 
 // --- Styles ---
 const NavigationStyles = () => (<style>{`
