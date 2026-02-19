@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, Users, ChevronRight, BarChart3, X, History, Video, Shield, Trophy, Target } from 'lucide-react';
+import { User, Users, ChevronRight, BarChart3, X, History, Video, Shield } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import PageHeader from '../components/PageHeader';
 import { supabase } from '../services/SupabaseManager';
@@ -448,23 +448,7 @@ const PlayModeSelection: React.FC = () => {
                             />
                         </div>
 
-                        <div style={{ flexShrink: 0, fontSize: '10px', fontWeight: '800', color: 'rgba(255,255,255,0.2)', textTransform: 'uppercase', letterSpacing: '2px', marginLeft: '4px', marginTop: '2px' }}>Competencia y Social</div>
 
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                            <HubListButton
-                                icon={Target}
-                                title="Apuestas en Vivo"
-                                subtitle="Nassau, Skins y más"
-                                onClick={() => navigate('/live-betting')}
-                            />
-
-                            <HubListButton
-                                icon={Trophy}
-                                title="Medallas y Logros"
-                                subtitle="Tu carrera en APEG"
-                                onClick={() => { }}
-                            />
-                        </div>
                     </>
                 )}
             </div>
