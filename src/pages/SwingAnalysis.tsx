@@ -42,6 +42,10 @@ const getSimulatedAnalysis = () => {
             spine_angle: `${Math.floor(40 + Math.random() * 5)}°`,
             hip_rotation: `${Math.floor(42 + Math.random() * 8)}°`
         },
+        setup_analysis: "Excelente postura inicial. Pies alineados correctamente con los hombros y una columna neutra.",
+        backswing_analysis: "El palo se mantiene en el plano correcto durante la subida, aunque podrías rotar un poco más los hombros.",
+        grip_analysis: "Tu grip parece neutro y bien posicionado, lo que facilita una cara del palo cuadrada en el impacto.",
+        downswing_analysis: "Buena transición de peso. Mantén la extensión de los brazos un poco más después del impacto.",
         posture: "Tu postura inicial es sólida, con una buena alineación de hombros y pies.",
         strengths: ["Buen equilibrio", "Transición fluida", "Impacto centrado"],
         areas_to_improve: ["Extensión de brazos", "Transferencia de peso", "Estabilidad en el finish"],
@@ -65,7 +69,11 @@ El JSON debe tener exactamente esta estructura:
     "spine_angle": "<ángulo de columna en grados>",
     "hip_rotation": "<rotación de cadera en grados>"
   },
-  "posture": "<evaluación de la postura en 1-2 oraciones en español>",
+  "setup_analysis": "<análisis de cómo se para y posición inicial en español>",
+  "backswing_analysis": "<análisis técnico de la subida del palo en español>",
+  "grip_analysis": "<análisis del agarre/grip en español>",
+  "downswing_analysis": "<análisis del descenso e impacto en español>",
+  "posture": "<evaluación resumida de la postura en 1 frase>",
   "strengths": ["<fortaleza 1>", "<fortaleza 2>", "<fortaleza 3>"],
   "areas_to_improve": ["<área 1>", "<área 2>", "<área 3>"],
   "tips": "<consejo personalizado detallado en español, 2-3 oraciones>",
@@ -255,39 +263,59 @@ const SwingAnalysis: React.FC = () => {
     };
 
     const handleDeleteAnalysis = async (id: string, videoUrl: string) => {
-        if (!window.confirm('¿Estás seguro de que deseas eliminar este análisis? El video también será eliminado.')) return;
+        if (!session) return;
+        if (!window.confirm('¿Estás seguro de que deseas eliminar este análisis? El video también será eliminado permanentemente.')) return;
+
+        console.log('Iniciando eliminación de análisis:', id);
 
         try {
-            // Delete record from DB
+            // 1. ELIMINAR DE LA BASE DE DATOS PRIMERO
             const { error: dbError } = await supabase
                 .from('swing_analyses')
                 .delete()
-                .eq('id', id);
+                .match({ id, user_id: session.user.id });
 
-            if (dbError) throw dbError;
+            if (dbError) {
+                console.error('Error DB al borrar:', dbError);
+                throw dbError;
+            }
 
-            // Extract filename from URL to delete from storage
-            // Example URL: https://.../storage/v1/object/public/media/USER_ID/filename.mp4
+            console.log('Registro en DB eliminado correctamente');
+
+            // 2. ELIMINAR DEL STORAGE (Opcional, no bloquea el flujo si falla)
             try {
-                const urlParts = videoUrl.split('/');
+                // Limpiar URL de posibles parámetros (?t=...)
+                const cleanUrl = videoUrl.split('?')[0];
+                const urlParts = cleanUrl.split('/');
                 const fileName = urlParts[urlParts.length - 1];
                 const userIdFolder = urlParts[urlParts.length - 2];
                 const storagePath = `${userIdFolder}/${fileName}`;
 
-                await supabase.storage
+                console.log('Eliminando de storage:', storagePath);
+
+                const { error: storageError } = await supabase.storage
                     .from('media')
                     .remove([storagePath]);
+
+                if (storageError) {
+                    console.warn('Error en storage (ignorable):', storageError);
+                } else {
+                    console.log('Video eliminado de storage');
+                }
             } catch (storageErr) {
-                console.warn('Could not delete video from storage:', storageErr);
+                console.warn('Fallo al procesar borrado de storage:', storageErr);
             }
 
-            // Update local state
+            // 3. ACTUALIZAR ESTADO LOCAL
             setAnalyses(prev => prev.filter(a => a.id !== id));
             if (expandedAnalysis === id) setExpandedAnalysis(null);
 
+            // Notificar al usuario (opcional pero bueno para saber que terminó)
+            if (navigator.vibrate) navigator.vibrate(50);
+
         } catch (err: any) {
-            console.error('Error deleting analysis:', err);
-            alert('Error al eliminar el análisis');
+            console.error('Error crítico eliminando análisis:', err);
+            alert(`No se pudo eliminar: ${err.message || 'Error desconocido'}`);
         }
     };
 
@@ -620,21 +648,22 @@ const AnalysisCard = ({ item, isExpanded, onToggle, onDelete }: { item: SwingAna
                         position: 'absolute',
                         top: '12px',
                         left: '12px',
-                        width: '32px',
-                        height: '32px',
-                        borderRadius: '50%',
-                        background: 'rgba(239, 68, 68, 0.2)',
-                        backdropFilter: 'blur(8px)',
-                        border: '1px solid rgba(239, 68, 68, 0.3)',
+                        width: '36px',
+                        height: '36px',
+                        borderRadius: '10px',
+                        background: 'rgba(239, 68, 68, 0.95)',
+                        boxShadow: '0 4px 12px rgba(239, 68, 68, 0.3)',
+                        border: '1px solid rgba(255, 255, 255, 0.1)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        color: '#ef4444',
+                        color: 'white',
                         cursor: 'pointer',
-                        zIndex: 20
+                        zIndex: 30,
+                        pointerEvents: 'auto'
                     }}
                 >
-                    {isDeleting ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                    {isDeleting ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
                 </motion.button>
             </div>
 
@@ -677,8 +706,24 @@ const AnalysisCard = ({ item, isExpanded, onToggle, onDelete }: { item: SwingAna
                                 <MetricBox label="Cadera" value={feedback.metrics?.hip_rotation || '--'} />
                             </div>
 
-                            {/* Posture */}
-                            {feedback.posture && (
+                            {/* Technical Sections */}
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '12px' }}>
+                                {feedback.setup_analysis && (
+                                    <TechnicalBox title="Setup & Postura" content={feedback.setup_analysis} color="#a3e635" />
+                                )}
+                                {feedback.grip_analysis && (
+                                    <TechnicalBox title="Análisis del Grip" content={feedback.grip_analysis} color="#a3e635" />
+                                )}
+                                {feedback.backswing_analysis && (
+                                    <TechnicalBox title="Backswing (Subida)" content={feedback.backswing_analysis} color="#fbbf24" />
+                                )}
+                                {feedback.downswing_analysis && (
+                                    <TechnicalBox title="Downswing & Impacto" content={feedback.downswing_analysis} color="#60a5fa" />
+                                )}
+                            </div>
+
+                            {/* Posture Summary (Old field for compatibility) */}
+                            {feedback.posture && !feedback.setup_analysis && (
                                 <div style={{ padding: '10px 12px', borderRadius: '12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', marginBottom: '10px' }}>
                                     <p style={{ fontSize: '8px', color: 'rgba(255,255,255,0.3)', fontWeight: '800', textTransform: 'uppercase', margin: '0 0 4px' }}>Postura</p>
                                     <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.7)', margin: 0, lineHeight: 1.4 }}>{feedback.posture}</p>
@@ -745,6 +790,20 @@ const MetricBox = ({ label, value }: { label: string; value: string }) => (
     <div style={{ background: 'rgba(255,255,255,0.03)', padding: '8px 6px', borderRadius: '10px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.04)' }}>
         <p style={{ margin: 0, fontSize: '7px', color: 'rgba(255,255,255,0.35)', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.3px' }}>{label}</p>
         <p style={{ margin: 0, fontSize: '12px', color: 'var(--secondary)', fontWeight: '900' }}>{value}</p>
+    </div>
+);
+
+// --- Technical Info Box ---
+const TechnicalBox = ({ title, content, color }: { title: string; content: string; color: string }) => (
+    <div style={{
+        padding: '10px 12px',
+        borderRadius: '12px',
+        background: 'rgba(255,255,255,0.02)',
+        border: '1px solid rgba(255,255,255,0.05)',
+        borderLeft: `3px solid ${color}`
+    }}>
+        <p style={{ fontSize: '8px', color: 'rgba(255,255,255,0.3)', fontWeight: '800', textTransform: 'uppercase', margin: '0 0 4px', letterSpacing: '0.5px' }}>{title}</p>
+        <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.8)', margin: 0, lineHeight: 1.4 }}>{content}</p>
     </div>
 );
 
