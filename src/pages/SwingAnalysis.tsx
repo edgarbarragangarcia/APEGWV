@@ -430,7 +430,13 @@ const SwingAnalysis: React.FC = () => {
     };
 
     return (
-        <div className="animate-fade" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, width: '100%', overflow: 'hidden' }}>
+        <div className="animate-fade" style={{
+            position: 'absolute',
+            top: 0, left: 0, right: 0, bottom: 0,
+            width: '100%',
+            overflow: 'hidden',
+            background: 'var(--primary)'
+        }}>
             <NavigationStyles />
             <PageHero />
 
@@ -440,15 +446,17 @@ const SwingAnalysis: React.FC = () => {
                 </div>
             </div>
 
-            <div style={{
+            <div className="no-scrollbar" style={{
                 position: 'absolute',
                 top: 'calc(var(--header-offset-top) + 80px)',
                 left: 0, right: 0,
-                bottom: 'calc(var(--nav-height) + 10px)',
+                bottom: 0,
                 overflowY: 'auto',
-                padding: '15px 20px 100px 20px',
+                WebkitOverflowScrolling: 'touch',
+                padding: '15px 20px calc(var(--nav-height) + 80px + env(safe-area-inset-bottom)) 20px',
                 display: 'flex', flexDirection: 'column', gap: '16px',
-                zIndex: 10
+                zIndex: 10,
+                overscrollBehavior: 'contain'
             }}>
                 {/* Upload CTA */}
                 <motion.div
@@ -1015,6 +1023,15 @@ const NavigationStyles = () => (<style>{`
         animation: spin 0.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
     }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    
+    /* Hide scrollbar for Safari/Chrome */
+    .no-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+    .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
 `}</style>);
 
 export default SwingAnalysis;
