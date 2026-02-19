@@ -642,11 +642,11 @@ const Round: React.FC = () => {
             flexDirection: 'column',
             overflow: 'hidden',
             position: 'relative',
-            padding: '10px 10px 0 10px',
+            padding: '6px 10px 0 10px',
             width: '100%',
             justifyContent: 'space-between'
         }}>
-            <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', flexShrink: 0 }}>
+            <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px', flexShrink: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <div style={{ padding: '8px', border: '1px solid var(--glass-border)', borderRadius: '10px' }}>
                         <History size={20} />
@@ -802,7 +802,7 @@ const Round: React.FC = () => {
                 </div>
             )}
 
-            <div className="glass" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 20px', marginBottom: '6px', flexShrink: 0 }}>
+            <div className="glass" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 20px', marginBottom: '4px', flexShrink: 0 }}>
                 <button onClick={() => handleHoleChange('prev')} disabled={currentHole === 1} style={{ opacity: currentHole === 1 ? 0.3 : 1 }}><ChevronLeft size={20} /></button>
                 <div style={{ textAlign: 'center' }}>
                     <span style={{ fontSize: '12px', color: 'var(--secondary)', fontWeight: '600' }}>HOYO</span>
@@ -812,8 +812,8 @@ const Round: React.FC = () => {
                 <button onClick={() => handleHoleChange('next')} disabled={currentHole === 18} style={{ opacity: currentHole === 18 ? 0.3 : 1 }}><ChevronRight size={20} /></button>
             </div>
 
-            <div style={{ marginBottom: '6px', padding: '0 5px', flexShrink: 0 }}>
-                <div style={{ display: 'flex', justifyContent: 'flex-start', gap: '10px', overflowX: 'auto', paddingBottom: '10px', paddingLeft: '5px', paddingRight: '5px', scrollSnapType: 'x proximity', WebkitOverflowScrolling: 'touch' }}>
+            <div style={{ marginBottom: '2px', padding: '0 5px', flexShrink: 0 }}>
+                <div style={{ display: 'flex', justifyContent: 'flex-start', gap: '8px', overflowX: 'auto', paddingBottom: '4px', paddingLeft: '5px', paddingRight: '5px', scrollSnapType: 'x proximity', WebkitOverflowScrolling: 'touch' }}>
                     {[
                         { label: 'Eagle', diff: -2, color: '#f59e0b' },
                         { label: 'Birdie', diff: -1, color: 'var(--secondary)' },
@@ -826,7 +826,7 @@ const Round: React.FC = () => {
                         const isSelected = currentStrokes === scoreValue;
 
                         return (
-                            <div key={item.label} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', minWidth: '60px' }}>
+                            <div key={item.label} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', minWidth: '60px' }}>
                                 <button
                                     onClick={() => {
                                         const scoreValue = currentHoleInfo.par + item.diff;
@@ -835,8 +835,8 @@ const Round: React.FC = () => {
                                         if (navigator.vibrate) navigator.vibrate(10);
                                     }}
                                     style={{
-                                        width: '50px',
-                                        height: '50px',
+                                        width: '46px',
+                                        height: '46px',
                                         borderRadius: '50%',
                                         background: isSelected ? item.color : 'white',
                                         color: isSelected ? (item.label === 'Par' || item.label === 'Birdie' ? 'var(--primary)' : 'white') : '#333',
@@ -871,7 +871,7 @@ const Round: React.FC = () => {
                     })}
 
                     {/* Manual Adjuster */}
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', minWidth: '60px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', minWidth: '60px' }}>
                         <div style={{ display: 'flex', alignItems: 'center' }}>
                             <button
                                 onClick={() => handleStrokeChange(-1)}
@@ -888,7 +888,7 @@ const Round: React.FC = () => {
                     </div>
                 </div>
 
-                <div style={{ textAlign: 'center', marginBottom: '6px', flexShrink: 0 }}>
+                <div style={{ textAlign: 'center', marginBottom: '2px', flexShrink: 0 }}>
                     <span style={{ fontSize: '11px', color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '1px' }}>Puntaje: </span>
                     <span style={{ fontSize: '11px', fontWeight: '900', color: relativeScore > 0 ? '#f87171' : relativeScore < 0 ? 'var(--secondary)' : 'white' }}>
                         {relativeScore === 0 ? 'PAR' : (relativeScore > 0 ? `+ ${relativeScore} ` : relativeScore)}
@@ -897,10 +897,10 @@ const Round: React.FC = () => {
             </div>
 
             {/* Weather Dashboard - Replaces Distance boxes */}
-            <div style={{ marginBottom: '8px', flexShrink: 0 }}>
+            <div style={{ marginBottom: '4px', flexShrink: 0 }}>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
                     <div className="glass" style={{
-                        padding: '12px 8px',
+                        padding: '8px 8px',
                         textAlign: 'center',
                         display: 'flex',
                         flexDirection: 'column',
@@ -915,7 +915,7 @@ const Round: React.FC = () => {
                     </div>
 
                     <div className="glass" style={{
-                        padding: '12px 8px',
+                        padding: '8px 8px',
                         textAlign: 'center',
                         display: 'flex',
                         flexDirection: 'column',
@@ -929,7 +929,7 @@ const Round: React.FC = () => {
                     </div>
 
                     <div className="glass" style={{
-                        padding: '12px 8px',
+                        padding: '8px 8px',
                         textAlign: 'center',
                         display: 'flex',
                         flexDirection: 'column',
@@ -943,7 +943,7 @@ const Round: React.FC = () => {
                     </div>
 
                     <div className="glass" style={{
-                        padding: '12px 4px',
+                        padding: '8px 4px',
                         textAlign: 'center',
                         display: 'flex',
                         flexDirection: 'column',
@@ -962,7 +962,7 @@ const Round: React.FC = () => {
                     </div>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '8px', marginTop: '8px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '8px', marginTop: '6px' }}>
                     <div className="glass" style={{
                         padding: '10px 15px',
                         display: 'flex',

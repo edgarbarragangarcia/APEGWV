@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, Users, ChevronRight, BarChart3, X, History, Video, Shield, Trophy, Target, MessageSquare } from 'lucide-react';
+import { User, Users, ChevronRight, BarChart3, X, History, Video, Shield, Trophy, Target } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import PageHeader from '../components/PageHeader';
 import { supabase } from '../services/SupabaseManager';
@@ -253,12 +253,11 @@ const PlayModeSelection: React.FC = () => {
                 left: '0',
                 right: '0',
                 bottom: 'calc(55px + var(--safe-bottom) + 10px)',
-                overflowY: 'auto',
-                overflowX: 'hidden',
-                padding: '10px 20px 40px 20px',
+                overflow: 'hidden',
+                padding: '6px 20px 10px 20px',
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '16px',
+                gap: '8px',
                 zIndex: 1,
                 pointerEvents: 'auto'
             }}>
@@ -267,12 +266,12 @@ const PlayModeSelection: React.FC = () => {
                     style={{
                         flexShrink: 0,
                         background: 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%)',
-                        borderRadius: '24px',
-                        padding: '16px',
+                        borderRadius: '18px',
+                        padding: '10px 14px',
                         border: '1px solid rgba(255,255,255,0.08)',
                         display: 'flex',
                         flexDirection: 'column',
-                        gap: '12px',
+                        gap: '6px',
                         minHeight: 'auto'
                     }}
                 >
@@ -350,7 +349,7 @@ const PlayModeSelection: React.FC = () => {
                 </div>
 
                 {/* Mode Title Separator */}
-                <div style={{ flexShrink: 0, fontSize: '11px', fontWeight: '800', color: 'rgba(255,255,255,0.2)', textTransform: 'uppercase', letterSpacing: '2px', marginLeft: '4px' }}>Selecciona tu modo</div>
+                <div style={{ flexShrink: 0, fontSize: '10px', fontWeight: '800', color: 'rgba(255,255,255,0.2)', textTransform: 'uppercase', letterSpacing: '2px', marginLeft: '4px' }}>Selecciona tu modo</div>
 
                 {hasActiveRound ? (
                     // Redirecting...
@@ -360,7 +359,7 @@ const PlayModeSelection: React.FC = () => {
                 ) : (
                     <>
                         {/* UI normal de selección de modo con Grid Responsivo */}
-                        <div className="play-mode-grid" style={{ pointerEvents: 'auto', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                        <div className="play-mode-grid" style={{ pointerEvents: 'auto', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                             {modes.map((mode) => (
                                 <motion.div
                                     key={mode.id}
@@ -379,7 +378,7 @@ const PlayModeSelection: React.FC = () => {
                                         alignItems: 'stretch',
                                         cursor: 'pointer',
                                         transition: 'background 0.3s ease',
-                                        height: '110px',
+                                        height: '90px',
                                     }}
                                 >
                                     <div style={{
@@ -401,7 +400,7 @@ const PlayModeSelection: React.FC = () => {
                                         display: 'flex',
                                         flexDirection: 'column',
                                         justifyContent: 'center',
-                                        padding: '12px'
+                                        padding: '10px'
                                     }}>
                                         <div style={{
                                             display: 'flex',
@@ -432,40 +431,33 @@ const PlayModeSelection: React.FC = () => {
                         </div>
 
                         {/* New Hub Sections */}
-                        <div style={{ flexShrink: 0, fontSize: '11px', fontWeight: '800', color: 'rgba(255,255,255,0.2)', textTransform: 'uppercase', letterSpacing: '2px', marginLeft: '4px', marginTop: '10px' }}>Herramientas de Golf</div>
+                        <div style={{ flexShrink: 0, fontSize: '10px', fontWeight: '800', color: 'rgba(255,255,255,0.2)', textTransform: 'uppercase', letterSpacing: '2px', marginLeft: '4px', marginTop: '2px' }}>Herramientas de Golf</div>
 
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                            <HubCard
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                            <HubListButton
                                 icon={Video}
                                 title="Swing IA"
                                 subtitle="Análisis técnico"
-                                color="var(--secondary)"
                                 onClick={() => navigate('/swing-analysis')}
                             />
-                            <HubCard
+                            <HubListButton
                                 icon={Shield}
                                 title="Mi Talega"
                                 subtitle="Palos y distancias"
-                                color="#fbbf24"
                                 onClick={() => navigate('/my-bag')}
                             />
                         </div>
 
-                        <div style={{ flexShrink: 0, fontSize: '11px', fontWeight: '800', color: 'rgba(255,255,255,0.2)', textTransform: 'uppercase', letterSpacing: '2px', marginLeft: '4px', marginTop: '10px' }}>Competencia y Social</div>
+                        <div style={{ flexShrink: 0, fontSize: '10px', fontWeight: '800', color: 'rgba(255,255,255,0.2)', textTransform: 'uppercase', letterSpacing: '2px', marginLeft: '4px', marginTop: '2px' }}>Competencia y Social</div>
 
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                             <HubListButton
                                 icon={Target}
                                 title="Apuestas en Vivo"
                                 subtitle="Nassau, Skins y más"
                                 onClick={() => navigate('/live-betting')}
                             />
-                            <HubListButton
-                                icon={MessageSquare}
-                                title="Comunidad APEG"
-                                subtitle="Muro social y noticias"
-                                onClick={() => navigate('/community')}
-                            />
+
                             <HubListButton
                                 icon={Trophy}
                                 title="Medallas y Logros"
@@ -594,32 +586,6 @@ const PlayModeSelection: React.FC = () => {
     );
 };
 
-// --- Subcomponents for Hub ---
-
-const HubCard = ({ icon: Icon, title, subtitle, color, onClick }: any) => (
-    <motion.div
-        whileTap={{ scale: 0.95 }}
-        onClick={onClick}
-        style={{
-            background: 'rgba(255,255,255,0.03)',
-            borderRadius: '20px',
-            padding: '16px',
-            border: '1px solid rgba(255,255,255,0.05)',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '10px',
-            cursor: 'pointer'
-        }}
-    >
-        <div style={{ background: color + '20', padding: '8px', borderRadius: '10px', width: 'fit-content' }}>
-            <Icon size={18} color={color} />
-        </div>
-        <div>
-            <h4 style={{ fontSize: '14px', fontWeight: '900', color: 'white', margin: 0 }}>{title}</h4>
-            <p style={{ fontSize: '9px', color: 'rgba(255,255,255,0.4)', margin: 0, fontWeight: '600' }}>{subtitle}</p>
-        </div>
-    </motion.div>
-);
 
 const HubListButton = ({ icon: Icon, title, subtitle, onClick, badge }: any) => (
     <motion.div
@@ -627,20 +593,20 @@ const HubListButton = ({ icon: Icon, title, subtitle, onClick, badge }: any) => 
         onClick={onClick}
         style={{
             background: 'rgba(255,255,255,0.03)',
-            borderRadius: '20px',
-            padding: '12px 16px',
+            borderRadius: '16px',
+            padding: '8px 14px',
             border: '1px solid rgba(255,255,255,0.05)',
             display: 'flex',
             alignItems: 'center',
-            gap: '12px',
+            gap: '10px',
             cursor: 'pointer'
         }}
     >
-        <div style={{ padding: '8px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)' }}>
-            <Icon size={18} color="rgba(255,255,255,0.6)" />
+        <div style={{ padding: '6px', borderRadius: '8px', background: 'rgba(255,255,255,0.05)' }}>
+            <Icon size={16} color="rgba(255,255,255,0.6)" />
         </div>
         <div style={{ flex: 1 }}>
-            <h4 style={{ fontSize: '14px', fontWeight: '800', color: 'white', margin: 0 }}>{title}</h4>
+            <h4 style={{ fontSize: '13px', fontWeight: '800', color: 'white', margin: 0 }}>{title}</h4>
             <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', margin: 0 }}>{subtitle}</p>
         </div>
         {badge && (
