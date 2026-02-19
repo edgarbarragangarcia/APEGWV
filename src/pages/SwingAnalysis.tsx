@@ -214,8 +214,7 @@ const SwingAnalysis: React.FC = () => {
             setProcessingStep('saving');
 
             const fileExt = selectedFile.name.split('.').pop();
-            const fileName = `${session.user.id}/${Date.now()}.${fileExt}`;
-            const filePath = `swings/${fileName}`;
+            const filePath = `${session.user.id}/${Date.now()}.${fileExt}`;
 
             const { error: uploadError } = await supabase.storage
                 .from('media')
