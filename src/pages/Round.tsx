@@ -644,7 +644,7 @@ const Round: React.FC = () => {
             position: 'relative',
             padding: '6px 10px 0 10px',
             width: '100%',
-            justifyContent: 'space-between'
+            gap: '4px'
         }}>
             <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px', flexShrink: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -802,7 +802,7 @@ const Round: React.FC = () => {
                 </div>
             )}
 
-            <div className="glass" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 20px', marginBottom: '4px', flexShrink: 0 }}>
+            <div className="glass" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 20px', flexShrink: 0 }}>
                 <button onClick={() => handleHoleChange('prev')} disabled={currentHole === 1} style={{ opacity: currentHole === 1 ? 0.3 : 1 }}><ChevronLeft size={20} /></button>
                 <div style={{ textAlign: 'center' }}>
                     <span style={{ fontSize: '12px', color: 'var(--secondary)', fontWeight: '600' }}>HOYO</span>
@@ -896,8 +896,8 @@ const Round: React.FC = () => {
                 </div>
             </div>
 
-            {/* Weather Dashboard - Replaces Distance boxes */}
-            <div style={{ marginBottom: '4px', flexShrink: 0 }}>
+            {/* Weather Dashboard */}
+            <div style={{ flexShrink: 0 }}>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
                     <div className="glass" style={{
                         padding: '8px 8px',
