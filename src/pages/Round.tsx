@@ -65,7 +65,7 @@ const Round: React.FC = () => {
     const groupId = stateGroupId || urlGroupId || localStorage.getItem('round_group_id') || undefined;
 
     const clubName = course?.club || 'Cargando campo...';
-    const fieldName = recorrido ? `${course?.name} - ${recorrido}` : (course?.name || 'Localizando...');
+    const fieldName = recorrido ? `${course?.name} - ${recorrido} ` : (course?.name || 'Localizando...');
     const [holeData, setHoleData] = React.useState<any[]>([]);
 
     // Hooks
@@ -229,7 +229,7 @@ const Round: React.FC = () => {
 
         // 3. Realtime subscription for score updates
         const channel = supabase
-            .channel(`group-scores-${groupId}`)
+            .channel(`group - scores - ${groupId} `)
             .on(
                 'postgres_changes',
                 {
@@ -268,14 +268,14 @@ const Round: React.FC = () => {
         if (!groupId) return;
 
         const channel = supabase
-            .channel(`group-status-${groupId}`)
+            .channel(`group - status - ${groupId} `)
             .on(
                 'postgres_changes',
                 {
                     event: 'UPDATE',
                     schema: 'public',
                     table: 'game_groups',
-                    filter: `id=eq.${groupId}`
+                    filter: `id = eq.${groupId} `
                 },
                 async (payload) => {
                     const newStatus = (payload.new as any)?.status;
@@ -379,7 +379,7 @@ const Round: React.FC = () => {
         if (diff === 1) return 'Bogey';
         if (diff === 2) return 'Doble Bogey';
         if (diff === 3) return 'Triple Bogey';
-        return `+${diff}`;
+        return `+ ${diff} `;
     };
 
     const syncHoleScore = async (holeNum: number, score: number) => {
@@ -453,7 +453,7 @@ const Round: React.FC = () => {
 
                 if (groupError) {
                     console.error('Error cancelling game_groups:', groupError);
-                    throw new Error(`No se pudo cancelar el juego: ${groupError.message}`);
+                    throw new Error(`No se pudo cancelar el juego: ${groupError.message} `);
                 }
 
                 // 2. Update ALL rounds in this group to cancelled
@@ -476,7 +476,7 @@ const Round: React.FC = () => {
             const errorMessage = error instanceof Error
                 ? error.message
                 : 'Error desconocido al cancelar el juego';
-            alert(`Hubo un problema al cancelar el juego:\n\n${errorMessage}\n\nPor favor, intenta nuevamente.`);
+            alert(`Hubo un problema al cancelar el juego: \n\n${errorMessage} \n\nPor favor, intenta nuevamente.`);
         } finally {
             setIsSaving(false);
             setShowCancelModal(false);
@@ -566,7 +566,7 @@ const Round: React.FC = () => {
 
                     if (groupError) {
                         console.error('Error updating game_groups status:', groupError);
-                        throw new Error(`No se pudo cerrar el juego: ${groupError.message}`);
+                        throw new Error(`No se pudo cerrar el juego: ${groupError.message} `);
                     }
 
                     // Update ALL rounds in this group
@@ -610,7 +610,7 @@ const Round: React.FC = () => {
                 : 'Error desconocido al finalizar el juego';
 
             // Mostrar error específico al usuario
-            alert(`Hubo un problema al finalizar el juego:\n\n${errorMessage}\n\nPor favor, intenta nuevamente o contacta a soporte.`);
+            alert(`Hubo un problema al finalizar el juego: \n\n${errorMessage} \n\nPor favor, intenta nuevamente o contacta a soporte.`);
 
 
             if (!hasNavigatedRef.current) {
@@ -668,7 +668,25 @@ const Round: React.FC = () => {
                         <p style={{ fontSize: '12px', color: 'var(--text-dim)' }}>{fieldName} • Par {course?.club.includes('Lagartos') && recorrido === 'Corea' ? 71 : 72}</p>
                     </div>
                 </div>
-                <button onClick={() => setShowFinishModal(true)} style={{ color: 'var(--secondary)', fontSize: '13px' }}>Finalizar</button>
+                <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+                    {groupId && (
+                        <button
+                            onClick={() => navigate('/live-betting')}
+                            style={{
+                                background: 'rgba(163, 230, 53, 0.1)',
+                                border: '1px solid var(--secondary)',
+                                color: 'var(--secondary)',
+                                fontSize: '11px',
+                                fontWeight: '900',
+                                padding: '4px 10px',
+                                borderRadius: '8px'
+                            }}
+                        >
+                            APUESTAS
+                        </button>
+                    )}
+                    <button onClick={() => setShowFinishModal(true)} style={{ color: 'var(--secondary)', fontSize: '13px' }}>Finalizar</button>
+                </div>
             </header>
 
             {/* Leaderboard Toggle & Content */}
@@ -822,13 +840,13 @@ const Round: React.FC = () => {
                                         borderRadius: '50%',
                                         background: isSelected ? item.color : 'white',
                                         color: isSelected ? (item.label === 'Par' || item.label === 'Birdie' ? 'var(--primary)' : 'white') : '#333',
-                                        border: isSelected ? `3px solid ${item.color}` : '2px solid rgba(255,255,255,0.1)',
+                                        border: isSelected ? `3px solid ${item.color} ` : '2px solid rgba(255,255,255,0.1)',
                                         fontSize: '18px',
                                         fontWeight: '800',
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
-                                        boxShadow: isSelected ? `0 0 20px ${item.color}66` : '0 4px 10px rgba(0,0,0,0.2)',
+                                        boxShadow: isSelected ? `0 0 20px ${item.color} 66` : '0 4px 10px rgba(0,0,0,0.2)',
                                         transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                                         cursor: 'pointer',
                                         position: 'relative',
@@ -873,7 +891,7 @@ const Round: React.FC = () => {
                 <div style={{ textAlign: 'center', marginBottom: '6px', flexShrink: 0 }}>
                     <span style={{ fontSize: '11px', color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '1px' }}>Puntaje: </span>
                     <span style={{ fontSize: '11px', fontWeight: '900', color: relativeScore > 0 ? '#f87171' : relativeScore < 0 ? 'var(--secondary)' : 'white' }}>
-                        {relativeScore === 0 ? 'PAR' : (relativeScore > 0 ? `+${relativeScore}` : relativeScore)}
+                        {relativeScore === 0 ? 'PAR' : (relativeScore > 0 ? `+ ${relativeScore} ` : relativeScore)}
                     </span>
                 </div>
             </div>
@@ -957,7 +975,7 @@ const Round: React.FC = () => {
                             <div style={{ textAlign: 'left' }}>
                                 <div style={{ fontSize: '9px', color: 'var(--text-dim)', textTransform: 'uppercase', fontWeight: '800' }}>Viento</div>
                                 <div style={{ fontSize: '14px', fontWeight: '900', color: 'white' }}>
-                                    {weather?.wind ? `${weather.wind} km/h` : '--'} {getWindDirection(weather?.windDirection)}
+                                    {weather?.wind ? `${weather.wind} km / h` : '--'} {getWindDirection(weather?.windDirection)}
                                 </div>
                             </div>
                         </div>

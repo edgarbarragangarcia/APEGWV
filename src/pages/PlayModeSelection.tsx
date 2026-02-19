@@ -458,8 +458,7 @@ const PlayModeSelection: React.FC = () => {
                                 icon={Target}
                                 title="Apuestas en Vivo"
                                 subtitle="Nassau, Skins y más"
-                                badge="Próximamente"
-                                onClick={() => { }}
+                                onClick={() => navigate('/live-betting')}
                             />
                             <HubListButton
                                 icon={MessageSquare}

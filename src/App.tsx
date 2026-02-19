@@ -42,6 +42,7 @@ import CapsPage from './pages/CapsPage';
 import CommunityPage from './pages/CommunityPage';
 import MyBag from './pages/MyBag';
 import SwingAnalysis from './pages/SwingAnalysis';
+import LiveBetting from './pages/LiveBetting';
 import { useOnlineStatus } from './hooks/useOnlineStatus';
 import OfflineOverlay from './components/OfflineOverlay';
 
@@ -120,7 +121,7 @@ const AppContent: React.FC = () => {
 
   const isRoundPage = location.pathname === '/round';
   const isNotificationsPage = location.pathname === '/notifications';
-  const isPlayFlow = ['/play-mode', '/friend-selection', '/create-group', '/select-course'].includes(location.pathname);
+  const isPlayFlow = ['/play-mode', '/friend-selection', '/create-group', '/select-course', '/live-betting'].includes(location.pathname);
   const isRoundDetail = location.pathname.startsWith('/rounds/');
   const isFixedPage = isRoundPage || isNotificationsPage || isPlayFlow || isRoundDetail;
 
@@ -183,6 +184,7 @@ const AppContent: React.FC = () => {
               <Route path="/category/gorras" element={<CapsPage />} />
               <Route path="/my-bag" element={<MyBag />} />
               <Route path="/swing-analysis" element={<SwingAnalysis />} />
+              <Route path="/live-betting" element={<LiveBetting />} />
               <Route path="/notifications" element={<NotificationsPage />} />
               <Route path="/auth" element={<Navigate to="/" replace />} />
               <Route path="*" element={<Navigate to="/" replace />} />
