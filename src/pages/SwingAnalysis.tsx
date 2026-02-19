@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Video, Upload, Play, BarChart3, X, Download } from 'lucide-react';
+import { Video, Upload, Play, BarChart3, X, ChevronRight, Zap, Target, TrendingUp, AlertTriangle, CheckCircle, Pause } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../services/SupabaseManager';
 import { useAuth } from '../context/AuthContext';
 import PageHeader from '../components/PageHeader';
 import PageHero from '../components/PageHero';
 
-interface SwingAnalysis {
+interface SwingAnalysisData {
     id: string;
     video_url: string;
     feedback: any;
@@ -15,17 +15,110 @@ interface SwingAnalysis {
     analyzed_at: string;
 }
 
+const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+const GEMINI_MODEL = 'gemini-2.0-flash';
+const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
+
+const SWING_ANALYSIS_PROMPT = `Eres un coach de golf profesional certificado por la PGA. Analiza este video de swing de golf y proporciona un análisis técnico detallado.
+
+IMPORTANTE: Responde ÚNICAMENTE con un JSON válido, sin texto adicional, sin markdown, sin backticks. Solo el JSON puro.
+
+El JSON debe tener exactamente esta estructura:
+{
+  "swing_score": <número entero del 1 al 100>,
+  "metrics": {
+    "club_head_speed": "<velocidad estimada en mph>",
+    "tempo_ratio": "<ratio de tempo backswing:downswing>",
+    "backswing_angle": "<ángulo de backswing en grados>",
+    "attack_angle": "<ángulo de ataque en grados>",
+    "spine_angle": "<ángulo de columna en grados>",
+    "hip_rotation": "<rotación de cadera en grados>"
+  },
+  "posture": "<evaluación de la postura en 1-2 oraciones en español>",
+  "strengths": ["<fortaleza 1>", "<fortaleza 2>", "<fortaleza 3>"],
+  "areas_to_improve": ["<área 1>", "<área 2>", "<área 3>"],
+  "tips": "<consejo personalizado detallado en español, 2-3 oraciones>",
+  "overall_assessment": "<evaluación general en español, 1-2 oraciones>"
+}
+
+Si el video no muestra un swing de golf claramente, analiza lo que veas y proporciona la mejor estimación posible. Todos los textos deben estar en español.`;
+
+async function analyzeSwingWithGemini(videoFile: File): Promise<any> {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = async () => {
+            try {
+                const base64Data = (reader.result as string).split(',')[1];
+                const mimeType = videoFile.type || 'video/mp4';
+
+                const requestBody = {
+                    contents: [{
+                        parts: [
+                            {
+                                inline_data: {
+                                    mime_type: mimeType,
+                                    data: base64Data
+                                }
+                            },
+                            { text: SWING_ANALYSIS_PROMPT }
+                        ]
+                    }],
+                    generationConfig: {
+                        temperature: 0.4,
+                        maxOutputTokens: 2048
+                    }
+                };
+
+                const response = await fetch(GEMINI_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(requestBody)
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error?.message || `Gemini API error: ${response.status}`);
+                }
+
+                const data = await response.json();
+                const textResponse = data.candidates?.[0]?.content?.parts?.[0]?.text;
+
+                if (!textResponse) {
+                    throw new Error('No se recibió respuesta de Gemini');
+                }
+
+                // Clean up potential markdown formatting
+                let cleanJson = textResponse.trim();
+                if (cleanJson.startsWith('```')) {
+                    cleanJson = cleanJson.replace(/```json?\n?/g, '').replace(/```\n?$/g, '').trim();
+                }
+
+                const analysis = JSON.parse(cleanJson);
+                resolve(analysis);
+            } catch (err) {
+                console.error('Gemini analysis error:', err);
+                reject(err);
+            }
+        };
+        reader.onerror = () => reject(new Error('Error leyendo el archivo'));
+        reader.readAsDataURL(videoFile);
+    });
+}
+
 const SwingAnalysis: React.FC = () => {
     const navigate = useNavigate();
     const { session } = useAuth();
-    const [analyses, setAnalyses] = useState<SwingAnalysis[]>([]);
-    const [uploading, setUploading] = useState(false);
+    const [analyses, setAnalyses] = useState<SwingAnalysisData[]>([]);
     const [showUploadModal, setShowUploadModal] = useState(false);
+    const [processingStep, setProcessingStep] = useState<'none' | 'reading' | 'analyzing' | 'saving'>('none');
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [videoPreviewUrl, setVideoPreviewUrl] = useState<string | null>(null);
+    const [error, setError] = useState<string | null>(null);
+    const [expandedAnalysis, setExpandedAnalysis] = useState<string | null>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
-        if (session) {
-            fetchAnalyses();
-        }
+        if (session) fetchAnalyses();
     }, [session]);
 
     const fetchAnalyses = async () => {
@@ -36,7 +129,6 @@ const SwingAnalysis: React.FC = () => {
                 .select('*')
                 .eq('user_id', session.user.id)
                 .order('analyzed_at', { ascending: false });
-
             if (error) throw error;
             setAnalyses((data as any) || []);
         } catch (err) {
@@ -44,275 +136,306 @@ const SwingAnalysis: React.FC = () => {
         }
     };
 
-    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
-        if (!file || !session) return;
+        if (!file) return;
 
-        setProcessingStep('uploading');
+        if (file.size > 20 * 1024 * 1024) {
+            setError('El video debe ser menor a 20MB');
+            return;
+        }
+
+        setError(null);
+        setSelectedFile(file);
+        setVideoPreviewUrl(URL.createObjectURL(file));
+    };
+
+    const handleAnalyze = async () => {
+        if (!selectedFile || !session) return;
+
+        setError(null);
 
         try {
-            const fileExt = file.name.split('.').pop();
-            const fileName = `${session.user.id}/${Math.random()}.${fileExt}`;
+            // Step 1: Read & encode
+            setProcessingStep('reading');
+            await new Promise(r => setTimeout(r, 500));
+
+            // Step 2: Send to Gemini
+            setProcessingStep('analyzing');
+            const analysis = await analyzeSwingWithGemini(selectedFile);
+
+            // Step 3: Upload video to Supabase Storage & save results
+            setProcessingStep('saving');
+
+            const fileExt = selectedFile.name.split('.').pop();
+            const fileName = `${session.user.id}/${Date.now()}.${fileExt}`;
             const filePath = `swings/${fileName}`;
 
             const { error: uploadError } = await supabase.storage
                 .from('media')
-                .upload(filePath, file);
+                .upload(filePath, selectedFile);
 
             if (uploadError) throw uploadError;
-
-            // Step 2: joint detection
-            setProcessingStep('detecting');
-            await new Promise(resolve => setTimeout(resolve, 2000));
-
-            // Step 3: kinematics calculation
-            setProcessingStep('calculating');
-            await new Promise(resolve => setTimeout(resolve, 2500));
 
             const { data: { publicUrl } } = supabase.storage
                 .from('media')
                 .getPublicUrl(filePath);
-
-            // Realistic Technical Feedback
-            const mockFeedback = {
-                metrics: {
-                    club_head_speed: (Math.random() * 20 + 85).toFixed(1) + " mph",
-                    tempo_ratio: "3.1:1",
-                    backswing_angle: (Math.random() * 10 + 85).toFixed(0) + "°",
-                    attack_angle: "-" + (Math.random() * 3 + 1).toFixed(1) + "°",
-                    spine_angle: "34°",
-                    hand_path_consistency: "94%"
-                },
-                posture: "Excelente alineación de hombros, columna estable.",
-                speed: (Math.random() * 20 + 85).toFixed(0) + " mph",
-                tips: "Tu secuencia de transición es sólida. Intenta mantener el ángulo de la columna un poco más de tiempo en el follow-through para evitar el 'snap' temprano."
-            };
 
             const { error: dbError } = await supabase
                 .from('swing_analyses')
                 .insert([{
                     user_id: session.user.id,
                     video_url: publicUrl,
-                    feedback: mockFeedback,
-                    swing_score: Math.floor(Math.random() * 10) + 82, // High score for "pro" feel
+                    feedback: analysis,
+                    swing_score: analysis.swing_score || null,
                     analyzed_at: new Date().toISOString()
                 }]);
 
             if (dbError) throw dbError;
 
+            // Clean up
             setShowUploadModal(false);
+            setSelectedFile(null);
+            setVideoPreviewUrl(null);
             fetchAnalyses();
-        } catch (err) {
-            console.error('Error uploading swing:', err);
-            alert('Error al subir el video. Por favor intenta de nuevo.');
+
+            if (navigator.vibrate) navigator.vibrate([10, 30, 10]);
+
+        } catch (err: any) {
+            console.error('Error analyzing swing:', err);
+            setError(err.message || 'Error al analizar el video. Intenta de nuevo.');
         } finally {
-            setUploading(false);
             setProcessingStep('none');
         }
     };
 
-    const [processingStep, setProcessingStep] = useState<'none' | 'uploading' | 'detecting' | 'calculating'>('none');
+    const closeModal = () => {
+        setShowUploadModal(false);
+        setSelectedFile(null);
+        setVideoPreviewUrl(null);
+        setError(null);
+        setProcessingStep('none');
+    };
 
-    const getStepMessage = () => {
+    const getStepInfo = () => {
         switch (processingStep) {
-            case 'uploading': return 'Subiendo video a la nube APEG...';
-            case 'detecting': return 'Detectando puntos clave del cuerpo (Joint Tracking)...';
-            case 'calculating': return 'Calculando cinemática y vectores de impacto...';
-            default: return 'Analizando con IA...';
+            case 'reading': return { text: 'Preparando video...', progress: 20 };
+            case 'analyzing': return { text: 'Analizando con Gemini IA...', progress: 60 };
+            case 'saving': return { text: 'Guardando resultados...', progress: 90 };
+            default: return { text: '', progress: 0 };
         }
     };
 
     return (
-        <div className="animate-fade" style={{
-            position: 'absolute',
-            top: '0',
-            left: '0',
-            right: '0',
-            bottom: '0',
-            width: '100%',
-            overflow: 'hidden'
-        }}>
-            <NavigationOffset />
+        <div className="animate-fade" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, width: '100%', overflow: 'hidden' }}>
+            <NavigationStyles />
             <PageHero />
 
-            <div style={{
-                position: 'absolute',
-                top: 'var(--header-offset-top)',
-                left: '0',
-                right: '0',
-                zIndex: 900,
-                background: 'transparent',
-                paddingBottom: '5px'
-            }}>
+            <div style={{ position: 'absolute', top: 'var(--header-offset-top)', left: 0, right: 0, zIndex: 900, background: 'transparent', paddingBottom: '5px' }}>
                 <div style={{ padding: '0 20px' }}>
-                    <PageHeader
-                        noMargin
-                        onBack={() => navigate('/community')}
-                        title="Swing IA"
-                        subtitle="Análisis profesional con Inteligencia Artificial"
-                    />
+                    <PageHeader noMargin onBack={() => navigate('/play-mode')} title="Swing IA" subtitle="Análisis profesional con Inteligencia Artificial" />
                 </div>
             </div>
 
             <div style={{
                 position: 'absolute',
                 top: 'calc(var(--header-offset-top) + 80px)',
-                left: '0',
-                right: '0',
+                left: 0, right: 0,
                 bottom: 'calc(var(--nav-height) + 10px)',
                 overflowY: 'auto',
-                padding: '20px 20px 100px 20px',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '20px',
+                padding: '15px 20px 100px 20px',
+                display: 'flex', flexDirection: 'column', gap: '16px',
                 zIndex: 10
             }}>
-                {/* Banner de Bienvenida */}
-                <div style={{
-                    background: 'linear-gradient(135deg, rgba(163, 230, 53, 0.2) 0%, rgba(20, 45, 30, 0.4) 100%)',
-                    borderRadius: '24px',
-                    padding: '25px',
-                    border: '1px solid rgba(163, 230, 53, 0.3)',
-                    textAlign: 'center'
-                }}>
-                    <div style={{ width: '60px', height: '60px', borderRadius: '50%', background: 'var(--secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 15px' }}>
-                        <BarChart3 size={32} color="var(--primary)" />
+                {/* Upload CTA */}
+                <motion.div
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => setShowUploadModal(true)}
+                    style={{
+                        background: 'linear-gradient(135deg, rgba(163, 230, 53, 0.15) 0%, rgba(20, 45, 30, 0.6) 100%)',
+                        borderRadius: '20px',
+                        padding: '20px',
+                        border: '1px solid rgba(163, 230, 53, 0.25)',
+                        cursor: 'pointer',
+                        display: 'flex', alignItems: 'center', gap: '16px'
+                    }}
+                >
+                    <div style={{
+                        width: '50px', height: '50px', borderRadius: '16px',
+                        background: 'rgba(163, 230, 53, 0.2)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
+                    }}>
+                        <Upload size={24} color="var(--secondary)" />
                     </div>
-                    <h2 style={{ fontSize: '20px', fontWeight: '900', color: 'white', margin: '0 0 8px' }}>Mejora tu Swing</h2>
-                    <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.7)', lineHeight: '1.5', marginBottom: '20px' }}>
-                        Sube un video de tu swing y nuestra IA analizará tu postura, velocidad y trayectoria para darte consejos personalizados.
-                    </p>
-                    <motion.button
-                        whileTap={{ scale: 0.95 }}
-                        onClick={() => setShowUploadModal(true)}
-                        style={{
-                            width: '100%',
-                            padding: '16px',
-                            borderRadius: '16px',
-                            background: 'var(--secondary)',
-                            color: 'var(--primary)',
-                            border: 'none',
-                            fontWeight: '900',
-                            fontSize: '14px',
-                            boxShadow: '0 10px 20px rgba(163, 230, 53, 0.2)'
-                        }}
-                    >
-                        SUBIR NUEVO VIDEO
-                    </motion.button>
-                </div>
+                    <div style={{ flex: 1 }}>
+                        <h3 style={{ fontSize: '15px', fontWeight: '900', color: 'white', margin: '0 0 4px' }}>Analizar Nuevo Swing</h3>
+                        <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', margin: 0, lineHeight: 1.3 }}>
+                            Sube un video y nuestra IA analizará postura, velocidad y técnica
+                        </p>
+                    </div>
+                    <ChevronRight size={18} color="var(--secondary)" />
+                </motion.div>
 
-                <h3 style={{ fontSize: '16px', fontWeight: '800', color: 'white', margin: '10px 0 0' }}>Mis Análisis Recientes</h3>
+                {/* Recent Analyses */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <h3 style={{ fontSize: '14px', fontWeight: '800', color: 'white', margin: 0 }}>Mis Análisis</h3>
+                    <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.3)', fontWeight: '700' }}>{analyses.length} resultados</span>
+                </div>
 
                 {analyses.length === 0 ? (
                     <div style={{
-                        textAlign: 'center',
-                        padding: '40px 20px',
-                        background: 'rgba(255,255,255,0.03)',
-                        borderRadius: '24px',
-                        border: '1px dashed rgba(255,255,255,0.1)'
+                        textAlign: 'center', padding: '40px 20px',
+                        background: 'rgba(255,255,255,0.02)', borderRadius: '20px',
+                        border: '1px dashed rgba(255,255,255,0.08)'
                     }}>
-                        <Video size={40} color="rgba(255,255,255,0.2)" style={{ marginBottom: '15px' }} />
-                        <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '13px' }}>Aún no tienes análisis. ¡Sube tu primer swing hoy!</p>
+                        <Video size={36} color="rgba(255,255,255,0.15)" style={{ marginBottom: '12px' }} />
+                        <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '13px', margin: '0 0 4px', fontWeight: '700' }}>Sin análisis aún</p>
+                        <p style={{ color: 'rgba(255,255,255,0.25)', fontSize: '11px', margin: 0 }}>¡Sube tu primer swing para comenzar!</p>
                     </div>
                 ) : (
                     analyses.map((item) => (
-                        <motion.div
+                        <AnalysisCard
                             key={item.id}
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            style={{
-                                background: 'rgba(255,255,255,0.05)',
-                                borderRadius: '24px',
-                                overflow: 'hidden',
-                                border: '1px solid rgba(255,255,255,0.1)',
-                                boxShadow: '0 10px 30px rgba(0,0,0,0.2)'
-                            }}
-                        >
-                            <div style={{ position: 'relative', height: '180px', background: '#000' }}>
-                                <video
-                                    src={item.video_url}
-                                    style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.7 }}
-                                    onClick={(e) => (e.target as HTMLVideoElement).paused ? (e.target as HTMLVideoElement).play() : (e.target as HTMLVideoElement).pause()}
-                                />
-                                <div style={{ position: 'absolute', top: '15px', right: '15px', background: 'var(--secondary)', color: 'var(--primary)', padding: '6px 12px', borderRadius: '12px', fontWeight: '900', fontSize: '16px' }}>
-                                    {item.swing_score || '--'}
-                                </div>
-                                <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
-                                    <Play size={40} color="white" style={{ opacity: 0.8 }} />
-                                </div>
-                            </div>
-                            <div style={{ padding: '20px' }}>
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginBottom: '15px' }}>
-                                    <MetricBox label="Club Speed" value={item.feedback?.metrics?.club_head_speed || item.feedback?.speed} />
-                                    <MetricBox label="Tempo" value={item.feedback?.metrics?.tempo_ratio || "3:1"} />
-                                    <MetricBox label="Backswing" value={item.feedback?.metrics?.backswing_angle || "90°"} />
-                                    <MetricBox label="Attack" value={item.feedback?.metrics?.attack_angle || "-2°"} />
-                                    <MetricBox label="Spine" value={item.feedback?.metrics?.spine_angle || "32°"} />
-                                    <MetricBox label="Consistency" value={item.feedback?.metrics?.hand_path_consistency || "90%"} />
-                                </div>
-                                <div style={{ padding: '15px', background: 'rgba(163, 230, 53, 0.05)', borderRadius: '16px', border: '1px solid rgba(163, 230, 53, 0.2)' }}>
-                                    <p style={{ margin: 0, fontSize: '13px', color: 'white', fontStyle: 'italic', lineHeight: '1.4' }}>
-                                        "{item.feedback?.tips}"
-                                    </p>
-                                </div>
-                            </div>
-                        </motion.div>
+                            item={item}
+                            isExpanded={expandedAnalysis === item.id}
+                            onToggle={() => setExpandedAnalysis(expandedAnalysis === item.id ? null : item.id)}
+                        />
                     ))
                 )}
             </div>
 
-            {/* Modal de Carga */}
+            {/* Upload Modal */}
             <AnimatePresence>
                 {showUploadModal && (
-                    <div style={{ position: 'fixed', inset: 0, zIndex: 1100, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)', padding: '20px' }}>
+                    <div style={{ position: 'fixed', inset: 0, zIndex: 1100, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(12px)', padding: '20px' }}
+                        onClick={processingStep === 'none' ? closeModal : undefined}
+                    >
                         <motion.div
-                            initial={{ scale: 0.9, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            exit={{ scale: 0.9, opacity: 0 }}
+                            initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                            animate={{ scale: 1, opacity: 1, y: 0 }}
+                            exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                            onClick={(e) => e.stopPropagation()}
                             style={{
-                                width: '100%',
-                                maxWidth: '350px',
-                                background: 'rgba(20, 45, 30, 0.95)',
-                                borderRadius: '30px',
-                                padding: '30px',
-                                textAlign: 'center',
-                                border: '1px solid rgba(255,255,255,0.1)'
+                                width: '100%', maxWidth: '380px',
+                                background: 'linear-gradient(180deg, rgba(20, 50, 30, 0.98) 0%, rgba(10, 30, 18, 0.99) 100%)',
+                                borderRadius: '28px', padding: '24px',
+                                border: '1px solid rgba(255,255,255,0.08)',
+                                position: 'relative'
                             }}
                         >
-                            <button onClick={() => setShowUploadModal(false)} style={{ position: 'absolute', top: '20px', right: '20px', background: 'none', border: 'none', color: 'white' }}><X /></button>
+                            {processingStep === 'none' && (
+                                <button onClick={closeModal} style={{ position: 'absolute', top: '16px', right: '16px', background: 'rgba(255,255,255,0.05)', border: 'none', color: 'rgba(255,255,255,0.4)', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                                    <X size={16} />
+                                </button>
+                            )}
 
-                            <div style={{ marginBottom: '25px' }}>
-                                <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 15px' }}>
-                                    <Upload size={40} color="var(--secondary)" />
+                            {/* Video Preview or Upload area */}
+                            {videoPreviewUrl ? (
+                                <div style={{ borderRadius: '16px', overflow: 'hidden', marginBottom: '16px', position: 'relative', background: '#000' }}>
+                                    <video
+                                        src={videoPreviewUrl}
+                                        controls
+                                        playsInline
+                                        style={{ width: '100%', maxHeight: '220px', objectFit: 'contain', display: 'block' }}
+                                    />
+                                    {processingStep === 'none' && (
+                                        <button
+                                            onClick={() => { setSelectedFile(null); setVideoPreviewUrl(null); setError(null); }}
+                                            style={{ position: 'absolute', top: '8px', right: '8px', background: 'rgba(0,0,0,0.7)', border: 'none', color: 'white', borderRadius: '50%', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                                        >
+                                            <X size={14} />
+                                        </button>
+                                    )}
                                 </div>
-                                <h3 style={{ color: 'white', margin: '0 0 10px' }}>Subir Swing</h3>
-                                <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)', lineHeight: '1.4' }}>
-                                    Asegúrate de que el video sea de cuerpo completo y desde una perspectiva lateral o frontal clara.
-                                </p>
-                            </div>
-
-                            <label style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                gap: '10px',
-                                background: 'white',
-                                color: 'var(--primary)',
-                                padding: '16px',
-                                borderRadius: '16px',
-                                fontWeight: '900',
-                                cursor: 'pointer'
-                            }}>
-                                <Download size={20} />
-                                {uploading ? 'PROCESANDO...' : 'SELECCIONAR VIDEO'}
-                                <input type="file" accept="video/*" onChange={handleFileUpload} disabled={uploading} style={{ display: 'none' }} />
-                            </label>
-
-                            {uploading && (
-                                <div style={{ marginTop: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '15px' }}>
-                                    <div className="loader-ring" />
-                                    <span style={{ fontSize: '13px', color: 'var(--secondary)', fontWeight: '700', animation: 'pulse 1.5s infinite' }}>{getStepMessage()}</span>
+                            ) : (
+                                <div
+                                    onClick={() => fileInputRef.current?.click()}
+                                    style={{
+                                        borderRadius: '16px', padding: '35px 20px', marginBottom: '16px',
+                                        border: '2px dashed rgba(163, 230, 53, 0.2)',
+                                        background: 'rgba(163, 230, 53, 0.03)',
+                                        textAlign: 'center', cursor: 'pointer',
+                                        transition: 'all 0.2s ease'
+                                    }}
+                                >
+                                    <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: 'rgba(163, 230, 53, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
+                                        <Upload size={24} color="var(--secondary)" />
+                                    </div>
+                                    <p style={{ color: 'white', fontWeight: '800', fontSize: '14px', margin: '0 0 6px' }}>Seleccionar Video</p>
+                                    <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: '11px', margin: 0, lineHeight: 1.4 }}>
+                                        Video de cuerpo completo, lateral o frontal. Máx 20MB.
+                                    </p>
                                 </div>
+                            )}
+
+                            <input
+                                ref={fileInputRef}
+                                type="file"
+                                accept="video/*"
+                                onChange={handleFileSelect}
+                                style={{ display: 'none' }}
+                            />
+
+                            {/* Error Message */}
+                            {error && (
+                                <div style={{ padding: '10px 14px', borderRadius: '12px', background: 'rgba(248, 113, 113, 0.1)', border: '1px solid rgba(248, 113, 113, 0.2)', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <AlertTriangle size={14} color="#f87171" />
+                                    <p style={{ color: '#f87171', fontSize: '11px', margin: 0, fontWeight: '600' }}>{error}</p>
+                                </div>
+                            )}
+
+                            {/* Progress Steps */}
+                            {processingStep !== 'none' && (
+                                <div style={{ marginBottom: '16px' }}>
+                                    <div style={{ height: '4px', borderRadius: '2px', background: 'rgba(255,255,255,0.05)', overflow: 'hidden', marginBottom: '12px' }}>
+                                        <motion.div
+                                            initial={{ width: '0%' }}
+                                            animate={{ width: `${getStepInfo().progress}%` }}
+                                            transition={{ duration: 0.8, ease: 'easeOut' }}
+                                            style={{ height: '100%', background: 'var(--secondary)', borderRadius: '2px' }}
+                                        />
+                                    </div>
+                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                                        <div className="loader-ring" />
+                                        <span style={{ fontSize: '12px', color: 'var(--secondary)', fontWeight: '700' }}>
+                                            {getStepInfo().text}
+                                        </span>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Action Button */}
+                            {selectedFile && processingStep === 'none' && (
+                                <motion.button
+                                    whileTap={{ scale: 0.97 }}
+                                    onClick={handleAnalyze}
+                                    style={{
+                                        width: '100%', padding: '14px', borderRadius: '14px',
+                                        background: 'var(--secondary)', color: 'var(--primary)',
+                                        border: 'none', fontWeight: '900', fontSize: '14px',
+                                        cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                                        boxShadow: '0 8px 20px rgba(163, 230, 53, 0.25)'
+                                    }}
+                                >
+                                    <Zap size={18} />
+                                    ANALIZAR CON IA
+                                </motion.button>
+                            )}
+
+                            {!selectedFile && processingStep === 'none' && (
+                                <motion.button
+                                    whileTap={{ scale: 0.97 }}
+                                    onClick={() => fileInputRef.current?.click()}
+                                    style={{
+                                        width: '100%', padding: '14px', borderRadius: '14px',
+                                        background: 'white', color: 'var(--primary)',
+                                        border: 'none', fontWeight: '900', fontSize: '14px',
+                                        cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'
+                                    }}
+                                >
+                                    <Video size={18} />
+                                    SELECCIONAR VIDEO
+                                </motion.button>
                             )}
                         </motion.div>
                     </div>
@@ -322,24 +445,199 @@ const SwingAnalysis: React.FC = () => {
     );
 };
 
-const MetricBox = ({ label, value }: { label: string, value: string }) => (
-    <div style={{ background: 'rgba(255,255,255,0.03)', padding: '8px', borderRadius: '12px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.05)' }}>
-        <p style={{ margin: 0, fontSize: '8px', color: 'rgba(255,255,255,0.4)', fontWeight: '800', textTransform: 'uppercase' }}>{label}</p>
+// --- Analysis Card Component ---
+const AnalysisCard = ({ item, isExpanded, onToggle }: { item: SwingAnalysisData; isExpanded: boolean; onToggle: () => void }) => {
+    const videoRef = useRef<HTMLVideoElement>(null);
+    const [isPlaying, setIsPlaying] = useState(false);
+    const score = item.swing_score || 0;
+    const feedback = item.feedback || {};
+    const date = new Date(item.analyzed_at).toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: 'numeric' });
+
+    const getScoreColor = (s: number) => {
+        if (s >= 85) return '#a3e635';
+        if (s >= 70) return '#fbbf24';
+        if (s >= 50) return '#fb923c';
+        return '#f87171';
+    };
+
+    const togglePlay = () => {
+        if (!videoRef.current) return;
+        if (videoRef.current.paused) {
+            videoRef.current.play();
+            setIsPlaying(true);
+        } else {
+            videoRef.current.pause();
+            setIsPlaying(false);
+        }
+    };
+
+    return (
+        <motion.div
+            layout
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            style={{
+                background: 'rgba(255,255,255,0.03)',
+                borderRadius: '20px', overflow: 'hidden',
+                border: '1px solid rgba(255,255,255,0.06)'
+            }}
+        >
+            {/* Video + Score Header */}
+            <div style={{ position: 'relative', height: '160px', background: '#000' }} onClick={togglePlay}>
+                <video
+                    ref={videoRef}
+                    src={item.video_url}
+                    playsInline
+                    onEnded={() => setIsPlaying(false)}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.8 }}
+                />
+                <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
+                    {!isPlaying && (
+                        <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(4px)' }}>
+                            <Play size={20} color="white" style={{ marginLeft: '2px' }} />
+                        </div>
+                    )}
+                </div>
+
+                {/* Score Badge */}
+                <div style={{
+                    position: 'absolute', top: '12px', right: '12px',
+                    width: '52px', height: '52px', borderRadius: '50%',
+                    background: `conic-gradient(${getScoreColor(score)} ${score * 3.6}deg, rgba(255,255,255,0.08) 0deg)`,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center'
+                }}>
+                    <div style={{ width: '42px', height: '42px', borderRadius: '50%', background: 'rgba(10, 30, 18, 0.95)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }}>
+                        <span style={{ fontSize: '16px', fontWeight: '900', color: getScoreColor(score), lineHeight: 1 }}>{score}</span>
+                        <span style={{ fontSize: '6px', color: 'rgba(255,255,255,0.4)', fontWeight: '700' }}>SCORE</span>
+                    </div>
+                </div>
+
+                {/* Date Badge */}
+                <div style={{ position: 'absolute', bottom: '10px', left: '12px', background: 'rgba(0,0,0,0.6)', padding: '3px 10px', borderRadius: '8px', backdropFilter: 'blur(4px)' }}>
+                    <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.7)', fontWeight: '600' }}>{date}</span>
+                </div>
+            </div>
+
+            {/* Quick Metrics */}
+            <div style={{ padding: '12px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px', marginBottom: '8px' }}>
+                    <MetricBox label="Velocidad" value={feedback.metrics?.club_head_speed || '--'} />
+                    <MetricBox label="Tempo" value={feedback.metrics?.tempo_ratio || '--'} />
+                    <MetricBox label="Backswing" value={feedback.metrics?.backswing_angle || '--'} />
+                </div>
+
+                {/* Expandable details */}
+                <motion.button
+                    whileTap={{ scale: 0.98 }}
+                    onClick={onToggle}
+                    style={{
+                        width: '100%', padding: '8px', borderRadius: '10px',
+                        background: 'rgba(163, 230, 53, 0.05)',
+                        border: '1px solid rgba(163, 230, 53, 0.1)',
+                        color: 'var(--secondary)', fontSize: '11px', fontWeight: '800',
+                        cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px'
+                    }}
+                >
+                    {isExpanded ? 'VER MENOS' : 'VER ANÁLISIS COMPLETO'}
+                    <ChevronRight size={14} style={{ transform: isExpanded ? 'rotate(90deg)' : 'none', transition: 'transform 0.2s' }} />
+                </motion.button>
+
+                <AnimatePresence>
+                    {isExpanded && (
+                        <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: 'auto', opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            style={{ overflow: 'hidden', marginTop: '10px' }}
+                        >
+                            {/* All Metrics */}
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px', marginBottom: '12px' }}>
+                                <MetricBox label="Ataque" value={feedback.metrics?.attack_angle || '--'} />
+                                <MetricBox label="Columna" value={feedback.metrics?.spine_angle || '--'} />
+                                <MetricBox label="Cadera" value={feedback.metrics?.hip_rotation || '--'} />
+                            </div>
+
+                            {/* Posture */}
+                            {feedback.posture && (
+                                <div style={{ padding: '10px 12px', borderRadius: '12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', marginBottom: '10px' }}>
+                                    <p style={{ fontSize: '8px', color: 'rgba(255,255,255,0.3)', fontWeight: '800', textTransform: 'uppercase', margin: '0 0 4px' }}>Postura</p>
+                                    <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.7)', margin: 0, lineHeight: 1.4 }}>{feedback.posture}</p>
+                                </div>
+                            )}
+
+                            {/* Strengths */}
+                            {feedback.strengths?.length > 0 && (
+                                <div style={{ marginBottom: '10px' }}>
+                                    <p style={{ fontSize: '8px', color: 'var(--secondary)', fontWeight: '800', textTransform: 'uppercase', margin: '0 0 6px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                        <CheckCircle size={10} /> Fortalezas
+                                    </p>
+                                    {feedback.strengths.map((s: string, i: number) => (
+                                        <div key={i} style={{ padding: '6px 10px', borderRadius: '8px', background: 'rgba(163, 230, 53, 0.05)', marginBottom: '4px', border: '1px solid rgba(163, 230, 53, 0.08)' }}>
+                                            <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.7)', margin: 0 }}>✓ {s}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+
+                            {/* Areas to Improve */}
+                            {feedback.areas_to_improve?.length > 0 && (
+                                <div style={{ marginBottom: '10px' }}>
+                                    <p style={{ fontSize: '8px', color: '#fbbf24', fontWeight: '800', textTransform: 'uppercase', margin: '0 0 6px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                        <TrendingUp size={10} /> Áreas de Mejora
+                                    </p>
+                                    {feedback.areas_to_improve.map((a: string, i: number) => (
+                                        <div key={i} style={{ padding: '6px 10px', borderRadius: '8px', background: 'rgba(251, 191, 36, 0.05)', marginBottom: '4px', border: '1px solid rgba(251, 191, 36, 0.08)' }}>
+                                            <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.7)', margin: 0 }}>→ {a}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+
+                            {/* Tips */}
+                            {feedback.tips && (
+                                <div style={{ padding: '12px', borderRadius: '14px', background: 'linear-gradient(135deg, rgba(163, 230, 53, 0.08) 0%, rgba(20, 45, 30, 0.3) 100%)', border: '1px solid rgba(163, 230, 53, 0.15)' }}>
+                                    <p style={{ fontSize: '8px', color: 'var(--secondary)', fontWeight: '800', textTransform: 'uppercase', margin: '0 0 6px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                        <Zap size={10} /> Consejo del Coach IA
+                                    </p>
+                                    <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.8)', margin: 0, lineHeight: 1.5, fontStyle: 'italic' }}>
+                                        "{feedback.tips}"
+                                    </p>
+                                </div>
+                            )}
+
+                            {/* Overall */}
+                            {feedback.overall_assessment && (
+                                <div style={{ padding: '10px 12px', borderRadius: '12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', marginTop: '10px' }}>
+                                    <p style={{ fontSize: '8px', color: 'rgba(255,255,255,0.3)', fontWeight: '800', textTransform: 'uppercase', margin: '0 0 4px' }}>Evaluación General</p>
+                                    <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.7)', margin: 0, lineHeight: 1.4 }}>{feedback.overall_assessment}</p>
+                                </div>
+                            )}
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </div>
+        </motion.div>
+    );
+};
+
+// --- Metric Box ---
+const MetricBox = ({ label, value }: { label: string; value: string }) => (
+    <div style={{ background: 'rgba(255,255,255,0.03)', padding: '8px 6px', borderRadius: '10px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.04)' }}>
+        <p style={{ margin: 0, fontSize: '7px', color: 'rgba(255,255,255,0.35)', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.3px' }}>{label}</p>
         <p style={{ margin: 0, fontSize: '12px', color: 'var(--secondary)', fontWeight: '900' }}>{value}</p>
     </div>
 );
 
-const NavigationOffset = () => (<style>{`
+// --- Styles ---
+const NavigationStyles = () => (<style>{`
     .loader-ring {
-        width: 30px;
-        height: 30px;
-        border: 3px solid rgba(163, 230, 53, 0.1);
-        border-top: 3px solid var(--secondary);
+        width: 20px; height: 20px;
+        border: 2px solid rgba(163, 230, 53, 0.15);
+        border-top: 2px solid var(--secondary);
         border-radius: 50%;
         animation: spin 0.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
     }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
 `}</style>);
 
 export default SwingAnalysis;
