@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Video, Upload, Play, X, ChevronRight, Zap, TrendingUp, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Video, Upload, Play, X, ChevronRight, Zap, TrendingUp, AlertTriangle, CheckCircle, Trash2, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../services/SupabaseManager';
 import { useAuth } from '../context/AuthContext';
@@ -254,6 +254,43 @@ const SwingAnalysis: React.FC = () => {
         }
     };
 
+    const handleDeleteAnalysis = async (id: string, videoUrl: string) => {
+        if (!window.confirm('¿Estás seguro de que deseas eliminar este análisis? El video también será eliminado.')) return;
+
+        try {
+            // Delete record from DB
+            const { error: dbError } = await supabase
+                .from('swing_analyses')
+                .delete()
+                .eq('id', id);
+
+            if (dbError) throw dbError;
+
+            // Extract filename from URL to delete from storage
+            // Example URL: https://.../storage/v1/object/public/media/USER_ID/filename.mp4
+            try {
+                const urlParts = videoUrl.split('/');
+                const fileName = urlParts[urlParts.length - 1];
+                const userIdFolder = urlParts[urlParts.length - 2];
+                const storagePath = `${userIdFolder}/${fileName}`;
+
+                await supabase.storage
+                    .from('media')
+                    .remove([storagePath]);
+            } catch (storageErr) {
+                console.warn('Could not delete video from storage:', storageErr);
+            }
+
+            // Update local state
+            setAnalyses(prev => prev.filter(a => a.id !== id));
+            if (expandedAnalysis === id) setExpandedAnalysis(null);
+
+        } catch (err: any) {
+            console.error('Error deleting analysis:', err);
+            alert('Error al eliminar el análisis');
+        }
+    };
+
     const closeModal = () => {
         setShowUploadModal(false);
         setSelectedFile(null);
@@ -344,6 +381,7 @@ const SwingAnalysis: React.FC = () => {
                             item={item}
                             isExpanded={expandedAnalysis === item.id}
                             onToggle={() => setExpandedAnalysis(expandedAnalysis === item.id ? null : item.id)}
+                            onDelete={() => handleDeleteAnalysis(item.id, item.video_url)}
                         />
                     ))
                 )}
@@ -491,9 +529,10 @@ const SwingAnalysis: React.FC = () => {
 };
 
 // --- Analysis Card Component ---
-const AnalysisCard = ({ item, isExpanded, onToggle }: { item: SwingAnalysisData; isExpanded: boolean; onToggle: () => void }) => {
+const AnalysisCard = ({ item, isExpanded, onToggle, onDelete }: { item: SwingAnalysisData; isExpanded: boolean; onToggle: () => void; onDelete: () => void }) => {
     const videoRef = useRef<HTMLVideoElement>(null);
     const [isPlaying, setIsPlaying] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
     const score = item.swing_score || 0;
     const feedback = item.feedback || {};
     const date = new Date(item.analyzed_at).toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: 'numeric' });
@@ -513,6 +552,16 @@ const AnalysisCard = ({ item, isExpanded, onToggle }: { item: SwingAnalysisData;
         } else {
             videoRef.current.pause();
             setIsPlaying(false);
+        }
+    };
+
+    const handleDelete = async (e: React.MouseEvent) => {
+        e.stopPropagation();
+        setIsDeleting(true);
+        try {
+            await onDelete();
+        } finally {
+            setIsDeleting(false);
         }
     };
 
@@ -561,6 +610,32 @@ const AnalysisCard = ({ item, isExpanded, onToggle }: { item: SwingAnalysisData;
                 <div style={{ position: 'absolute', bottom: '10px', left: '12px', background: 'rgba(0,0,0,0.6)', padding: '3px 10px', borderRadius: '8px', backdropFilter: 'blur(4px)' }}>
                     <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.7)', fontWeight: '600' }}>{date}</span>
                 </div>
+
+                {/* Delete Button */}
+                <motion.button
+                    whileTap={{ scale: 0.9 }}
+                    onClick={handleDelete}
+                    disabled={isDeleting}
+                    style={{
+                        position: 'absolute',
+                        top: '12px',
+                        left: '12px',
+                        width: '32px',
+                        height: '32px',
+                        borderRadius: '50%',
+                        background: 'rgba(239, 68, 68, 0.2)',
+                        backdropFilter: 'blur(8px)',
+                        border: '1px solid rgba(239, 68, 68, 0.3)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: '#ef4444',
+                        cursor: 'pointer',
+                        zIndex: 20
+                    }}
+                >
+                    {isDeleting ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                </motion.button>
             </div>
 
             {/* Quick Metrics */}
