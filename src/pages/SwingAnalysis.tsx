@@ -10,7 +10,23 @@ import PageHero from '../components/PageHero';
 interface SwingAnalysisData {
     id: string;
     video_url: string;
-    feedback: any;
+    feedback: {
+        swing_score: number;
+        metrics?: any;
+        setup_analysis?: string;
+        backswing_analysis?: string;
+        grip_analysis?: string;
+        downswing_analysis?: string;
+        posture?: string;
+        strengths?: string[];
+        areas_to_improve?: string[];
+        tips?: string;
+        overall_assessment?: string;
+        is_simulated?: boolean;
+        visual_data?: {
+            points: Record<string, { x: number; y: number }>;
+        };
+    };
     swing_score: number | null;
     analyzed_at: string;
 }
@@ -77,10 +93,24 @@ El JSON debe tener exactamente esta estructura:
   "strengths": ["<fortaleza 1>", "<fortaleza 2>", "<fortaleza 3>"],
   "areas_to_improve": ["<área 1>", "<área 2>", "<área 3>"],
   "tips": "<consejo personalizado detallado en español, 2-3 oraciones>",
-  "overall_assessment": "<evaluación general en español, 1-2 oraciones>"
+  "overall_assessment": "<evaluación general en español, 1-2 oraciones>",
+  "visual_data": {
+    "points": {
+      "head": {"x": <0-100>, "y": <0-100>},
+      "left_shoulder": {"x": <0-100>, "y": <0-100>},
+      "right_shoulder": {"x": <0-100>, "y": <0-100>},
+      "left_hip": {"x": <0-100>, "y": <0-100>},
+      "right_hip": {"x": <0-100>, "y": <0-100>},
+      "left_knee": {"x": <0-100>, "y": <0-100>},
+      "right_knee": {"x": <0-100>, "y": <0-100>},
+      "left_foot": {"x": <0-100>, "y": <0-100>},
+      "right_foot": {"x": <0-100>, "y": <0-100>},
+      "club_head": {"x": <0-100>, "y": <0-100>}
+    }
+  }
 }
 
-Si el video no muestra un swing de golf claramente, o hay mala iluminación, menciona que la visibilidad es limitada pero intenta dar el mejor consejo posible. Responde siempre en español de forma profesional y motivadora. Evita frases genéricas y enfócate en lo que realmente ves en los fotogramas del video.`;
+IMPORTANTE: Los puntos (x, y) deben ser porcentajes del 0 al 100 relativos al video. Ubícalos en el punto de impacto o el tope del backswing. Si el video no muestra un swing de golf claramente... (rest of instructions)`;
 
 async function analyzeSwingWithGemini(videoFile: File): Promise<any> {
     return new Promise((resolve, reject) => {
@@ -141,6 +171,84 @@ async function analyzeSwingWithGemini(videoFile: File): Promise<any> {
         reader.readAsDataURL(videoFile);
     });
 }
+
+// --- Skeletal Overlay Component ---
+const SkeletalOverlay = ({ points, isActive, color }: { points?: Record<string, { x: number; y: number }>; isActive: boolean; color: string }) => {
+    const canvasRef = useRef<HTMLCanvasElement>(null);
+
+    useEffect(() => {
+        if (!canvasRef.current || !points || !isActive) {
+            const ctx = canvasRef.current?.getContext('2d');
+            if (ctx) ctx.clearRect(0, 0, canvasRef.current!.width, canvasRef.current!.height);
+            return;
+        }
+
+        const canvas = canvasRef.current;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+
+        // Limpiar
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        const drawLine = (p1: any, p2: any, strokeStyle: string, lineWidth: number = 2) => {
+            if (!p1 || !p2) return;
+            ctx.beginPath();
+            ctx.strokeStyle = strokeStyle;
+            ctx.lineWidth = lineWidth;
+            ctx.lineCap = 'round';
+            ctx.moveTo(p1.x * canvas.width / 100, p1.y * canvas.height / 100);
+            ctx.lineTo(p2.x * canvas.width / 100, p2.y * canvas.height / 100);
+            ctx.stroke();
+        };
+
+        const drawPoint = (p: any, fillStyle: string, radius: number = 3) => {
+            if (!p) return;
+            ctx.beginPath();
+            ctx.fillStyle = fillStyle;
+            ctx.arc(p.x * canvas.width / 100, p.y * canvas.height / 100, radius, 0, Math.PI * 2);
+            ctx.fill();
+        };
+
+        // Dibujar Conexiones (Esqueleto)
+        ctx.globalAlpha = 0.6;
+        drawLine(points.left_shoulder, points.right_shoulder, 'white');
+        drawLine(points.left_shoulder, points.left_hip, 'white');
+        drawLine(points.right_shoulder, points.right_hip, 'white');
+        drawLine(points.left_hip, points.right_hip, 'white');
+
+        drawLine(points.left_hip, points.left_knee, color);
+        drawLine(points.left_knee, points.left_foot, color);
+        drawLine(points.right_hip, points.right_knee, color);
+        drawLine(points.right_knee, points.right_foot, color);
+
+        // Dibujar Puntos
+        ctx.globalAlpha = 1.0;
+        Object.values(points).forEach(p => drawPoint(p, color));
+        drawPoint(points.head, 'white', 4);
+        drawPoint(points.club_head, '#fbbf24', 5);
+
+    }, [points, isActive, color]);
+
+    if (!points) return null;
+
+    return (
+        <canvas
+            ref={canvasRef}
+            width={400}
+            height={240}
+            style={{
+                position: 'absolute',
+                inset: 0,
+                width: '100%',
+                height: '100%',
+                pointerEvents: 'none',
+                zIndex: 10,
+                opacity: isActive ? 1 : 0,
+                transition: 'opacity 0.3s'
+            }}
+        />
+    );
+};
 
 const SwingAnalysis: React.FC = () => {
     const navigate = useNavigate();
@@ -603,7 +711,14 @@ const AnalysisCard = ({ item, isExpanded, onToggle, onDelete }: { item: SwingAna
                     src={item.video_url}
                     playsInline
                     onEnded={() => setIsPlaying(false)}
-                    style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.8 }}
+                    style={{ width: '100%', height: '100%', objectFit: 'contain', opacity: 0.8 }}
+                />
+
+                {/* Skeletal Overlay Canvas */}
+                <SkeletalOverlay
+                    points={feedback.visual_data?.points}
+                    isActive={!isPlaying}
+                    color={getScoreColor(score)}
                 />
                 <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
                     {!isPlaying && (
@@ -779,7 +894,7 @@ const AnalysisCard = ({ item, isExpanded, onToggle, onDelete }: { item: SwingAna
                             )}
 
                             {/* Strengths */}
-                            {feedback.strengths?.length > 0 && (
+                            {feedback.strengths && feedback.strengths.length > 0 && (
                                 <div style={{ marginBottom: '10px' }}>
                                     <p style={{ fontSize: '8px', color: 'var(--secondary)', fontWeight: '800', textTransform: 'uppercase', margin: '0 0 6px', display: 'flex', alignItems: 'center', gap: '4px' }}>
                                         <CheckCircle size={10} /> Fortalezas
@@ -793,7 +908,7 @@ const AnalysisCard = ({ item, isExpanded, onToggle, onDelete }: { item: SwingAna
                             )}
 
                             {/* Areas to Improve */}
-                            {feedback.areas_to_improve?.length > 0 && (
+                            {feedback.areas_to_improve && feedback.areas_to_improve.length > 0 && (
                                 <div style={{ marginBottom: '10px' }}>
                                     <p style={{ fontSize: '8px', color: '#fbbf24', fontWeight: '800', textTransform: 'uppercase', margin: '0 0 6px', display: 'flex', alignItems: 'center', gap: '4px' }}>
                                         <TrendingUp size={10} /> Áreas de Mejora
