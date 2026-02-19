@@ -93,19 +93,11 @@ async function analyzeSwingWithGemini(videoFile: File): Promise<any> {
                 const requestBody = {
                     contents: [{
                         parts: [
-                            {
-                                inline_data: {
-                                    mime_type: mimeType,
-                                    data: base64Data
-                                }
-                            },
+                            { inline_data: { mime_type: mimeType, data: base64Data } },
                             { text: SWING_ANALYSIS_PROMPT }
                         ]
                     }],
-                    generationConfig: {
-                        temperature: 0.4,
-                        maxOutputTokens: 2048
-                    }
+                    generationConfig: { temperature: 0.4, maxOutputTokens: 2048 }
                 };
 
                 const response = await fetch(GEMINI_URL, {
@@ -115,42 +107,33 @@ async function analyzeSwingWithGemini(videoFile: File): Promise<any> {
                 });
 
                 if (!response.ok) {
-                    const errorData = await response.json();
-                    const errorMsg = errorData.error?.message || `Error: ${response.status}`;
-
-                    // IF QUOTA EXCEEDED, USE FALLBACK
-                    if (response.status === 429 || errorMsg.toLowerCase().includes('quota')) {
-                        console.warn('Gemini Quota exceeded, using simulated fallback');
-                        resolve(getSimulatedAnalysis());
-                        return;
+                    if (response.status === 429) {
+                        console.warn('Gemini Quota exceeded');
+                        return resolve(getSimulatedAnalysis());
                     }
-                    throw new Error(errorMsg);
+                    throw new Error(`API Error: ${response.status}`);
                 }
 
                 const data = await response.json();
                 const textResponse = data.candidates?.[0]?.content?.parts?.[0]?.text;
 
-                if (!textResponse) {
-                    // Fallback if response is empty but request was ok
-                    resolve(getSimulatedAnalysis());
-                    return;
-                }
+                if (!textResponse) throw new Error('Empty response from AI');
 
-                // Clean up potential markdown formatting
+                // Clean markdown backticks
                 let cleanJson = textResponse.trim();
                 if (cleanJson.startsWith('```')) {
-                    cleanJson = cleanJson.replace(/```json?\n?/g, '').replace(/```\n?$/g, '').trim();
+                    cleanJson = cleanJson.replace(/^```(json)?/, '').replace(/```$/, '').trim();
                 }
 
                 try {
-                    const analysis = JSON.parse(cleanJson);
-                    resolve(analysis);
-                } catch (parseErr) {
-                    console.error('JSON Parse error, using fallback:', parseErr);
+                    const result = JSON.parse(cleanJson);
+                    resolve(result);
+                } catch (e) {
+                    console.error('JSON Parse error:', e, cleanJson);
                     resolve(getSimulatedAnalysis());
                 }
             } catch (err) {
-                console.error('Gemini analysis error, using fallback:', err);
+                console.error('General analysis error:', err);
                 resolve(getSimulatedAnalysis());
             }
         };
@@ -263,10 +246,12 @@ const SwingAnalysis: React.FC = () => {
     };
 
     const handleDeleteAnalysis = async (id: string, videoUrl: string) => {
-        if (!session) return;
-        if (!window.confirm('¿Estás seguro de que deseas eliminar este análisis? El video también será eliminado permanentemente.')) return;
+        if (!session) {
+            console.error('No session found for deletion');
+            return;
+        }
 
-        console.log('Iniciando eliminación de análisis:', id);
+        console.log('Eliminando análisis:', id);
 
         try {
             // 1. ELIMINAR DE LA BASE DE DATOS PRIMERO
@@ -561,6 +546,7 @@ const AnalysisCard = ({ item, isExpanded, onToggle, onDelete }: { item: SwingAna
     const videoRef = useRef<HTMLVideoElement>(null);
     const [isPlaying, setIsPlaying] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
+    const [confirmDelete, setConfirmDelete] = useState(false);
     const score = item.swing_score || 0;
     const feedback = item.feedback || {};
     const date = new Date(item.analyzed_at).toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: 'numeric' });
@@ -585,11 +571,17 @@ const AnalysisCard = ({ item, isExpanded, onToggle, onDelete }: { item: SwingAna
 
     const handleDelete = async (e: React.MouseEvent) => {
         e.stopPropagation();
+        if (!confirmDelete) {
+            setConfirmDelete(true);
+            setTimeout(() => setConfirmDelete(false), 3000); // 3 seconds to confirm
+            return;
+        }
         setIsDeleting(true);
         try {
             await onDelete();
         } finally {
             setIsDeleting(false);
+            setConfirmDelete(false);
         }
     };
 
@@ -648,23 +640,52 @@ const AnalysisCard = ({ item, isExpanded, onToggle, onDelete }: { item: SwingAna
                         position: 'absolute',
                         top: '12px',
                         left: '12px',
-                        width: '36px',
+                        width: confirmDelete ? '80px' : '36px',
                         height: '36px',
                         borderRadius: '10px',
-                        background: 'rgba(239, 68, 68, 0.95)',
+                        background: confirmDelete ? '#ef4444' : 'rgba(239, 68, 68, 0.95)',
                         boxShadow: '0 4px 12px rgba(239, 68, 68, 0.3)',
-                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                        border: '1px solid rgba(255, 255, 255, 0.2)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         color: 'white',
                         cursor: 'pointer',
                         zIndex: 30,
-                        pointerEvents: 'auto'
+                        pointerEvents: 'auto',
+                        transition: 'width 0.2s ease, background 0.2s ease'
                     }}
                 >
-                    {isDeleting ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
+                    {isDeleting ? (
+                        <Loader2 size={16} className="animate-spin" />
+                    ) : confirmDelete ? (
+                        <span style={{ fontSize: '9px', fontWeight: '900' }}>¿BORRAR?</span>
+                    ) : (
+                        <Trash2 size={16} />
+                    )}
                 </motion.button>
+            </div>
+
+            {/* Quick Summary Analysis (Always visible) */}
+            <div style={{ padding: '12px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                {feedback.backswing_analysis && (
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-start', marginBottom: '8px' }}>
+                        <div style={{ width: '4px', height: '14px', borderRadius: '2px', background: '#fbbf24', marginTop: '2px' }} />
+                        <p style={{ margin: 0, fontSize: '11px', color: 'rgba(255,255,255,0.8)', lineHeight: 1.3 }}>
+                            <span style={{ fontWeight: '800', color: '#fbbf24' }}>Backswing: </span>
+                            {feedback.backswing_analysis.length > 80 ? feedback.backswing_analysis.substring(0, 80) + '...' : feedback.backswing_analysis}
+                        </p>
+                    </div>
+                )}
+                {feedback.grip_analysis && (
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
+                        <div style={{ width: '4px', height: '14px', borderRadius: '2px', background: '#a3e635', marginTop: '2px' }} />
+                        <p style={{ margin: 0, fontSize: '11px', color: 'rgba(255,255,255,0.8)', lineHeight: 1.3 }}>
+                            <span style={{ fontWeight: '800', color: '#a3e635' }}>Grip: </span>
+                            {feedback.grip_analysis.length > 80 ? feedback.grip_analysis.substring(0, 80) + '...' : feedback.grip_analysis}
+                        </p>
+                    </div>
+                )}
             </div>
 
             {/* Quick Metrics */}
