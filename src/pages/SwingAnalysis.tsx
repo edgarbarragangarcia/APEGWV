@@ -80,7 +80,7 @@ El JSON debe tener exactamente esta estructura:
   "overall_assessment": "<evaluación general en español, 1-2 oraciones>"
 }
 
-Si el video no muestra un swing de golf claramente, analiza lo que veas y proporciona la mejor estimación posible. Todos los textos deben estar en español.`;
+Si el video no muestra un swing de golf claramente, o hay mala iluminación, menciona que la visibilidad es limitada pero intenta dar el mejor consejo posible. Responde siempre en español de forma profesional y motivadora. Evita frases genéricas y enfócate en lo que realmente ves en los fotogramas del video.`;
 
 async function analyzeSwingWithGemini(videoFile: File): Promise<any> {
     return new Promise((resolve, reject) => {
@@ -626,6 +626,19 @@ const AnalysisCard = ({ item, isExpanded, onToggle, onDelete }: { item: SwingAna
                     </div>
                 </div>
 
+                {/* Simulation Badge */}
+                {feedback.is_simulated && (
+                    <div style={{
+                        position: 'absolute', top: '12px', right: '70px',
+                        background: 'rgba(239, 68, 68, 0.8)',
+                        padding: '4px 8px', borderRadius: '6px',
+                        backdropFilter: 'blur(4px)', border: '1px solid rgba(255,255,255,0.1)',
+                        zIndex: 20
+                    }}>
+                        <span style={{ fontSize: '7px', fontWeight: '900', color: 'white', letterSpacing: '0.5px' }}>SIMULADO</span>
+                    </div>
+                )}
+
                 {/* Date Badge */}
                 <div style={{ position: 'absolute', bottom: '10px', left: '12px', background: 'rgba(0,0,0,0.6)', padding: '3px 10px', borderRadius: '8px', backdropFilter: 'blur(4px)' }}>
                     <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.7)', fontWeight: '600' }}>{date}</span>
@@ -719,8 +732,17 @@ const AnalysisCard = ({ item, isExpanded, onToggle, onDelete }: { item: SwingAna
                             animate={{ height: 'auto', opacity: 1 }}
                             exit={{ height: 0, opacity: 0 }}
                             transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
-                            style={{ overflow: 'hidden', marginTop: '12px' }}
+                            style={{
+                                marginTop: '12px',
+                                maxHeight: '380px',
+                                overflowY: 'auto',
+                                paddingRight: '4px',
+                                scrollbarWidth: 'none'
+                            }}
                         >
+                            <style>{`
+                                div::-webkit-scrollbar { display: none; }
+                            `}</style>
                             {/* Detailed Metrics Grid */}
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginBottom: '16px' }}>
                                 <MetricBox label="Ataque" value={feedback.metrics?.attack_angle || '--'} />
