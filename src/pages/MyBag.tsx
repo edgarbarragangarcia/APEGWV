@@ -1,11 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Trash2, Edit3, Target, Ruler, X } from 'lucide-react';
+import { Plus, Trash2, Edit3, Target, Ruler, X, Sparkles, Info, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../services/SupabaseManager';
 import { useAuth } from '../context/AuthContext';
 import PageHeader from '../components/PageHeader';
 import PageHero from '../components/PageHero';
+
+const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+const GEMINI_MODEL = 'gemini-1.5-flash';
+const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
 
 interface UserClub {
     id: string;
@@ -13,6 +17,15 @@ interface UserClub {
     brand: string | null;
     average_distance: number | null;
     is_active: boolean;
+    technical_specs: {
+        model?: string;
+        category?: string;
+        loft?: string;
+        shaft?: string;
+        material?: string;
+        flex?: string;
+        description?: string;
+    } | null;
 }
 
 const MyBag: React.FC = () => {
@@ -25,8 +38,10 @@ const MyBag: React.FC = () => {
     const [formData, setFormData] = useState({
         club_name: '',
         brand: '',
-        average_distance: ''
+        average_distance: '',
+        technical_specs: null as UserClub['technical_specs']
     });
+    const [isSearching, setIsSearching] = useState(false);
 
     useEffect(() => {
         if (session) {
@@ -51,6 +66,70 @@ const MyBag: React.FC = () => {
             setLoading(false);
         }
     };
+    const analyzeClubWithGemini = async (searchQuery: string) => {
+        if (!searchQuery) return;
+        setIsSearching(true);
+        try {
+            const prompt = `Actúa como un experto en equipamiento de golf. Busca información técnica sobre el siguiente palo de golf: "${searchQuery}".
+            
+            Responde ÚNICAMENTE con un JSON válido, sin markdown ni texto extra.
+            
+            Estructura JSON:
+            {
+              "brand": "Marca detectada",
+              "model": "Modelo completo",
+              "category": "Driver / Híbrido / Hierro / Wedge / Putter",
+              "specs": {
+                "loft": "Loft en grados (si aplica)",
+                "shaft": "Opciones de varilla estándar",
+                "material": "Material predominante",
+                "flex": "Flexibilidad estándar"
+              },
+              "description": "Una frase corta sobre este palo."
+            }`;
+
+            const response = await fetch(GEMINI_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: prompt }] }],
+                    generationConfig: { temperature: 0.1, maxOutputTokens: 500 }
+                })
+            });
+
+            if (!response.ok) throw new Error('Error en API de Gemini');
+
+            const data = await response.json();
+            const textResponse = data.candidates?.[0]?.content?.parts?.[0]?.text;
+
+            let cleanJson = textResponse.trim();
+            if (cleanJson.startsWith('```')) {
+                cleanJson = cleanJson.replace(/^```(json)?/, '').replace(/```$/, '').trim();
+            }
+
+            const result = JSON.parse(cleanJson);
+
+            setFormData(prev => ({
+                ...prev,
+                club_name: result.model || prev.club_name,
+                brand: result.brand || prev.brand,
+                technical_specs: {
+                    model: result.model,
+                    category: result.category,
+                    loft: result.specs?.loft,
+                    shaft: result.specs?.shaft,
+                    material: result.specs?.material,
+                    flex: result.specs?.flex,
+                    description: result.description
+                }
+            }));
+        } catch (err) {
+            console.error('Error analizando palo:', err);
+            alert('No se pudo encontrar información detallada. Puedes ingresarla manualmente.');
+        } finally {
+            setIsSearching(false);
+        }
+    };
 
     const handleSaveClub = async () => {
         if (!session || !formData.club_name) return;
@@ -61,6 +140,7 @@ const MyBag: React.FC = () => {
                 club_name: formData.club_name,
                 brand: formData.brand || null,
                 average_distance: formData.average_distance ? parseFloat(formData.average_distance) : null,
+                technical_specs: formData.technical_specs
             };
 
             if (editingClub?.id) {
@@ -78,7 +158,7 @@ const MyBag: React.FC = () => {
 
             setIsModalOpen(false);
             setEditingClub(null);
-            setFormData({ club_name: '', brand: '', average_distance: '' });
+            setFormData({ club_name: '', brand: '', average_distance: '', technical_specs: null });
             fetchClubs();
         } catch (err) {
             console.error('Error saving club:', err);
@@ -104,7 +184,8 @@ const MyBag: React.FC = () => {
         setFormData({
             club_name: club.club_name,
             brand: club.brand || '',
-            average_distance: club.average_distance?.toString() || ''
+            average_distance: club.average_distance?.toString() || '',
+            technical_specs: club.technical_specs
         });
         setIsModalOpen(true);
     };
@@ -157,7 +238,7 @@ const MyBag: React.FC = () => {
                     whileTap={{ scale: 0.98 }}
                     onClick={() => {
                         setEditingClub(null);
-                        setFormData({ club_name: '', brand: '', average_distance: '' });
+                        setFormData({ club_name: '', brand: '', average_distance: '', technical_specs: null });
                         setIsModalOpen(true);
                     }}
                     style={{
@@ -225,7 +306,12 @@ const MyBag: React.FC = () => {
                                         {club.brand && <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>{club.brand}</span>}
                                         {club.average_distance && (
                                             <span style={{ fontSize: '11px', color: 'var(--secondary)', fontWeight: '700' }}>
-                                                Avg: {club.average_distance}m
+                                                {club.average_distance}m
+                                            </span>
+                                        )}
+                                        {club.technical_specs?.loft && (
+                                            <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)' }}>
+                                                • {club.technical_specs.loft}
                                             </span>
                                         )}
                                     </div>
@@ -269,15 +355,88 @@ const MyBag: React.FC = () => {
 
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                                 <div>
-                                    <label style={{ display: 'block', fontSize: '11px', color: 'var(--secondary)', fontWeight: '800', textTransform: 'uppercase', marginBottom: '8px' }}>Nombre del Palo</label>
+                                    <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px', color: 'var(--secondary)', fontWeight: '800', textTransform: 'uppercase', marginBottom: '8px' }}>
+                                        Nombre del Palo
+                                        {!editingClub && (
+                                            <motion.button
+                                                whileTap={{ scale: 0.95 }}
+                                                onClick={() => analyzeClubWithGemini(formData.club_name || formData.brand)}
+                                                disabled={isSearching || (!formData.club_name && !formData.brand)}
+                                                style={{
+                                                    background: 'rgba(163, 230, 53, 0.1)',
+                                                    border: '1px solid var(--secondary)',
+                                                    borderRadius: '8px',
+                                                    padding: '4px 10px',
+                                                    color: 'var(--secondary)',
+                                                    fontSize: '9px',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: '5px',
+                                                    opacity: (!formData.club_name && !formData.brand) ? 0.5 : 1
+                                                }}
+                                            >
+                                                {isSearching ? <Loader2 size={10} className="animate-spin" /> : <Sparkles size={10} />}
+                                                COMPLETAR CON IA
+                                            </motion.button>
+                                        )}
+                                    </label>
                                     <input
                                         type="text"
-                                        placeholder="Ej: Hierro 7, Driver..."
+                                        placeholder="Ej: Hierro 7, Stealth 2 Driver..."
                                         value={formData.club_name}
                                         onChange={(e) => setFormData({ ...formData, club_name: e.target.value })}
                                         style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '14px', borderRadius: '14px', color: 'white' }}
                                     />
                                 </div>
+
+                                {formData.technical_specs && (
+                                    <motion.div
+                                        initial={{ opacity: 0, height: 0 }}
+                                        animate={{ opacity: 1, height: 'auto' }}
+                                        style={{
+                                            background: 'rgba(163, 230, 53, 0.05)',
+                                            borderRadius: '16px',
+                                            padding: '15px',
+                                            border: '1px solid rgba(163, 230, 53, 0.15)'
+                                        }}
+                                    >
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
+                                            <Info size={14} color="var(--secondary)" />
+                                            <span style={{ fontSize: '10px', color: 'var(--secondary)', fontWeight: '800', textTransform: 'uppercase' }}>Especificaciones de la IA</span>
+                                        </div>
+                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                                            {formData.technical_specs.loft && (
+                                                <div>
+                                                    <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>Loft</div>
+                                                    <div style={{ fontSize: '12px', color: 'white', fontWeight: '700' }}>{formData.technical_specs.loft}</div>
+                                                </div>
+                                            )}
+                                            {formData.technical_specs.shaft && (
+                                                <div>
+                                                    <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>Varilla</div>
+                                                    <div style={{ fontSize: '12px', color: 'white', fontWeight: '700' }}>{formData.technical_specs.shaft}</div>
+                                                </div>
+                                            )}
+                                            {formData.technical_specs.flex && (
+                                                <div>
+                                                    <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>Flex</div>
+                                                    <div style={{ fontSize: '12px', color: 'white', fontWeight: '700' }}>{formData.technical_specs.flex}</div>
+                                                </div>
+                                            )}
+                                            {formData.technical_specs.category && (
+                                                <div>
+                                                    <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>Categoría</div>
+                                                    <div style={{ fontSize: '12px', color: 'white', fontWeight: '700' }}>{formData.technical_specs.category}</div>
+                                                </div>
+                                            )}
+                                        </div>
+                                        {formData.technical_specs.description && (
+                                            <div style={{ marginTop: '10px', fontSize: '11px', color: 'rgba(255,255,255,0.6)', lineHeight: 1.4, borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '8px' }}>
+                                                {formData.technical_specs.description}
+                                            </div>
+                                        )}
+                                    </motion.div>
+                                )}
 
                                 <div>
                                     <label style={{ display: 'block', fontSize: '11px', color: 'var(--secondary)', fontWeight: '800', textTransform: 'uppercase', marginBottom: '8px' }}>Marca (Opcional)</label>

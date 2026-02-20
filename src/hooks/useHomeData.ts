@@ -55,27 +55,59 @@ export const useUserRoundCount = (userId?: string) => {
     });
 };
 
-export const useCategories = () => {
+export const useCategories = (userId?: string) => {
     return useQuery({
-        queryKey: ['products', 'categories'],
+        queryKey: ['products', 'categories', userId],
         queryFn: async () => {
-            const { data, error } = await supabase
+            const { data: productsData, error: productsError } = await supabase
                 .from('products')
                 .select('category')
                 .not('category', 'is', null);
 
-            if (error) throw error;
+            if (productsError) throw productsError;
 
-            // Get unique categories, capitalize first letter, and sort
-            const uniqueCategories = Array.from(new Set(data
+            // Get unique categories and capitalize
+            const baseCategories = Array.from(new Set(productsData
                 .map(p => p.category)
                 .filter((cat): cat is string => cat !== null))
-            )
-                .map(cat => cat.charAt(0).toUpperCase() + cat.slice(1).toLowerCase())
-                .sort();
+            ).map(cat => cat.charAt(0).toUpperCase() + cat.slice(1).toLowerCase());
 
-            return ['Todo', ...uniqueCategories];
+            if (!userId) {
+                return ['Todo', ...baseCategories.sort()];
+            }
+
+            // Fetch personalization data
+            const { data: interactionData, error: interactionError } = await supabase
+                .from('user_interactions')
+                .select('item_name, view_count, total_seconds')
+                .eq('user_id', userId)
+                .eq('item_type', 'category');
+
+            if (interactionError || !interactionData || interactionData.length === 0) {
+                return ['Todo', ...baseCategories.sort()];
+            }
+
+            // Create a map of scores
+            const scores = new Map<string, number>();
+            interactionData.forEach(item => {
+                // Weight: 10 points per view, 1 point per minute viewed
+                const score = (item.view_count || 0) * 10 + ((item.total_seconds || 0) / 60);
+                scores.set(item.item_name.toLowerCase(), score);
+            });
+
+            // Sort categories based on score
+            const sortedCategories = baseCategories.sort((a, b) => {
+                const scoreA = scores.get(a.toLowerCase()) || 0;
+                const scoreB = scores.get(b.toLowerCase()) || 0;
+
+                if (scoreB !== scoreA) {
+                    return scoreB - scoreA;
+                }
+                return a.localeCompare(b); // Fallback to alphabetical
+            });
+
+            return ['Todo', ...sortedCategories];
         },
-        staleTime: 1000 * 60 * 60, // 1 hora
+        staleTime: 1000 * 60 * 5, // 5 minutos
     });
 };

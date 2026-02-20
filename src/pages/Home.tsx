@@ -11,6 +11,7 @@ import PageHeader from '../components/PageHeader';
 import { useCart } from '../context/CartContext';
 import PageHero from '../components/PageHero';
 import { useToast } from '../context/ToastContext';
+import { useInteractions } from '../hooks/useInteractions';
 
 const Home: React.FC = () => {
     const navigate = useNavigate();
@@ -39,6 +40,25 @@ const Home: React.FC = () => {
     const [myOffers, setMyOffers] = React.useState<any[]>([]);
     const { likedProducts, toggleLike } = useLikes();
     const [currentImageIndex, setCurrentImageIndex] = React.useState(0);
+
+    // Interaction Tracking
+    const { logView, logDuration } = useInteractions();
+    const productStartTime = React.useRef<number | null>(null);
+
+    // Track duration for selected product
+    useEffect(() => {
+        if (selectedProduct) {
+            productStartTime.current = Date.now();
+        } else {
+            if (productStartTime.current && productId) {
+                const duration = (Date.now() - productStartTime.current) / 1000;
+                if (duration > 1) { // Only log if viewed for more than 1 second
+                    logDuration('product', productId, duration);
+                }
+            }
+            productStartTime.current = null;
+        }
+    }, [selectedProduct, productId, logDuration]);
 
     const productImages = React.useMemo(() => {
         if (!selectedProduct) return [];
@@ -173,7 +193,7 @@ const Home: React.FC = () => {
 
 
 
-    const { data: categories = ['Todo'] } = useCategories();
+    const { data: categories = ['Todo'] } = useCategories(user?.id);
 
     const filteredProducts = featuredProducts.filter(product => {
         const matchesCategory = activeTab === 'Todo' ||
@@ -330,6 +350,7 @@ const Home: React.FC = () => {
                                         if (tab === 'Todo') {
                                             setActiveTab(tab);
                                         } else {
+                                            logView('category', tab);
                                             const route = tab.toLowerCase().replace(' ', '-');
                                             navigate(`/category/${route}`);
                                         }
