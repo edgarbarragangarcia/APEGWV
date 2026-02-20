@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, Users, ChevronRight, BarChart3, X, History, Video, Shield } from 'lucide-react';
+import { User, Users, ChevronRight, BarChart3, X, History, Video, Shield, Trash2 } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import PageHeader from '../components/PageHeader';
 import { supabase } from '../services/SupabaseManager';
@@ -27,6 +27,11 @@ const PlayModeSelection: React.FC = () => {
 
     const [isLoadingStats, setIsLoadingStats] = React.useState(!stats);
     const [selectedRound, setSelectedRound] = React.useState<any>(null);
+    const [deleteModal, setDeleteModal] = React.useState<{ isOpen: boolean; roundId: string | null; courseName: string }>({
+        isOpen: false,
+        roundId: null,
+        courseName: ''
+    });
 
     React.useEffect(() => {
         // Check if user just finished a game - if so, clear the flag and don't redirect
@@ -185,6 +190,47 @@ const PlayModeSelection: React.FC = () => {
 
     const handleRoundClick = (round: any) => {
         setSelectedRound(round);
+    };
+
+    const handleDeleteRound = (e: React.MouseEvent, roundId: string, courseName: string) => {
+        e.stopPropagation();
+        setDeleteModal({
+            isOpen: true,
+            roundId,
+            courseName
+        });
+    };
+
+    const confirmDelete = async () => {
+        if (!deleteModal.roundId) return;
+
+        try {
+            const { error } = await supabase
+                .from('rounds')
+                .delete()
+                .eq('id', deleteModal.roundId);
+
+            if (error) throw error;
+
+            // Simple snappy updates
+            const updatedRounds = recentRounds.filter(r => r.id !== deleteModal.roundId);
+            setRecentRounds(updatedRounds);
+            localStorage.setItem('cache_recent_rounds', JSON.stringify(updatedRounds));
+
+            const newCount = Math.max(0, totalRoundsCount - 1);
+            setTotalRoundsCount(newCount);
+            localStorage.setItem('cache_total_rounds_count', newCount.toString());
+
+            if (updatedRounds.length === 0) {
+                setSelectedRound(null);
+            }
+
+            if (navigator.vibrate) navigator.vibrate(50);
+            setDeleteModal({ isOpen: false, roundId: null, courseName: '' });
+        } catch (err) {
+            console.error('Error deleting round:', err);
+            alert('Error al eliminar el registro.');
+        }
     };
 
     const modes = [
@@ -556,6 +602,26 @@ const PlayModeSelection: React.FC = () => {
                                                 </div>
                                                 <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.3)', fontWeight: '700', textTransform: 'uppercase' }}>Score</div>
                                             </div>
+
+                                            <motion.button
+                                                whileTap={{ scale: 0.8 }}
+                                                onClick={(e) => handleDeleteRound(e, round.id, round.course_name || 'este juego')}
+                                                style={{
+                                                    width: '32px',
+                                                    height: '32px',
+                                                    borderRadius: '10px',
+                                                    background: 'rgba(239, 68, 68, 0.1)',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    color: '#ef4444',
+                                                    border: '1px solid rgba(239, 68, 68, 0.1)',
+                                                    marginLeft: '4px'
+                                                }}
+                                            >
+                                                <Trash2 size={14} />
+                                            </motion.button>
+
                                             <ChevronRight size={18} color="rgba(255,255,255,0.2)" />
                                         </div>
                                     </motion.div>
@@ -564,6 +630,94 @@ const PlayModeSelection: React.FC = () => {
 
                         </motion.div>
                     </>
+                )}
+            </AnimatePresence>
+
+            {/* Custom Confirmation Modal */}
+            <AnimatePresence>
+                {deleteModal.isOpen && (
+                    <div style={{
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        background: 'rgba(0,0,0,0.85)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        zIndex: 11000,
+                        padding: '20px',
+                        backdropFilter: 'blur(8px)'
+                    }}>
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.9, opacity: 0 }}
+                            className="glass"
+                            style={{
+                                width: '100%',
+                                maxWidth: '320px',
+                                padding: '25px',
+                                borderRadius: '24px',
+                                textAlign: 'center',
+                                border: '1px solid rgba(255,255,255,0.1)',
+                                background: 'var(--primary)',
+                                boxShadow: '0 20px 40px rgba(0,0,0,0.4)'
+                            }}
+                        >
+                            <div style={{
+                                border: '1px solid rgba(255,255,255,0.1)',
+                                background: 'rgba(239, 68, 68, 0.15)',
+                                width: '60px',
+                                height: '60px',
+                                borderRadius: '50%',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                margin: '0 auto 20px'
+                            }}>
+                                <Trash2 color="#ef4444" size={28} />
+                            </div>
+                            <h2 style={{ fontSize: '20px', marginBottom: '10px', fontWeight: '800', color: 'white' }}>¿Eliminar registro?</h2>
+                            <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '14px', marginBottom: '30px', lineHeight: '1.5' }}>
+                                ¿Estás seguro que deseas eliminar el registro de <strong>{deleteModal.courseName}</strong>? Esta acción no se puede deshacer.
+                            </p>
+                            <div style={{ display: 'flex', gap: '12px' }}>
+                                <button
+                                    onClick={() => setDeleteModal({ ...deleteModal, isOpen: false })}
+                                    style={{
+                                        flex: 1,
+                                        background: 'rgba(255,255,255,0.05)',
+                                        color: 'white',
+                                        padding: '14px',
+                                        borderRadius: '16px',
+                                        border: '1px solid rgba(255,255,255,0.1)',
+                                        fontWeight: '700',
+                                        fontSize: '14px'
+                                    }}
+                                >
+                                    No
+                                </button>
+                                <button
+                                    onClick={confirmDelete}
+                                    style={{
+                                        flex: 1,
+                                        background: '#ef4444',
+                                        color: 'white',
+                                        padding: '14px',
+                                        borderRadius: '16px',
+                                        border: 'none',
+                                        fontWeight: '800',
+                                        fontSize: '14px',
+                                        boxShadow: '0 4px 12px rgba(239, 68, 68, 0.3)'
+                                    }}
+                                >
+                                    Eliminar
+                                </button>
+                            </div>
+                        </motion.div>
+                    </div>
                 )}
             </AnimatePresence>
         </div>
