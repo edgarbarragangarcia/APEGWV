@@ -509,9 +509,10 @@ const Home: React.FC = () => {
                                 <div style={{
                                     display: 'grid',
                                     gridTemplateColumns: "repeat(2, 1fr)",
-                                    gridAutoRows: '340px',
-                                    gap: '16px',
-                                    paddingBottom: '20px'
+                                    gridAutoRows: '290px',
+                                    gap: '12px',
+                                    paddingBottom: '20px',
+                                    justifyContent: 'center'
                                 }}>
                                     {Array.from({ length: 6 }).map((_, index) => (
                                         <div
@@ -532,9 +533,10 @@ const Home: React.FC = () => {
                                 <div style={{
                                     display: 'grid',
                                     gridTemplateColumns: "repeat(2, 1fr)",
-                                    gridAutoRows: '340px',
-                                    gap: '16px',
-                                    paddingBottom: '20px'
+                                    gridAutoRows: '290px',
+                                    gap: '12px',
+                                    paddingBottom: '20px',
+                                    justifyContent: 'center'
                                 }}>
                                     {filteredProducts.map((product) => (
                                         <motion.div

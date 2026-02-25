@@ -41,7 +41,7 @@ const PremiumProductCard: React.FC<PremiumProductCardProps> = ({ product, onAddT
             <div style={{
                 position: 'relative',
                 width: '100%',
-                height: '180px', // Fixed height for consistent image size
+                height: '150px', // Reduced from 180px
                 padding: '12px',
                 display: 'flex',
                 alignItems: 'center',
@@ -52,7 +52,7 @@ const PremiumProductCard: React.FC<PremiumProductCardProps> = ({ product, onAddT
                     position: 'relative',
                     width: '100%',
                     height: '100%',
-                    borderRadius: '24px',
+                    borderRadius: '20px',
                     overflow: 'hidden',
                     background: 'rgba(255,255,255,0.03)',
                     border: '1px solid rgba(255,255,255,0.05)',
@@ -89,8 +89,8 @@ const PremiumProductCard: React.FC<PremiumProductCardProps> = ({ product, onAddT
                             toggleLike(product.id);
                         }}
                         style={{
-                            width: '36px',
-                            height: '36px',
+                            width: '32px',
+                            height: '32px',
                             borderRadius: '50%',
                             background: 'rgba(0,0,0,0.3)',
                             backdropFilter: 'blur(10px)',
@@ -101,7 +101,7 @@ const PremiumProductCard: React.FC<PremiumProductCardProps> = ({ product, onAddT
                             color: isLiked ? '#ef4444' : 'white'
                         }}
                     >
-                        <Heart size={18} fill={isLiked ? '#ef4444' : 'none'} />
+                        <Heart size={16} fill={isLiked ? '#ef4444' : 'none'} />
                     </button>
                 </div>
 
@@ -124,9 +124,9 @@ const PremiumProductCard: React.FC<PremiumProductCardProps> = ({ product, onAddT
                             }
                         }}
                         style={{
-                            width: '44px',
-                            height: '44px',
-                            borderRadius: '16px',
+                            width: '40px',
+                            height: '40px',
+                            borderRadius: '14px',
                             background: 'var(--secondary)',
                             display: 'flex',
                             alignItems: 'center',
@@ -136,14 +136,14 @@ const PremiumProductCard: React.FC<PremiumProductCardProps> = ({ product, onAddT
                             boxShadow: '0 8px 15px rgba(163, 230, 53, 0.3)'
                         }}
                     >
-                        <ShoppingCart size={20} strokeWidth={2.5} />
+                        <ShoppingCart size={18} strokeWidth={2.5} />
                     </motion.button>
                 </div>
             </div>
 
             {/* Info Section */}
             <div style={{
-                padding: '0 16px 16px 16px', // Reduced top padding
+                padding: '0 12px 12px 12px', // Reduced padding
                 flex: 1,
                 display: 'flex',
                 flexDirection: 'column',
@@ -156,7 +156,7 @@ const PremiumProductCard: React.FC<PremiumProductCardProps> = ({ product, onAddT
                     alignItems: 'center'
                 }}>
                     <span style={{
-                        fontSize: '10px',
+                        fontSize: '9px',
                         fontWeight: '800',
                         color: 'rgba(255,255,255,0.4)',
                         textTransform: 'uppercase',
@@ -172,42 +172,42 @@ const PremiumProductCard: React.FC<PremiumProductCardProps> = ({ product, onAddT
                     justifyContent: 'space-between',
                     alignItems: 'center',
                     height: '18px',
-                    marginBottom: '8px'
+                    marginBottom: '6px'
                 }}>
                     <span style={{
-                        fontSize: '10px',
+                        fontSize: '9px',
                         fontWeight: '700',
                         color: 'var(--secondary)',
                         textTransform: 'uppercase',
-                        letterSpacing: '1px'
+                        letterSpacing: '0.5px'
                     }}>
-                        {product.category} {product.clothing_type ? `• ${product.clothing_type}` : ''}
+                        {product.category}
                     </span>
                     <div style={{
                         display: 'flex',
                         alignItems: 'center',
                         gap: '2px',
                         background: 'rgba(255,255,255,0.05)',
-                        padding: '2px 6px',
-                        borderRadius: '6px'
+                        padding: '1px 4px',
+                        borderRadius: '4px'
                     }}>
-                        <Star size={10} color="var(--accent)" fill="var(--accent)" />
-                        <span style={{ fontSize: '10px', fontWeight: '600', color: 'white' }}>{rating}</span>
+                        <Star size={8} color="var(--accent)" fill="var(--accent)" />
+                        <span style={{ fontSize: '9px', fontWeight: '600', color: 'white' }}>{rating}</span>
                     </div>
                 </div>
 
                 {/* Name - Fixed height with 2 lines */}
                 <h3 style={{
-                    fontSize: '15px',
+                    fontSize: '13px', // Reduced from 15px
                     fontWeight: '700',
                     color: 'white',
                     lineHeight: '1.2',
-                    margin: '0 0 12px 0',
+                    margin: '0 0 8px 0',
                     display: '-webkit-box',
                     WebkitLineClamp: 2,
                     WebkitBoxOrient: 'vertical',
                     overflow: 'hidden',
-                    height: '36px',
+                    height: '32px', // Reduced from 36px
                 }}>
                     {product.name}
                 </h3>
@@ -217,10 +217,10 @@ const PremiumProductCard: React.FC<PremiumProductCardProps> = ({ product, onAddT
                     marginTop: 'auto',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '8px'
+                    gap: '6px'
                 }}>
                     <span style={{
-                        fontSize: '18px',
+                        fontSize: '16px', // Reduced from 18px
                         fontWeight: '900',
                         color: 'white'
                     }}>
@@ -228,7 +228,7 @@ const PremiumProductCard: React.FC<PremiumProductCardProps> = ({ product, onAddT
                     </span>
                     {product.is_negotiable && (
                         <span style={{
-                            fontSize: '9px',
+                            fontSize: '8px',
                             fontWeight: '700',
                             color: 'var(--secondary)',
                             opacity: 0.8,

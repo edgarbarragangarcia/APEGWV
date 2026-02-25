@@ -55,8 +55,9 @@ const AccessoriesPage: React.FC = () => {
                     <div style={{
                         display: 'grid',
                         gridTemplateColumns: 'repeat(2, 1fr)',
-                        gridAutoRows: '340px',
-                        gap: '16px',
+                        gridAutoRows: '290px',
+                        gap: '12px',
+                        justifyContent: 'center'
                     }}>
                         {[1, 2, 3, 4, 5, 6].map(i => (
                             <div key={i} className="skeleton" style={{ height: '100%', borderRadius: '32px' }} />
@@ -92,8 +93,9 @@ const AccessoriesPage: React.FC = () => {
                     <div style={{
                         display: 'grid',
                         gridTemplateColumns: 'repeat(2, 1fr)',
-                        gridAutoRows: '340px',
-                        gap: '16px',
+                        gridAutoRows: '290px',
+                        gap: '12px',
+                        justifyContent: 'center'
                     }}>
                         {filteredProducts.map((product, index) => (
                             <motion.div
