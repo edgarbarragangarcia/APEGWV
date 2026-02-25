@@ -1,6 +1,6 @@
 import React from 'react';
-import { X, Loader2 } from 'lucide-react';
-import Card from '../../../components/Card';
+import { X, Ticket } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 interface CouponFormData {
     code: string;
@@ -28,89 +28,236 @@ const CouponForm: React.FC<CouponFormProps> = ({
     onChange,
     onSubmit
 }) => {
+    const inputStyle = {
+        width: '100%',
+        background: 'rgba(255,255,255,0.05)',
+        border: '1px solid var(--glass-border)',
+        borderRadius: '16px',
+        padding: '14px',
+        color: 'white',
+        fontSize: '15px',
+        fontFamily: 'var(--font-main)',
+        outline: 'none',
+        transition: 'all 0.2s ease',
+        boxSizing: 'border-box' as const
+    };
+
+    const labelStyle = {
+        display: 'block',
+        marginBottom: '8px',
+        fontSize: '11px',
+        fontWeight: '900',
+        color: 'var(--secondary)',
+        textTransform: 'uppercase' as const,
+        letterSpacing: '0.05em',
+        paddingLeft: '4px',
+        fontFamily: 'var(--font-main)'
+    };
+
     return (
-        <Card style={{ padding: '25px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px', marginBottom: '20px' }}>
-            <form onSubmit={onSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <h3 style={{ fontSize: '16px', fontWeight: '800' }}>{editingId ? 'Editar Cupón' : 'Crear Nuevo Cupón'}</h3>
-                    <button type="button" onClick={onClose} style={{ color: 'var(--text-dim)', background: 'none', border: 'none', cursor: 'pointer' }}><X size={20} /></button>
+        <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            style={{
+                padding: '30px',
+                background: 'linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%)',
+                backdropFilter: 'blur(30px)',
+                WebkitBackdropFilter: 'blur(30px)',
+                border: '1px solid var(--glass-border)',
+                borderRadius: '35px',
+                boxShadow: '0 40px 100px rgba(0,0,0,0.5)',
+                position: 'relative'
+            }}
+        >
+            <form onSubmit={onSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '25px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <div style={{
+                            width: '40px',
+                            height: '40px',
+                            borderRadius: '12px',
+                            background: 'rgba(163, 230, 53, 0.1)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            border: '1px solid rgba(163, 230, 53, 0.2)'
+                        }}>
+                            <Ticket size={20} color="var(--secondary)" />
+                        </div>
+                        <h3 style={{
+                            fontSize: '20px',
+                            fontWeight: '900',
+                            color: 'white',
+                            fontFamily: 'var(--font-main)',
+                            letterSpacing: '-0.02em'
+                        }}>
+                            {editingId ? 'Editar Cupón' : 'Nuevo Cupón'}
+                        </h3>
+                    </div>
+                    <motion.button
+                        whileTap={{ scale: 0.9 }}
+                        type="button"
+                        onClick={onClose}
+                        style={{
+                            color: 'rgba(255,255,255,0.4)',
+                            background: 'rgba(255,255,255,0.05)',
+                            border: 'none',
+                            borderRadius: '50%',
+                            width: '32px',
+                            height: '32px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            cursor: 'pointer'
+                        }}
+                    >
+                        <X size={18} />
+                    </motion.button>
                 </div>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
                     <div>
-                        <label style={{ display: 'block', fontSize: '11px', fontWeight: '900', color: 'var(--secondary)', marginBottom: '8px', textTransform: 'uppercase' }}>Código</label>
+                        <label style={labelStyle}>Código del Cupón</label>
                         <input
                             required
-                            placeholder="GOLF2024"
+                            placeholder="EJ: GOLF2024"
                             value={formData.code}
                             onChange={e => onChange({ ...formData, code: e.target.value.toUpperCase() })}
-                            style={{ width: '100%', padding: '12px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', boxSizing: 'border-box' }}
+                            style={inputStyle}
+                            className="glass-input"
                         />
-                    </div>
-                    <div>
-                        <label style={{ display: 'block', fontSize: '11px', fontWeight: '900', color: 'var(--secondary)', marginBottom: '8px', textTransform: 'uppercase' }}>Tipo</label>
-                        <select
-                            value={formData.discount_type}
-                            onChange={e => onChange({ ...formData, discount_type: e.target.value as any })}
-                            style={{ width: '100%', padding: '12px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }}
-                        >
-                            <option value="percentage">Porcentaje (%)</option>
-                            <option value="fixed">Valor Fijo ($)</option>
-                        </select>
                     </div>
 
-                    <div>
-                        <label style={{ display: 'block', fontSize: '11px', fontWeight: '900', color: 'var(--secondary)', marginBottom: '8px', textTransform: 'uppercase' }}>Valor Descuento</label>
-                        <input
-                            required
-                            type="number"
-                            placeholder={formData.discount_type === 'percentage' ? '10' : '50000'}
-                            value={formData.discount_value}
-                            onChange={e => onChange({ ...formData, discount_value: e.target.value })}
-                            style={{ width: '100%', padding: '12px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', boxSizing: 'border-box' }}
-                        />
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                        <div>
+                            <label style={labelStyle}>Tipo</label>
+                            <div style={{ position: 'relative' }}>
+                                <select
+                                    value={formData.discount_type}
+                                    onChange={e => onChange({ ...formData, discount_type: e.target.value as any })}
+                                    style={{ ...inputStyle, appearance: 'none' }}
+                                >
+                                    <option value="percentage">Porcentaje (%)</option>
+                                    <option value="fixed">Valor Fijo ($)</option>
+                                </select>
+                                <div style={{ position: 'absolute', right: '15px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', opacity: 0.5 }}>
+                                    <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M1 1L5 5L9 1" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label style={labelStyle}>Valor</label>
+                            <input
+                                required
+                                type="number"
+                                placeholder={formData.discount_type === 'percentage' ? '10' : '50000'}
+                                value={formData.discount_value}
+                                onChange={e => onChange({ ...formData, discount_value: e.target.value })}
+                                style={inputStyle}
+                            />
+                        </div>
                     </div>
-                    <div>
-                        <label style={{ display: 'block', fontSize: '11px', fontWeight: '900', color: 'var(--secondary)', marginBottom: '8px', textTransform: 'uppercase' }}>Límite de Usos</label>
-                        <input
-                            type="number"
-                            placeholder="Sin límite"
-                            value={formData.usage_limit}
-                            onChange={e => onChange({ ...formData, usage_limit: e.target.value })}
-                            style={{ width: '100%', padding: '12px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', boxSizing: 'border-box' }}
-                        />
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                        <div>
+                            <label style={labelStyle}>Límite de Usos</label>
+                            <input
+                                type="number"
+                                placeholder="Sin límite"
+                                value={formData.usage_limit}
+                                onChange={e => onChange({ ...formData, usage_limit: e.target.value })}
+                                style={inputStyle}
+                            />
+                        </div>
+                        <div>
+                            <label style={labelStyle}>Mínimo de Compra</label>
+                            <input
+                                type="number"
+                                placeholder="0"
+                                value={formData.min_purchase_amount}
+                                onChange={e => onChange({ ...formData, min_purchase_amount: e.target.value })}
+                                style={inputStyle}
+                            />
+                        </div>
                     </div>
-                    <div>
-                        <label style={{ display: 'block', fontSize: '11px', fontWeight: '900', color: 'var(--secondary)', marginBottom: '8px', textTransform: 'uppercase' }}>Mínimo de Compra</label>
-                        <input
-                            type="number"
-                            placeholder="0"
-                            value={formData.min_purchase_amount}
-                            onChange={e => onChange({ ...formData, min_purchase_amount: e.target.value })}
-                            style={{ width: '100%', padding: '12px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', boxSizing: 'border-box' }}
-                        />
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <input
-                            type="checkbox"
-                            id="coupon-active"
-                            checked={formData.is_active}
-                            onChange={e => onChange({ ...formData, is_active: e.target.checked })}
-                            style={{ width: '18px', height: '18px' }}
-                        />
-                        <label htmlFor="coupon-active" style={{ fontSize: '13px', fontWeight: '600' }}>Activo</label>
+
+                    <div
+                        onClick={() => onChange({ ...formData, is_active: !formData.is_active })}
+                        style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '12px',
+                            padding: '12px 18px',
+                            background: formData.is_active ? 'rgba(163, 230, 53, 0.08)' : 'rgba(255,255,255,0.03)',
+                            borderRadius: '16px',
+                            border: '1px solid ' + (formData.is_active ? 'rgba(163, 230, 53, 0.2)' : 'rgba(255,255,255,0.05)'),
+                            cursor: 'pointer',
+                            transition: 'all 0.2s ease'
+                        }}
+                    >
+                        <div style={{
+                            width: '20px',
+                            height: '20px',
+                            borderRadius: '6px',
+                            background: formData.is_active ? 'var(--secondary)' : 'rgba(255,255,255,0.1)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            transition: 'all 0.2s ease'
+                        }}>
+                            {formData.is_active && <svg width="12" height="9" viewBox="0 0 12 9" fill="none"><path d="M1 4.5L4.5 8L11 1.5" stroke="var(--primary)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" /></svg>}
+                        </div>
+                        <span style={{
+                            fontSize: '14px',
+                            fontWeight: '700',
+                            color: formData.is_active ? 'white' : 'rgba(255,255,255,0.5)',
+                            fontFamily: 'var(--font-main)'
+                        }}>
+                            Cupón Activo
+                        </span>
                     </div>
                 </div>
 
-                <button
-                    type="submit"
-                    disabled={saving}
-                    style={{ background: 'var(--secondary)', color: 'var(--primary)', padding: '15px', borderRadius: '16px', fontWeight: '900', marginTop: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', cursor: 'pointer' }}
-                >
-                    {saving ? <Loader2 className="animate-spin" size={20} /> : (editingId ? 'GUARDAR CAMBIOS' : 'CREAR CUPÓN')}
-                </button>
+                <div style={{ marginTop: '5px' }}>
+                    <button
+                        type="submit"
+                        disabled={saving}
+                        className="btn-primary"
+                        style={{ height: '56px' }}
+                    >
+                        {saving ? (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <div className="spinner-small" style={{ borderColor: 'var(--primary)', borderTopColor: 'transparent' }} />
+                                <span>GUARDANDO...</span>
+                            </div>
+                        ) : (
+                            editingId ? 'GUARDAR CAMBIOS' : 'CREAR CUPÓN'
+                        )}
+                    </button>
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        style={{
+                            width: '100%',
+                            background: 'transparent',
+                            border: 'none',
+                            color: 'rgba(255,255,255,0.4)',
+                            fontSize: '13px',
+                            fontWeight: '700',
+                            marginTop: '15px',
+                            cursor: 'pointer',
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.05em'
+                        }}
+                    >
+                        Cancelar
+                    </button>
+                </div>
             </form>
-        </Card>
+        </motion.div>
     );
 };
 

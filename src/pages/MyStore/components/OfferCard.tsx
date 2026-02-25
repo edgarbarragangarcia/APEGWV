@@ -41,7 +41,8 @@ const OfferCard: React.FC<OfferCardProps> = ({
                 borderRadius: '32px',
                 boxShadow: '0 15px 35px rgba(0,0,0,0.2)',
                 backdropFilter: 'blur(12px)',
-                WebkitBackdropFilter: 'blur(12px)'
+                WebkitBackdropFilter: 'blur(12px)',
+                fontFamily: 'var(--font-main)'
             }}
         >
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px', alignItems: 'center' }}>
