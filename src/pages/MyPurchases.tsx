@@ -340,14 +340,14 @@ const MyPurchases: React.FC = () => {
                             }}
                         >
                             {/* Fixed Header */}
-                            <div style={{ padding: '20px 20px 10px 20px', flexShrink: 0, position: 'relative', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                            <div style={{ padding: '20px 20px 15px 20px', flexShrink: 0, position: 'relative', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
                                 <button
                                     onClick={() => setSelectedOffer(null)}
                                     style={{
                                         position: 'absolute',
                                         top: '15px',
                                         right: '20px',
-                                        background: 'rgba(255,255,255,0.05)',
+                                        background: 'rgba(255,255,255,0.08)',
                                         border: 'none',
                                         borderRadius: '50%',
                                         width: '32px',
@@ -363,20 +363,30 @@ const MyPurchases: React.FC = () => {
                                 </button>
 
                                 <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-                                    <img
-                                        src={selectedOffer.product?.image_url || ''}
-                                        style={{ width: '48px', height: '48px', borderRadius: '10px', objectFit: 'cover' }}
-                                        alt=""
-                                    />
-                                    <div>
-                                        <h3 style={{ fontSize: '15px', fontWeight: '900', color: 'white' }}>Detalle de la Oferta</h3>
-                                        <p style={{ fontSize: '12px', color: 'var(--text-dim)' }}>{selectedOffer.product?.name}</p>
+                                    <div style={{ width: '48px', height: '48px', borderRadius: '12px', overflow: 'hidden', background: 'rgba(255,255,255,0.05)', flexShrink: 0 }}>
+                                        <img
+                                            src={selectedOffer.product?.image_url || ''}
+                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                            alt=""
+                                        />
+                                    </div>
+                                    <div style={{ overflow: 'hidden' }}>
+                                        <h3 style={{ fontSize: '15px', fontWeight: '900', color: 'white', margin: 0, lineHeight: 1.2 }}>Detalle de la Oferta</h3>
+                                        <p style={{ fontSize: '12px', color: 'var(--text-dim)', margin: 0, marginTop: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{selectedOffer.product?.name}</p>
                                     </div>
                                 </div>
                             </div>
 
                             {/* Scrollable Content */}
-                            <div style={{ flex: 1, overflowY: 'auto', minHeight: 0, padding: '15px 20px calc(25px + env(safe-area-inset-bottom)) 20px' }}>
+                            <div style={{
+                                flex: 1,
+                                overflowY: 'auto',
+                                minHeight: 0,
+                                padding: '20px 20px calc(40px + env(safe-area-inset-bottom)) 20px',
+                                WebkitOverflowScrolling: 'touch',
+                                display: 'flex',
+                                flexDirection: 'column'
+                            }}>
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '20px' }}>
                                     <div style={{ background: 'rgba(255,255,255,0.03)', padding: '12px 16px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
                                         <div style={{ fontSize: '10px', fontWeight: '900', color: 'var(--text-dim)', textTransform: 'uppercase', marginBottom: '2px' }}>Tu Oferta Original</div>
