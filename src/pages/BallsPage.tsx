@@ -45,7 +45,7 @@ const BallsPage: React.FC = () => {
                 right: '0',
                 bottom: 0,
                 overflowY: 'auto',
-                padding: '10px 24px 120px 20px',
+                padding: '10px 20px 120px 20px',
                 overflowX: 'hidden',
                 WebkitOverflowScrolling: 'touch',
                 zIndex: 10
