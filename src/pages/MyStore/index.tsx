@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Package, ShoppingBag, Handshake, Ticket, User } from 'lucide-react';
+import { Package, ShoppingBag, Handshake, Ticket, User } from 'lucide-react';
 import { useStoreData } from './hooks/useStoreData';
 import { supabase } from '../../services/SupabaseManager';
 

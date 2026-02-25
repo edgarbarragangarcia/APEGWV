@@ -20,12 +20,6 @@ const ProductCard: React.FC<ProductCardProps> = ({
     onStatusUpdate,
     onSuccess
 }) => {
-    const formatPrice = (val: string | number) => {
-        const numeric = val.toString().replace(/\D/g, '');
-        if (!numeric) return '';
-        return new Intl.NumberFormat('es-CO').format(parseInt(numeric));
-    };
-
     const handlePublishNow = async (e: React.MouseEvent) => {
         e.stopPropagation();
         try {
