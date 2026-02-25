@@ -120,8 +120,15 @@ export const useStoreData = () => {
     useEffect(() => {
         const params = new URLSearchParams(location.search);
         const tab = params.get('tab');
+        const offerId = params.get('offer_id');
+        const orderId = params.get('order_id');
+
         if (tab && ['products', 'orders', 'offers', 'coupons', 'profile'].includes(tab)) {
             setActiveTab(tab as any);
+        } else if (offerId) {
+            setActiveTab('offers');
+        } else if (orderId) {
+            setActiveTab('orders');
         }
     }, [location.search]);
 

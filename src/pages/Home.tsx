@@ -1424,7 +1424,7 @@ const Home: React.FC = () => {
                                                             title: 'Nueva oferta recibida',
                                                             message: `Has recibido una oferta de $${new Intl.NumberFormat('es-CO').format(parseInt(offerAmount))} por tu producto ${selectedProduct.name}`,
                                                             type: 'offer',
-                                                            link: `/mystore?tab=offers&offer_id=${insertedOffer.id}`,
+                                                            link: `/my-store?tab=offers&offer_id=${insertedOffer.id}`,
                                                             read: false
                                                         }]);
 
@@ -1580,7 +1580,7 @@ const Home: React.FC = () => {
                                                                 title: '¡Contraoferta aceptada!',
                                                                 message: `El comprador ha aceptado tu contraoferta de $${(selectedOffer.counter_amount || 0).toLocaleString()} por ${selectedOffer.product?.name || 'su producto'}`,
                                                                 type: 'offer',
-                                                                link: '/mystore?tab=offers',
+                                                                link: '/my-store?tab=offers',
                                                                 read: false
                                                             }]);
 
@@ -1693,7 +1693,7 @@ const Home: React.FC = () => {
                                                             title: 'Nuevo mensaje sobre oferta',
                                                             message: `El comprador de ${selectedOffer.product?.name} dice: ${replyMessage}`,
                                                             type: 'offer',
-                                                            link: '/mystore?tab=offers',
+                                                            link: '/my-store?tab=offers',
                                                             read: false
                                                         }]);
 
