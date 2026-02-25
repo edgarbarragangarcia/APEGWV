@@ -385,7 +385,7 @@ const MyReservations: React.FC<MyReservationsProps> = ({ onRequestSwitchTab }) =
 
                             <AnimatePresence>
                                 {showCancelled && (
-                                    <motion.div
+                                    <motion.div key="cancelled-view" 
                                         initial={{ height: 0, opacity: 0 }}
                                         animate={{ height: 'auto', opacity: 1 }}
                                         exit={{ height: 0, opacity: 0 }}
@@ -476,7 +476,7 @@ const MyReservations: React.FC<MyReservationsProps> = ({ onRequestSwitchTab }) =
         <AnimatePresence>
             {/* Modal Cancelación Cupo (Existente) */}
             {showConfirmModal && (
-                <div style={{
+                <div key="confirm-modal"  style={{
                     position: 'fixed',
                     inset: 0,
                     zIndex: 2000,
@@ -617,7 +617,7 @@ const MyReservations: React.FC<MyReservationsProps> = ({ onRequestSwitchTab }) =
             )}
 
             {showSuccessModal && (
-                <div style={{ position: 'fixed', inset: 0, zIndex: 2100, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(15px)' }}>
+                <div key="success-modal"  style={{ position: 'fixed', inset: 0, zIndex: 2100, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(15px)' }}>
                     <motion.div
                         initial={{ scale: 0.8, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}

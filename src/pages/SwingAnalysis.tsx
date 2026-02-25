@@ -519,7 +519,7 @@ const SwingAnalysis: React.FC = () => {
             {/* Upload Modal */}
             <AnimatePresence>
                 {showUploadModal && (
-                    <div style={{ position: 'fixed', inset: 0, zIndex: 1100, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(12px)', padding: '20px' }}
+                    <div key="upload-modal" style={{ position: 'fixed', inset: 0, zIndex: 1100, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(12px)', padding: '20px' }}
                         onClick={processingStep === 'none' ? closeModal : undefined}
                     >
                         <motion.div
@@ -850,7 +850,7 @@ const AnalysisCard = ({ item, isExpanded, onToggle, onDelete }: { item: SwingAna
 
                 <AnimatePresence>
                     {isExpanded && (
-                        <motion.div
+                        <motion.div key="expanded-view" 
                             initial={{ height: 0, opacity: 0 }}
                             animate={{ height: 'auto', opacity: 1 }}
                             exit={{ height: 0, opacity: 0 }}
@@ -993,7 +993,7 @@ const ModernTechnicalCard = ({ title, content, icon, color }: { title: string; c
             </div>
             <AnimatePresence>
                 {isOpen && (
-                    <motion.div
+                    <motion.div key="open-view" 
                         initial={{ height: 0, opacity: 0 }}
                         animate={{ height: 'auto', opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}

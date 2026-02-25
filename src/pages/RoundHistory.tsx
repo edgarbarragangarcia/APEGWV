@@ -322,7 +322,7 @@ const RoundHistory: React.FC = () => {
 
                 {/* Custom Confirmation Modal */}
                 {deleteModal.isOpen && (
-                    <div style={{
+                    <div key="delete-modal"  style={{
                         position: 'fixed',
                         top: 0,
                         left: 0,

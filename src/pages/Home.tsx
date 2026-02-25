@@ -804,6 +804,7 @@ const Home: React.FC = () => {
                 {
                     selectedProduct && (
                         <motion.div
+                            key="product-modal"
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
@@ -1308,7 +1309,7 @@ const Home: React.FC = () => {
 
             <AnimatePresence>
                 {showOfferModal && selectedProduct && (
-                    <div style={{
+                    <div key="offer-modal" style={{
                         position: 'fixed',
                         inset: 0,
                         zIndex: 110000, // Higher than ProductModal
@@ -1459,7 +1460,7 @@ const Home: React.FC = () => {
                 {/* Detalle de Oferta (Para el comprador) */}
                 <AnimatePresence>
                     {selectedOffer && (
-                        <div style={{
+                        <div key="offer-detail" style={{
                             position: 'fixed',
                             inset: 0,
                             zIndex: 110000,

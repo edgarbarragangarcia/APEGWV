@@ -503,7 +503,7 @@ const PlayModeSelection: React.FC = () => {
             <AnimatePresence>
                 {selectedRound && (
                     <>
-                        <motion.div
+                        <motion.div key="round-details" 
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
@@ -636,7 +636,7 @@ const PlayModeSelection: React.FC = () => {
             {/* Custom Confirmation Modal */}
             <AnimatePresence>
                 {deleteModal.isOpen && (
-                    <div style={{
+                    <div key="delete-modal"  style={{
                         position: 'fixed',
                         top: 0,
                         left: 0,
