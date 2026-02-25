@@ -365,9 +365,9 @@ const Home: React.FC = () => {
                             WebkitMaskImage: 'linear-gradient(to right, transparent, black 20px, black calc(100% - 20px), transparent)',
                             maskImage: 'linear-gradient(to right, transparent, black 20px, black calc(100% - 20px), transparent)'
                         }}>
-                            {categories.map(tab => (
+                            {categories.map((tab, idx) => (
                                 <button
-                                    key={tab}
+                                    key={tab || `tab-${idx}`}
                                     onClick={() => {
                                         if (tab === 'Todo') {
                                             setActiveTab(tab);
@@ -556,9 +556,9 @@ const Home: React.FC = () => {
                                     paddingBottom: '20px',
                                     justifyContent: 'center'
                                 }}>
-                                    {filteredProducts.map((product) => (
+                                    {filteredProducts.map((product, index) => (
                                         <motion.div
-                                            key={product.id}
+                                            key={product.id || `product-${index}`}
                                             initial={{ opacity: 0, y: 15 }}
                                             whileInView={{ opacity: 1, y: 0 }}
                                             viewport={{ once: true, margin: "0px 0px -50px 0px" }}
@@ -587,9 +587,9 @@ const Home: React.FC = () => {
                                         <div style={{ marginBottom: '24px' }}>
                                             <h4 style={{ fontSize: '16px', fontWeight: '800', color: 'white', marginBottom: '12px', paddingLeft: '4px' }}>Mis Ofertas</h4>
                                             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', paddingBottom: '10px' }}>
-                                                {myOffers.map((offer) => (
+                                                {myOffers.map((offer, index) => (
                                                     <motion.div
-                                                        key={offer.id}
+                                                        key={offer.id || `offer-${index}`}
                                                         whileTap={{ scale: 0.98 }}
                                                         onClick={() => setSelectedOffer(offer)}
                                                         style={{
@@ -647,9 +647,9 @@ const Home: React.FC = () => {
                                     <h4 style={{ fontSize: '16px', fontWeight: '800', color: 'white', marginBottom: '12px', paddingLeft: '4px' }}>Mis Pedidos</h4>
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', paddingBottom: '10px' }}>
                                         {myOrders.length > 0 ? (
-                                            myOrders.map((order) => (
+                                            myOrders.map((order, index) => (
                                                 <motion.div
-                                                    key={order.id}
+                                                    key={order.id || `order-${index}`}
                                                     whileTap={{ scale: 0.98 }}
                                                     style={{
                                                         width: '100%',
@@ -732,9 +732,9 @@ const Home: React.FC = () => {
 
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                             {tournaments.length > 0 ? (
-                                tournaments.map(tournament => (
+                                tournaments.map((tournament, index) => (
                                     <motion.div
-                                        key={tournament.id}
+                                        key={tournament.id || `tournament-${index}`}
                                         whileTap={{ scale: 0.98 }}
                                         onClick={() => navigate('/tournaments')}
                                         style={{

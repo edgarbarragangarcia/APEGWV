@@ -1094,7 +1094,7 @@ const MyStore: React.FC = () => {
                         { id: 'offers', label: 'OFERTAS', icon: Handshake, count: offers.filter(o => o.status === 'pending').length },
                         { id: 'coupons', label: 'CUPONES', icon: Ticket, count: 0 },
                         { id: 'profile', label: 'AJUSTES', icon: Settings, count: 0 }
-                    ].map((tab) => {
+                    ].map((tab, idx) => {
                         const Icon = tab.icon;
                         const isActive = activeTab === tab.id;
                         return (
@@ -1899,7 +1899,7 @@ const MyStore: React.FC = () => {
                                         products
                                             .filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()))
                                             .map(product => (
-                                                <div key={product.id} className="animate-fade-up">
+                                                <div key={product.id || `product-${index}`} className="animate-fade-up">
                                                     <div
                                                         style={{
                                                             position: 'relative',
@@ -2191,7 +2191,7 @@ const MyStore: React.FC = () => {
                                             (o.product?.name || '').toLowerCase().includes(searchTerm.toLowerCase())
                                         )
                                         .map(order => (
-                                            <Card key={order.id} style={{ padding: '20px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px' }}>
+                                            <Card key={order.id || `order-${index}`} style={{ padding: '20px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px' }}>
                                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '18px', alignItems: 'center' }}>
                                                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                                         <span style={{
@@ -2480,7 +2480,7 @@ const MyStore: React.FC = () => {
                                             (o.product?.name || '').toLowerCase().includes(searchTerm.toLowerCase())
                                         )
                                         .map(offer => (
-                                            <Card key={offer.id} style={{ padding: '20px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px' }}>
+                                            <Card key={offer.id || `offer-${index}`} style={{ padding: '20px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px' }}>
                                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '18px', alignItems: 'center' }}>
                                                     <span style={{
                                                         padding: '6px 14px',
