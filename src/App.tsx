@@ -23,7 +23,7 @@ import RoundHistory from './pages/RoundHistory';
 import RoundDetail from './pages/RoundDetail';
 import EditRound from './pages/EditRound';
 import Settings from './pages/Settings';
-import MyStore from './pages/MyStore';
+import MyStore from './pages/MyStore/index';
 import GreenFee from './pages/GreenFee';
 import CourseReservation from './pages/CourseReservation';
 import MyReservations from './pages/MyReservations';
@@ -32,14 +32,7 @@ import NotificationsPage from './pages/NotificationsPage';
 import TournamentManager from './pages/TournamentManager';
 import TournamentParticipants from './pages/TournamentParticipants';
 import CheckoutPage from './pages/CheckoutPage';
-import BallsPage from './pages/BallsPage';
-import ClothingPage from './pages/ClothingPage';
-import AccessoriesPage from './pages/AccessoriesPage';
-import ShoesPage from './pages/ShoesPage';
-import ClubsPage from './pages/ClubsPage';
-import GlovesPage from './pages/GlovesPage';
-import OthersPage from './pages/OthersPage';
-import CapsPage from './pages/CapsPage';
+import CategoryPage from './pages/CategoryPage';
 import CommunityPage from './pages/CommunityPage';
 import MyBag from './pages/MyBag';
 import SwingAnalysis from './pages/SwingAnalysis';
@@ -178,14 +171,7 @@ const AppContent: React.FC = () => {
               <Route path="/cart" element={<CartPage />} />
               <Route path="/checkout" element={<CheckoutPage />} />
               <Route path="/my-purchases" element={<MyPurchases />} />
-              <Route path="/category/bolas" element={<BallsPage />} />
-              <Route path="/category/ropa" element={<ClothingPage />} />
-              <Route path="/category/accesorios" element={<AccessoriesPage />} />
-              <Route path="/category/zapatos" element={<ShoesPage />} />
-              <Route path="/category/palos" element={<ClubsPage />} />
-              <Route path="/category/guantes" element={<GlovesPage />} />
-              <Route path="/category/gorras" element={<CapsPage />} />
-              <Route path="/category/otros" element={<OthersPage />} />
+              <Route path="/category/:categoryId" element={<CategoryPage />} />
               <Route path="/my-bag" element={<MyBag />} />
               <Route path="/swing-analysis" element={<SwingAnalysis />} />
               <Route path="/live-betting" element={<LiveBetting />} />

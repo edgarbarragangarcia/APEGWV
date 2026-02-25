@@ -1,30 +1,30 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Package, ShoppingBag, Handshake, Ticket, User } from 'lucide-react';
-import { useStoreData } from './MyStore/hooks/useStoreData';
-import { supabase } from '../services/SupabaseManager';
+import { useStoreData } from './hooks/useStoreData';
+import { supabase } from '../../services/SupabaseManager';
 
 // Components
-import ProductsTab from './MyStore/tabs/ProductsTab';
-import OrdersTab from './MyStore/tabs/OrdersTab';
-import OffersTab from './MyStore/tabs/OffersTab';
-import CouponsTab from './MyStore/tabs/CouponsTab';
-import ProfileTab from './MyStore/tabs/ProfileTab';
+import ProductsTab from './tabs/ProductsTab';
+import OrdersTab from './tabs/OrdersTab';
+import OffersTab from './tabs/OffersTab';
+import CouponsTab from './tabs/CouponsTab';
+import ProfileTab from './tabs/ProfileTab';
 
 // Modals
-import ProductForm from './MyStore/components/ProductForm';
-import DeleteModal from './MyStore/components/DeleteModal';
-import CounterOfferModal from './MyStore/components/CounterOfferModal';
-import OrderEditModal from './MyStore/components/OrderEditModal';
-import SuccessModal from './MyStore/components/SuccessModal';
-import CouponForm from './MyStore/components/CouponForm';
+import ProductForm from './components/ProductForm';
+import DeleteModal from './components/DeleteModal';
+import CounterOfferModal from './components/CounterOfferModal';
+import OrderEditModal from './components/OrderEditModal';
+import SuccessModal from './components/SuccessModal';
+import CouponForm from './components/CouponForm';
 
 // Global Components
-import TrackingScanner from '../components/TrackingScanner';
-import StoreOnboarding from '../components/StoreOnboarding';
-import Skeleton from '../components/Skeleton';
-import PageHeader from '../components/PageHeader';
-import PageHero from '../components/PageHero';
+import TrackingScanner from '../../components/TrackingScanner';
+import StoreOnboarding from '../../components/StoreOnboarding';
+import Skeleton from '../../components/Skeleton';
+import PageHeader from '../../components/PageHeader';
+import PageHero from '../../components/PageHero';
 
 const MyStore: React.FC = () => {
     const store = useStoreData();

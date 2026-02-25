@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Instagram, Youtube, ExternalLink, MessageSquare, Heart, Share2, Camera } from 'lucide-react';
+import { Instagram, Youtube, ExternalLink, MessageSquare, Heart, Share2 } from 'lucide-react';
 import PageHeader from '../components/PageHeader';
 import PageHero from '../components/PageHero';
 import { supabase } from '../services/SupabaseManager';
@@ -16,7 +16,7 @@ interface Post {
     user: {
         full_name: string | null;
         avatar_url: string | null;
-    };
+    } | null;
 }
 
 const CommunityPage: React.FC = () => {
@@ -93,22 +93,6 @@ const CommunityPage: React.FC = () => {
                     <InstagramCard />
                 </div>
 
-                <div style={{
-                    background: 'rgba(255,255,255,0.05)',
-                    borderRadius: '20px',
-                    padding: '15px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '15px',
-                    border: '1px solid rgba(255,255,255,0.1)',
-                    backdropFilter: 'blur(10px)'
-                }}>
-                    <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'var(--primary-light)', border: '1px solid rgba(255,255,255,0.1)' }}></div>
-                    <div style={{ flex: 1, background: 'rgba(255,255,255,0.05)', padding: '12px 15px', borderRadius: '25px', color: 'rgba(255,255,255,0.4)', fontSize: '13px' }}>
-                        ¿Qué hay de nuevo en el campo?
-                    </div>
-                    <Camera color="var(--secondary)" size={20} />
-                </div>
 
                 <div style={{ fontSize: '10px', fontWeight: '800', color: 'rgba(255,255,255,0.2)', textTransform: 'uppercase', letterSpacing: '2px', marginLeft: '5px' }}>
                     Muro de la Comunidad
@@ -141,10 +125,10 @@ const PostCard: React.FC<{ post: Post }> = ({ post }) => (
     }}>
         <div style={{ padding: '15px', display: 'flex', alignItems: 'center', gap: '12px' }}>
             <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--primary-light)', border: '1px solid var(--secondary)' }}>
-                {post.user.avatar_url && <img src={post.user.avatar_url} style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />}
+                {post.user?.avatar_url && <img src={post.user.avatar_url} style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />}
             </div>
             <div>
-                <h4 style={{ margin: 0, fontSize: '14px', fontWeight: '800', color: 'white' }}>{post.user.full_name || 'Golfista APEG'}</h4>
+                <h4 style={{ margin: 0, fontSize: '14px', fontWeight: '800', color: 'white' }}>{post.user?.full_name || 'Golfista APEG'}</h4>
                 <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>{new Date(post.created_at).toLocaleDateString()}</span>
             </div>
         </div>

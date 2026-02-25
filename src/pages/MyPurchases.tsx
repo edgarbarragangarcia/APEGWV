@@ -328,228 +328,235 @@ const MyPurchases: React.FC = () => {
                                 width: '100%',
                                 maxWidth: 'var(--app-max-width)',
                                 background: '#121212',
-                                borderTopLeftRadius: '32px',
-                                borderTopRightRadius: '32px',
-                                padding: '30px 25px calc(30px + env(safe-area-inset-bottom)) 25px',
+                                borderTopLeftRadius: '28px',
+                                borderTopRightRadius: '28px',
                                 position: 'relative',
                                 boxShadow: '0 -10px 40px rgba(0,0,0,0.5)',
                                 border: '1px solid rgba(255,255,255,0.05)',
-                                overflowY: 'auto',
-                                maxHeight: '90vh'
+                                display: 'flex',
+                                flexDirection: 'column',
+                                maxHeight: '92vh',
+                                overflow: 'hidden'
                             }}
                         >
-                            <button
-                                onClick={() => setSelectedOffer(null)}
-                                style={{
-                                    position: 'absolute',
-                                    top: '20px',
-                                    right: '25px',
-                                    background: 'rgba(255,255,255,0.05)',
-                                    border: 'none',
-                                    borderRadius: '50%',
-                                    width: '36px',
-                                    height: '36px',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    color: 'white',
-                                    zIndex: 10
-                                }}
-                            >
-                                <X size={20} />
-                            </button>
+                            {/* Fixed Header */}
+                            <div style={{ padding: '20px 20px 10px 20px', flexShrink: 0, position: 'relative', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                                <button
+                                    onClick={() => setSelectedOffer(null)}
+                                    style={{
+                                        position: 'absolute',
+                                        top: '15px',
+                                        right: '20px',
+                                        background: 'rgba(255,255,255,0.05)',
+                                        border: 'none',
+                                        borderRadius: '50%',
+                                        width: '32px',
+                                        height: '32px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        color: 'white',
+                                        zIndex: 10
+                                    }}
+                                >
+                                    <X size={18} />
+                                </button>
 
-                            <div style={{ display: 'flex', gap: '20px', marginBottom: '25px', alignItems: 'center' }}>
-                                <img
-                                    src={selectedOffer.product?.image_url || ''}
-                                    style={{ width: '70px', height: '70px', borderRadius: '16px', objectFit: 'cover' }}
-                                    alt=""
-                                />
-                                <div>
-                                    <h3 style={{ fontSize: '18px', fontWeight: '900', color: 'white' }}>Detalle de la Oferta</h3>
-                                    <p style={{ fontSize: '14px', color: 'var(--text-dim)' }}>{selectedOffer.product?.name}</p>
+                                <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+                                    <img
+                                        src={selectedOffer.product?.image_url || ''}
+                                        style={{ width: '48px', height: '48px', borderRadius: '10px', objectFit: 'cover' }}
+                                        alt=""
+                                    />
+                                    <div>
+                                        <h3 style={{ fontSize: '15px', fontWeight: '900', color: 'white' }}>Detalle de la Oferta</h3>
+                                        <p style={{ fontSize: '12px', color: 'var(--text-dim)' }}>{selectedOffer.product?.name}</p>
+                                    </div>
                                 </div>
                             </div>
 
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '24px' }}>
-                                <div style={{ background: 'rgba(255,255,255,0.03)', padding: '16px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                                    <div style={{ fontSize: '11px', fontWeight: '900', color: 'var(--text-dim)', textTransform: 'uppercase', marginBottom: '4px' }}>Tu Oferta Original</div>
-                                    <div style={{ fontSize: '20px', fontWeight: '900', color: 'white' }}>${(selectedOffer.amount || selectedOffer.offer_amount)?.toLocaleString()}</div>
-                                </div>
+                            {/* Scrollable Content */}
+                            <div style={{ flex: 1, overflowY: 'auto', minHeight: 0, padding: '15px 20px calc(25px + env(safe-area-inset-bottom)) 20px' }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '20px' }}>
+                                    <div style={{ background: 'rgba(255,255,255,0.03)', padding: '12px 16px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                        <div style={{ fontSize: '10px', fontWeight: '900', color: 'var(--text-dim)', textTransform: 'uppercase', marginBottom: '2px' }}>Tu Oferta Original</div>
+                                        <div style={{ fontSize: '18px', fontWeight: '900', color: 'white' }}>${(selectedOffer.amount || selectedOffer.offer_amount)?.toLocaleString()}</div>
+                                    </div>
 
-                                {selectedOffer.status === 'countered' && (
-                                    <div>
-                                        <div style={{ background: 'rgba(139, 92, 246, 0.1)', padding: '20px', borderRadius: '24px', border: '1px solid rgba(139, 92, 246, 0.2)' }}>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
-                                                <div>
-                                                    <div style={{ fontSize: '11px', fontWeight: '900', color: '#a78bfa', textTransform: 'uppercase', marginBottom: '4px' }}>Contraoferta del Vendedor</div>
-                                                    <div style={{ fontSize: '24px', fontWeight: '900', color: 'white' }}>${selectedOffer.counter_amount?.toLocaleString()}</div>
+                                    {selectedOffer.status === 'countered' && (
+                                        <div>
+                                            <div style={{ background: 'rgba(139, 92, 246, 0.1)', padding: '16px', borderRadius: '20px', border: '1px solid rgba(139, 92, 246, 0.2)' }}>
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
+                                                    <div>
+                                                        <div style={{ fontSize: '10px', fontWeight: '900', color: '#a78bfa', textTransform: 'uppercase', marginBottom: '2px' }}>Contraoferta del Vendedor</div>
+                                                        <div style={{ fontSize: '20px', fontWeight: '900', color: 'white' }}>${selectedOffer.counter_amount?.toLocaleString()}</div>
+                                                    </div>
+                                                    <div style={{ background: '#8b5cf6', padding: '3px 8px', borderRadius: '6px', fontSize: '9px', fontWeight: '900', color: 'white' }}>
+                                                        REVISAR
+                                                    </div>
                                                 </div>
-                                                <div style={{ background: '#8b5cf6', padding: '4px 10px', borderRadius: '8px', fontSize: '10px', fontWeight: '900', color: 'white' }}>
-                                                    REVISAR
-                                                </div>
+
+                                                {selectedOffer.counter_message && (
+                                                    <div style={{ background: 'rgba(0,0,0,0.2)', padding: '10px', borderRadius: '10px', marginTop: '6px' }}>
+                                                        <div style={{ fontSize: '10px', fontWeight: '800', color: '#a78bfa', marginBottom: '2px' }}>Respuesta del vendedor:</div>
+                                                        <p style={{ fontSize: '13px', color: 'white', fontStyle: 'italic', margin: 0 }}>"{selectedOffer.counter_message}"</p>
+                                                    </div>
+                                                )}
                                             </div>
 
-                                            {selectedOffer.counter_message && (
-                                                <div style={{ background: 'rgba(0,0,0,0.2)', padding: '12px', borderRadius: '12px', marginTop: '8px' }}>
-                                                    <div style={{ fontSize: '11px', fontWeight: '800', color: '#a78bfa', marginBottom: '4px' }}>Respuesta del vendedor:</div>
-                                                    <p style={{ fontSize: '14px', color: 'white', fontStyle: 'italic', margin: 0 }}>"{selectedOffer.counter_message}"</p>
-                                                </div>
-                                            )}
-                                        </div>
+                                            <motion.button
+                                                whileTap={{ scale: 0.95 }}
+                                                disabled={acceptingCounter}
+                                                onClick={async () => {
+                                                    setAcceptingCounter(true);
+                                                    try {
+                                                        const { error } = await supabase
+                                                            .from('offers')
+                                                            .update({
+                                                                status: 'accepted',
+                                                                offer_amount: selectedOffer.counter_amount
+                                                            })
+                                                            .eq('id', selectedOffer.id);
 
+                                                        if (error) throw error;
+
+                                                        // Notify seller
+                                                        await supabase
+                                                            .from('notifications')
+                                                            .insert([{
+                                                                user_id: selectedOffer.seller_id,
+                                                                title: '¡Contraoferta aceptada!',
+                                                                message: `El comprador ha aceptado tu contraoferta de $${(selectedOffer.counter_amount || 0).toLocaleString()} por ${selectedOffer.product?.name || 'su producto'}`,
+                                                                type: 'offer',
+                                                                link: '/my-store?tab=offers',
+                                                                read: false
+                                                            }]);
+
+                                                        warning('¡Felicidades! Has aceptado la contraoferta.');
+                                                        fetchOrdersAndOffers(); // Refresh the list
+                                                        setSelectedOffer(null);
+                                                        navigate('/checkout', { state: { offer: selectedOffer } });
+                                                    } catch (err) {
+                                                        console.error(err);
+                                                    } finally {
+                                                        setAcceptingCounter(false);
+                                                    }
+                                                }}
+                                                style={{
+                                                    marginTop: '12px',
+                                                    width: '100%',
+                                                    height: '48px',
+                                                    borderRadius: '14px',
+                                                    background: 'var(--secondary)',
+                                                    color: 'var(--primary)',
+                                                    border: 'none',
+                                                    fontWeight: '900',
+                                                    fontSize: '14px'
+                                                }}
+                                            >
+                                                {acceptingCounter ? 'PROCESANDO...' : `ACEPTAR Y COMPRAR POR $${selectedOffer.counter_amount?.toLocaleString()}`}
+                                            </motion.button>
+                                        </div>
+                                    )}
+
+                                    {selectedOffer.status === 'accepted' && (
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                            <div style={{ background: 'rgba(16, 185, 129, 0.1)', padding: '16px', borderRadius: '20px', border: '1px solid rgba(16, 185, 129, 0.2)' }}>
+                                                <div style={{ fontSize: '10px', fontWeight: '900', color: '#10b981', textTransform: 'uppercase', marginBottom: '2px' }}>Estado</div>
+                                                <div style={{ fontSize: '16px', fontWeight: '900', color: 'white' }}>¡Oferta Aceptada!</div>
+                                                <p style={{ fontSize: '13px', color: 'var(--text-dim)', marginTop: '6px' }}>El vendedor ha aceptado tu oferta. Tienes 1 hora para completar el pago.</p>
+                                            </div>
+
+                                            <motion.button
+                                                whileTap={{ scale: 0.95 }}
+                                                onClick={() => {
+                                                    setSelectedOffer(null);
+                                                    navigate('/checkout', { state: { offer: selectedOffer } });
+                                                }}
+                                                style={{
+                                                    width: '100%',
+                                                    height: '48px',
+                                                    borderRadius: '14px',
+                                                    background: 'var(--secondary)',
+                                                    color: 'var(--primary)',
+                                                    border: 'none',
+                                                    fontWeight: '900',
+                                                    fontSize: '14px'
+                                                }}
+                                            >
+                                                COMPRAR AHORA POR ${(selectedOffer.offer_amount || selectedOffer.amount)?.toLocaleString()}
+                                            </motion.button>
+                                        </div>
+                                    )}
+
+                                    {selectedOffer.status === 'rejected' && (
+                                        <div style={{ background: 'rgba(239, 68, 68, 0.1)', padding: '16px', borderRadius: '20px', border: '1px solid rgba(239, 68, 68, 0.2)' }}>
+                                            <div style={{ fontSize: '10px', fontWeight: '900', color: '#ef4444', textTransform: 'uppercase', marginBottom: '2px' }}>Estado</div>
+                                            <div style={{ fontSize: '16px', fontWeight: '900', color: 'white' }}>Oferta Rechazada</div>
+                                            <p style={{ fontSize: '13px', color: 'var(--text-dim)', marginTop: '6px' }}>Lo sentimos, el vendedor no ha aceptado tu propuesta en este momento.</p>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Enviar Mensaje al Vendedor */}
+                                {selectedOffer.status !== 'rejected' && (
+                                    <div style={{ marginTop: '8px' }}>
+                                        <label style={{ display: 'block', fontSize: '10px', fontWeight: '900', color: 'var(--text-dim)', textTransform: 'uppercase', marginBottom: '8px' }}>Responder al Vendedor</label>
+                                        <textarea
+                                            placeholder="Escribe un mensaje aquí..."
+                                            value={replyMessage}
+                                            onChange={(e) => setReplyMessage(e.target.value)}
+                                            style={{
+                                                width: '100%',
+                                                background: 'rgba(255,255,255,0.03)',
+                                                border: '1px solid rgba(255,255,255,0.1)',
+                                                borderRadius: '16px',
+                                                padding: '12px',
+                                                color: 'white',
+                                                fontSize: '13px',
+                                                fontWeight: '500',
+                                                outline: 'none',
+                                                minHeight: '80px',
+                                                resize: 'none',
+                                                marginBottom: '12px'
+                                            }}
+                                        />
                                         <motion.button
                                             whileTap={{ scale: 0.95 }}
-                                            disabled={acceptingCounter}
+                                            disabled={sendingReply || !replyMessage}
                                             onClick={async () => {
-                                                setAcceptingCounter(true);
+                                                setSendingReply(true);
                                                 try {
                                                     const { error } = await supabase
-                                                        .from('offers')
-                                                        .update({
-                                                            status: 'accepted',
-                                                            offer_amount: selectedOffer.counter_amount
-                                                        })
-                                                        .eq('id', selectedOffer.id);
-
-                                                    if (error) throw error;
-
-                                                    // Notify seller
-                                                    await supabase
                                                         .from('notifications')
                                                         .insert([{
                                                             user_id: selectedOffer.seller_id,
-                                                            title: '¡Contraoferta aceptada!',
-                                                            message: `El comprador ha aceptado tu contraoferta de $${(selectedOffer.counter_amount || 0).toLocaleString()} por ${selectedOffer.product?.name || 'su producto'}`,
+                                                            title: 'Nuevo mensaje sobre oferta',
+                                                            message: `El comprador de ${selectedOffer.product?.name} dice: ${replyMessage}`,
                                                             type: 'offer',
                                                             link: '/my-store?tab=offers',
                                                             read: false
                                                         }]);
 
-                                                    warning('¡Felicidades! Has aceptado la contraoferta.');
-                                                    fetchOrdersAndOffers(); // Refresh the list
+                                                    if (error) throw error;
+
+                                                    warning('¡Mensaje enviado al vendedor!');
+                                                    setReplyMessage('');
                                                     setSelectedOffer(null);
-                                                    navigate('/checkout', { state: { offer: selectedOffer } });
                                                 } catch (err) {
                                                     console.error(err);
                                                 } finally {
-                                                    setAcceptingCounter(false);
+                                                    setSendingReply(false);
                                                 }
                                             }}
-                                            style={{
-                                                marginTop: '16px',
-                                                width: '100%',
-                                                height: '56px',
-                                                borderRadius: '16px',
-                                                background: 'var(--secondary)',
-                                                color: 'var(--primary)',
-                                                border: 'none',
-                                                fontWeight: '900',
-                                                fontSize: '16px'
-                                            }}
+                                            className="btn-primary"
+                                            style={{ width: '100%', height: '48px', fontSize: '14px' }}
                                         >
-                                            {acceptingCounter ? 'PROCESANDO...' : `ACEPTAR Y COMPRAR POR $${selectedOffer.counter_amount?.toLocaleString()}`}
+                                            {sendingReply ? 'ENVIANDO...' : 'ENVIAR MENSAJE'}
                                         </motion.button>
-                                    </div>
-                                )}
-
-                                {selectedOffer.status === 'accepted' && (
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                                        <div style={{ background: 'rgba(16, 185, 129, 0.1)', padding: '20px', borderRadius: '24px', border: '1px solid rgba(16, 185, 129, 0.2)' }}>
-                                            <div style={{ fontSize: '11px', fontWeight: '900', color: '#10b981', textTransform: 'uppercase', marginBottom: '4px' }}>Estado</div>
-                                            <div style={{ fontSize: '18px', fontWeight: '900', color: 'white' }}>¡Oferta Aceptada!</div>
-                                            <p style={{ fontSize: '14px', color: 'var(--text-dim)', marginTop: '8px' }}>El vendedor ha aceptado tu oferta. Tienes 1 hora para completar el pago.</p>
-                                        </div>
-
-                                        <motion.button
-                                            whileTap={{ scale: 0.95 }}
-                                            onClick={() => {
-                                                setSelectedOffer(null);
-                                                navigate('/checkout', { state: { offer: selectedOffer } });
-                                            }}
-                                            style={{
-                                                width: '100%',
-                                                height: '56px',
-                                                borderRadius: '16px',
-                                                background: 'var(--secondary)',
-                                                color: 'var(--primary)',
-                                                border: 'none',
-                                                fontWeight: '900',
-                                                fontSize: '16px'
-                                            }}
-                                        >
-                                            COMPRAR AHORA POR ${(selectedOffer.offer_amount || selectedOffer.amount)?.toLocaleString()}
-                                        </motion.button>
-                                    </div>
-                                )}
-
-                                {selectedOffer.status === 'rejected' && (
-                                    <div style={{ background: 'rgba(239, 68, 68, 0.1)', padding: '20px', borderRadius: '24px', border: '1px solid rgba(239, 68, 68, 0.2)' }}>
-                                        <div style={{ fontSize: '11px', fontWeight: '900', color: '#ef4444', textTransform: 'uppercase', marginBottom: '4px' }}>Estado</div>
-                                        <div style={{ fontSize: '18px', fontWeight: '900', color: 'white' }}>Oferta Rechazada</div>
-                                        <p style={{ fontSize: '14px', color: 'var(--text-dim)', marginTop: '8px' }}>Lo sentimos, el vendedor no ha aceptado tu propuesta en este momento.</p>
                                     </div>
                                 )}
                             </div>
-
-                            {/* Enviar Mensaje al Vendedor */}
-                            {selectedOffer.status !== 'rejected' && (
-                                <div style={{ marginTop: '10px' }}>
-                                    <label style={{ display: 'block', fontSize: '11px', fontWeight: '900', color: 'var(--text-dim)', textTransform: 'uppercase', marginBottom: '10px' }}>Responder al Vendedor</label>
-                                    <textarea
-                                        placeholder="Escribe un mensaje aquí..."
-                                        value={replyMessage}
-                                        onChange={(e) => setReplyMessage(e.target.value)}
-                                        style={{
-                                            width: '100%',
-                                            background: 'rgba(255,255,255,0.03)',
-                                            border: '1px solid rgba(255,255,255,0.1)',
-                                            borderRadius: '20px',
-                                            padding: '16px',
-                                            color: 'white',
-                                            fontSize: '14px',
-                                            fontWeight: '500',
-                                            outline: 'none',
-                                            minHeight: '100px',
-                                            resize: 'none',
-                                            marginBottom: '16px'
-                                        }}
-                                    />
-                                    <motion.button
-                                        whileTap={{ scale: 0.95 }}
-                                        disabled={sendingReply || !replyMessage}
-                                        onClick={async () => {
-                                            setSendingReply(true);
-                                            try {
-                                                const { error } = await supabase
-                                                    .from('notifications')
-                                                    .insert([{
-                                                        user_id: selectedOffer.seller_id,
-                                                        title: 'Nuevo mensaje sobre oferta',
-                                                        message: `El comprador de ${selectedOffer.product?.name} dice: ${replyMessage}`,
-                                                        type: 'offer',
-                                                        link: '/my-store?tab=offers',
-                                                        read: false
-                                                    }]);
-
-                                                if (error) throw error;
-
-                                                warning('¡Mensaje enviado al vendedor!');
-                                                setReplyMessage('');
-                                                setSelectedOffer(null);
-                                            } catch (err) {
-                                                console.error(err);
-                                            } finally {
-                                                setSendingReply(false);
-                                            }
-                                        }}
-                                        className="btn-primary"
-                                        style={{ width: '100%', height: '54px' }}
-                                    >
-                                        {sendingReply ? 'ENVIANDO...' : 'ENVIAR MENSAJE'}
-                                    </motion.button>
-                                </div>
-                            )}
                         </motion.div>
                     </div>
                 )}
