@@ -120,20 +120,22 @@ const ProductCard: React.FC<ProductCardProps> = ({
                     {/* Content Section */}
                     <div style={{ flex: 1, minWidth: 0 }}>
                         <h3 style={{
-                            fontSize: '18px',
-                            fontWeight: '950',
-                            marginBottom: '6px',
+                            fontSize: '16px',
+                            fontWeight: '700',
+                            marginBottom: '4px',
                             color: 'white',
-                            letterSpacing: '-0.5px',
-                            lineHeight: 1.2
+                            letterSpacing: '-0.01em',
+                            lineHeight: 1.2,
+                            fontFamily: 'var(--font-main)'
                         }}>{product.name}</h3>
 
-                        <div style={{ display: 'flex', gap: '8px', alignItems: 'baseline', marginBottom: '12px' }}>
+                        <div style={{ display: 'flex', gap: '8px', alignItems: 'baseline', marginBottom: '10px' }}>
                             <span style={{
                                 color: 'var(--secondary)',
-                                fontWeight: '950',
-                                fontSize: '24px',
-                                letterSpacing: '-1px'
+                                fontWeight: '700',
+                                fontSize: '20px',
+                                letterSpacing: '-0.02em',
+                                fontFamily: 'var(--font-main)'
                             }}>
                                 {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(product.price || 0)}
                             </span>
@@ -143,15 +145,14 @@ const ProductCard: React.FC<ProductCardProps> = ({
                                 gap: '4px',
                                 opacity: 0.8
                             }}>
-                                <Truck size={12} color="#38bdf8" />
+                                <Truck size={11} color="#38bdf8" />
                                 <span style={{
                                     fontSize: '10px',
-                                    fontWeight: '800',
-                                    color: '#38bdf8'
+                                    fontWeight: '600',
+                                    color: '#38bdf8',
+                                    fontFamily: 'var(--font-main)'
                                 }}>
-                                    {parseFloat(product.shipping_cost?.toString() || '0') > 0
-                                        ? `+ $${formatPrice(product.shipping_cost?.toString() || '0')}`
-                                        : 'ENVÍO GRATIS'}
+                                    + {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(product.shipping_cost || 0)}
                                 </span>
                             </div>
                         </div>

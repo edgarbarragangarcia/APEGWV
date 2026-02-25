@@ -24,6 +24,7 @@ import TrackingScanner from '../../components/TrackingScanner';
 import StoreOnboarding from '../../components/StoreOnboarding';
 import Skeleton from '../../components/Skeleton';
 import PageHero from '../../components/PageHero';
+import PageHeader from '../../components/PageHeader';
 
 const MyStore: React.FC = () => {
     const navigate = useNavigate();
@@ -75,71 +76,43 @@ const MyStore: React.FC = () => {
     ];
 
     return (
-        <div style={{ minHeight: '100vh', background: 'var(--primary)', paddingBottom: '100px' }}>
+        <div className="animate-fade" style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'var(--primary)',
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden',
+            zIndex: 900
+        }}>
             <PageHero opacity={0.4} />
 
-            <div style={{ padding: '40px 20px 0', position: 'relative', zIndex: 10 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '30px' }}>
-                    <div>
-                        <h1 style={{ fontSize: '34px', fontWeight: '950', color: 'white', margin: 0, letterSpacing: '-1.5px', textTransform: 'uppercase' }}>
-                            Mi Tienda
-                        </h1>
-                        <p style={{ fontSize: '14px', color: 'var(--text-dim)', margin: '4px 0 0', fontWeight: '500' }}>
-                            Gestiona tus productos y ventas con estilo
-                        </p>
-                    </div>
-                    {activeTab === 'products' ? (
-                        <motion.button
-                            whileTap={{ scale: 0.95 }}
-                            onClick={() => { resetForm(); setShowForm(true); }}
-                            style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '8px',
-                                padding: '12px 20px',
-                                background: 'linear-gradient(135deg, var(--secondary) 0%, #10b981 100%)',
-                                color: 'var(--primary)',
-                                borderRadius: '18px',
-                                border: 'none',
-                                fontWeight: '900',
-                                fontSize: '13px',
-                                boxShadow: '0 10px 25px rgba(163, 230, 53, 0.3)'
-                            }}
-                        >
-                            <Plus size={20} strokeWidth={3} /> PUBLICAR <span className="hide-mobile">PRODUCTO</span>
-                        </motion.button>
-                    ) : (
-                        <motion.button
-                            whileTap={{ scale: 0.95 }}
-                            onClick={() => navigate(-1)}
-                            style={{
-                                width: '44px',
-                                height: '44px',
-                                borderRadius: '14px',
-                                background: 'rgba(255,255,255,0.05)',
-                                color: 'white',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                border: '1px solid rgba(255,255,255,0.1)',
-                                cursor: 'pointer'
-                            }}
-                        >
-                            <Plus size={24} style={{ transform: 'rotate(45deg)' }} />
-                        </motion.button>
-                    )}
-                </div>
+            <div style={{
+                flexShrink: 0,
+                position: 'relative',
+                zIndex: 10,
+                padding: '0 20px',
+                paddingTop: 'var(--header-offset-top)'
+            }}>
+                <PageHeader
+                    title="Mi Tienda"
+                    subtitle="Gestiona tus productos y ventas"
+                    onBack={() => navigate(-1)}
+                    noMargin
+                />
 
                 {/* Tabs Navigation */}
                 <div style={{
                     display: 'flex',
-                    gap: '12px',
-                    overflowX: 'auto',
-                    padding: '5px',
-                    marginBottom: '30px',
-                    scrollbarWidth: 'none',
-                    msOverflowStyle: 'none'
-                }} className="hide-scrollbar">
+                    gap: '4px',
+                    width: '100%',
+                    marginBottom: '20px',
+                    marginTop: '20px',
+                    background: 'rgba(255,255,255,0.02)',
+                    padding: '6px',
+                    borderRadius: '18px',
+                    border: '1px solid rgba(255,255,255,0.05)'
+                }}>
                     {tabs.map(tab => {
                         const Icon = tab.icon;
                         const isActive = activeTab === tab.id;
@@ -148,27 +121,27 @@ const MyStore: React.FC = () => {
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id as any)}
                                 style={{
+                                    flex: 1,
                                     display: 'flex',
                                     flexDirection: 'column',
                                     alignItems: 'center',
                                     justifyContent: 'center',
-                                    gap: '8px',
-                                    padding: '14px 18px',
-                                    minWidth: '95px',
-                                    borderRadius: '24px',
-                                    background: isActive ? 'rgba(163, 230, 53, 0.1)' : 'rgba(255,255,255,0.03)',
+                                    gap: '6px',
+                                    padding: '10px 0',
+                                    borderRadius: '14px',
+                                    background: isActive ? 'rgba(163, 230, 53, 0.15)' : 'transparent',
                                     color: isActive ? 'var(--secondary)' : 'rgba(255,255,255,0.5)',
-                                    border: '1px solid ' + (isActive ? 'rgba(163, 230, 53, 0.2)' : 'rgba(255,255,255,0.05)'),
-                                    fontWeight: '800',
-                                    fontSize: '11px',
+                                    border: '1px solid ' + (isActive ? 'rgba(163, 230, 53, 0.3)' : 'transparent'),
+                                    fontWeight: isActive ? '900' : '700',
+                                    fontSize: '9px',
                                     textTransform: 'uppercase',
-                                    letterSpacing: '0.5px',
-                                    whiteSpace: 'nowrap',
+                                    letterSpacing: '0.03em',
                                     transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                                    position: 'relative'
+                                    position: 'relative',
+                                    fontFamily: 'var(--font-main)'
                                 }}
                             >
-                                <Icon size={20} strokeWidth={isActive ? 2.5 : 2} />
+                                <Icon size={18} strokeWidth={isActive ? 2.5 : 2} />
                                 {tab.label}
 
                                 {tab.id === 'orders' && orders.filter(o => o.status === 'Pendiente').length > 0 && (
@@ -215,7 +188,14 @@ const MyStore: React.FC = () => {
                         );
                     })}
                 </div>
+            </div>
 
+            <div style={{
+                flex: 1,
+                overflowY: 'auto',
+                padding: '0 20px',
+                paddingBottom: '100px'
+            }} className="hide-scrollbar">
                 {/* Tab Content */}
                 <AnimatePresence mode="wait">
                     <motion.div
@@ -236,6 +216,7 @@ const MyStore: React.FC = () => {
                                     const { error } = await supabase.from('products').update({ status }).eq('id', id);
                                     if (!error) fetchStoreData();
                                 }}
+                                onAddClick={() => { resetForm(); setShowForm(true); }}
                             />
                         )}
                         {activeTab === 'orders' && (

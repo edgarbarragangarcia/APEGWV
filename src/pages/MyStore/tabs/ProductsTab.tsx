@@ -1,5 +1,5 @@
-import React from 'react';
-import { Package, Search } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Package, Search, Plus } from 'lucide-react';
 import ProductCard from '../components/ProductCard';
 import type { Product } from '../hooks/useStoreData';
 
@@ -10,6 +10,7 @@ interface ProductsTabProps {
     onEdit: (product: Product) => void;
     onDelete: (product: Product) => void;
     onToggleStatus: (productId: string, newStatus: string) => void;
+    onAddClick: () => void;
 }
 
 const ProductsTab: React.FC<ProductsTabProps> = ({
@@ -19,6 +20,7 @@ const ProductsTab: React.FC<ProductsTabProps> = ({
     onEdit,
     onDelete,
     onToggleStatus,
+    onAddClick
 }) => {
     const filteredProducts = products.filter(p =>
         p.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -49,6 +51,30 @@ const ProductsTab: React.FC<ProductsTabProps> = ({
                         }}
                     />
                 </div>
+                <motion.button
+                    whileTap={{ scale: 0.95 }}
+                    onClick={onAddClick}
+                    style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '6px',
+                        alignSelf: 'flex-end',
+                        padding: '6px 14px',
+                        background: 'linear-gradient(135deg, var(--secondary) 0%, #10b981 100%)',
+                        color: 'var(--primary)',
+                        borderRadius: '10px',
+                        border: 'none',
+                        fontWeight: '800',
+                        fontSize: '11px',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em',
+                        fontFamily: 'var(--font-main)',
+                        boxShadow: '0 4px 15px rgba(163, 230, 53, 0.2)'
+                    }}
+                >
+                    <Plus size={14} strokeWidth={3} /> Publicar Producto
+                </motion.button>
             </div>
 
             {products.length === 0 ? (
