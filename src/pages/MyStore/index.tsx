@@ -286,7 +286,18 @@ const MyStore: React.FC = () => {
 
             {/* Modals & Forms */}
             {showForm && (
-                <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.9)', backdropFilter: 'blur(10px)', zIndex: 10000, overflowY: 'auto', padding: '20px 20px 80px 20px' }}>
+                <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    background: 'rgba(0,0,0,0.95)',
+                    backdropFilter: 'blur(15px)',
+                    zIndex: 10000,
+                    overflowY: 'auto',
+                    padding: 'calc(env(safe-area-inset-top) + 20px) 20px 80px 20px'
+                }}>
                     <div style={{ maxWidth: '600px', margin: '0 auto' }}>
                         <ProductForm
                             formData={formData as any}
@@ -298,7 +309,7 @@ const MyStore: React.FC = () => {
                             onClose={() => setShowForm(false)}
                             onChange={setFormData as any}
                             onSubmit={handleSubmit}
-                            onImageUpload={(e) => handleImageUpload(e, 0)}
+                            onImageUpload={handleImageUpload}
                             onToggleSize={toggleSizeInventory}
                             onUpdateSizeQuantity={updateSizeQuantity}
                             onSyncShoeSizes={syncShoeSizes}

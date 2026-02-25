@@ -1,5 +1,4 @@
-import React from 'react';
-import { Camera, X, Loader2, CheckCircle2, Ticket } from 'lucide-react';
+import { Camera, X, Loader2, CheckCircle2, Ticket, ArrowLeft, Trash2 } from 'lucide-react';
 
 interface SizesInventory {
     size: string;
@@ -12,6 +11,7 @@ interface ProductFormData {
     description: string;
     category: string;
     image_url: string;
+    images: string[];
     shipping_cost: string;
     clothing_type: string;
     size_clothing: string;
@@ -34,7 +34,7 @@ interface ProductFormProps {
     onClose: () => void;
     onChange: (data: ProductFormData) => void;
     onSubmit: (e: React.FormEvent) => void;
-    onImageUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    onImageUpload: (e: React.ChangeEvent<HTMLInputElement>, index: number) => void;
     onToggleSize: (size: string) => void;
     onUpdateSizeQuantity: (size: string, qty: number) => void;
     onSyncShoeSizes: (value: string, type: 'col' | 'us' | 'eu' | 'cm') => void;
@@ -55,39 +55,84 @@ const ProductForm: React.FC<ProductFormProps> = ({
     onUpdateSizeQuantity,
     onSyncShoeSizes
 }) => {
+    // Ensure images array has at least 3 slots for the UI
+    const images = [...(formData.images || [])];
+    while (images.length < 3) images.push('');
+
     return (
         <form onSubmit={onSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }} className="animate-fade">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h2 style={{ fontSize: '18px', fontWeight: '900', color: 'white' }}>
-                    {editingId ? 'Editar' : 'Nuevo'} <span style={{ color: 'var(--secondary)' }}>Articulo</span>
-                </h2>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                <button
+                    type="button"
+                    onClick={onClose}
+                    style={{
+                        background: 'rgba(255,255,255,0.05)',
+                        border: '1px solid rgba(255,255,255,0.1)',
+                        width: '40px',
+                        height: '40px',
+                        borderRadius: '12px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: 'white'
+                    }}
+                >
+                    <ArrowLeft size={20} />
+                </button>
+                <div style={{ flex: 1 }}>
+                    <h2 style={{ fontSize: '18px', fontWeight: '900', color: 'white', margin: 0 }}>
+                        {editingId ? 'Editar' : 'Nuevo'} <span style={{ color: 'var(--secondary)' }}>Articulo</span>
+                    </h2>
+                    <p style={{ fontSize: '12px', color: 'var(--text-dim)', margin: 0 }}>Publica tu producto en el marketplace</p>
+                </div>
                 <button type="button" onClick={onClose} style={{ color: 'var(--text-dim)', background: 'none', border: 'none', cursor: 'pointer' }}><X size={20} /></button>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                <div style={{ position: 'relative' }}>
-                    <div style={{
-                        width: '100%',
-                        height: '220px',
-                        background: 'rgba(255,255,255,0.03)',
-                        borderRadius: '24px',
-                        border: '2px dashed rgba(255,255,255,0.1)',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        overflow: 'hidden',
-                        cursor: 'pointer'
-                    }} onClick={() => document.getElementById('image-upload')?.click()}>
-                        {formData.image_url ? (
-                            <img src={formData.image_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="Preview" />
-                        ) : (
-                            <>
-                                <Camera size={40} color="var(--text-dim)" style={{ marginBottom: '10px' }} />
-                                <p style={{ color: 'var(--text-dim)', fontSize: '13px' }}>{uploadingImage ? 'Subiendo...' : 'Toca para subir foto'}</p>
-                            </>
-                        )}
-                        <input id="image-upload" type="file" accept="image/*" onChange={onImageUpload} style={{ display: 'none' }} />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    <label style={{ fontSize: '13px', color: 'var(--text-dim)', fontWeight: '700' }}>Fotos del producto (Máx. 3)</label>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
+                        {[0, 1, 2].map((idx) => (
+                            <div
+                                key={idx}
+                                style={{
+                                    width: '100%',
+                                    aspectRatio: '1/1',
+                                    background: 'rgba(255,255,255,0.03)',
+                                    borderRadius: '16px',
+                                    border: `2px ${images[idx] ? 'solid' : 'dashed'} ${images[idx] ? 'var(--secondary)' : 'rgba(255,255,255,0.1)'}`,
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    overflow: 'hidden',
+                                    cursor: 'pointer',
+                                    position: 'relative'
+                                }}
+                                onClick={() => document.getElementById(`image-upload-${idx}`)?.click()}
+                            >
+                                {images[idx] ? (
+                                    <>
+                                        <img src={images[idx]} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt={`Preview ${idx}`} />
+                                        <div style={{ position: 'absolute', top: '5px', right: '5px', background: 'rgba(0,0,0,0.5)', borderRadius: '50%', padding: '4px' }} onClick={(e) => {
+                                            e.stopPropagation();
+                                            const newImages = [...formData.images];
+                                            newImages.splice(idx, 1);
+                                            onChange({ ...formData, images: newImages, image_url: idx === 0 ? (newImages[0] || '') : formData.image_url });
+                                        }}>
+                                            <Trash2 size={12} color="white" />
+                                        </div>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Camera size={20} color="var(--text-dim)" />
+                                        <span style={{ fontSize: '10px', color: 'var(--text-dim)', marginTop: '4px' }}>{uploadingImage ? '...' : 'Subir'}</span>
+                                    </>
+                                )}
+                                <input id={`image-upload-${idx}`} type="file" accept="image/*" onChange={(e) => onImageUpload(e, idx)} style={{ display: 'none' }} />
+                                {idx === 0 && <span style={{ position: 'absolute', bottom: '5px', left: '5px', background: 'var(--secondary)', color: 'var(--primary)', fontSize: '8px', fontWeight: '900', padding: '2px 4px', borderRadius: '4px' }}>PRINCIPAL</span>}
+                            </div>
+                        ))}
                     </div>
                 </div>
 

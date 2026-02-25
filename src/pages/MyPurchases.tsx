@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Loader2, Package, ChevronRight, Tag, X } from 'lucide-react';
+import { Loader2, Package, ChevronRight, Tag, X, Trash2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../services/SupabaseManager';
 import PageHeader from '../components/PageHeader';
@@ -48,6 +48,43 @@ const MyPurchases: React.FC = () => {
             if (data) setSelectedOffer(data);
         } catch (err) {
             console.error('Error fetching single offer:', err);
+        }
+    };
+
+    const handleDeleteOrder = async (id: string) => {
+        if (!window.confirm('¿Estás seguro de que deseas eliminar este registro de tu historial?')) return;
+
+        try {
+            const { error } = await supabase
+                .from('orders')
+                .delete()
+                .eq('id', id);
+
+            if (error) throw error;
+
+            warning('Pedido eliminado del historial');
+            setMyOrders(prev => prev.filter(o => o.id !== id));
+        } catch (err) {
+            console.error('Error deleting order:', err);
+        }
+    };
+
+    const handleDeleteOffer = async (id: string) => {
+        if (!window.confirm('¿Estás seguro de que deseas eliminar este registro?')) return;
+
+        try {
+            const { error } = await supabase
+                .from('offers')
+                .delete()
+                .eq('id', id);
+
+            if (error) throw error;
+
+            warning('Oferta eliminada correctamente');
+            setMyOffers(prev => prev.filter(o => o.id !== id));
+            if (selectedOffer?.id === id) setSelectedOffer(null);
+        } catch (err) {
+            console.error('Error deleting offer:', err);
         }
     };
 
@@ -216,7 +253,30 @@ const MyPurchases: React.FC = () => {
                                                         ${order.total_amount?.toLocaleString()}
                                                     </div>
                                                 </div>
-                                                <ChevronRight size={18} color="rgba(255,255,255,0.2)" />
+                                                <div style={{ display: 'flex', flexShrink: 0, gap: '8px', alignItems: 'center' }}>
+                                                    <motion.button
+                                                        whileTap={{ scale: 0.9 }}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleDeleteOrder(order.id);
+                                                        }}
+                                                        style={{
+                                                            width: '36px',
+                                                            height: '36px',
+                                                            borderRadius: '10px',
+                                                            background: 'rgba(239,68,68,0.1)',
+                                                            border: 'none',
+                                                            color: '#ef4444',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
+                                                            cursor: 'pointer'
+                                                        }}
+                                                    >
+                                                        <Trash2 size={16} />
+                                                    </motion.button>
+                                                    <ChevronRight size={18} color="rgba(255,255,255,0.2)" />
+                                                </div>
                                             </div>
                                         </Card>
                                     ))
@@ -281,7 +341,30 @@ const MyPurchases: React.FC = () => {
                                                         )}
                                                     </div>
                                                 </div>
-                                                <ChevronRight size={18} color="rgba(255,255,255,0.2)" />
+                                                <div style={{ display: 'flex', flexShrink: 0, gap: '8px', alignItems: 'center' }}>
+                                                    <motion.button
+                                                        whileTap={{ scale: 0.9 }}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleDeleteOffer(offer.id);
+                                                        }}
+                                                        style={{
+                                                            width: '36px',
+                                                            height: '36px',
+                                                            borderRadius: '10px',
+                                                            background: 'rgba(239,68,68,0.1)',
+                                                            border: 'none',
+                                                            color: '#ef4444',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
+                                                            cursor: 'pointer'
+                                                        }}
+                                                    >
+                                                        <Trash2 size={16} />
+                                                    </motion.button>
+                                                    <ChevronRight size={18} color="rgba(255,255,255,0.2)" />
+                                                </div>
                                             </div>
                                         </Card>
                                     ))

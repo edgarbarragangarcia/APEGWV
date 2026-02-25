@@ -26,12 +26,34 @@ const PageHeader: React.FC<PageHeaderProps> = ({
         <header style={{
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'space-between',
-            marginTop: noMargin ? '0' : '0', // Default to 0 for standardization
+            gap: '15px',
+            marginTop: noMargin ? '0' : '0',
             marginBottom: noMargin ? '0px' : '15px',
             position: 'relative',
             zIndex: 10
         }}>
+            {showBack && (
+                <button
+                    onClick={handleBack}
+                    style={{
+                        background: 'rgba(255,255,255,0.05)',
+                        border: '1px solid var(--glass-border)',
+                        width: '40px',
+                        height: '40px',
+                        borderRadius: '12px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: 'white',
+                        cursor: 'pointer',
+                        flexShrink: 0,
+                        transition: 'all 0.2s ease'
+                    }}
+                    className="hover-scale"
+                >
+                    <ArrowLeft size={20} />
+                </button>
+            )}
             <div style={{ flex: 1 }}>
                 <h1 style={{
                     fontSize: '28px',
@@ -55,29 +77,6 @@ const PageHeader: React.FC<PageHeaderProps> = ({
                 </h1>
                 {subtitle && <p style={{ fontSize: '13px', color: 'var(--text-dim)', margin: 0, marginTop: '0px' }}>{subtitle}</p>}
             </div>
-            {showBack && (
-                <button
-                    onClick={handleBack}
-                    style={{
-                        background: 'rgba(255,255,255,0.05)',
-                        border: '1px solid var(--glass-border)',
-                        width: '40px',
-                        height: '40px',
-                        borderRadius: '12px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: 'white',
-                        cursor: 'pointer',
-                        flexShrink: 0,
-                        transition: 'all 0.2s ease',
-                        marginLeft: '15px'
-                    }}
-                    className="hover-scale"
-                >
-                    <ArrowLeft size={20} />
-                </button>
-            )}
             {rightElement && <div>{rightElement}</div>}
         </header>
     );
