@@ -1,4 +1,5 @@
-import { Camera, X, Loader2, CheckCircle2, Ticket, ArrowLeft, Trash2 } from 'lucide-react';
+import React from 'react';
+import { Camera, Loader2, CheckCircle2, Ticket, Trash2 } from 'lucide-react';
 
 interface SizesInventory {
     size: string;
@@ -42,12 +43,12 @@ interface ProductFormProps {
 
 const ProductForm: React.FC<ProductFormProps> = ({
     formData,
-    editingId,
+    // editingId, // unused
     saving,
     uploadingImage,
     coupons,
     formatPrice,
-    onClose,
+    // onClose, // unused
     onChange,
     onSubmit,
     onImageUpload,
@@ -60,34 +61,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
     while (images.length < 3) images.push('');
 
     return (
-        <form onSubmit={onSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }} className="animate-fade">
-            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                <button
-                    type="button"
-                    onClick={onClose}
-                    style={{
-                        background: 'rgba(255,255,255,0.05)',
-                        border: '1px solid rgba(255,255,255,0.1)',
-                        width: '40px',
-                        height: '40px',
-                        borderRadius: '12px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: 'white'
-                    }}
-                >
-                    <ArrowLeft size={20} />
-                </button>
-                <div style={{ flex: 1 }}>
-                    <h2 style={{ fontSize: '18px', fontWeight: '900', color: 'white', margin: 0 }}>
-                        {editingId ? 'Editar' : 'Nuevo'} <span style={{ color: 'var(--secondary)' }}>Articulo</span>
-                    </h2>
-                    <p style={{ fontSize: '12px', color: 'var(--text-dim)', margin: 0 }}>Publica tu producto en el marketplace</p>
-                </div>
-                <button type="button" onClick={onClose} style={{ color: 'var(--text-dim)', background: 'none', border: 'none', cursor: 'pointer' }}><X size={20} /></button>
-            </div>
-
+        <form onSubmit={onSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                     <label style={{ fontSize: '13px', color: 'var(--text-dim)', fontWeight: '700' }}>Fotos del producto (Máx. 3)</label>
@@ -340,7 +314,6 @@ const ProductForm: React.FC<ProductFormProps> = ({
                     </select>
                 </div>
 
-                {/* Calculation summary */}
                 {(formData.price || formData.shipping_cost) && (() => {
                     const coupon = coupons.find(c => c.id === formData.selectedCouponId);
                     const base = parseFloat(formData.price) || 0;

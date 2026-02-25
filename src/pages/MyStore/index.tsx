@@ -292,28 +292,43 @@ const MyStore: React.FC = () => {
                     left: 0,
                     right: 0,
                     bottom: 0,
-                    background: 'rgba(0,0,0,0.95)',
-                    backdropFilter: 'blur(15px)',
+                    background: 'var(--primary)',
                     zIndex: 10000,
-                    overflowY: 'auto',
-                    padding: 'calc(env(safe-area-inset-top) + 20px) 20px 80px 20px'
+                    overflowY: 'auto'
                 }}>
-                    <div style={{ maxWidth: '600px', margin: '0 auto' }}>
-                        <ProductForm
-                            formData={formData as any}
-                            editingId={editingId}
-                            saving={saving}
-                            uploadingImage={uploading}
-                            coupons={coupons as any}
-                            formatPrice={formatPrice}
-                            onClose={() => setShowForm(false)}
-                            onChange={setFormData as any}
-                            onSubmit={handleSubmit}
-                            onImageUpload={handleImageUpload}
-                            onToggleSize={toggleSizeInventory}
-                            onUpdateSizeQuantity={updateSizeQuantity}
-                            onSyncShoeSizes={syncShoeSizes}
+                    <PageHero opacity={0.4} />
+                    <div style={{
+                        position: 'relative',
+                        zIndex: 10,
+                        padding: '0 20px',
+                        paddingTop: 'var(--header-offset-top)',
+                        maxWidth: '600px',
+                        margin: '0 auto'
+                    }}>
+                        <PageHeader
+                            title={editingId ? 'Editar Producto' : 'Nuevo Producto'}
+                            subtitle="Publica tu producto en el marketplace"
+                            onBack={() => setShowForm(false)}
+                            noMargin
                         />
+
+                        <div style={{ marginTop: '30px', paddingBottom: '80px' }}>
+                            <ProductForm
+                                formData={formData as any}
+                                editingId={editingId}
+                                saving={saving}
+                                uploadingImage={uploading}
+                                coupons={coupons as any}
+                                formatPrice={formatPrice}
+                                onClose={() => setShowForm(false)}
+                                onChange={setFormData as any}
+                                onSubmit={handleSubmit}
+                                onImageUpload={handleImageUpload}
+                                onToggleSize={toggleSizeInventory}
+                                onUpdateSizeQuantity={updateSizeQuantity}
+                                onSyncShoeSizes={syncShoeSizes}
+                            />
+                        </div>
                     </div>
                 </div>
             )}
