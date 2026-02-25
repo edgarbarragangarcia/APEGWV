@@ -47,6 +47,11 @@ export const useStoreData = () => {
         couponId: null,
         couponCode: ''
     });
+    const [deleteOfferModal, setDeleteOfferModal] = useState<{ isOpen: boolean; offerId: string | null; productName: string }>({
+        isOpen: false,
+        offerId: null,
+        productName: ''
+    });
     const [orders, setOrders] = useState<Order[]>([]);
     const [showScanner, setShowScanner] = useState(false);
     const [scanningOrderId, setScanningOrderId] = useState<string | null>(null);
@@ -911,23 +916,31 @@ export const useStoreData = () => {
         }
     };
 
-    const deleteOffer = async (id: string) => {
-        if (!window.confirm('¿Estás seguro de que quieres eliminar esta oferta?')) return;
+    const deleteOffer = (id: string) => {
+        const offer = offers.find(o => o.id === id);
+        const productName = offer?.product?.name || 'la oferta';
+        setDeleteOfferModal({ isOpen: true, offerId: id, productName });
+    };
+
+    const confirmDeleteOffer = async () => {
+        if (!deleteOfferModal.offerId) return;
 
         try {
             const { error } = await supabase
                 .from('offers')
                 .delete()
-                .eq('id', id);
+                .eq('id', deleteOfferModal.offerId);
 
             if (error) throw error;
-            setOffers(prev => prev.filter(o => o.id !== id));
+            setOffers(prev => prev.filter(o => o.id !== deleteOfferModal.offerId));
             if (navigator.vibrate) navigator.vibrate(50);
+            setDeleteOfferModal({ isOpen: false, offerId: null, productName: '' });
         } catch (err) {
             console.error('Error deleting offer:', err);
             setSuccessMessage({ title: 'Error', message: 'No se pudo eliminar la oferta.', type: 'error' });
             setShowSuccessModal(true);
             setTimeout(() => setShowSuccessModal(false), 3000);
+            setDeleteOfferModal({ isOpen: false, offerId: null, productName: '' });
         }
     };
     const handleCouponSubmit = async (e: React.FormEvent) => {
@@ -1031,6 +1044,7 @@ export const useStoreData = () => {
         editingId,
         deleteModal, setDeleteModal,
         deleteCouponModal, setDeleteCouponModal,
+        deleteOfferModal, setDeleteOfferModal,
         orders,
         showScanner, setShowScanner,
         scanningOrderId, setScanningOrderId,
@@ -1078,6 +1092,7 @@ export const useStoreData = () => {
         handleOrderEditSubmit,
         handleOfferAction,
         deleteOffer,
+        confirmDeleteOffer,
         handleCouponSubmit,
         handleEditCoupon,
         deleteCoupon,

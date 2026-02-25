@@ -41,6 +41,7 @@ const MyStore: React.FC = () => {
         showScanner, setShowScanner, handleScanComplete,
         showCouponForm, setShowCouponForm, editingCouponId, setEditingCouponId, couponFormData, setCouponFormData, handleCouponSubmit,
         deleteCouponModal, setDeleteCouponModal, confirmDeleteCoupon,
+        deleteOfferModal, setDeleteOfferModal, confirmDeleteOffer,
         showSuccessModal, setShowSuccessModal, successMessage,
         isEditingProfile, setIsEditingProfile, profileFormData, setProfileFormData, fetchStoreData,
         formatPrice, handleEditClick, handleDeleteClick, resetForm, handleSubmit, handleImageUpload,
@@ -285,7 +286,7 @@ const MyStore: React.FC = () => {
 
             {/* Modals & Forms */}
             {showForm && (
-                <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.9)', backdropFilter: 'blur(10px)', zIndex: 1000, overflowY: 'auto', padding: '20px' }}>
+                <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.9)', backdropFilter: 'blur(10px)', zIndex: 10000, overflowY: 'auto', padding: '20px 20px 80px 20px' }}>
                     <div style={{ maxWidth: '600px', margin: '0 auto' }}>
                         <ProductForm
                             formData={formData as any}
@@ -307,7 +308,7 @@ const MyStore: React.FC = () => {
             )}
 
             {showCouponForm && (
-                <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.9)', backdropFilter: 'blur(10px)', zIndex: 1100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+                <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.9)', backdropFilter: 'blur(10px)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
                     <div style={{ width: '100%', maxWidth: '450px' }}>
                         <CouponForm
                             formData={couponFormData as any}
@@ -336,6 +337,15 @@ const MyStore: React.FC = () => {
                 message={`¿Estás seguro de que quieres eliminar el cupón "${deleteCouponModal.couponCode}"?`}
                 onConfirm={confirmDeleteCoupon}
                 onCancel={() => setDeleteCouponModal({ ...deleteCouponModal, isOpen: false })}
+                saving={saving}
+            />
+
+            <DeleteModal
+                isOpen={deleteOfferModal.isOpen}
+                title="¿Eliminar Oferta?"
+                message={`¿Estás seguro de que quieres eliminar la oferta de "${deleteOfferModal.productName}"?`}
+                onConfirm={confirmDeleteOffer}
+                onCancel={() => setDeleteOfferModal({ ...deleteOfferModal, isOpen: false })}
                 saving={saving}
             />
 

@@ -30,8 +30,6 @@ const OfferCard: React.FC<OfferCardProps> = ({
     onAction,
     onCounterClick
 }) => {
-    const discountPercent = offer.product ? Math.round((1 - (offer.offer_amount || 0) / (offer.product.price || 1)) * 100) : 0;
-
     return (
         <motion.div
             initial={{ opacity: 0, scale: 0.98 }}
@@ -124,9 +122,6 @@ const OfferCard: React.FC<OfferCardProps> = ({
                         <p style={{ fontSize: '13px', color: 'var(--text-dim)', textDecoration: 'line-through', fontWeight: '800' }}>
                             {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(offer.product?.price || 0)}
                         </p>
-                        <span style={{ fontSize: '10px', background: 'rgba(239, 68, 68, 0.1)', color: '#f87171', padding: '3px 8px', borderRadius: '8px', fontWeight: '950', border: '1px solid rgba(239, 68, 68, 0.1)' }}>
-                            -{discountPercent}%
-                        </span>
                     </div>
                 </div>
             </div>
