@@ -1,5 +1,5 @@
 import React from 'react';
-import { CheckCircle2, Package, Truck, Pencil, Trash2, Loader2 } from 'lucide-react';
+import { CheckCircle2, Package, Truck, Pencil, Trash2 } from 'lucide-react';
 import { optimizeImage } from '../../../services/SupabaseManager';
 import { supabase } from '../../../services/SupabaseManager';
 

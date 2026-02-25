@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { ShoppingCart, Loader2, ArrowLeft, DollarSign, Handshake, Package, ChevronRight, Tag, X } from 'lucide-react';
+import { Loader2, Package, ChevronRight, Tag, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../services/SupabaseManager';
 import PageHeader from '../components/PageHeader';
@@ -64,12 +64,12 @@ const MyPurchases: React.FC = () => {
                             product:products (*)
                         )
                     `)
-                    .eq('buyer_id', user?.id)
+                    .eq('buyer_id', user!.id)
                     .order('created_at', { ascending: false }),
                 supabase
                     .from('offers')
-                    .select('*, product:products(*)')
-                    .eq('buyer_id', user?.id)
+                    .select('*, product:products(*) ')
+                    .eq('buyer_id', user!.id)
                     .order('created_at', { ascending: false })
             ]);
 
