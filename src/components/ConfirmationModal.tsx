@@ -11,6 +11,7 @@ interface ConfirmationModalProps {
     confirmText?: string;
     cancelText?: string;
     type?: 'danger' | 'warning' | 'info';
+    isLoading?: boolean;
 }
 
 const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
@@ -21,7 +22,8 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
     message,
     confirmText = 'Confirmar',
     cancelText = 'Cancelar',
-    type = 'danger'
+    type = 'danger',
+    isLoading = false
 }) => {
     const getColors = () => {
         switch (type) {
@@ -160,8 +162,9 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
                         {/* Buttons */}
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                             <motion.button
-                                whileTap={{ scale: 0.95 }}
-                                onClick={onConfirm}
+                                whileTap={{ scale: isLoading ? 1 : 0.95 }}
+                                onClick={!isLoading ? onConfirm : undefined}
+                                disabled={isLoading}
                                 style={{
                                     width: '100%',
                                     padding: '16px',
@@ -171,15 +174,28 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
                                     color: type === 'danger' ? 'white' : 'var(--primary)',
                                     fontWeight: '900',
                                     fontSize: '15px',
-                                    cursor: 'pointer',
-                                    boxShadow: `0 10px 20px ${colors.bg}`
+                                    cursor: isLoading ? 'not-allowed' : 'pointer',
+                                    boxShadow: `0 10px 20px ${colors.bg}`,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '10px',
+                                    opacity: isLoading ? 0.8 : 1
                                 }}
                             >
-                                {confirmText}
+                                {isLoading ? (
+                                    <>
+                                        <div className="spinner-small" style={{ borderColor: type === 'danger' ? 'white' : 'var(--primary)', borderTopColor: 'transparent' }} />
+                                        <span>Procesando...</span>
+                                    </>
+                                ) : (
+                                    confirmText
+                                )}
                             </motion.button>
                             <motion.button
                                 whileTap={{ scale: 0.95 }}
                                 onClick={onClose}
+                                disabled={isLoading}
                                 style={{
                                     width: '100%',
                                     padding: '16px',
@@ -189,7 +205,8 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
                                     color: 'white',
                                     fontWeight: '700',
                                     fontSize: '15px',
-                                    cursor: 'pointer'
+                                    cursor: isLoading ? 'not-allowed' : 'pointer',
+                                    opacity: isLoading ? 0.5 : 1
                                 }}
                             >
                                 {cancelText}

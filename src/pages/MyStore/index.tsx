@@ -13,7 +13,7 @@ import ProfileTab from './tabs/ProfileTab';
 
 // Modals
 import ProductForm from './components/ProductForm';
-import DeleteModal from './components/DeleteModal';
+import ConfirmationModal from '../../components/ConfirmationModal';
 import CounterOfferModal from './components/CounterOfferModal';
 import OrderEditModal from './components/OrderEditModal';
 import SuccessModal from './components/SuccessModal';
@@ -348,31 +348,37 @@ const MyStore: React.FC = () => {
                 </div>
             )}
 
-            <DeleteModal
+            <ConfirmationModal
                 isOpen={deleteModal.isOpen}
+                onClose={() => setDeleteModal({ ...deleteModal, isOpen: false })}
+                onConfirm={confirmDelete}
                 title="¿Eliminar Producto?"
                 message={`¿Estás seguro de que quieres eliminar "${deleteModal.productName}"? Esta acción no se puede deshacer.`}
-                onConfirm={confirmDelete}
-                onCancel={() => setDeleteModal({ ...deleteModal, isOpen: false })}
-                saving={saving}
+                confirmText="Eliminar"
+                type="danger"
+                isLoading={saving}
             />
 
-            <DeleteModal
+            <ConfirmationModal
                 isOpen={deleteCouponModal.isOpen}
+                onClose={() => setDeleteCouponModal({ ...deleteCouponModal, isOpen: false })}
+                onConfirm={confirmDeleteCoupon}
                 title="¿Eliminar Cupón?"
                 message={`¿Estás seguro de que quieres eliminar el cupón "${deleteCouponModal.couponCode}"?`}
-                onConfirm={confirmDeleteCoupon}
-                onCancel={() => setDeleteCouponModal({ ...deleteCouponModal, isOpen: false })}
-                saving={saving}
+                confirmText="Eliminar"
+                type="danger"
+                isLoading={saving}
             />
 
-            <DeleteModal
+            <ConfirmationModal
                 isOpen={deleteOfferModal.isOpen}
+                onClose={() => setDeleteOfferModal({ ...deleteOfferModal, isOpen: false })}
+                onConfirm={confirmDeleteOffer}
                 title="¿Eliminar Oferta?"
                 message={`¿Estás seguro de que quieres eliminar la oferta de "${deleteOfferModal.productName}"?`}
-                onConfirm={confirmDeleteOffer}
-                onCancel={() => setDeleteOfferModal({ ...deleteOfferModal, isOpen: false })}
-                saving={saving}
+                confirmText="Eliminar"
+                type="danger"
+                isLoading={saving}
             />
 
             <CounterOfferModal

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Camera, Loader2, CheckCircle2, Ticket, Trash2 } from 'lucide-react';
+import { Camera, CheckCircle2, Ticket, Trash2 } from 'lucide-react';
 
 interface SizesInventory {
     size: string;
@@ -43,12 +43,11 @@ interface ProductFormProps {
 
 const ProductForm: React.FC<ProductFormProps> = ({
     formData,
-    // editingId, // unused
+    editingId,
     saving,
     uploadingImage,
     coupons,
     formatPrice,
-    // onClose, // unused
     onChange,
     onSubmit,
     onImageUpload,
@@ -56,16 +55,41 @@ const ProductForm: React.FC<ProductFormProps> = ({
     onUpdateSizeQuantity,
     onSyncShoeSizes
 }) => {
-    // Ensure images array has at least 3 slots for the UI
     const images = [...(formData.images || [])];
     while (images.length < 3) images.push('');
 
+    const inputStyle = {
+        width: '100%',
+        background: 'rgba(255,255,255,0.05)',
+        border: '1px solid var(--glass-border)',
+        borderRadius: '16px',
+        padding: '14px',
+        color: 'white',
+        fontSize: '15px',
+        fontFamily: 'var(--font-main)',
+        outline: 'none',
+        transition: 'all 0.2s ease'
+    };
+
+    const labelStyle = {
+        display: 'block',
+        marginBottom: '8px',
+        fontSize: '11px',
+        fontWeight: '900',
+        color: 'var(--secondary)',
+        textTransform: 'uppercase' as const,
+        letterSpacing: '0.05em',
+        paddingLeft: '4px'
+    };
+
     return (
-        <form onSubmit={onSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                    <label style={{ fontSize: '13px', color: 'var(--text-dim)', fontWeight: '700' }}>Fotos del producto (Máx. 3)</label>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
+        <form onSubmit={onSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '25px', paddingBottom: '100px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '25px' }}>
+
+                {/* Image Upload Area */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <label style={labelStyle}>Fotos del producto (Máx. 3)</label>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
                         {[0, 1, 2].map((idx) => (
                             <div
                                 key={idx}
@@ -73,7 +97,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
                                     width: '100%',
                                     aspectRatio: '1/1',
                                     background: 'rgba(255,255,255,0.03)',
-                                    borderRadius: '16px',
+                                    borderRadius: '18px',
                                     border: `2px ${images[idx] ? 'solid' : 'dashed'} ${images[idx] ? 'var(--secondary)' : 'rgba(255,255,255,0.1)'}`,
                                     display: 'flex',
                                     flexDirection: 'column',
@@ -88,46 +112,48 @@ const ProductForm: React.FC<ProductFormProps> = ({
                                 {images[idx] ? (
                                     <>
                                         <img src={images[idx]} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt={`Preview ${idx}`} />
-                                        <div style={{ position: 'absolute', top: '5px', right: '5px', background: 'rgba(0,0,0,0.5)', borderRadius: '50%', padding: '4px' }} onClick={(e) => {
+                                        <div style={{ position: 'absolute', top: '8px', right: '8px', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', borderRadius: '10px', padding: '6px' }} onClick={(e) => {
                                             e.stopPropagation();
                                             const newImages = [...formData.images];
                                             newImages.splice(idx, 1);
                                             onChange({ ...formData, images: newImages, image_url: idx === 0 ? (newImages[0] || '') : formData.image_url });
                                         }}>
-                                            <Trash2 size={12} color="white" />
+                                            <Trash2 size={14} color="#ef4444" />
                                         </div>
                                     </>
                                 ) : (
                                     <>
-                                        <Camera size={20} color="var(--text-dim)" />
-                                        <span style={{ fontSize: '10px', color: 'var(--text-dim)', marginTop: '4px' }}>{uploadingImage ? '...' : 'Subir'}</span>
+                                        <Camera size={24} color="var(--text-dim)" opacity={0.5} />
+                                        <span style={{ fontSize: '10px', fontWeight: '800', color: 'var(--text-dim)', marginTop: '6px' }}>{uploadingImage ? '...' : 'Subir'}</span>
                                     </>
                                 )}
                                 <input id={`image-upload-${idx}`} type="file" accept="image/*" onChange={(e) => onImageUpload(e, idx)} style={{ display: 'none' }} />
-                                {idx === 0 && <span style={{ position: 'absolute', bottom: '5px', left: '5px', background: 'var(--secondary)', color: 'var(--primary)', fontSize: '8px', fontWeight: '900', padding: '2px 4px', borderRadius: '4px' }}>PRINCIPAL</span>}
+                                {idx === 0 && <span style={{ position: 'absolute', bottom: '8px', left: '8px', background: 'var(--secondary)', color: 'var(--primary)', fontSize: '8px', fontWeight: '950', padding: '3px 6px', borderRadius: '6px', letterSpacing: '0.05em' }}>PRINCIPAL</span>}
                             </div>
                         ))}
                     </div>
                 </div>
 
+                {/* Name */}
                 <div>
-                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Nombre del producto</label>
+                    <label style={labelStyle}>Nombre del producto</label>
                     <input
                         required
                         value={formData.name}
                         onChange={e => onChange({ ...formData, name: e.target.value })}
-                        style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '12px', color: 'white', fontSize: '15px' }}
+                        style={inputStyle}
                         placeholder="Ej: Titleist TSR3 Driver"
                     />
                 </div>
 
+                {/* Category and Price */}
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
                     <div>
-                        <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Categoría</label>
+                        <label style={labelStyle}>Categoría</label>
                         <select
                             value={formData.category}
                             onChange={e => onChange({ ...formData, category: e.target.value })}
-                            style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '12px', color: 'white', fontSize: '15px' }}
+                            style={inputStyle}
                         >
                             <option value="Clubs">Palos (Clubs)</option>
                             <option value="Bolas">Bolas</option>
@@ -138,49 +164,51 @@ const ProductForm: React.FC<ProductFormProps> = ({
                         </select>
                     </div>
                     <div>
-                        <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Precio</label>
+                        <label style={labelStyle}>Precio</label>
                         <div style={{ position: 'relative' }}>
                             <input
                                 required
                                 value={formData.price}
                                 onChange={e => onChange({ ...formData, price: e.target.value.replace(/\D/g, '') })}
-                                style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '12px', color: 'white', fontSize: '15px', fontWeight: '800' }}
+                                style={{ ...inputStyle, paddingRight: '35px', fontWeight: '900', color: 'var(--secondary)' }}
                                 placeholder="Ej: 1.200.000"
                             />
-                            <span style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--secondary)', fontWeight: '800' }}>$</span>
+                            <span style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--secondary)', fontWeight: '900', fontSize: '18px' }}>$</span>
                         </div>
                     </div>
                 </div>
 
+                {/* Shipping Cost */}
                 <div>
-                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Costo de Envío</label>
+                    <label style={labelStyle}>Costo de Envío</label>
                     <div style={{ position: 'relative' }}>
                         <input
                             value={formData.shipping_cost}
                             onChange={e => onChange({ ...formData, shipping_cost: e.target.value.replace(/\D/g, '') })}
-                            style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '12px', color: 'white', fontSize: '15px' }}
+                            style={inputStyle}
                             placeholder="Ej: 15.000 o 0 si es gratis"
                         />
-                        <span style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-dim)', fontSize: '12px' }}>$</span>
+                        <span style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-dim)', fontWeight: '800' }}>$</span>
                     </div>
-                    <p style={{ fontSize: '11px', color: 'var(--text-dim)', marginTop: '8px' }}>Poner 0 para **ENVÍO GRATIS**.</p>
+                    <p style={{ fontSize: '11px', color: 'var(--text-dim)', marginTop: '8px', paddingLeft: '4px' }}>Usa 0 para ofrecer **ENVÍO GRATIS**.</p>
                 </div>
 
+                {/* Clothing Options */}
                 {formData.category === 'Ropa' && (
-                    <div className="animate-fade" style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                    <div className="animate-fade" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                         <div>
-                            <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Tipo de Prenda</label>
+                            <label style={labelStyle}>Tipo de Prenda</label>
                             <select
                                 value={formData.clothing_type}
                                 onChange={e => onChange({ ...formData, clothing_type: e.target.value, size_clothing: '' })}
-                                style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '12px', color: 'white', fontSize: '15px' }}
+                                style={inputStyle}
                             >
                                 {['Camisa', 'Camiseta', 'Pantalón', 'Short', 'Buso / Chaqueta', 'Gorra', 'Otro'].map(t => <option key={t} value={t}>{t}</option>)}
                             </select>
                         </div>
                         <div>
-                            <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Tallas y Cantidades</label>
-                            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                            <label style={labelStyle}>Tallas disponibles</label>
+                            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
                                 {(formData.clothing_type === 'Pantalón' || formData.clothing_type === 'Short' ? ['30', '32', '34', '36', '38', '40'] : ['S', 'M', 'L', 'XL', 'XXL']).map(size => {
                                     const isSelected = !!formData.sizes_inventory.find(s => s.size === size);
                                     return (
@@ -189,13 +217,14 @@ const ProductForm: React.FC<ProductFormProps> = ({
                                             type="button"
                                             onClick={() => onToggleSize(size)}
                                             style={{
-                                                flex: '1 0 50px',
-                                                padding: '10px',
-                                                borderRadius: '10px',
-                                                border: '1px solid var(--glass-border)',
+                                                flex: '1 0 60px',
+                                                padding: '12px',
+                                                borderRadius: '12px',
+                                                border: isSelected ? '1px solid var(--secondary)' : '1px solid var(--glass-border)',
                                                 background: isSelected ? 'var(--secondary)' : 'rgba(255,255,255,0.05)',
                                                 color: isSelected ? 'var(--primary)' : 'white',
-                                                fontWeight: '700'
+                                                fontWeight: '900',
+                                                fontSize: '13px'
                                             }}
                                         >
                                             {size}
@@ -207,30 +236,30 @@ const ProductForm: React.FC<ProductFormProps> = ({
                     </div>
                 )}
 
+                {/* Shoe Options */}
                 {formData.category === 'Zapatos' && (
-                    <div className="animate-fade" style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                        <label style={{ display: 'block', marginBottom: '-5px', fontSize: '13px', color: 'var(--text-dim)' }}>Tallas de Calzado (COL)</label>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                    <div className="animate-fade" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
                             <div>
-                                <label style={{ display: 'block', marginBottom: '5px', fontSize: '11px', color: 'var(--secondary)', fontWeight: '800' }}>Talla COL</label>
+                                <label style={labelStyle}>Talla COL</label>
                                 <input
                                     placeholder="40"
                                     value={formData.size_shoes_col}
                                     onChange={e => onSyncShoeSizes(e.target.value, 'col')}
-                                    style={{ width: '100%', background: 'rgba(163, 230, 53, 0.1)', border: '1px solid var(--secondary)', borderRadius: '10px', padding: '10px', color: 'white', boxSizing: 'border-box' }}
+                                    style={{ ...inputStyle, background: 'rgba(163, 230, 53, 0.08)', border: '1px solid var(--secondary)' }}
                                 />
                             </div>
                             <div>
-                                <label style={{ display: 'block', marginBottom: '5px', fontSize: '11px', color: 'var(--text-dim)' }}>Talla US</label>
+                                <label style={labelStyle}>Talla US</label>
                                 <input
                                     placeholder="9.5"
                                     value={formData.size_shoes_us}
                                     onChange={e => onSyncShoeSizes(e.target.value, 'us')}
-                                    style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '10px', padding: '10px', color: 'white', boxSizing: 'border-box' }}
+                                    style={inputStyle}
                                 />
                             </div>
                         </div>
-                        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                             {['36', '37', '38', '39', '40', '41', '42', '43', '44', '45'].map(size => {
                                 const isSelected = !!formData.sizes_inventory.find(s => s.size === size);
                                 return (
@@ -239,13 +268,14 @@ const ProductForm: React.FC<ProductFormProps> = ({
                                         type="button"
                                         onClick={() => onToggleSize(size)}
                                         style={{
-                                            flex: '1 0 45px',
-                                            padding: '10px',
-                                            borderRadius: '10px',
-                                            border: '1px solid ' + (isSelected ? 'var(--secondary)' : 'var(--glass-border)'),
+                                            flex: '1 0 50px',
+                                            padding: '12px',
+                                            borderRadius: '12px',
+                                            border: isSelected ? '1px solid var(--secondary)' : '1px solid var(--glass-border)',
                                             background: isSelected ? 'var(--secondary)' : 'rgba(255,255,255,0.05)',
                                             color: isSelected ? 'var(--primary)' : 'white',
-                                            fontWeight: '800'
+                                            fontWeight: '900',
+                                            fontSize: '13px'
                                         }}
                                     >
                                         {size}
@@ -256,17 +286,18 @@ const ProductForm: React.FC<ProductFormProps> = ({
                     </div>
                 )}
 
+                {/* Inventory Quantities */}
                 {formData.sizes_inventory.length > 0 && (
-                    <div style={{ background: 'rgba(255,255,255,0.02)', padding: '15px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                        <p style={{ fontSize: '11px', color: 'var(--text-dim)', marginBottom: '10px', fontWeight: '800' }}>CANTIDADES POR TALLA</p>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <div style={{ background: 'rgba(0,0,0,0.2)', padding: '20px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                        <p style={{ fontSize: '10px', color: 'var(--secondary)', marginBottom: '15px', fontWeight: '950', letterSpacing: '0.1em' }}>CANTIDADES REQUERIDAS</p>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                             {formData.sizes_inventory.map(s => (
-                                <div key={s.size} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                    <span style={{ fontSize: '14px', fontWeight: '900', color: 'white' }}>Talla {s.size}</span>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                        <button type="button" onClick={() => onUpdateSizeQuantity(s.size, s.quantity - 1)} style={{ width: '28px', height: '28px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: 'white' }}>-</button>
-                                        <input type="number" readOnly value={s.quantity} style={{ width: '30px', textAlign: 'center', background: 'transparent', border: 'none', color: 'white', fontWeight: '800' }} />
-                                        <button type="button" onClick={() => onUpdateSizeQuantity(s.size, s.quantity + 1)} style={{ width: '28px', height: '28px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'white', color: 'var(--primary)' }}>+</button>
+                                <div key={s.size} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.02)', padding: '10px 15px', borderRadius: '12px' }}>
+                                    <span style={{ fontSize: '15px', fontWeight: '900', color: 'white' }}>Talla {s.size}</span>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                        <button type="button" onClick={() => onUpdateSizeQuantity(s.size, s.quantity - 1)} style={{ width: '32px', height: '32px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: 'white', fontWeight: '900' }}>-</button>
+                                        <input type="number" readOnly value={s.quantity} style={{ width: '30px', textAlign: 'center', background: 'transparent', border: 'none', color: 'white', fontWeight: '950', fontSize: '16px' }} />
+                                        <button type="button" onClick={() => onUpdateSizeQuantity(s.size, s.quantity + 1)} style={{ width: '32px', height: '32px', borderRadius: '10px', border: 'none', background: 'white', color: 'var(--primary)', fontWeight: '900' }}>+</button>
                                     </div>
                                 </div>
                             ))}
@@ -274,46 +305,59 @@ const ProductForm: React.FC<ProductFormProps> = ({
                     </div>
                 )}
 
+                {/* Description */}
                 <div>
-                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Descripción</label>
+                    <label style={labelStyle}>Descripción</label>
                     <textarea
                         value={formData.description}
                         onChange={e => onChange({ ...formData, description: e.target.value })}
-                        style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '12px', color: 'white', fontSize: '15px', minHeight: '80px', resize: 'none' }}
-                        placeholder="Descripción y estado del producto..."
+                        style={{ ...inputStyle, minHeight: '100px', resize: 'none' }}
+                        placeholder="Describe el estado de tu producto..."
                     />
                 </div>
 
+                {/* Negotiable Toggle */}
                 <div
                     onClick={() => onChange({ ...formData, is_negotiable: !formData.is_negotiable })}
-                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '15px', background: 'rgba(255,255,255,0.03)', borderRadius: '15px', border: '1px solid var(--glass-border)', cursor: 'pointer' }}
+                    style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '18px',
+                        background: 'rgba(255,255,255,0.03)',
+                        borderRadius: '18px',
+                        border: '1px solid var(--glass-border)',
+                        cursor: 'pointer'
+                    }}
                 >
                     <div>
-                        <p style={{ fontSize: '14px', fontWeight: '700', color: 'white' }}>Precio Negociable</p>
-                        <p style={{ fontSize: '11px', color: 'var(--text-dim)' }}>Permitir ofertas de compradores</p>
+                        <p style={{ fontSize: '15px', fontWeight: '900', color: 'white' }}>Precio Negociable</p>
+                        <p style={{ fontSize: '12px', color: 'var(--text-dim)' }}>Recibir ofertas de posibles compradores</p>
                     </div>
-                    <div style={{ width: '44px', height: '24px', background: formData.is_negotiable ? 'var(--secondary)' : 'rgba(255,255,255,0.1)', borderRadius: '20px', position: 'relative' }}>
-                        <div style={{ width: '18px', height: '18px', background: formData.is_negotiable ? 'var(--primary)' : 'var(--text-dim)', borderRadius: '50%', position: 'absolute', top: '3px', left: formData.is_negotiable ? '23px' : '3px', transition: 'all 0.3s ease' }} />
+                    <div style={{ width: '48px', height: '26px', background: formData.is_negotiable ? 'var(--secondary)' : 'rgba(255,255,255,0.1)', borderRadius: '20px', position: 'relative', transition: 'all 0.3s ease' }}>
+                        <div style={{ width: '20px', height: '20px', background: formData.is_negotiable ? 'var(--primary)' : 'var(--text-dim)', borderRadius: '50%', position: 'absolute', top: '3px', left: formData.is_negotiable ? '25px' : '3px', transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)' }} />
                     </div>
                 </div>
 
-                <div style={{ background: 'rgba(255,255,255,0.03)', padding: '15px', borderRadius: '15px', border: '1px solid var(--glass-border)' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
-                        <Ticket size={14} color="var(--secondary)" />
-                        <label style={{ fontSize: '13px', fontWeight: '800', color: 'white' }}>Cupón Exclusivo</label>
+                {/* Coupon Selection */}
+                <div style={{ background: 'rgba(255,255,255,0.03)', padding: '20px', borderRadius: '20px', border: '1px solid var(--glass-border)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px' }}>
+                        <Ticket size={16} color="var(--secondary)" />
+                        <label style={{ fontSize: '13px', fontWeight: '900', color: 'white' }}>Cupón de Venta (Opcional)</label>
                     </div>
                     <select
                         value={formData.selectedCouponId}
                         onChange={e => onChange({ ...formData, selectedCouponId: e.target.value })}
-                        style={{ width: '100%', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '12px', color: 'white' }}
+                        style={{ ...inputStyle, background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.05)' }}
                     >
-                        <option value="">Sin cupón seleccionado</option>
+                        <option value="">Sin cupón aplicado</option>
                         {coupons.map(c => (
                             <option key={c.id} value={c.id}>{c.code} - {c.discount_type === 'percentage' ? `${c.value}% OFF` : `$${c.value.toLocaleString()} OFF`}</option>
                         ))}
                     </select>
                 </div>
 
+                {/* Summary Section */}
                 {(formData.price || formData.shipping_cost) && (() => {
                     const coupon = coupons.find(c => c.id === formData.selectedCouponId);
                     const base = parseFloat(formData.price) || 0;
@@ -325,35 +369,56 @@ const ProductForm: React.FC<ProductFormProps> = ({
                     const total = discounted - comm + ship;
 
                     return (
-                        <div className="glass" style={{ padding: '15px', background: 'rgba(163, 230, 53, 0.05)', borderRadius: '15px' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px', fontSize: '12px', color: 'var(--text-dim)' }}>
-                                <span>Precio base</span>
-                                <span>$ {formatPrice(base.toFixed(0))}</span>
+                        <div className="glass" style={{ padding: '20px', background: 'rgba(163, 230, 53, 0.04)', borderRadius: '20px', border: '1px solid rgba(163, 230, 53, 0.1)' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>
+                                <span>Precio de venta</span>
+                                <span style={{ fontWeight: '700' }}>$ {formatPrice(base.toFixed(0))}</span>
                             </div>
-                            {disc > 0 && <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px', fontSize: '12px', color: '#ef4444', fontWeight: '800' }}>
+                            {disc > 0 && <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '13px', color: '#ef4444', fontWeight: '900' }}>
                                 <span>Descuento cupón</span>
                                 <span>- $ {formatPrice(disc.toFixed(0))}</span>
                             </div>}
-                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px', fontSize: '12px', color: '#ff6b6b' }}>
-                                <span>Comisión APEG (5%)</span>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '13px', color: '#ff6b6b' }}>
+                                <span>Comisión Servicio (5%)</span>
                                 <span>- $ {formatPrice(comm.toFixed(0))}</span>
                             </div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '15px', fontWeight: '900', paddingTop: '10px', borderTop: '1px solid rgba(255,255,255,0.1)', marginTop: '5px' }}>
-                                <span>Recibes en cuenta</span>
-                                <span style={{ color: 'var(--secondary)' }}>$ {formatPrice(total.toFixed(0))}</span>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '16px', fontWeight: '1000', paddingTop: '15px', borderTop: '1px solid rgba(255,255,255,0.08)', marginTop: '8px' }}>
+                                <span style={{ color: 'white' }}>TOTAL A RECIBIR</span>
+                                <span style={{ color: 'var(--secondary)', fontSize: '20px' }}>$ {formatPrice(total.toFixed(0))}</span>
                             </div>
                         </div>
                     );
                 })()}
 
-                <button
-                    type="submit"
-                    disabled={saving || !formData.image_url}
-                    style={{ width: '100%', background: (saving || !formData.image_url) ? 'rgba(163, 230, 53, 0.3)' : 'var(--secondary)', color: 'var(--primary)', padding: '15px', borderRadius: '15px', fontWeight: '900', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}
-                >
-                    {saving ? <Loader2 className="animate-spin" size={20} /> : <CheckCircle2 size={20} />}
-                    {saving ? 'GUARDANDO...' : 'PUBLICAR PRODUCTO'}
-                </button>
+                {/* Submit Button */}
+                <div style={{
+                    position: 'fixed',
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    padding: '25px',
+                    background: 'linear-gradient(to top, var(--primary) 70%, transparent)',
+                    zIndex: 10
+                }}>
+                    <button
+                        type="submit"
+                        disabled={saving || !formData.image_url}
+                        className={saving || !formData.image_url ? 'btn-disabled' : 'btn-primary'}
+                        style={{ height: '60px', fontSize: '16px' }}
+                    >
+                        {saving ? (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <div className="spinner-small" />
+                                GUARDANDO...
+                            </div>
+                        ) : (
+                            <>
+                                <CheckCircle2 size={20} />
+                                {editingId ? 'GUARDAR CAMBIOS' : 'PUBLICAR PRODUCTO'}
+                            </>
+                        )}
+                    </button>
+                </div>
             </div>
         </form>
     );

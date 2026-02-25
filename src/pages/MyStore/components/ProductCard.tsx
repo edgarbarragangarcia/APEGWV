@@ -77,8 +77,9 @@ const ProductCard: React.FC<ProductCardProps> = ({
                             borderRadius: '24px',
                             overflow: 'hidden',
                             background: 'rgba(255,255,255,0.03)',
-                            border: '1px solid rgba(255,255,255,0.1)',
-                            boxShadow: '0 8px 20px rgba(0,0,0,0.3)'
+                            border: '1px solid var(--glass-border)',
+                            boxShadow: '0 8px 25px rgba(0,0,0,0.4)',
+                            position: 'relative'
                         }}>
                             <img
                                 src={optimizeImage(product.image_url, { width: 300, height: 300 })}
@@ -89,31 +90,37 @@ const ProductCard: React.FC<ProductCardProps> = ({
                                     target.src = 'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?auto=format&fit=crop&q=80&w=200';
                                 }}
                             />
+                            {/* Inner Shadow Mesh */}
+                            <div style={{ position: 'absolute', inset: 0, boxShadow: 'inset 0 0 20px rgba(0,0,0,0.2)', pointerEvents: 'none' }} />
                         </div>
                         {/* Status Badge */}
                         <div style={{
                             position: 'absolute',
-                            top: '8px',
-                            left: '8px',
-                            background: product.status === 'active' ? 'var(--secondary)' : '#f59e0b',
-                            padding: '4px 8px',
-                            borderRadius: '10px',
+                            top: '-8px',
+                            left: '-8px',
+                            background: product.status === 'active' ? 'var(--secondary)' : 'rgba(255,166,0,0.9)',
+                            backdropFilter: 'blur(5px)',
+                            padding: '6px 12px',
+                            borderRadius: '12px',
                             display: 'flex',
                             alignItems: 'center',
-                            gap: '4px',
-                            boxShadow: '0 4px 10px rgba(0,0,0,0.3)',
+                            gap: '5px',
+                            boxShadow: '0 8px 15px rgba(0,0,0,0.3)',
                             zIndex: 2,
+                            border: '1px solid rgba(255,255,255,0.2)'
                         }}>
                             {product.status === 'active' ? (
-                                <CheckCircle2 size={10} color="var(--primary)" strokeWidth={3} />
+                                <CheckCircle2 size={12} color="var(--primary)" strokeWidth={3} />
                             ) : (
-                                <Package size={10} color="white" strokeWidth={3} />
+                                <Package size={12} color="white" strokeWidth={3} />
                             )}
                             <span style={{
-                                fontSize: '8px',
-                                fontWeight: '900',
+                                fontSize: '9px',
+                                fontWeight: '950',
                                 color: product.status === 'active' ? 'var(--primary)' : 'white',
-                                textTransform: 'uppercase'
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.05em',
+                                fontFamily: 'var(--font-main)'
                             }}>
                                 {product.status === 'active' ? 'Activo' : 'Borrador'}
                             </span>
@@ -123,21 +130,21 @@ const ProductCard: React.FC<ProductCardProps> = ({
                     {/* Content Section */}
                     <div style={{ flex: 1, minWidth: 0 }}>
                         <h3 style={{
-                            fontSize: '16px',
-                            fontWeight: '700',
-                            marginBottom: '4px',
+                            fontSize: '17px',
+                            fontWeight: '800',
+                            marginBottom: '6px',
                             color: 'white',
-                            letterSpacing: '-0.01em',
-                            lineHeight: 1.2,
+                            letterSpacing: '-0.02em',
+                            lineHeight: 1.1,
                             fontFamily: 'var(--font-main)'
                         }}>{product.name}</h3>
 
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', marginBottom: '12px' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', marginBottom: '14px' }}>
                             <span style={{
                                 color: 'var(--secondary)',
-                                fontWeight: '700',
-                                fontSize: '20px',
-                                letterSpacing: '-0.02em',
+                                fontWeight: '950',
+                                fontSize: '22px',
+                                letterSpacing: '-0.03em',
                                 fontFamily: 'var(--font-main)',
                                 lineHeight: 1
                             }}>
@@ -146,36 +153,41 @@ const ProductCard: React.FC<ProductCardProps> = ({
                             <div style={{
                                 display: 'inline-flex',
                                 alignItems: 'center',
-                                gap: '4px',
-                                opacity: 0.8
+                                gap: '5px',
+                                background: 'rgba(56, 189, 248, 0.1)',
+                                padding: '3px 8px',
+                                borderRadius: '8px',
+                                width: 'fit-content',
+                                border: '1px solid rgba(56, 189, 248, 0.2)'
                             }}>
-                                <Truck size={11} color="#38bdf8" />
+                                <Truck size={12} color="#38bdf8" />
                                 <span style={{
                                     fontSize: '11px',
-                                    fontWeight: '600',
+                                    fontWeight: '800',
                                     color: '#38bdf8',
                                     fontFamily: 'var(--font-main)'
                                 }}>
-                                    + {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(product.shipping_cost || 0)}
+                                    Envío: {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(product.shipping_cost || 0)}
                                 </span>
                             </div>
                         </div>
 
                         {/* Stock & Info Pills */}
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                             <div style={{
-                                background: 'rgba(255,255,255,0.05)',
-                                padding: '4px 10px',
-                                borderRadius: '10px',
+                                background: 'rgba(255,255,255,0.06)',
+                                padding: '5px 12px',
+                                borderRadius: '12px',
                                 fontSize: '11px',
                                 color: 'white',
-                                fontWeight: '800',
+                                fontWeight: '900',
                                 display: 'flex',
                                 alignItems: 'center',
-                                gap: '6px',
-                                border: '1px solid rgba(255,255,255,0.08)'
+                                gap: '8px',
+                                border: '1px solid var(--glass-border)',
+                                fontFamily: 'var(--font-main)'
                             }}>
-                                <span style={{ color: 'var(--text-dim)', fontSize: '9px', fontWeight: '600' }}>STOCK</span>
+                                <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: '10px', fontWeight: '800', textTransform: 'uppercase' }}>Disponibles</span>
                                 <span style={{ color: (product as any).stock_quantity > 0 ? 'var(--secondary)' : '#ff6b6b' }}>
                                     {(product as any).stock_quantity || 0}
                                 </span>
@@ -185,23 +197,24 @@ const ProductCard: React.FC<ProductCardProps> = ({
                             {Array.isArray((product as any).sizes_inventory) && (product as any).sizes_inventory.length > 0 && (
                                 <div style={{
                                     display: 'flex',
-                                    gap: '6px',
-                                    padding: '5px 8px',
-                                    background: 'rgba(255,255,255,0.03)',
+                                    gap: '8px',
+                                    padding: '5px 12px',
+                                    background: 'rgba(255,255,255,0.04)',
                                     borderRadius: '12px',
-                                    border: '1px solid rgba(255,255,255,0.05)'
+                                    border: '1px solid var(--glass-border)'
                                 }}>
                                     {(product as any).sizes_inventory.slice(0, 3).map((inv: { size: string; quantity: number }, i: number) => (
                                         <span key={i} style={{
-                                            fontSize: '9px',
+                                            fontSize: '11px',
                                             color: inv.quantity > 0 ? 'white' : 'rgba(255,255,255,0.2)',
-                                            fontWeight: '800'
+                                            fontWeight: '900',
+                                            fontFamily: 'var(--font-main)'
                                         }}>
                                             {inv.size}
                                         </span>
                                     ))}
                                     {(product as any).sizes_inventory.length > 3 && (
-                                        <span style={{ fontSize: '9px', color: 'var(--text-dim)' }}>...</span>
+                                        <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontWeight: '900' }}>+{(product as any).sizes_inventory.length - 3}</span>
                                     )}
                                 </div>
                             )}
@@ -209,75 +222,65 @@ const ProductCard: React.FC<ProductCardProps> = ({
                     </div>
 
                     {/* Actions Pillar */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', justifyContent: 'center' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', justifyContent: 'center' }}>
                         <motion.button
-                            whileTap={{ scale: 0.9 }}
+                            whileHover={{ scale: 1.05, backgroundColor: 'rgba(255,255,255,0.1)' }}
+                            whileTap={{ scale: 0.95 }}
                             onClick={(e: React.MouseEvent) => { e.stopPropagation(); onEdit(product); }}
                             style={{
                                 color: 'white',
-                                background: 'rgba(255,255,255,0.06)',
-                                border: '1px solid rgba(255,255,255,0.1)',
-                                borderRadius: '12px',
-                                width: '40px',
-                                height: '40px',
+                                background: 'rgba(255,255,255,0.05)',
+                                border: '1px solid var(--glass-border)',
+                                borderRadius: '15px',
+                                width: '44px',
+                                height: '44px',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
                                 cursor: 'pointer',
-                                transition: 'all 0.2s ease'
+                                transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
                             }}
                         >
-                            <Pencil size={18} strokeWidth={2} />
+                            <Pencil size={18} strokeWidth={2.5} />
                         </motion.button>
                         <motion.button
-                            whileTap={{ scale: 0.9 }}
+                            whileHover={{ scale: 1.05, backgroundColor: 'rgba(255, 107, 107, 0.15)' }}
+                            whileTap={{ scale: 0.95 }}
                             onClick={(e: React.MouseEvent) => { e.stopPropagation(); onDelete(product); }}
                             style={{
                                 color: '#ff6b6b',
                                 background: 'rgba(255, 107, 107, 0.08)',
-                                border: '1px solid rgba(255, 107, 107, 0.15)',
-                                borderRadius: '12px',
-                                width: '40px',
-                                height: '40px',
+                                border: '1px solid rgba(255, 107, 107, 0.2)',
+                                borderRadius: '15px',
+                                width: '44px',
+                                height: '44px',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
                                 cursor: 'pointer',
-                                transition: 'all 0.2s ease'
+                                transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
                             }}
                         >
-                            <Trash2 size={18} strokeWidth={2} />
+                            <Trash2 size={18} strokeWidth={2.5} />
                         </motion.button>
                     </div>
                 </div>
 
                 {product.status === 'pending_payment' && (
                     <div style={{ padding: '0 20px 20px' }}>
-                        <motion.button
-                            whileTap={{ scale: 0.98 }}
+                        <button
                             onClick={handlePublishNow}
+                            className="btn-primary"
                             style={{
-                                width: '100%',
-                                background: 'linear-gradient(135deg, var(--secondary) 0%, #10b981 100%)',
-                                color: 'var(--primary)',
-                                padding: '16px',
-                                borderRadius: '20px',
-                                fontWeight: '950',
-                                fontSize: '13px',
-                                border: 'none',
-                                cursor: 'pointer',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                gap: '10px',
-                                boxShadow: '0 10px 20px rgba(163, 230, 53, 0.3)',
-                                textTransform: 'uppercase',
-                                letterSpacing: '1px'
+                                height: '54px',
+                                fontSize: '14px',
+                                letterSpacing: '0.05em',
+                                background: 'linear-gradient(135deg, var(--secondary) 0%, #a3e635 100%)'
                             }}
                         >
-                            <CheckCircle2 size={18} strokeWidth={3} />
+                            <CheckCircle2 size={20} strokeWidth={3} />
                             PUBLICAR AHORA ($120.000)
-                        </motion.button>
+                        </button>
                     </div>
                 )}
             </div>
@@ -287,10 +290,10 @@ const ProductCard: React.FC<ProductCardProps> = ({
                 onClose={() => setIsPublishModalOpen(false)}
                 onConfirm={confirmPublish}
                 title="¿Publicar Producto?"
-                message={`Para activar "${product.name}" en el marketplace debes realizar el pago de $120.000 COP. ¿Deseas continuar?`}
-                confirmText={isPublishing ? 'Procesando...' : 'Pagar y Publicar'}
-                cancelText="Cancelar"
+                message={`Estás por publicar "${product.name}". Esto activará el producto en el marketplace para que todos puedan verlo.`}
+                confirmText={isPublishing ? "Publicando..." : "Sí, publicar ahora"}
                 type="info"
+                isLoading={isPublishing}
             />
         </motion.div>
     );
