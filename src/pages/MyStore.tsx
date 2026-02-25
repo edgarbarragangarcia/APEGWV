@@ -1160,62 +1160,62 @@ const MyStore: React.FC = () => {
                         }} className="animate-fade-up">
                             <div style={{
                                 background: 'linear-gradient(145deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%)',
-                                padding: '20px',
-                                borderRadius: '24px',
+                                padding: '12px',
+                                borderRadius: '20px',
                                 border: '1px solid rgba(255,255,255,0.08)',
                                 display: 'flex',
                                 flexDirection: 'column',
-                                gap: '8px',
+                                gap: '6px',
                                 boxShadow: '0 8px 32px rgba(0,0,0,0.1)'
                             }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                     <div style={{
                                         background: 'rgba(163, 230, 53, 0.15)',
-                                        width: '32px',
-                                        height: '32px',
-                                        borderRadius: '10px',
+                                        width: '28px',
+                                        height: '28px',
+                                        borderRadius: '8px',
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
                                         border: '1px solid rgba(163, 230, 53, 0.2)'
                                     }}>
-                                        <Package size={16} color="var(--secondary)" />
+                                        <Package size={14} color="var(--secondary)" />
                                     </div>
-                                    <span style={{ fontSize: '12px', fontWeight: '800', color: 'rgba(255,255,255,0.5)', letterSpacing: '0.05em' }}>PRODUCTOS</span>
+                                    <span style={{ fontSize: '10px', fontWeight: '800', color: 'rgba(255,255,255,0.5)', letterSpacing: '0.05em' }}>PRODUCTOS</span>
                                 </div>
-                                <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', marginTop: '4px' }}>
-                                    <span style={{ fontSize: '28px', fontWeight: '950', color: 'white', letterSpacing: '-1px' }}>{products.length}</span>
-                                    <span style={{ fontSize: '11px', fontWeight: '700', color: 'var(--secondary)', opacity: 0.8 }}>ACTIVOS</span>
+                                <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', marginTop: '2px' }}>
+                                    <span style={{ fontSize: '24px', fontWeight: '950', color: 'white', letterSpacing: '-1px' }}>{products.length}</span>
+                                    <span style={{ fontSize: '9px', fontWeight: '700', color: 'var(--secondary)', opacity: 0.8 }}>ACTIVOS</span>
                                 </div>
                             </div>
                             <div style={{
                                 background: 'linear-gradient(145deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%)',
-                                padding: '20px',
-                                borderRadius: '24px',
+                                padding: '12px',
+                                borderRadius: '20px',
                                 border: '1px solid rgba(255,255,255,0.08)',
                                 display: 'flex',
                                 flexDirection: 'column',
-                                gap: '8px',
+                                gap: '6px',
                                 boxShadow: '0 8px 32px rgba(0,0,0,0.1)'
                             }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                     <div style={{
                                         background: 'rgba(59, 130, 246, 0.15)',
-                                        width: '32px',
-                                        height: '32px',
-                                        borderRadius: '10px',
+                                        width: '28px',
+                                        height: '28px',
+                                        borderRadius: '8px',
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
                                         border: '1px solid rgba(59, 130, 246, 0.2)'
                                     }}>
-                                        <TrendingDown size={16} color="#60a5fa" />
+                                        <TrendingDown size={14} color="#60a5fa" />
                                     </div>
-                                    <span style={{ fontSize: '12px', fontWeight: '800', color: 'rgba(255,255,255,0.5)', letterSpacing: '0.05em' }}>VENTAS</span>
+                                    <span style={{ fontSize: '10px', fontWeight: '800', color: 'rgba(255,255,255,0.5)', letterSpacing: '0.05em' }}>VENTAS</span>
                                 </div>
-                                <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', marginTop: '4px' }}>
-                                    <span style={{ fontSize: '28px', fontWeight: '950', color: 'white', letterSpacing: '-1px' }}>{orders.filter(o => o.status === 'Entregado').length}</span>
-                                    <span style={{ fontSize: '11px', fontWeight: '700', color: '#60a5fa', opacity: 0.8 }}>COMPLETADAS</span>
+                                <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', marginTop: '2px' }}>
+                                    <span style={{ fontSize: '24px', fontWeight: '950', color: 'white', letterSpacing: '-1px' }}>{orders.filter(o => o.status === 'Entregado').length}</span>
+                                    <span style={{ fontSize: '9px', fontWeight: '700', color: '#60a5fa', opacity: 0.8 }}>COMPLETADAS</span>
                                 </div>
                             </div>
                         </div>

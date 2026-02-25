@@ -1050,7 +1050,7 @@ const Home: React.FC = () => {
 
                                 <div style={{
                                     position: 'relative',
-                                    height: '50vh',
+                                    height: '45vh',
                                     width: '100%',
                                     flexShrink: 0,
                                     background: 'linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%)',
