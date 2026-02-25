@@ -424,26 +424,42 @@ const MyPurchases: React.FC = () => {
                         >
                             {/* Fixed Header */}
                             <div style={{ padding: '20px 20px 15px 20px', flexShrink: 0, position: 'relative', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-                                <button
-                                    onClick={() => setSelectedOffer(null)}
-                                    style={{
-                                        position: 'absolute',
-                                        top: '15px',
-                                        right: '20px',
-                                        background: 'rgba(255,255,255,0.08)',
-                                        border: 'none',
-                                        borderRadius: '50%',
-                                        width: '32px',
-                                        height: '32px',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        color: 'white',
-                                        zIndex: 10
-                                    }}
-                                >
-                                    <X size={18} />
-                                </button>
+                                <div style={{ position: 'absolute', top: '15px', right: '20px', display: 'flex', gap: '10px', zIndex: 10 }}>
+                                    <button
+                                        onClick={() => handleDeleteOffer(selectedOffer.id)}
+                                        style={{
+                                            background: 'rgba(239, 68, 68, 0.1)',
+                                            border: 'none',
+                                            borderRadius: '50%',
+                                            width: '32px',
+                                            height: '32px',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            color: '#ef4444',
+                                            cursor: 'pointer'
+                                        }}
+                                    >
+                                        <Trash2 size={16} />
+                                    </button>
+                                    <button
+                                        onClick={() => setSelectedOffer(null)}
+                                        style={{
+                                            background: 'rgba(255,255,255,0.08)',
+                                            border: 'none',
+                                            borderRadius: '50%',
+                                            width: '32px',
+                                            height: '32px',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            color: 'white',
+                                            cursor: 'pointer'
+                                        }}
+                                    >
+                                        <X size={18} />
+                                    </button>
+                                </div>
 
                                 <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
                                     <div style={{ width: '48px', height: '48px', borderRadius: '12px', overflow: 'hidden', background: 'rgba(255,255,255,0.05)', flexShrink: 0 }}>
