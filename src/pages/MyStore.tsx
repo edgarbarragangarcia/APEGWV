@@ -131,6 +131,14 @@ const MyStore: React.FC = () => {
     const [brandsList, setBrandsList] = useState<string[]>([]);
 
     useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        const tab = params.get('tab');
+        if (tab && ['products', 'orders', 'offers', 'coupons', 'profile'].includes(tab)) {
+            setActiveTab(tab as any);
+        }
+    }, [location.search]);
+
+    useEffect(() => {
         setSearchTerm('');
     }, [activeTab]);
 

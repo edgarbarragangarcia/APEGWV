@@ -8,7 +8,7 @@ import { useNavigate } from 'react-router-dom';
 
 const AccessoriesPage: React.FC = () => {
     const navigate = useNavigate();
-    const { data: featuredProducts = [], isLoading } = useFeaturedProducts(50);
+    const { data: featuredProducts = [], isLoading } = useFeaturedProducts();
     const { addToCart } = useCart();
 
     // Filter products for Accesorios category

@@ -1,15 +1,20 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../services/SupabaseManager';
 
-export const useFeaturedProducts = (limit = 4) => {
+export const useFeaturedProducts = (limit: number | null = null) => {
     return useQuery({
         queryKey: ['products', 'featured', limit],
         queryFn: async () => {
-            const { data, error } = await supabase
+            let query = supabase
                 .from('products')
                 .select('*')
-                .order('created_at', { ascending: false })
-                .limit(limit);
+                .order('created_at', { ascending: false });
+
+            if (limit) {
+                query = query.limit(limit);
+            }
+
+            const { data, error } = await query;
 
             if (error) throw error;
             return data.map(p => ({

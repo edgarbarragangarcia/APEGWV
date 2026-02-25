@@ -8,7 +8,7 @@ import { useNavigate } from 'react-router-dom';
 
 const ClothingPage: React.FC = () => {
     const navigate = useNavigate();
-    const { data: featuredProducts = [], isLoading } = useFeaturedProducts(100);
+    const { data: featuredProducts = [], isLoading } = useFeaturedProducts();
     const { addToCart } = useCart();
 
     // Filter products for Ropa category

@@ -19,7 +19,7 @@ const Home: React.FC = () => {
     const { warning } = useToast();
     const { id: productId } = useParams();
     const { data: profile } = useProfile();
-    const { data: featuredProducts = [], isLoading: featuredLoading } = useFeaturedProducts(10); // Fetch more for filtering
+    const { data: featuredProducts = [], isLoading: featuredLoading } = useFeaturedProducts(); // No limit to fetch all
     const { data: tournaments = [] } = useUpcomingTournaments(3);
 
     const [viewTab, setViewTab] = React.useState<'marketplace' | 'myorders'>('marketplace');
@@ -1573,6 +1573,19 @@ const Home: React.FC = () => {
                                                             status: 'pending'
                                                         }]);
                                                     if (error) throw error;
+
+                                                    // Send notification to seller
+                                                    await supabase
+                                                        .from('notifications')
+                                                        .insert([{
+                                                            user_id: selectedProduct.seller_id,
+                                                            title: 'Nueva oferta recibida',
+                                                            message: `Has recibido una oferta de $${new Intl.NumberFormat('es-CO').format(parseInt(offerAmount))} por tu producto ${selectedProduct.name}`,
+                                                            type: 'offer',
+                                                            link: '/mystore?tab=offers',
+                                                            read: false
+                                                        }]);
+
                                                     setOfferSuccess(true);
                                                     setTimeout(() => {
                                                         setOfferSuccess(false);
