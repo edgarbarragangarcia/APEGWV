@@ -5,6 +5,7 @@ import Card from '../components/Card';
 import { Calendar, Clock, MapPin, AlertCircle, CheckCircle2, ChevronDown, Trash2 } from 'lucide-react';
 import PageHeader from '../components/PageHeader';
 import PageHero from '../components/PageHero';
+import ConfirmationModal from '../components/ConfirmationModal';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface Reservation {
@@ -385,7 +386,7 @@ const MyReservations: React.FC<MyReservationsProps> = ({ onRequestSwitchTab }) =
 
                             <AnimatePresence>
                                 {showCancelled && (
-                                    <motion.div key="cancelled-view" 
+                                    <motion.div key="cancelled-view"
                                         initial={{ height: 0, opacity: 0 }}
                                         animate={{ height: 'auto', opacity: 1 }}
                                         exit={{ height: 0, opacity: 0 }}
@@ -475,149 +476,31 @@ const MyReservations: React.FC<MyReservationsProps> = ({ onRequestSwitchTab }) =
     const modals = (
         <AnimatePresence>
             {/* Modal Cancelación Cupo (Existente) */}
-            {showConfirmModal && (
-                <div key="confirm-modal"  style={{
-                    position: 'fixed',
-                    inset: 0,
-                    zIndex: 2000,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    background: 'rgba(0,0,0,0.85)',
-                    backdropFilter: 'blur(8px)',
-                    padding: '20px'
-                }} onClick={() => setShowConfirmModal(false)}>
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.9 }}
-                        onClick={(e) => e.stopPropagation()}
-                        style={{
-                            width: '100%',
-                            maxWidth: '320px',
-                            background: 'var(--primary)',
-                            borderRadius: '24px',
-                            padding: '30px 25px',
-                            textAlign: 'center',
-                            border: '1px solid rgba(255,255,255,0.08)'
-                        }}
-                    >
-
-                        <h2 style={{ fontSize: '20px', fontWeight: '900', color: 'white', marginBottom: '10px' }}>
-                            ¿Cancelar Reserva?
-                        </h2>
-                        <p style={{ fontSize: '14px', color: 'var(--text-dim)', marginBottom: '25px', lineHeight: '1.5' }}>
-                            Perderás tu cupo en esta salida. ¿Estás seguro de continuar?
-                        </p>
-
-                        <div style={{ display: 'flex', gap: '12px' }}>
-                            <button
-                                onClick={() => setShowConfirmModal(false)}
-                                style={{
-                                    flex: 1,
-                                    padding: '12px',
-                                    borderRadius: '15px',
-                                    background: 'rgba(255,255,255,0.05)',
-                                    color: 'white',
-                                    fontWeight: '700',
-                                    border: 'none'
-                                }}
-                            >
-                                Volver
-                            </button>
-                            <button
-                                onClick={handleCancel}
-                                disabled={isCancelling}
-                                style={{
-                                    flex: 1,
-                                    padding: '12px',
-                                    borderRadius: '15px',
-                                    background: '#ef4444',
-                                    color: 'white',
-                                    fontWeight: '700',
-                                    border: 'none'
-                                }}
-                            >
-                                {isCancelling ? 'Cancelando...' : 'Cancelar Cupo'}
-                            </button>
-                        </div>
-                    </motion.div>
-                </div>
-            )}
+            <ConfirmationModal
+                isOpen={showConfirmModal}
+                onClose={() => setShowConfirmModal(false)}
+                onConfirm={handleCancel}
+                title="¿Cancelar Reserva?"
+                message="Perderás tu cupo en esta salida. ¿Estás seguro de continuar?"
+                confirmText={isCancelling ? 'Cancelando...' : 'Cancelar Cupo'}
+                cancelText="Volver"
+                type="danger"
+            />
 
             {/* Modal Eliminar del Historial (Nuevo) */}
-            {showDeleteModal && (
-                <div style={{
-                    position: 'fixed',
-                    inset: 0,
-                    zIndex: 2000,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    background: 'rgba(0,0,0,0.85)',
-                    backdropFilter: 'blur(8px)',
-                    padding: '20px'
-                }} onClick={() => setShowDeleteModal(false)}>
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.9 }}
-                        onClick={(e) => e.stopPropagation()}
-                        style={{
-                            width: '100%',
-                            maxWidth: '320px',
-                            background: 'var(--primary)',
-                            borderRadius: '24px',
-                            padding: '30px 25px',
-                            textAlign: 'center',
-                            border: '1px solid rgba(255,255,255,0.08)'
-                        }}
-                    >
-                        <Trash2 size={40} color="#ef4444" style={{ marginBottom: '15px', opacity: 0.8 }} />
-                        <h2 style={{ fontSize: '20px', fontWeight: '900', color: 'white', marginBottom: '10px' }}>
-                            ¿Eliminar del Historial?
-                        </h2>
-                        <p style={{ fontSize: '14px', color: 'var(--text-dim)', marginBottom: '25px', lineHeight: '1.5' }}>
-                            Esta acción eliminará permanentemente este registro de tu historial.
-                        </p>
-
-                        <div style={{ display: 'flex', gap: '12px' }}>
-                            <button
-                                onClick={() => setShowDeleteModal(false)}
-                                style={{
-                                    flex: 1,
-                                    padding: '12px',
-                                    borderRadius: '15px',
-                                    background: 'rgba(255,255,255,0.05)',
-                                    color: 'white',
-                                    fontWeight: '700',
-                                    border: 'none'
-                                }}
-                            >
-                                Cancelar
-                            </button>
-                            <button
-                                onClick={handleDelete}
-                                disabled={isCancelling}
-                                style={{
-                                    flex: 1,
-                                    padding: '12px',
-                                    borderRadius: '15px',
-                                    background: '#ef4444',
-                                    color: 'white',
-                                    fontWeight: '700',
-                                    border: 'none'
-                                }}
-                            >
-                                {isCancelling ? 'Eliminando...' : 'Eliminar'}
-                            </button>
-                        </div>
-                    </motion.div>
-                </div>
-            )}
+            <ConfirmationModal
+                isOpen={showDeleteModal}
+                onClose={() => setShowDeleteModal(false)}
+                onConfirm={handleDelete}
+                title="¿Eliminar del Historial?"
+                message="Esta acción eliminará permanentemente este registro de tu historial. ¿Deseas continuar?"
+                confirmText={isCancelling ? 'Eliminando...' : 'Eliminar'}
+                cancelText="Cancelar"
+                type="danger"
+            />
 
             {showSuccessModal && (
-                <div key="success-modal"  style={{ position: 'fixed', inset: 0, zIndex: 2100, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(15px)' }}>
+                <div key="success-modal" style={{ position: 'fixed', inset: 0, zIndex: 2100, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(15px)' }}>
                     <motion.div
                         initial={{ scale: 0.8, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}

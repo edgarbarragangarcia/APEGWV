@@ -8,6 +8,7 @@ import PageHeader from '../components/PageHeader';
 import PageHero from '../components/PageHero';
 import Card from '../components/Card';
 import { useToast } from '../context/ToastContext';
+import ConfirmationModal from '../components/ConfirmationModal';
 
 const MyPurchases: React.FC = () => {
     const navigate = useNavigate();
@@ -22,6 +23,22 @@ const MyPurchases: React.FC = () => {
     const [replyMessage, setReplyMessage] = useState('');
     const [sendingReply, setSendingReply] = useState(false);
     const [acceptingCounter, setAcceptingCounter] = useState(false);
+
+    // Custom Delete Modal State
+    const [deleteModal, setDeleteModal] = useState<{
+        isOpen: boolean;
+        type: 'order' | 'offer' | null;
+        id: string;
+        title: string;
+        message: string;
+    }>({
+        isOpen: false,
+        type: null,
+        id: '',
+        title: '',
+        message: ''
+    });
+    const [deleting, setDeleting] = useState(false);
 
     useEffect(() => {
         if (user) {
@@ -51,9 +68,18 @@ const MyPurchases: React.FC = () => {
         }
     };
 
-    const handleDeleteOrder = async (id: string) => {
-        if (!window.confirm('¿Estás seguro de que deseas eliminar este registro de tu historial?')) return;
+    const handleDeleteOrder = (id: string) => {
+        setDeleteModal({
+            isOpen: true,
+            type: 'order',
+            id,
+            title: '¿Eliminar Pedido?',
+            message: '¿Estás seguro de que deseas eliminar este registro de tu historial?'
+        });
+    };
 
+    const confirmDeleteOrder = async (id: string) => {
+        setDeleting(true);
         try {
             const { error } = await supabase
                 .from('orders')
@@ -64,14 +90,26 @@ const MyPurchases: React.FC = () => {
 
             warning('Pedido eliminado del historial');
             setMyOrders(prev => prev.filter(o => o.id !== id));
+            setDeleteModal(prev => ({ ...prev, isOpen: false }));
         } catch (err) {
             console.error('Error deleting order:', err);
+        } finally {
+            setDeleting(false);
         }
     };
 
-    const handleDeleteOffer = async (id: string) => {
-        if (!window.confirm('¿Estás seguro de que deseas eliminar este registro?')) return;
+    const handleDeleteOffer = (id: string) => {
+        setDeleteModal({
+            isOpen: true,
+            type: 'offer',
+            id,
+            title: '¿Eliminar Oferta?',
+            message: '¿Estás seguro de que deseas eliminar este registro?'
+        });
+    };
 
+    const confirmDeleteOffer = async (id: string) => {
+        setDeleting(true);
         try {
             const { error } = await supabase
                 .from('offers')
@@ -83,8 +121,11 @@ const MyPurchases: React.FC = () => {
             warning('Oferta eliminada correctamente');
             setMyOffers(prev => prev.filter(o => o.id !== id));
             if (selectedOffer?.id === id) setSelectedOffer(null);
+            setDeleteModal(prev => ({ ...prev, isOpen: false }));
         } catch (err) {
             console.error('Error deleting offer:', err);
+        } finally {
+            setDeleting(false);
         }
     };
 
@@ -670,6 +711,20 @@ const MyPurchases: React.FC = () => {
                     </div>
                 )}
             </AnimatePresence>
+
+            <ConfirmationModal
+                isOpen={deleteModal.isOpen}
+                title={deleteModal.title}
+                message={deleteModal.message}
+                onConfirm={() => {
+                    if (deleteModal.type === 'order') confirmDeleteOrder(deleteModal.id);
+                    else if (deleteModal.type === 'offer') confirmDeleteOffer(deleteModal.id);
+                }}
+                onClose={() => setDeleteModal(prev => ({ ...prev, isOpen: false }))}
+                confirmText={deleting ? 'Eliminando...' : 'Eliminar'}
+                cancelText="Cancelar"
+                type="danger"
+            />
         </div>
     );
 };

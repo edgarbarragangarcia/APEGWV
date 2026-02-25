@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../services/SupabaseManager';
 import { Plus, Trophy, Trash2, Calendar, Loader2, CheckCircle2, Pencil, Users, ChevronDown } from 'lucide-react';
@@ -6,6 +7,7 @@ import Card from '../components/Card';
 import Skeleton from '../components/Skeleton';
 import PageHero from '../components/PageHero';
 import { useAuth } from '../context/AuthContext';
+import ConfirmationModal from '../components/ConfirmationModal';
 
 interface Tournament {
     id: string;
@@ -140,6 +142,7 @@ const TournamentManager: React.FC = () => {
         tournamentId: null,
         tournamentName: ''
     });
+    const [isDeleting, setIsDeleting] = useState(false);
 
 
 
@@ -401,6 +404,7 @@ const TournamentManager: React.FC = () => {
 
     const confirmDelete = async () => {
         if (!deleteModal.tournamentId) return;
+        setIsDeleting(true);
 
         try {
             const { error } = await supabase
@@ -414,6 +418,8 @@ const TournamentManager: React.FC = () => {
         } catch (err) {
             console.error('Error deleting tournament:', err);
             alert('Error al eliminar el torneo');
+        } finally {
+            setIsDeleting(false);
         }
     };
     const handleViewParticipants = (tournament: Tournament) => {
@@ -843,27 +849,19 @@ const TournamentManager: React.FC = () => {
                         )}
                     </div>
                 )}
-            </div>     {/* Delete Confirmation Modal */}
-            {deleteModal.isOpen && (
-                <div key="delete-modal"  style={{
-                    position: 'fixed',
-                    top: 0, left: 0, right: 0, bottom: 0,
-                    background: 'rgba(0,0,0,0.85)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    zIndex: 1000, padding: '20px', backdropFilter: 'blur(8px)'
-                }}>
-                    <div className="glass" style={{ width: '100%', maxWidth: '320px', padding: '25px', borderRadius: '24px', textAlign: 'center', background: 'var(--primary)' }}>
-                        <h2 style={{ fontSize: '20px', marginBottom: '10px' }}>¿Eliminar evento?</h2>
-                        <p style={{ color: 'var(--text-dim)', fontSize: '14px', marginBottom: '25px' }}>¿Estás seguro que deseas eliminar {deleteModal.tournamentName}?</p>
-                        <div style={{ display: 'flex', gap: '12px' }}>
-                            <button onClick={() => setDeleteModal({ ...deleteModal, isOpen: false })} style={{ flex: 1, padding: '12px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)' }}>Cancelar</button>
-                            <button onClick={confirmDelete} style={{ flex: 1, padding: '12px', borderRadius: '12px', background: '#ef4444', color: 'white', fontWeight: '700' }}>Eliminar</button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-
+            </div>
+            <AnimatePresence>
+                <ConfirmationModal
+                    isOpen={deleteModal.isOpen}
+                    onClose={() => setDeleteModal(prev => ({ ...prev, isOpen: false }))}
+                    onConfirm={confirmDelete}
+                    title="¿Eliminar Torneo?"
+                    message={`¿Estás seguro que deseas eliminar "${deleteModal.tournamentName}"? Esta acción no se puede deshacer.`}
+                    confirmText={isDeleting ? 'Eliminando...' : 'Eliminar'}
+                    cancelText="Cancelar"
+                    type="danger"
+                />
+            </AnimatePresence>
         </div>
     );
 };

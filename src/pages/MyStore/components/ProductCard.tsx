@@ -1,7 +1,9 @@
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { CheckCircle2, Package, Truck, Pencil, Trash2 } from 'lucide-react';
 import { optimizeImage } from '../../../services/SupabaseManager';
 import { supabase } from '../../../services/SupabaseManager';
+import ConfirmationModal from '../../../components/ConfirmationModal';
 
 import type { Product } from '../hooks/useStoreData';
 
@@ -20,23 +22,31 @@ const ProductCard: React.FC<ProductCardProps> = ({
     onStatusUpdate,
     onSuccess
 }) => {
-    const handlePublishNow = async (e: React.MouseEvent) => {
-        e.stopPropagation();
-        try {
-            const confirmed = confirm('¿Pagar 120,000 COP para publicar este producto?');
-            if (confirmed) {
-                const { error } = await supabase
-                    .from('products')
-                    .update({ status: 'active' })
-                    .eq('id', product.id);
-                if (error) throw error;
+    const [isPublishModalOpen, setIsPublishModalOpen] = useState(false);
+    const [isPublishing, setIsPublishing] = useState(false);
 
-                onStatusUpdate(product.id, 'active');
-                onSuccess('¡Publicado!', 'Tu producto ya está activo en el marketplace.', 'success');
-            }
+    const handlePublishNow = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        setIsPublishModalOpen(true);
+    };
+
+    const confirmPublish = async () => {
+        setIsPublishing(true);
+        try {
+            const { error } = await supabase
+                .from('products')
+                .update({ status: 'active' })
+                .eq('id', product.id);
+            if (error) throw error;
+
+            onStatusUpdate(product.id, 'active');
+            onSuccess('¡Publicado!', 'Tu producto ya está activo en el marketplace.', 'success');
+            setIsPublishModalOpen(false);
         } catch (err) {
             console.error(err);
             onSuccess('Error', 'No se pudo procesar el pago o activar el producto.', 'error');
+        } finally {
+            setIsPublishing(false);
         }
     };
 
@@ -271,6 +281,17 @@ const ProductCard: React.FC<ProductCardProps> = ({
                     </div>
                 )}
             </div>
+
+            <ConfirmationModal
+                isOpen={isPublishModalOpen}
+                onClose={() => setIsPublishModalOpen(false)}
+                onConfirm={confirmPublish}
+                title="¿Publicar Producto?"
+                message={`Para activar "${product.name}" en el marketplace debes realizar el pago de $120.000 COP. ¿Deseas continuar?`}
+                confirmText={isPublishing ? 'Procesando...' : 'Pagar y Publicar'}
+                cancelText="Cancelar"
+                type="info"
+            />
         </motion.div>
     );
 };

@@ -6,6 +6,7 @@ import { supabase } from '../services/SupabaseManager';
 import { useAuth } from '../context/AuthContext';
 import PageHeader from '../components/PageHeader';
 import PageHero from '../components/PageHero';
+import ConfirmationModal from '../components/ConfirmationModal';
 
 const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 const GEMINI_MODEL = 'gemini-1.5-flash';
@@ -42,6 +43,18 @@ const MyBag: React.FC = () => {
         technical_specs: null as UserClub['technical_specs']
     });
     const [isSearching, setIsSearching] = useState(false);
+
+    // Delete Modal State
+    const [deleteModal, setDeleteModal] = useState<{
+        isOpen: boolean;
+        clubId: string;
+        clubName: string;
+    }>({
+        isOpen: false,
+        clubId: '',
+        clubName: ''
+    });
+    const [isDeleting, setIsDeleting] = useState(false);
 
     useEffect(() => {
         if (session) {
@@ -165,17 +178,29 @@ const MyBag: React.FC = () => {
         }
     };
 
-    const handleDeleteClub = async (id: string) => {
-        if (!confirm('¿Estás seguro de eliminar este palo de tu talega?')) return;
+    const handleDeleteClub = (club: UserClub) => {
+        setDeleteModal({
+            isOpen: true,
+            clubId: club.id,
+            clubName: club.club_name
+        });
+    };
+
+    const confirmDeleteClub = async () => {
+        if (!deleteModal.clubId) return;
+        setIsDeleting(true);
         try {
             const { error } = await supabase
                 .from('user_clubs')
                 .delete()
-                .eq('id', id);
+                .eq('id', deleteModal.clubId);
             if (error) throw error;
+            setDeleteModal(prev => ({ ...prev, isOpen: false }));
             fetchClubs();
         } catch (err) {
             console.error('Error deleting club:', err);
+        } finally {
+            setIsDeleting(false);
         }
     };
 
@@ -322,7 +347,7 @@ const MyBag: React.FC = () => {
                                 <button onClick={() => openEditModal(club)} style={{ background: 'rgba(255,255,255,0.05)', border: 'none', padding: '8px', borderRadius: '10px', color: 'white' }}>
                                     <Edit3 size={18} />
                                 </button>
-                                <button onClick={() => handleDeleteClub(club.id)} style={{ background: 'rgba(248, 113, 113, 0.1)', border: 'none', padding: '8px', borderRadius: '10px', color: '#f87171' }}>
+                                <button onClick={() => handleDeleteClub(club)} style={{ background: 'rgba(248, 113, 113, 0.1)', border: 'none', padding: '8px', borderRadius: '10px', color: '#f87171' }}>
                                     <Trash2 size={18} />
                                 </button>
                             </div>
@@ -484,6 +509,17 @@ const MyBag: React.FC = () => {
                     </div>
                 )}
             </AnimatePresence>
+
+            <ConfirmationModal
+                isOpen={deleteModal.isOpen}
+                onClose={() => setDeleteModal(prev => ({ ...prev, isOpen: false }))}
+                onConfirm={confirmDeleteClub}
+                title="¿Eliminar Palo?"
+                message={`¿Estás seguro de eliminar "${deleteModal.clubName}" de tu talega? Esta acción no se puede deshacer.`}
+                confirmText={isDeleting ? 'Eliminando...' : 'Eliminar'}
+                cancelText="Cancelar"
+                type="danger"
+            />
         </div>
     );
 };
