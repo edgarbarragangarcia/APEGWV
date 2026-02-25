@@ -212,9 +212,8 @@ const PremiumProductCard: React.FC<PremiumProductCardProps> = ({ product, onAddT
                     {product.name}
                 </h3>
 
-                {/* Price - Bottom aligned */}
+                {/* Price - Follows name tightly */}
                 <div style={{
-                    marginTop: 'auto',
                     display: 'flex',
                     alignItems: 'center',
                     gap: '6px'

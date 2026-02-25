@@ -901,7 +901,7 @@ const MyStore: React.FC = () => {
                         title,
                         message,
                         type: 'offer_update',
-                        link: '/?tab=myorders', // Link to home Compras tab
+                        link: `/?tab=myorders&offer_id=${offerId}`, // Link to home Compras tab with offer ID
                     });
                 }
             }

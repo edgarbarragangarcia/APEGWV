@@ -55,7 +55,7 @@ const AccessoriesPage: React.FC = () => {
                     <div style={{
                         display: 'grid',
                         gridTemplateColumns: 'repeat(2, 1fr)',
-                        gridAutoRows: '290px',
+                        gridAutoRows: '260px',
                         gap: '12px',
                         justifyContent: 'center'
                     }}>
@@ -93,7 +93,7 @@ const AccessoriesPage: React.FC = () => {
                     <div style={{
                         display: 'grid',
                         gridTemplateColumns: 'repeat(2, 1fr)',
-                        gridAutoRows: '290px',
+                        gridAutoRows: '260px',
                         gap: '12px',
                         justifyContent: 'center'
                     }}>

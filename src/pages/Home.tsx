@@ -89,7 +89,24 @@ const Home: React.FC = () => {
         if (tab === 'myorders') {
             setViewTab('myorders');
         }
-    }, [location.search]);
+
+        const offerId = params.get('offer_id');
+        if (offerId && user) {
+            const fetchOffer = async () => {
+                try {
+                    const { data } = await supabase
+                        .from('offers')
+                        .select('*, product:products(*)')
+                        .eq('id', offerId)
+                        .single();
+                    if (data) setSelectedOffer(data);
+                } catch (err) {
+                    console.error('Error fetching offer from URL:', err);
+                }
+            };
+            fetchOffer();
+        }
+    }, [location.search, user]);
 
     // Handle initial product from URL
     useEffect(() => {
@@ -510,7 +527,7 @@ const Home: React.FC = () => {
                                 <div style={{
                                     display: 'grid',
                                     gridTemplateColumns: "repeat(2, 1fr)",
-                                    gridAutoRows: '290px',
+                                    gridAutoRows: '260px',
                                     gap: '12px',
                                     paddingBottom: '20px',
                                     justifyContent: 'center'
@@ -534,7 +551,7 @@ const Home: React.FC = () => {
                                 <div style={{
                                     display: 'grid',
                                     gridTemplateColumns: "repeat(2, 1fr)",
-                                    gridAutoRows: '290px',
+                                    gridAutoRows: '260px',
                                     gap: '12px',
                                     paddingBottom: '20px',
                                     justifyContent: 'center'
@@ -1387,7 +1404,7 @@ const Home: React.FC = () => {
                                             onClick={async () => {
                                                 setSendingOffer(true);
                                                 try {
-                                                    const { error } = await supabase
+                                                    const { data: insertedOffer, error } = await supabase
                                                         .from('offers')
                                                         .insert([{
                                                             product_id: selectedProduct.id,
@@ -1395,7 +1412,7 @@ const Home: React.FC = () => {
                                                             seller_id: selectedProduct.seller_id,
                                                             offer_amount: parseFloat(offerAmount),
                                                             status: 'pending'
-                                                        }]);
+                                                        }]).select().single();
                                                     if (error) throw error;
 
                                                     // Send notification to seller
@@ -1406,7 +1423,7 @@ const Home: React.FC = () => {
                                                             title: 'Nueva oferta recibida',
                                                             message: `Has recibido una oferta de $${new Intl.NumberFormat('es-CO').format(parseInt(offerAmount))} por tu producto ${selectedProduct.name}`,
                                                             type: 'offer',
-                                                            link: '/mystore?tab=offers',
+                                                            link: `/mystore?tab=offers&offer_id=${insertedOffer.id}`,
                                                             read: false
                                                         }]);
 
@@ -1601,10 +1618,32 @@ const Home: React.FC = () => {
                                     )}
 
                                     {selectedOffer.status === 'accepted' && (
-                                        <div style={{ background: 'rgba(16, 185, 129, 0.1)', padding: '20px', borderRadius: '24px', border: '1px solid rgba(16, 185, 129, 0.2)' }}>
-                                            <div style={{ fontSize: '11px', fontWeight: '900', color: '#10b981', textTransform: 'uppercase', marginBottom: '4px' }}>Estado</div>
-                                            <div style={{ fontSize: '18px', fontWeight: '900', color: 'white' }}>¡Oferta Aceptada!</div>
-                                            <p style={{ fontSize: '14px', color: 'var(--text-dim)', marginTop: '8px' }}>El vendedor ha aceptado tu oferta. Pronto recibirás noticias para completar el pago.</p>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                                            <div style={{ background: 'rgba(16, 185, 129, 0.1)', padding: '20px', borderRadius: '24px', border: '1px solid rgba(16, 185, 129, 0.2)' }}>
+                                                <div style={{ fontSize: '11px', fontWeight: '900', color: '#10b981', textTransform: 'uppercase', marginBottom: '4px' }}>Estado</div>
+                                                <div style={{ fontSize: '18px', fontWeight: '900', color: 'white' }}>¡Oferta Aceptada!</div>
+                                                <p style={{ fontSize: '14px', color: 'var(--text-dim)', marginTop: '8px' }}>El vendedor ha aceptado tu oferta. Tienes 1 hora para completar el pago.</p>
+                                            </div>
+
+                                            <motion.button
+                                                whileTap={{ scale: 0.95 }}
+                                                onClick={() => {
+                                                    setSelectedOffer(null);
+                                                    navigate('/checkout', { state: { offer: selectedOffer } });
+                                                }}
+                                                style={{
+                                                    width: '100%',
+                                                    height: '56px',
+                                                    borderRadius: '16px',
+                                                    background: 'var(--secondary)',
+                                                    color: 'var(--primary)',
+                                                    border: 'none',
+                                                    fontWeight: '900',
+                                                    fontSize: '16px'
+                                                }}
+                                            >
+                                                COMPRAR AHORA POR ${(selectedOffer.offer_amount || selectedOffer.amount)?.toLocaleString()}
+                                            </motion.button>
                                         </div>
                                     )}
 

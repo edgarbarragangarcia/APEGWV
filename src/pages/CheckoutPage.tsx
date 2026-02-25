@@ -24,7 +24,7 @@ const CheckoutPage: React.FC = () => {
     const totalAmount = isReservation
         ? reservationData.price
         : isOffer
-            ? offerData.counter_amount
+            ? ((offerData.counter_amount || offerData.offer_amount || offerData.amount) + (Number(offerData.product?.shipping_cost) || 0))
             : (cartSubtotal + shippingTotal);
 
     const [step, setStep] = useState<1 | 2>(isReservation ? 2 : 1);
@@ -178,17 +178,29 @@ const CheckoutPage: React.FC = () => {
                     order_id: newOrderId,
                     product_id: offerData.product_id,
                     quantity: 1,
-                    price_at_purchase: offerData.counter_amount
+                    price_at_purchase: isOffer ? (offerData.counter_amount || offerData.offer_amount || offerData.amount) : totalAmount
                 });
                 if (itemError) throw itemError;
 
                 // Prepare MP items
+                const negotiatedPrice = isOffer ? (offerData.counter_amount || offerData.offer_amount || offerData.amount) : totalAmount;
+                const shippingCost = isOffer ? (Number(offerData.product?.shipping_cost) || 0) : 0;
+
                 const allItemsForMp = [{
                     id: offerData.product_id,
                     name: offerData.product?.name || 'Producto en Oferta',
-                    price: offerData.counter_amount,
+                    price: negotiatedPrice,
                     quantity: 1
                 }];
+
+                if (shippingCost > 0) {
+                    allItemsForMp.push({
+                        id: `shipping-${sellerId}`,
+                        name: 'Gastos de Envío',
+                        price: shippingCost,
+                        quantity: 1
+                    });
+                }
 
                 // MP Redirect
                 const { data: mpData, error: mpError } = await supabase.functions.invoke('mercadopago-preference', {

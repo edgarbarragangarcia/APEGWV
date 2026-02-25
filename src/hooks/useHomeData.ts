@@ -71,14 +71,16 @@ export const useCategories = (userId?: string) => {
 
             if (productsError) throw productsError;
 
-            // Get unique categories and capitalize
-            const baseCategories = Array.from(new Set(productsData
+            // Get unique, non-empty categories and capitalize
+            const formattedCategories = productsData
                 .map(p => p.category)
-                .filter((cat): cat is string => cat !== null))
-            ).map(cat => cat.charAt(0).toUpperCase() + cat.slice(1).toLowerCase());
+                .filter((cat): cat is string => cat !== null && cat.trim() !== '')
+                .map(cat => cat.charAt(0).toUpperCase() + cat.slice(1).toLowerCase());
+
+            const baseCategories = Array.from(new Set(formattedCategories)).sort();
 
             if (!userId) {
-                return ['Todo', ...baseCategories.sort()];
+                return ['Todo', ...baseCategories];
             }
 
             // Fetch personalization data
