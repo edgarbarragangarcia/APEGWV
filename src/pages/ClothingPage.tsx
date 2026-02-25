@@ -75,14 +75,12 @@ const ClothingPage: React.FC = () => {
                             border: '1px dashed rgba(255,255,255,0.1)'
                         }}
                     >
-                        <p style={{ fontSize: '14px', marginBottom: '10px' }}>
-                            No hay productos disponibles en esta categoría
-                        </p>
+                        <p style={{ fontSize: '14px', marginBottom: '20px' }}>No hay productos disponibles en esta categoría</p>
                         <button
                             onClick={() => navigate('/')}
                             style={{
                                 color: 'var(--secondary)',
-                                fontSize: '13px',
+                                fontSize: '14px',
                                 fontWeight: '700',
                                 textDecoration: 'underline'
                             }}

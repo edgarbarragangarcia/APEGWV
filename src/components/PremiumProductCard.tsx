@@ -31,7 +31,10 @@ const PremiumProductCard: React.FC<PremiumProductCardProps> = ({ product, onAddT
                 flexDirection: 'column',
                 cursor: 'pointer',
                 WebkitTapHighlightColor: 'transparent',
-                height: '100%'
+                height: '100%',
+                width: '100%',
+                minWidth: 0,
+                boxSizing: 'border-box'
             }}
         >
             {/* Image Container - Fixed height for uniformity */}
