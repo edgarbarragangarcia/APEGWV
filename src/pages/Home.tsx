@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
-import { Heart, ChevronRight, ShoppingCart, Loader2, CheckCircle2, ArrowLeft, DollarSign, Handshake, X } from 'lucide-react';
+import { Heart, ChevronRight, ShoppingCart, Loader2, CheckCircle2, ArrowLeft, DollarSign, Handshake } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { supabase, optimizeImage } from '../services/SupabaseManager';
 import { useProfile } from '../hooks/useProfile';
@@ -23,13 +23,10 @@ const Home: React.FC = () => {
     const { data: featuredProducts = [], isLoading: featuredLoading } = useFeaturedProducts(); // No limit to fetch all
     const { data: tournaments = [] } = useUpcomingTournaments(3);
 
-    const [viewTab, setViewTab] = React.useState<'marketplace' | 'myorders'>('marketplace');
     const [activeTab, setActiveTab] = React.useState('Todo');
     const { user } = useAuth();
     const { addToCart } = useCart();
     const carouselRef = React.useRef<HTMLDivElement>(null);
-    const [myOrders, setMyOrders] = React.useState<any[]>([]);
-    const [ordersLoading, setOrdersLoading] = React.useState(false);
     const [selectedProduct, setSelectedProduct] = React.useState<any>(null);
     const [showOfferModal, setShowOfferModal] = React.useState(false);
     const [offerAmount, setOfferAmount] = React.useState('');
@@ -38,11 +35,6 @@ const Home: React.FC = () => {
     const [addingToCart, setAddingToCart] = React.useState<string | null>(null);
     const [buying, setBuying] = React.useState(false);
     const [selectedSize, setSelectedSize] = React.useState<string | null>(null);
-    const [myOffers, setMyOffers] = React.useState<any[]>([]);
-    const [selectedOffer, setSelectedOffer] = React.useState<any>(null);
-    const [replyMessage, setReplyMessage] = React.useState('');
-    const [sendingReply, setSendingReply] = React.useState(false);
-    const [acceptingCounter, setAcceptingCounter] = React.useState(false);
     const { likedProducts, toggleLike } = useLikes();
     const [currentImageIndex, setCurrentImageIndex] = React.useState(0);
 
@@ -81,32 +73,17 @@ const Home: React.FC = () => {
         setCurrentImageIndex(0);
     }, [selectedProduct]);
 
-
-    // Fetch profile and initial data
+    // Redirect to My Purchases if legacy/notification parameters are present
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
         const tab = params.get('tab');
-        if (tab === 'myorders') {
-            setViewTab('myorders');
-        }
-
         const offerId = params.get('offer_id');
-        if (offerId && user) {
-            const fetchOffer = async () => {
-                try {
-                    const { data } = await supabase
-                        .from('offers')
-                        .select('*, product:products(*)')
-                        .eq('id', offerId)
-                        .single();
-                    if (data) setSelectedOffer(data);
-                } catch (err) {
-                    console.error('Error fetching offer from URL:', err);
-                }
-            };
-            fetchOffer();
+
+        if (offerId || tab === 'myorders' || tab === 'myoffers') {
+            const redirectUrl = offerId ? `/my-purchases?offer_id=${offerId}` : '/my-purchases';
+            navigate(redirectUrl, { replace: true });
         }
-    }, [location.search, user]);
+    }, [location.search, navigate]);
 
     // Handle initial product from URL
     useEffect(() => {
@@ -173,45 +150,8 @@ const Home: React.FC = () => {
     }, []);
 
     useEffect(() => {
-        if (user && viewTab === 'myorders') {
-            const fetchOrdersAndOffers = async () => {
-                setOrdersLoading(true);
-                try {
-                    const [ordersRes, offersRes] = await Promise.all([
-                        supabase
-                            .from('orders')
-                            .select(`
-                                *,
-                                order_items (
-                                    *,
-                                    product:products (*)
-                                )
-                            `)
-                            .eq('buyer_id', user.id)
-                            .order('created_at', { ascending: false }),
-                        supabase
-                            .from('offers')
-                            .select('*, product:products(*)')
-                            .eq('buyer_id', user.id)
-                            .order('created_at', { ascending: false })
-                    ]);
-
-                    if (ordersRes.data) {
-                        setMyOrders(ordersRes.data.map((order: any) => ({
-                            ...order,
-                            product: order.order_items?.[0]?.product
-                        })));
-                    }
-                    if (offersRes.data) setMyOffers(offersRes.data);
-                } catch (err) {
-                    console.error('Error fetching orders/offers:', err);
-                } finally {
-                    setOrdersLoading(false);
-                }
-            };
-            fetchOrdersAndOffers();
-        }
-    }, [user, viewTab]);
+        // Removed buyer orders/offers fetching as it moved to Profile/MyPurchases
+    }, [user]);
 
 
 
@@ -514,192 +454,60 @@ const Home: React.FC = () => {
 
 
                     {/* Content Area */}
-
-                    <div
-                        style={{
-                            width: '100%',
-                            paddingBottom: '20px'
-                        }}
-                    >
-                        {viewTab === 'marketplace' ? (
-                            // Show skeleton loaders while loading
-                            !featuredProducts || featuredProducts.length === 0 || featuredLoading ? (
-                                <div style={{
-                                    display: 'grid',
-                                    gridTemplateColumns: "repeat(2, 1fr)",
-                                    gridAutoRows: '260px',
-                                    gap: '12px',
-                                    paddingBottom: '20px',
-                                    justifyContent: 'center'
-                                }}>
-                                    {Array.from({ length: 6 }).map((_, index) => (
-                                        <div
-                                            key={`skeleton-${index}`}
-                                            className="skeleton"
-                                            style={{
-                                                height: '100%',
-                                                minWidth: 0,
-                                                overflow: 'hidden',
-                                                borderRadius: '32px',
-                                                background: 'rgba(255, 255, 255, 0.03)',
-                                                border: '1px solid rgba(255, 255, 255, 0.05)'
-                                            }}
+                    <div style={{ width: '100%', paddingBottom: '20px' }}>
+                        {/* Show skeleton loaders while loading */}
+                        {!featuredProducts || featuredProducts.length === 0 || featuredLoading ? (
+                            <div style={{
+                                display: 'grid',
+                                gridTemplateColumns: "repeat(2, 1fr)",
+                                gridAutoRows: '260px',
+                                gap: '12px',
+                                paddingBottom: '20px',
+                                justifyContent: 'center'
+                            }}>
+                                {Array.from({ length: 6 }).map((_, index) => (
+                                    <div
+                                        key={`skeleton-${index}`}
+                                        className="skeleton"
+                                        style={{
+                                            height: '100%',
+                                            minWidth: 0,
+                                            overflow: 'hidden',
+                                            borderRadius: '32px',
+                                            background: 'rgba(255, 255, 255, 0.03)',
+                                            border: '1px solid rgba(255, 255, 255, 0.05)'
+                                        }}
+                                    />
+                                ))}
+                            </div>
+                        ) : filteredProducts.length > 0 ? (
+                            <div style={{
+                                display: 'grid',
+                                gridTemplateColumns: "repeat(2, 1fr)",
+                                gridAutoRows: '260px',
+                                gap: '12px',
+                                paddingBottom: '20px',
+                                justifyContent: 'center'
+                            }}>
+                                {filteredProducts.map((product, index) => (
+                                    <motion.div
+                                        key={product.id || `product-${index}`}
+                                        initial={{ opacity: 0, y: 15 }}
+                                        whileInView={{ opacity: 1, y: 0 }}
+                                        viewport={{ once: true, margin: "0px 0px -50px 0px" }}
+                                        style={{ height: '100%', minWidth: 0, overflow: 'hidden' }}
+                                    >
+                                        <PremiumProductCard
+                                            product={product}
+                                            onAddToCart={addToCart}
+                                            onClick={() => handleProductSelect(product)}
                                         />
-                                    ))}
-                                </div>
-                            ) : filteredProducts.length > 0 ? (
-                                <div style={{
-                                    display: 'grid',
-                                    gridTemplateColumns: "repeat(2, 1fr)",
-                                    gridAutoRows: '260px',
-                                    gap: '12px',
-                                    paddingBottom: '20px',
-                                    justifyContent: 'center'
-                                }}>
-                                    {filteredProducts.map((product, index) => (
-                                        <motion.div
-                                            key={product.id || `product-${index}`}
-                                            initial={{ opacity: 0, y: 15 }}
-                                            whileInView={{ opacity: 1, y: 0 }}
-                                            viewport={{ once: true, margin: "0px 0px -50px 0px" }}
-                                            style={{ height: '100%', minWidth: 0, overflow: 'hidden' }}
-                                        >
-                                            <PremiumProductCard
-                                                product={product}
-                                                onAddToCart={addToCart}
-                                                onClick={() => handleProductSelect(product)}
-                                            />
-                                        </motion.div>
-                                    ))}
-                                </div>
-                            ) : (
-                                <div style={{ color: 'var(--text-dim)', fontSize: '14px', padding: '20px 0', width: '100%', textAlign: 'center' }}>No se encontraron productos.</div>
-                            )
+                                    </motion.div>
+                                ))}
+                            </div>
                         ) : (
-                            ordersLoading ? (
-                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', padding: '20px' }}>
-                                    <Loader2 className="animate-spin" size={24} color="var(--secondary)" />
-                                </div>
-                            ) : (
-                                <div style={{ width: '100%' }}>
-                                    {/* Mis Ofertas */}
-                                    {myOffers.length > 0 && (
-                                        <div style={{ marginBottom: '24px' }}>
-                                            <h4 style={{ fontSize: '16px', fontWeight: '800', color: 'white', marginBottom: '12px', paddingLeft: '4px' }}>Mis Ofertas</h4>
-                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', paddingBottom: '10px' }}>
-                                                {myOffers.map((offer, index) => (
-                                                    <motion.div
-                                                        key={offer.id || `offer-${index}`}
-                                                        whileTap={{ scale: 0.98 }}
-                                                        onClick={() => setSelectedOffer(offer)}
-                                                        style={{
-                                                            width: '100%',
-                                                            padding: '16px',
-                                                            borderRadius: '24px',
-                                                            background: 'rgba(255, 255, 255, 0.03)',
-                                                            border: '1px solid rgba(255, 255, 255, 0.05)',
-                                                            display: 'flex',
-                                                            flexDirection: 'column',
-                                                            gap: '8px',
-                                                            cursor: 'pointer'
-                                                        }}
-                                                    >
-                                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                            <span style={{
-                                                                background: offer.status === 'accepted' ? '#10b981' : (offer.status === 'rejected' ? '#ef4444' : (offer.status === 'countered' ? '#8b5cf6' : '#f59e0b')),
-                                                                padding: '4px 8px',
-                                                                borderRadius: '6px',
-                                                                fontSize: '10px',
-                                                                fontWeight: '900',
-                                                                color: 'white'
-                                                            }}>
-                                                                {offer.status === 'countered' ? 'CONTRAOFERTA' : offer.status?.toUpperCase()}
-                                                            </span>
-                                                            <span style={{ fontSize: '10px', color: 'var(--text-dim)' }}>{new Date(offer.created_at).toLocaleDateString()}</span>
-                                                        </div>
-                                                        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                                                            <img
-                                                                src={offer.product?.image_url || ''}
-                                                                style={{ width: '40px', height: '40px', borderRadius: '8px', objectFit: 'cover' }}
-                                                                alt=""
-                                                            />
-                                                            <div style={{ overflow: 'hidden' }}>
-                                                                <div style={{ fontSize: '14px', fontWeight: '800', color: 'white', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                                                    {offer.product?.name}
-                                                                </div>
-                                                                <div style={{ fontSize: '12px', fontWeight: '700', color: 'var(--secondary)' }}>
-                                                                    Tu oferta: ${offer.amount?.toLocaleString() || offer.offer_amount?.toLocaleString()}
-                                                                </div>
-                                                                {offer.status === 'countered' && offer.counter_amount && (
-                                                                    <div style={{ fontSize: '12px', fontWeight: '900', color: '#8b5cf6', marginTop: '2px' }}>
-                                                                        Contraoferta: ${offer.counter_amount.toLocaleString()}
-                                                                    </div>
-                                                                )}
-                                                            </div>
-                                                        </div>
-                                                    </motion.div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {/* Mis Pedidos */}
-                                    <h4 style={{ fontSize: '16px', fontWeight: '800', color: 'white', marginBottom: '12px', paddingLeft: '4px' }}>Mis Pedidos</h4>
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', paddingBottom: '10px' }}>
-                                        {myOrders.length > 0 ? (
-                                            myOrders.map((order, index) => (
-                                                <motion.div
-                                                    key={order.id || `order-${index}`}
-                                                    whileTap={{ scale: 0.98 }}
-                                                    style={{
-                                                        width: '100%',
-                                                        padding: '16px',
-                                                        borderRadius: '24px',
-                                                        background: 'rgba(255, 255, 255, 0.03)',
-                                                        border: '1px solid rgba(255, 255, 255, 0.05)',
-                                                        display: 'flex',
-                                                        flexDirection: 'column',
-                                                        gap: '12px'
-                                                    }}
-                                                >
-                                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                        <span style={{
-                                                            background: '#f59e0b',
-                                                            padding: '4px 8px',
-                                                            borderRadius: '6px',
-                                                            fontSize: '10px',
-                                                            fontWeight: '900',
-                                                            color: 'white'
-                                                        }}>
-                                                            {order.status?.toUpperCase() || 'PAGADO'}
-                                                        </span>
-                                                        <span style={{ fontSize: '10px', color: 'var(--text-dim)' }}>{new Date(order.created_at).toLocaleDateString()}</span>
-                                                    </div>
-                                                    <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                                                        <img
-                                                            src={order.product?.image_url || ''}
-                                                            style={{ width: '40px', height: '40px', borderRadius: '8px', objectFit: 'cover' }}
-                                                            alt=""
-                                                        />
-                                                        <div style={{ overflow: 'hidden' }}>
-                                                            <div style={{ fontSize: '14px', fontWeight: '800', color: 'white', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                                                {order.product?.name}
-                                                            </div>
-                                                            <div style={{ fontSize: '12px', fontWeight: '700', color: 'var(--secondary)' }}>
-                                                                ${order.total_amount?.toLocaleString()}
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </motion.div>
-                                            ))
-                                        ) : (
-                                            <div style={{ color: 'var(--text-dim)', fontSize: '14px', padding: '20px 0', width: '100%', textAlign: 'center' }}>No tienes pedidos aún.</div>
-                                        )}
-                                    </div>
-                                </div>
-                            )
-                        )
-                        }
+                            <div style={{ color: 'var(--text-dim)', fontSize: '14px', padding: '20px 0', width: '100%', textAlign: 'center' }}>No se encontraron productos.</div>
+                        )}
                     </div>
 
 
@@ -797,7 +605,7 @@ const Home: React.FC = () => {
                         </div>
                     </div>
                 </div>
-            </div>
+            </div >
 
             {/* Modals moved to the end of the component to ensure top stacking */}
             <AnimatePresence>
@@ -1457,270 +1265,8 @@ const Home: React.FC = () => {
                     </div>
                 )}
 
-                {/* Detalle de Oferta (Para el comprador) */}
-                <AnimatePresence>
-                    {selectedOffer && (
-                        <div key="offer-detail" style={{
-                            position: 'fixed',
-                            inset: 0,
-                            zIndex: 110000,
-                            display: 'flex',
-                            alignItems: 'flex-end',
-                            justifyContent: 'center'
-                        }}>
-                            <motion.div
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                exit={{ opacity: 0 }}
-                                onClick={() => setSelectedOffer(null)}
-                                style={{
-                                    position: 'fixed',
-                                    inset: 0,
-                                    background: 'rgba(0,0,0,0.6)',
-                                    backdropFilter: 'blur(10px)'
-                                }}
-                            />
-                            <motion.div
-                                initial={{ y: '100%' }}
-                                animate={{ y: 0 }}
-                                exit={{ y: '100%' }}
-                                style={{
-                                    width: '100%',
-                                    maxWidth: 'var(--app-max-width)',
-                                    background: '#121212',
-                                    borderTopLeftRadius: '32px',
-                                    borderTopRightRadius: '32px',
-                                    padding: '30px 25px calc(110px + env(safe-area-inset-bottom)) 25px',
-                                    position: 'relative',
-                                    boxShadow: '0 -10px 40px rgba(0,0,0,0.5)',
-                                    border: '1px solid rgba(255,255,255,0.05)',
-                                    overflowY: 'auto'
-                                }}
-                            >
-                                <button
-                                    onClick={() => setSelectedOffer(null)}
-                                    style={{
-                                        position: 'absolute',
-                                        top: '20px',
-                                        right: '25px',
-                                        background: 'rgba(255,255,255,0.05)',
-                                        border: 'none',
-                                        borderRadius: '50%',
-                                        width: '36px',
-                                        height: '36px',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        color: 'white'
-                                    }}
-                                >
-                                    <X size={20} />
-                                </button>
-
-                                <div style={{ display: 'flex', gap: '20px', marginBottom: '25px', alignItems: 'center' }}>
-                                    <img
-                                        src={selectedOffer.product?.image_url || ''}
-                                        style={{ width: '70px', height: '70px', borderRadius: '16px', objectFit: 'cover' }}
-                                        alt=""
-                                    />
-                                    <div>
-                                        <h3 style={{ fontSize: '18px', fontWeight: '900', color: 'white' }}>Detalle de la Oferta</h3>
-                                        <p style={{ fontSize: '14px', color: 'var(--text-dim)' }}>{selectedOffer.product?.name}</p>
-                                    </div>
-                                </div>
-
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '24px' }}>
-                                    <div style={{ background: 'rgba(255,255,255,0.03)', padding: '16px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                                        <div style={{ fontSize: '11px', fontWeight: '900', color: 'var(--text-dim)', textTransform: 'uppercase', marginBottom: '4px' }}>Tu Oferta Original</div>
-                                        <div style={{ fontSize: '20px', fontWeight: '900', color: 'white' }}>${(selectedOffer.amount || selectedOffer.offer_amount)?.toLocaleString()}</div>
-                                    </div>
-
-                                    {selectedOffer.status === 'countered' && (
-                                        <div>
-                                            <div style={{ background: 'rgba(139, 92, 246, 0.1)', padding: '20px', borderRadius: '24px', border: '1px solid rgba(139, 92, 246, 0.2)' }}>
-                                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
-                                                    <div>
-                                                        <div style={{ fontSize: '11px', fontWeight: '900', color: '#a78bfa', textTransform: 'uppercase', marginBottom: '4px' }}>Contraoferta del Vendedor</div>
-                                                        <div style={{ fontSize: '24px', fontWeight: '900', color: 'white' }}>${selectedOffer.counter_amount?.toLocaleString()}</div>
-                                                    </div>
-                                                    <div style={{ background: '#8b5cf6', padding: '4px 10px', borderRadius: '8px', fontSize: '10px', fontWeight: '900', color: 'white' }}>
-                                                        REVISAR
-                                                    </div>
-                                                </div>
-
-                                                {selectedOffer.counter_message && (
-                                                    <div style={{ background: 'rgba(0,0,0,0.2)', padding: '12px', borderRadius: '12px', marginTop: '8px' }}>
-                                                        <div style={{ fontSize: '11px', fontWeight: '800', color: '#a78bfa', marginBottom: '4px' }}>Respuesta del vendedor:</div>
-                                                        <p style={{ fontSize: '14px', color: 'white', fontStyle: 'italic', margin: 0 }}>"{selectedOffer.counter_message}"</p>
-                                                    </div>
-                                                )}
-                                            </div>
-
-                                            <motion.button
-                                                whileTap={{ scale: 0.95 }}
-                                                disabled={acceptingCounter}
-                                                onClick={async () => {
-                                                    setAcceptingCounter(true);
-                                                    try {
-                                                        const { error } = await supabase
-                                                            .from('offers')
-                                                            .update({
-                                                                status: 'accepted',
-                                                                offer_amount: selectedOffer.counter_amount
-                                                            })
-                                                            .eq('id', selectedOffer.id);
-
-                                                        if (error) throw error;
-
-                                                        // Notify seller
-                                                        await supabase
-                                                            .from('notifications')
-                                                            .insert([{
-                                                                user_id: selectedOffer.seller_id,
-                                                                title: '¡Contraoferta aceptada!',
-                                                                message: `El comprador ha aceptado tu contraoferta de $${(selectedOffer.counter_amount || 0).toLocaleString()} por ${selectedOffer.product?.name || 'su producto'}`,
-                                                                type: 'offer',
-                                                                link: '/my-store?tab=offers',
-                                                                read: false
-                                                            }]);
-
-                                                        warning('¡Felicidades! Has aceptado la contraoferta.');
-                                                        setSelectedOffer(null);
-                                                        navigate('/checkout', { state: { offer: selectedOffer } });
-
-                                                        // Refresh offers
-                                                        const { data } = await supabase
-                                                            .from('offers')
-                                                            .select('*, product:products(*)')
-                                                            .eq('buyer_id', user?.id || '')
-                                                            .order('created_at', { ascending: false });
-                                                        if (data) setMyOffers(data);
-                                                    } catch (err) {
-                                                        console.error(err);
-                                                    } finally {
-                                                        setAcceptingCounter(false);
-                                                    }
-                                                }}
-                                                style={{
-                                                    marginTop: '16px',
-                                                    width: '100%',
-                                                    height: '56px',
-                                                    borderRadius: '16px',
-                                                    background: 'var(--secondary)',
-                                                    color: 'var(--primary)',
-                                                    border: 'none',
-                                                    fontWeight: '900',
-                                                    fontSize: '16px'
-                                                }}
-                                            >
-                                                {acceptingCounter ? 'PROCESANDO...' : `ACEPTAR Y COMPRAR POR $${selectedOffer.counter_amount?.toLocaleString()}`}
-                                            </motion.button>
-                                        </div>
-                                    )}
-
-                                    {selectedOffer.status === 'accepted' && (
-                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                                            <div style={{ background: 'rgba(16, 185, 129, 0.1)', padding: '20px', borderRadius: '24px', border: '1px solid rgba(16, 185, 129, 0.2)' }}>
-                                                <div style={{ fontSize: '11px', fontWeight: '900', color: '#10b981', textTransform: 'uppercase', marginBottom: '4px' }}>Estado</div>
-                                                <div style={{ fontSize: '18px', fontWeight: '900', color: 'white' }}>¡Oferta Aceptada!</div>
-                                                <p style={{ fontSize: '14px', color: 'var(--text-dim)', marginTop: '8px' }}>El vendedor ha aceptado tu oferta. Tienes 1 hora para completar el pago.</p>
-                                            </div>
-
-                                            <motion.button
-                                                whileTap={{ scale: 0.95 }}
-                                                onClick={() => {
-                                                    setSelectedOffer(null);
-                                                    navigate('/checkout', { state: { offer: selectedOffer } });
-                                                }}
-                                                style={{
-                                                    width: '100%',
-                                                    height: '56px',
-                                                    borderRadius: '16px',
-                                                    background: 'var(--secondary)',
-                                                    color: 'var(--primary)',
-                                                    border: 'none',
-                                                    fontWeight: '900',
-                                                    fontSize: '16px'
-                                                }}
-                                            >
-                                                COMPRAR AHORA POR ${(selectedOffer.offer_amount || selectedOffer.amount)?.toLocaleString()}
-                                            </motion.button>
-                                        </div>
-                                    )}
-
-                                    {selectedOffer.status === 'rejected' && (
-                                        <div style={{ background: 'rgba(239, 68, 68, 0.1)', padding: '20px', borderRadius: '24px', border: '1px solid rgba(239, 68, 68, 0.2)' }}>
-                                            <div style={{ fontSize: '11px', fontWeight: '900', color: '#ef4444', textTransform: 'uppercase', marginBottom: '4px' }}>Estado</div>
-                                            <div style={{ fontSize: '18px', fontWeight: '900', color: 'white' }}>Oferta Rechazada</div>
-                                            <p style={{ fontSize: '14px', color: 'var(--text-dim)', marginTop: '8px' }}>Lo sentimos, el vendedor no ha aceptado tu propuesta en este momento.</p>
-                                        </div>
-                                    )}
-                                </div>
-
-                                {/* Enviar Mensaje al Vendedor */}
-                                {selectedOffer.status !== 'rejected' && (
-                                    <div style={{ marginTop: '10px' }}>
-                                        <label style={{ display: 'block', fontSize: '11px', fontWeight: '900', color: 'var(--text-dim)', textTransform: 'uppercase', marginBottom: '10px' }}>Responder al Vendedor</label>
-                                        <textarea
-                                            placeholder="Escribe un mensaje aquí..."
-                                            value={replyMessage}
-                                            onChange={(e) => setReplyMessage(e.target.value)}
-                                            style={{
-                                                width: '100%',
-                                                background: 'rgba(255,255,255,0.03)',
-                                                border: '1px solid rgba(255,255,255,0.1)',
-                                                borderRadius: '20px',
-                                                padding: '16px',
-                                                color: 'white',
-                                                fontSize: '14px',
-                                                fontWeight: '500',
-                                                outline: 'none',
-                                                minHeight: '100px',
-                                                resize: 'none',
-                                                marginBottom: '16px'
-                                            }}
-                                        />
-                                        <motion.button
-                                            whileTap={{ scale: 0.95 }}
-                                            disabled={sendingReply || !replyMessage}
-                                            onClick={async () => {
-                                                setSendingReply(true);
-                                                try {
-                                                    const { error } = await supabase
-                                                        .from('notifications')
-                                                        .insert([{
-                                                            user_id: selectedOffer.seller_id,
-                                                            title: 'Nuevo mensaje sobre oferta',
-                                                            message: `El comprador de ${selectedOffer.product?.name} dice: ${replyMessage}`,
-                                                            type: 'offer',
-                                                            link: '/my-store?tab=offers',
-                                                            read: false
-                                                        }]);
-
-                                                    if (error) throw error;
-
-                                                    warning('¡Mensaje enviado al vendedor!');
-                                                    setReplyMessage('');
-                                                    setSelectedOffer(null);
-                                                } catch (err) {
-                                                    console.error(err);
-                                                } finally {
-                                                    setSendingReply(false);
-                                                }
-                                            }}
-                                            className="btn-primary"
-                                            style={{ width: '100%', height: '54px' }}
-                                        >
-                                            {sendingReply ? 'ENVIANDO...' : 'ENVIAR MENSAJE'}
-                                        </motion.button>
-                                    </div>
-                                )}
-                            </motion.div>
-                        </div>
-                    )}
-                </AnimatePresence>
             </AnimatePresence>
-        </div>
+        </div >
     );
 };
 

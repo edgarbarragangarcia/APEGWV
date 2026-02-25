@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../services/SupabaseManager';
-import { Settings, LogOut, Shield, ChevronRight, Edit2, Mail, Phone, MapPin, Store, Trophy } from 'lucide-react';
+import { Settings, LogOut, Shield, ChevronRight, Edit2, Mail, Phone, MapPin, Store, Trophy, ShoppingCart } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import type { Database } from '../types/database.types';
@@ -165,6 +165,11 @@ const Profile: React.FC = () => {
                 </div>
 
                 <div style={styles.menuContainer}>
+                    <MenuButton
+                        icon={ShoppingCart}
+                        label="Mis Compras y Ofertas"
+                        onClick={() => navigate('/my-purchases')}
+                    />
                     <MenuButton
                         icon={Store}
                         label={storeName ? `Mi Marketplace ${storeName}` : "Mi Marketplace"}
