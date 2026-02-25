@@ -1568,6 +1568,7 @@ const Home: React.FC = () => {
 
                                                         warning('¡Felicidades! Has aceptado la contraoferta.');
                                                         setSelectedOffer(null);
+                                                        navigate('/checkout', { state: { offer: selectedOffer } });
 
                                                         // Refresh offers
                                                         const { data } = await supabase

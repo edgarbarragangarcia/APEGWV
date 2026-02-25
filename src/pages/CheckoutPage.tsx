@@ -18,8 +18,14 @@ const CheckoutPage: React.FC = () => {
     const { cartItems, totalAmount: cartSubtotal, shippingTotal, clearCart } = useCart();
 
     const reservationData = location.state?.reservation;
+    const offerData = location.state?.offer;
     const isReservation = !!reservationData;
-    const totalAmount = isReservation ? reservationData.price : (cartSubtotal + shippingTotal);
+    const isOffer = !!offerData;
+    const totalAmount = isReservation
+        ? reservationData.price
+        : isOffer
+            ? offerData.counter_amount
+            : (cartSubtotal + shippingTotal);
 
     const [step, setStep] = useState<1 | 2>(isReservation ? 2 : 1);
 
@@ -141,6 +147,64 @@ const CheckoutPage: React.FC = () => {
                 setTimeout(() => {
                     navigate('/green-fee', { state: { tab: 'reservations' } });
                 }, 3000);
+                return;
+            }
+
+            // Handle Offer Payment
+            if (isOffer) {
+                const sellerId = offerData.seller_id;
+                const fullAddress = shipping.city && !shipping.address.toLowerCase().includes(shipping.city.toLowerCase())
+                    ? `${shipping.address}, ${shipping.city} `
+                    : shipping.address;
+
+                const { data: orderData, error: orderError } = await supabase.from('orders').insert({
+                    user_id: user.id,
+                    buyer_id: user.id,
+                    seller_id: sellerId,
+                    total_amount: totalAmount,
+                    status: 'Pendiente de Pago',
+                    shipping_address: fullAddress,
+                    buyer_name: shipping.name,
+                    buyer_phone: shipping.phone,
+                } as any).select().single();
+
+                if (orderError) throw orderError;
+                if (!orderData) throw new Error('Failed to create order');
+
+                const newOrderId = (orderData as any).id;
+
+                // Create single order item for the offer
+                const { error: itemError } = await supabase.from('order_items').insert({
+                    order_id: newOrderId,
+                    product_id: offerData.product_id,
+                    quantity: 1,
+                    price_at_purchase: offerData.counter_amount
+                });
+                if (itemError) throw itemError;
+
+                // Prepare MP items
+                const allItemsForMp = [{
+                    id: offerData.product_id,
+                    name: offerData.product?.name || 'Producto en Oferta',
+                    price: offerData.counter_amount,
+                    quantity: 1
+                }];
+
+                // MP Redirect
+                const { data: mpData, error: mpError } = await supabase.functions.invoke('mercadopago-preference', {
+                    body: {
+                        items: allItemsForMp,
+                        buyer_email: user.email,
+                        order_id: newOrderId
+                    }
+                });
+
+                if (mpError) throw mpError;
+                if (mpData?.init_point) {
+                    window.location.href = mpData.init_point;
+                } else {
+                    throw new Error('No se pudo generar el link de pago');
+                }
                 return;
             }
 
@@ -586,9 +650,9 @@ const CheckoutPage: React.FC = () => {
                             <div style={{ marginTop: '30px' }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
                                     <span style={{ color: 'var(--text-dim)' }}>Subtotal</span>
-                                    <span>$ {new Intl.NumberFormat('es-CO').format(isReservation ? totalAmount : cartSubtotal)}</span>
+                                    <span>$ {new Intl.NumberFormat('es-CO').format((isReservation || isOffer) ? totalAmount : cartSubtotal)}</span>
                                 </div>
-                                {!isReservation && shippingTotal > 0 && (
+                                {!isReservation && !isOffer && shippingTotal > 0 && (
                                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
                                         <span style={{ color: 'var(--text-dim)' }}>Envío</span>
                                         <span>$ {new Intl.NumberFormat('es-CO').format(shippingTotal)}</span>
