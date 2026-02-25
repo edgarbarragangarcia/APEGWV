@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useQueryClient } from '@tanstack/react-query';
 import { useLocation } from 'react-router-dom';
 import { supabase, optimizeImage } from '../services/SupabaseManager';
 import {
@@ -43,6 +44,7 @@ type Coupon = Database['public']['Tables']['coupons']['Row'];
 const MyStore: React.FC = () => {
     const { user } = useAuth();
     const location = useLocation();
+    const queryClient = useQueryClient();
     const [loading, setLoading] = useState(true);
     const [products, setProducts] = useState<Product[]>([]);
     const [sellerProfile, setSellerProfile] = useState<SellerProfile | null>(null);
@@ -618,6 +620,10 @@ const MyStore: React.FC = () => {
 
             // Refresh coupons to reflect changes
             if (user) fetchCoupons(user.id);
+
+            // Invalidate marketplace queries to reflect changes
+            queryClient.invalidateQueries({ queryKey: ['products'] });
+            queryClient.invalidateQueries({ queryKey: ['categories'] });
 
             if (editingId) {
                 setProducts(products.map(p => p.id === editingId ? data : p));

@@ -46,7 +46,7 @@ const AccessoriesPage: React.FC = () => {
                 right: '0',
                 bottom: 0,
                 overflowY: 'auto',
-                padding: '0 20px calc(var(--nav-height) + 40px) 20px',
+                padding: '0 20px 100px 20px',
                 overflowX: 'hidden',
                 WebkitOverflowScrolling: 'touch',
                 zIndex: 10
@@ -55,10 +55,11 @@ const AccessoriesPage: React.FC = () => {
                     <div style={{
                         display: 'grid',
                         gridTemplateColumns: 'repeat(2, 1fr)',
+                        gridAutoRows: '280px',
                         gap: '16px',
                     }}>
                         {[1, 2, 3, 4, 5, 6].map(i => (
-                            <div key={i} className="skeleton" style={{ height: '260px', borderRadius: '32px' }} />
+                            <div key={i} className="skeleton" style={{ height: '100%', borderRadius: '32px' }} />
                         ))}
                     </div>
                 ) : filteredProducts.length === 0 ? (
@@ -91,6 +92,7 @@ const AccessoriesPage: React.FC = () => {
                     <div style={{
                         display: 'grid',
                         gridTemplateColumns: 'repeat(2, 1fr)',
+                        gridAutoRows: '1fr',
                         gap: '16px',
                     }}>
                         {filteredProducts.map((product, index) => (

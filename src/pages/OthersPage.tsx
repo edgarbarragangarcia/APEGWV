@@ -6,14 +6,14 @@ import { useFeaturedProducts } from '../hooks/useHomeData';
 import { useCart } from '../context/CartContext';
 import { useNavigate } from 'react-router-dom';
 
-const CapsPage: React.FC = () => {
+const OthersPage: React.FC = () => {
     const navigate = useNavigate();
     const { data: featuredProducts = [], isLoading } = useFeaturedProducts();
     const { addToCart } = useCart();
 
-    // Filter products for Gorras category
+    // Filter products for Otros category
     const filteredProducts = featuredProducts.filter((product: any) =>
-        (product.category || '').toLowerCase() === 'gorras'
+        (product.category || '').toLowerCase() === 'otros'
     );
 
     const handleAddToCart = (product: any) => {
@@ -31,8 +31,8 @@ const CapsPage: React.FC = () => {
             zIndex: 900
         }}>
             <CategoryHero
-                title="Gorras"
-                subtitle="El toque final de tu outfit. Estilo clásico y moderno para protegerte con elegancia."
+                title="Otros"
+                subtitle="Descubre accesorios y complementos únicos para perfeccionar cada detalle de tu experiencia."
                 image="/heros/golf_accessories_hero_1770415216840.png"
                 hasFilters={false}
             />
@@ -116,4 +116,4 @@ const CapsPage: React.FC = () => {
     );
 };
 
-export default CapsPage;
+export default OthersPage;

@@ -38,6 +38,7 @@ import AccessoriesPage from './pages/AccessoriesPage';
 import ShoesPage from './pages/ShoesPage';
 import ClubsPage from './pages/ClubsPage';
 import GlovesPage from './pages/GlovesPage';
+import OthersPage from './pages/OthersPage';
 import CapsPage from './pages/CapsPage';
 import CommunityPage from './pages/CommunityPage';
 import MyBag from './pages/MyBag';
@@ -182,6 +183,7 @@ const AppContent: React.FC = () => {
               <Route path="/category/palos" element={<ClubsPage />} />
               <Route path="/category/guantes" element={<GlovesPage />} />
               <Route path="/category/gorras" element={<CapsPage />} />
+              <Route path="/category/otros" element={<OthersPage />} />
               <Route path="/my-bag" element={<MyBag />} />
               <Route path="/swing-analysis" element={<SwingAnalysis />} />
               <Route path="/live-betting" element={<LiveBetting />} />

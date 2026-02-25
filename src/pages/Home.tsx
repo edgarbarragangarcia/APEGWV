@@ -12,6 +12,7 @@ import { useCart } from '../context/CartContext';
 import PageHero from '../components/PageHero';
 import { useToast } from '../context/ToastContext';
 import { useInteractions } from '../hooks/useInteractions';
+import PremiumProductCard from '../components/PremiumProductCard';
 
 const Home: React.FC = () => {
     const navigate = useNavigate();
@@ -503,241 +504,51 @@ const Home: React.FC = () => {
                     >
                         {viewTab === 'marketplace' ? (
                             // Show skeleton loaders while loading
-                            !featuredProducts || featuredProducts.length === 0 ? (
-                                // Skeleton Cards
-                                Array.from({ length: 6 }).map((_, index) => {
-                                    const groupIndex = index % 3;
-                                    const isBig = groupIndex === 0;
-
-                                    return (
+                            !featuredProducts || featuredProducts.length === 0 || featuredLoading ? (
+                                <div style={{
+                                    display: 'grid',
+                                    gridTemplateColumns: "repeat(2, 1fr)",
+                                    gridAutoRows: '280px',
+                                    gap: '16px',
+                                    paddingBottom: '20px'
+                                }}>
+                                    {Array.from({ length: 6 }).map((_, index) => (
                                         <div
                                             key={`skeleton-${index}`}
+                                            className="skeleton"
                                             style={{
-                                                position: 'relative',
-                                                overflow: 'hidden',
-                                                borderRadius: '20px',
-                                                background: 'rgba(255, 255, 255, 0.03)',
-                                                border: '1px solid rgba(255, 255, 255, 0.05)',
-                                                gridRow: isBig ? 'span 2' : 'span 1',
-                                                gridColumn: isBig ? '1' : '2',
                                                 height: '100%',
-                                                minHeight: isBig ? '220px' : '110px'
+                                                borderRadius: '32px',
+                                                background: 'rgba(255, 255, 255, 0.03)',
+                                                border: '1px solid rgba(255, 255, 255, 0.05)'
                                             }}
-                                        >
-                                            {/* Shimmer effect */}
-                                            <div
-                                                style={{
-                                                    position: 'absolute',
-                                                    top: 0,
-                                                    left: '-100%',
-                                                    width: '100%',
-                                                    height: '100%',
-                                                    background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent)',
-                                                    animation: 'shimmer 1.5s infinite'
-                                                }}
-                                            />
-
-                                            {/* Skeleton content */}
-                                            <div style={{
-                                                height: isBig ? '100%' : '110px',
-                                                background: 'rgba(255,255,255,0.02)'
-                                            }} />
-
-                                            {!isBig && (
-                                                <div style={{ padding: '8px 10px' }}>
-                                                    <div style={{
-                                                        height: '12px',
-                                                        background: 'rgba(255,255,255,0.05)',
-                                                        borderRadius: '4px',
-                                                        marginBottom: '6px',
-                                                        width: '70%'
-                                                    }} />
-                                                    <div style={{
-                                                        height: '10px',
-                                                        background: 'rgba(255,255,255,0.05)',
-                                                        borderRadius: '4px',
-                                                        width: '40%'
-                                                    }} />
-                                                </div>
-                                            )}
-                                        </div>
-                                    );
-                                })
+                                        />
+                                    ))}
+                                </div>
                             ) : filteredProducts.length > 0 ? (
-                                filteredProducts.map((product, index) => {
-                                    const groupIndex = index % 3;
-                                    const isBig = groupIndex === 0;
-
-                                    return (
+                                <div style={{
+                                    display: 'grid',
+                                    gridTemplateColumns: "repeat(2, 1fr)",
+                                    gridAutoRows: '1fr',
+                                    gap: '16px',
+                                    paddingBottom: '20px'
+                                }}>
+                                    {filteredProducts.map((product) => (
                                         <motion.div
                                             key={product.id}
                                             initial={{ opacity: 0, y: 15 }}
                                             whileInView={{ opacity: 1, y: 0 }}
-                                            whileTap={{
-                                                scale: 0.98,
-                                                opacity: 0.9,
-                                                transition: { duration: 0.1 }
-                                            }}
                                             viewport={{ once: true, margin: "0px 0px -50px 0px" }}
-                                            style={{
-                                                position: 'relative',
-                                                overflow: 'hidden',
-                                                display: 'flex',
-                                                flexDirection: 'column',
-                                                borderRadius: '20px',
-                                                background: 'rgba(255, 255, 255, 0.03)',
-                                                border: '1px solid rgba(255, 255, 255, 0.05)',
-                                                boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
-                                                cursor: 'pointer',
-                                                WebkitTapHighlightColor: 'transparent',
-                                                touchAction: 'manipulation',
-                                                gridRow: isBig ? 'span 2' : 'span 1',
-                                                gridColumn: isBig ? '1' : '2',
-                                                height: '100%'
-                                            }}
-                                            onClick={() => handleProductSelect(product)}
+                                            style={{ height: '100%' }}
                                         >
-                                            <div style={{
-                                                position: 'relative',
-                                                width: '100%',
-                                                height: isBig ? '100%' : '110px',
-                                                minHeight: isBig ? '220px' : '110px',
-                                                overflow: 'hidden',
-                                                background: 'rgba(0,0,0,0.2)',
-                                            }}>
-                                                <motion.img
-                                                    src={optimizeImage(product.image_url, { width: 500, height: 500 })}
-                                                    alt={product.name}
-                                                    onError={(e) => {
-                                                        const target = e.target as HTMLImageElement;
-                                                        const cat = (product.category || '').toLowerCase();
-                                                        if (cat.includes('bol')) target.src = 'https://images.unsplash.com/photo-1593111774240-d529f12cf4bb?auto=format&fit=crop&q=80&w=800';
-                                                        else if (cat.includes('zap')) target.src = 'https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?auto=format&fit=crop&q=80&w=800';
-                                                        else if (cat.includes('guant')) target.src = 'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?auto=format&fit=crop&q=80&w=800';
-                                                        else target.src = 'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?auto=format&fit=crop&q=80&w=800';
-                                                    }}
-                                                    whileHover={{ scale: 1.05 }}
-                                                    transition={{ type: 'tween', duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
-                                                    style={{
-                                                        width: '100%',
-                                                        height: '100%',
-                                                        objectFit: 'cover',
-                                                    }}
-                                                />
-
-                                                {/* Gradient overlay for better text readability and depth */}
-                                                <div style={{
-                                                    position: 'absolute',
-                                                    inset: 0,
-                                                    background: isBig
-                                                        ? 'linear-gradient(to bottom, rgba(0,0,0,0) 50%, rgba(0,0,0,0.6) 100%)'
-                                                        : 'linear-gradient(to bottom, rgba(0,0,0,0) 60%, rgba(0,0,0,0.4) 100%)',
-                                                    zIndex: 1
-                                                }} />
-
-                                                <motion.div
-                                                    whileTap={{ scale: 1.2 }}
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        toggleLike(product.id);
-                                                    }}
-                                                    style={{
-                                                        position: 'absolute',
-                                                        top: '8px',
-                                                        right: '8px',
-                                                        background: 'rgba(0,0,0,0.3)',
-                                                        backdropFilter: 'blur(12px)',
-                                                        borderRadius: '50%',
-                                                        padding: '6px',
-                                                        zIndex: 2,
-                                                        border: '1px solid rgba(255,255,255,0.1)',
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        justifyContent: 'center'
-                                                    }}
-                                                >
-                                                    <Heart
-                                                        size={12}
-                                                        color={likedProducts.has(product.id) ? '#ef4444' : 'white'}
-                                                        fill={likedProducts.has(product.id) ? '#ef4444' : 'none'}
-                                                    />
-                                                </motion.div>
-
-                                                {/* Floating Info for Big Cards */}
-                                                {isBig && (
-                                                    <div style={{
-                                                        position: 'absolute',
-                                                        bottom: '12px',
-                                                        left: '12px',
-                                                        right: '12px',
-                                                        zIndex: 3
-                                                    }}>
-                                                        <div style={{
-                                                            fontSize: '8px',
-                                                            color: 'var(--secondary)',
-                                                            fontWeight: '900',
-                                                            textTransform: 'uppercase',
-                                                            letterSpacing: '0.1em',
-                                                            marginBottom: '2px'
-                                                        }}>
-                                                            {product.category}
-                                                        </div>
-                                                        <h4 style={{
-                                                            fontSize: '14px',
-                                                            fontWeight: '900',
-                                                            color: '#fff',
-                                                            margin: 0,
-                                                            lineHeight: 1.1,
-                                                            letterSpacing: '-0.3px',
-                                                            textShadow: '0 2px 4px rgba(0,0,0,0.3)'
-                                                        }}>
-                                                            {product.name}
-                                                        </h4>
-                                                        <div style={{
-                                                            color: 'white',
-                                                            fontSize: '15px',
-                                                            fontWeight: '900',
-                                                            marginTop: '4px'
-                                                        }}>
-                                                            ${new Intl.NumberFormat('es-CO').format(product.price)}
-                                                        </div>
-                                                    </div>
-                                                )}
-                                            </div>
-
-                                            {!isBig && (
-                                                <div style={{
-                                                    padding: '8px 10px',
-                                                    display: 'flex',
-                                                    flexDirection: 'column',
-                                                    gap: '1px'
-                                                }}>
-                                                    <h4 style={{
-                                                        fontSize: '12px',
-                                                        fontWeight: '800',
-                                                        letterSpacing: '-0.2px',
-                                                        margin: 0,
-                                                        whiteSpace: 'nowrap',
-                                                        overflow: 'hidden',
-                                                        textOverflow: 'ellipsis',
-                                                        width: '100%',
-                                                        color: '#fff'
-                                                    }}>
-                                                        {product.name}
-                                                    </h4>
-
-                                                    <div style={{
-                                                        color: 'var(--secondary)',
-                                                        fontSize: '13px',
-                                                        fontWeight: '900',
-                                                    }}>
-                                                        ${new Intl.NumberFormat('es-CO').format(product.price)}
-                                                    </div>
-                                                </div>
-                                            )}
+                                            <PremiumProductCard
+                                                product={product}
+                                                onAddToCart={addToCart}
+                                                onClick={() => handleProductSelect(product)}
+                                            />
                                         </motion.div>
-                                    );
-                                })
+                                    ))}
+                                </div>
                             ) : (
                                 <div style={{ color: 'var(--text-dim)', fontSize: '14px', padding: '20px 0', width: '100%', textAlign: 'center' }}>No se encontraron productos.</div>
                             )

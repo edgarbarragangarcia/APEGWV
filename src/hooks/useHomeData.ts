@@ -22,7 +22,7 @@ export const useFeaturedProducts = (limit: number | null = null) => {
                 price: typeof p.price === 'string' ? parseFloat(p.price) : p.price
             }));
         },
-        staleTime: 1000 * 60 * 30, // 30 minutos
+        staleTime: 1000 * 30, // 30 segundos
     });
 };
 
@@ -113,6 +113,6 @@ export const useCategories = (userId?: string) => {
 
             return ['Todo', ...sortedCategories];
         },
-        staleTime: 1000 * 60 * 5, // 5 minutos
+        staleTime: 1000 * 60, // 1 minuto
     });
 };
