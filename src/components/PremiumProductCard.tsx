@@ -213,7 +213,8 @@ const PremiumProductCard: React.FC<PremiumProductCardProps> = ({ product, onAddT
                 <div style={{
                     marginTop: 'auto',
                     display: 'flex',
-                    alignItems: 'center'
+                    alignItems: 'center',
+                    gap: '8px'
                 }}>
                     <span style={{
                         fontSize: '18px',
@@ -222,6 +223,17 @@ const PremiumProductCard: React.FC<PremiumProductCardProps> = ({ product, onAddT
                     }}>
                         ${Number(product.price).toLocaleString()}
                     </span>
+                    {product.is_negotiable && (
+                        <span style={{
+                            fontSize: '9px',
+                            fontWeight: '700',
+                            color: 'var(--secondary)',
+                            opacity: 0.8,
+                            textTransform: 'uppercase'
+                        }}>
+                            Negociable
+                        </span>
+                    )}
                 </div>
             </div>
         </motion.div>

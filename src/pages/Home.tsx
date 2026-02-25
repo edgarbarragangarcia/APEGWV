@@ -1283,8 +1283,25 @@ const Home: React.FC = () => {
                                     {/* Price & Actions Row */}
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '15px', marginBottom: '25px' }}>
                                         <div>
-                                            <div style={{ fontSize: '24px', fontWeight: '900', color: 'var(--secondary)' }}>
-                                                ${new Intl.NumberFormat('es-CO').format(selectedProduct.price)}
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                <div style={{ fontSize: '24px', fontWeight: '900', color: 'var(--secondary)' }}>
+                                                    ${new Intl.NumberFormat('es-CO').format(selectedProduct.price)}
+                                                </div>
+                                                {selectedProduct.is_negotiable && (
+                                                    <div style={{
+                                                        fontSize: '10px',
+                                                        background: 'rgba(163, 230, 53, 0.1)',
+                                                        color: 'var(--secondary)',
+                                                        padding: '3px 8px',
+                                                        borderRadius: '8px',
+                                                        border: '1px solid rgba(163, 230, 53, 0.2)',
+                                                        fontWeight: '800',
+                                                        textTransform: 'uppercase',
+                                                        letterSpacing: '0.05em'
+                                                    }}>
+                                                        Negociable
+                                                    </div>
+                                                )}
                                             </div>
                                             <div style={{ fontSize: '12px', color: 'var(--text-dim)', marginTop: '2px', fontWeight: '600' }}>
                                                 {Number(selectedProduct.shipping_cost) > 0 ? (
