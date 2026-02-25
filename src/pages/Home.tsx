@@ -1241,6 +1241,8 @@ const Home: React.FC = () => {
                                                         setOfferSuccess(false);
                                                         setShowOfferModal(false);
                                                         setSelectedProduct(null);
+                                                        // Important: If we were on a product detail URL, go back home
+                                                        navigate('/', { replace: true });
                                                     }, 2000);
                                                 } catch (err) {
                                                     console.error(err);

@@ -39,9 +39,9 @@ const OrdersTab: React.FC<OrdersTabProps> = ({
 
     return (
         <div className="animate-fade">
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginBottom: '25px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginBottom: '30px' }}>
                 <div style={{ position: 'relative' }}>
-                    <Search style={{ position: 'absolute', left: '15px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-dim)' }} size={18} />
+                    <Search style={{ position: 'absolute', left: '18px', top: '50%', transform: 'translateY(-50%)', color: 'var(--secondary)', opacity: 0.8 }} size={20} />
                     <input
                         type="text"
                         placeholder="Buscar por cliente o producto..."
@@ -50,12 +50,15 @@ const OrdersTab: React.FC<OrdersTabProps> = ({
                         style={{
                             width: '100%',
                             background: 'rgba(255,255,255,0.03)',
-                            border: '1px solid rgba(255,255,255,0.05)',
-                            borderRadius: '16px',
-                            padding: '15px 15px 15px 45px',
+                            border: '1px solid rgba(255,255,255,0.06)',
+                            borderRadius: '20px',
+                            padding: '18px 20px 18px 52px',
                             color: 'white',
-                            fontSize: '14px',
-                            fontWeight: '600'
+                            fontSize: '15px',
+                            fontWeight: '600',
+                            outline: 'none',
+                            transition: 'all 0.3s ease',
+                            boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.1)'
                         }}
                     />
                 </div>

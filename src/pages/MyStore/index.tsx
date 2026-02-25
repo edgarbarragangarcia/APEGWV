@@ -1,4 +1,4 @@
-import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Package, ShoppingBag, Handshake, Ticket, User } from 'lucide-react';
 import { useStoreData } from './hooks/useStoreData';
@@ -23,10 +23,10 @@ import CouponForm from './components/CouponForm';
 import TrackingScanner from '../../components/TrackingScanner';
 import StoreOnboarding from '../../components/StoreOnboarding';
 import Skeleton from '../../components/Skeleton';
-import PageHeader from '../../components/PageHeader';
 import PageHero from '../../components/PageHero';
 
 const MyStore: React.FC = () => {
+    const navigate = useNavigate();
     const store = useStoreData();
     const {
         user, loading, products, sellerProfile, activeTab, setActiveTab,
@@ -79,27 +79,64 @@ const MyStore: React.FC = () => {
             <PageHero opacity={0.4} />
 
             <div style={{ padding: '40px 20px 0', position: 'relative', zIndex: 10 }}>
-                <PageHeader
-                    title="Mi Tienda"
-                    subtitle="Gestiona tus productos y ventas"
-                    showBack={true}
-                    rightElement={activeTab === 'products' ? (
-                        <button
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '30px' }}>
+                    <div>
+                        <h1 style={{ fontSize: '34px', fontWeight: '950', color: 'white', margin: 0, letterSpacing: '-1.5px', textTransform: 'uppercase' }}>
+                            Mi Tienda
+                        </h1>
+                        <p style={{ fontSize: '14px', color: 'var(--text-dim)', margin: '4px 0 0', fontWeight: '500' }}>
+                            Gestiona tus productos y ventas con estilo
+                        </p>
+                    </div>
+                    {activeTab === 'products' ? (
+                        <motion.button
+                            whileTap={{ scale: 0.95 }}
                             onClick={() => { resetForm(); setShowForm(true); }}
-                            style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 18px', background: 'var(--secondary)', color: 'var(--primary)', borderRadius: '12px', border: 'none', fontWeight: '900', fontSize: '13px', boxShadow: '0 4px 15px rgba(163, 230, 53, 0.2)' }}
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                                padding: '12px 20px',
+                                background: 'linear-gradient(135deg, var(--secondary) 0%, #10b981 100%)',
+                                color: 'var(--primary)',
+                                borderRadius: '18px',
+                                border: 'none',
+                                fontWeight: '900',
+                                fontSize: '13px',
+                                boxShadow: '0 10px 25px rgba(163, 230, 53, 0.3)'
+                            }}
                         >
-                            <Plus size={18} /> PUBLICAR <span className="hide-mobile">PRODUCTO</span>
-                        </button>
-                    ) : null}
-                />
+                            <Plus size={20} strokeWidth={3} /> PUBLICAR <span className="hide-mobile">PRODUCTO</span>
+                        </motion.button>
+                    ) : (
+                        <motion.button
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => navigate(-1)}
+                            style={{
+                                width: '44px',
+                                height: '44px',
+                                borderRadius: '14px',
+                                background: 'rgba(255,255,255,0.05)',
+                                color: 'white',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                border: '1px solid rgba(255,255,255,0.1)',
+                                cursor: 'pointer'
+                            }}
+                        >
+                            <Plus size={24} style={{ transform: 'rotate(45deg)' }} />
+                        </motion.button>
+                    )}
+                </div>
 
                 {/* Tabs Navigation */}
                 <div style={{
                     display: 'flex',
-                    gap: '10px',
+                    gap: '12px',
                     overflowX: 'auto',
-                    padding: '10px 5px',
-                    marginBottom: '20px',
+                    padding: '5px',
+                    marginBottom: '30px',
                     scrollbarWidth: 'none',
                     msOverflowStyle: 'none'
                 }} className="hide-scrollbar">
@@ -112,29 +149,65 @@ const MyStore: React.FC = () => {
                                 onClick={() => setActiveTab(tab.id as any)}
                                 style={{
                                     display: 'flex',
+                                    flexDirection: 'column',
                                     alignItems: 'center',
+                                    justifyContent: 'center',
                                     gap: '8px',
-                                    padding: '12px 20px',
-                                    borderRadius: '16px',
-                                    background: isActive ? 'var(--secondary)' : 'rgba(255,255,255,0.03)',
-                                    color: isActive ? 'var(--primary)' : 'white',
-                                    border: isActive ? 'none' : '1px solid rgba(255,255,255,0.05)',
+                                    padding: '14px 18px',
+                                    minWidth: '95px',
+                                    borderRadius: '24px',
+                                    background: isActive ? 'rgba(163, 230, 53, 0.1)' : 'rgba(255,255,255,0.03)',
+                                    color: isActive ? 'var(--secondary)' : 'rgba(255,255,255,0.5)',
+                                    border: '1px solid ' + (isActive ? 'rgba(163, 230, 53, 0.2)' : 'rgba(255,255,255,0.05)'),
                                     fontWeight: '800',
-                                    fontSize: '13px',
+                                    fontSize: '11px',
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.5px',
                                     whiteSpace: 'nowrap',
-                                    transition: 'all 0.2s ease',
-                                    boxShadow: isActive ? '0 4px 10px rgba(163, 230, 53, 0.2)' : 'none'
+                                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                                    position: 'relative'
                                 }}
                             >
-                                <Icon size={16} />
+                                <Icon size={20} strokeWidth={isActive ? 2.5 : 2} />
                                 {tab.label}
+
                                 {tab.id === 'orders' && orders.filter(o => o.status === 'Pendiente').length > 0 && (
-                                    <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minWidth: '18px', height: '18px', background: isActive ? 'var(--primary)' : 'var(--secondary)', color: isActive ? 'white' : 'var(--primary)', borderRadius: '50%', fontSize: '10px', marginLeft: '5px', padding: '0 4px' }}>
+                                    <span style={{
+                                        position: 'absolute',
+                                        top: '-5px',
+                                        right: '-5px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        minWidth: '20px',
+                                        height: '20px',
+                                        background: 'var(--secondary)',
+                                        color: 'var(--primary)',
+                                        borderRadius: '50%',
+                                        fontSize: '10px',
+                                        fontWeight: '900',
+                                        boxShadow: '0 4px 10px rgba(163, 230, 53, 0.4)'
+                                    }}>
                                         {orders.filter(o => o.status === 'Pendiente').length}
                                     </span>
                                 )}
                                 {tab.id === 'offers' && offers.filter(o => o.status === 'pending').length > 0 && (
-                                    <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minWidth: '18px', height: '18px', background: isActive ? 'var(--primary)' : 'var(--secondary)', color: isActive ? 'white' : 'var(--primary)', borderRadius: '50%', fontSize: '10px', marginLeft: '5px', padding: '0 4px' }}>
+                                    <span style={{
+                                        position: 'absolute',
+                                        top: '-5px',
+                                        right: '-5px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        minWidth: '20px',
+                                        height: '20px',
+                                        background: 'var(--secondary)',
+                                        color: 'var(--primary)',
+                                        borderRadius: '50%',
+                                        fontSize: '10px',
+                                        fontWeight: '900',
+                                        boxShadow: '0 4px 10px rgba(163, 230, 53, 0.4)'
+                                    }}>
                                         {offers.filter(o => o.status === 'pending').length}
                                     </span>
                                 )}

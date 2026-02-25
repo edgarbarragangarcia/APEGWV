@@ -382,7 +382,7 @@ const MyPurchases: React.FC = () => {
                                 flex: 1,
                                 overflowY: 'auto',
                                 minHeight: 0,
-                                padding: '20px 20px calc(40px + env(safe-area-inset-bottom)) 20px',
+                                padding: '20px 20px calc(120px + env(safe-area-inset-bottom)) 20px',
                                 WebkitOverflowScrolling: 'touch',
                                 display: 'flex',
                                 flexDirection: 'column'
