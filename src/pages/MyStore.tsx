@@ -1094,7 +1094,7 @@ const MyStore: React.FC = () => {
                         { id: 'offers', label: 'OFERTAS', icon: Handshake, count: offers.filter(o => o.status === 'pending').length },
                         { id: 'coupons', label: 'CUPONES', icon: Ticket, count: 0 },
                         { id: 'profile', label: 'AJUSTES', icon: Settings, count: 0 }
-                    ].map((tab, idx) => {
+                    ].map((tab) => {
                         const Icon = tab.icon;
                         const isActive = activeTab === tab.id;
                         return (
@@ -1531,11 +1531,11 @@ const MyStore: React.FC = () => {
                                                 <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Selecciona Tallas y Cantidades</label>
                                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                                                     <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                                                        {(formData.clothing_type === 'Pantalón' || formData.clothing_type === 'Short' ? ['30', '32', '34', '36', '38', '40'] : ['S', 'M', 'L', 'XL', 'XXL']).map(size => {
+                                                        {(formData.clothing_type === 'Pantalón' || formData.clothing_type === 'Short' ? ['30', '32', '34', '36', '38', '40'] : ['S', 'M', 'L', 'XL', 'XXL']).map((size, idx) => {
                                                             const isSelected = !!formData.sizes_inventory.find(s => s.size === size);
                                                             return (
                                                                 <button
-                                                                    key={size}
+                                                                    key={size || `size-${idx}`}
                                                                     type="button"
                                                                     onClick={() => toggleSizeInventory(size)}
                                                                     style={{
@@ -1650,8 +1650,8 @@ const MyStore: React.FC = () => {
                                         }}>
                                             <p style={{ fontSize: '11px', color: 'var(--text-dim)', marginBottom: '10px', fontWeight: '800' }}>CANTIDADES POR TALLA</p>
                                             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                                {formData.sizes_inventory.map(s => (
-                                                    <div key={s.size} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                                {formData.sizes_inventory.map((s, idx) => (
+                                                    <div key={s.size || `size-${idx}`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                                                         <span style={{ fontSize: '14px', fontWeight: '900', color: 'white' }}>Talla {s.size}</span>
                                                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                                                             <button
@@ -1898,7 +1898,7 @@ const MyStore: React.FC = () => {
                                     ) : (
                                         products
                                             .filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()))
-                                            .map(product => (
+                                            .map((product, index) => (
                                                 <div key={product.id || `product-${index}`} className="animate-fade-up">
                                                     <div
                                                         style={{
@@ -2190,7 +2190,7 @@ const MyStore: React.FC = () => {
                                             (o.buyer_name || o.buyer?.full_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
                                             (o.product?.name || '').toLowerCase().includes(searchTerm.toLowerCase())
                                         )
-                                        .map(order => (
+                                        .map((order, index) => (
                                             <Card key={order.id || `order-${index}`} style={{ padding: '20px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px' }}>
                                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '18px', alignItems: 'center' }}>
                                                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -2479,7 +2479,7 @@ const MyStore: React.FC = () => {
                                             (o.buyer?.full_name || 'Comprador APEG').toLowerCase().includes(searchTerm.toLowerCase()) ||
                                             (o.product?.name || '').toLowerCase().includes(searchTerm.toLowerCase())
                                         )
-                                        .map(offer => (
+                                        .map((offer, index) => (
                                             <Card key={offer.id || `offer-${index}`} style={{ padding: '20px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px' }}>
                                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '18px', alignItems: 'center' }}>
                                                     <span style={{

@@ -1265,9 +1265,9 @@ const Home: React.FC = () => {
                                                 )}
                                             </div>
                                             <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                                                {selectedProduct.sizes_inventory.map((s: { size: string; quantity: number }) => (
+                                                {selectedProduct.sizes_inventory.map((s: { size: string; quantity: number }, idx: number) => (
                                                     <button
-                                                        key={s.size}
+                                                        key={s.size || `size-${idx}`}
                                                         disabled={s.quantity <= 0}
                                                         onClick={() => setSelectedSize(s.size)}
                                                         style={{
