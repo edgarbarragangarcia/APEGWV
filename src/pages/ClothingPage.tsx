@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import CategoryHero from '../components/CategoryHero';
 import PremiumProductCard from '../components/PremiumProductCard';
 import { useFeaturedProducts } from '../hooks/useHomeData';
@@ -55,7 +55,7 @@ const ClothingPage: React.FC = () => {
                     <div style={{
                         display: 'grid',
                         gridTemplateColumns: 'repeat(2, 1fr)',
-                        gridAutoRows: '280px',
+                        gridAutoRows: '340px',
                         gap: '16px',
                     }}>
                         {[1, 2, 3, 4, 5, 6].map(i => (
@@ -94,28 +94,24 @@ const ClothingPage: React.FC = () => {
                     <div style={{
                         display: 'grid',
                         gridTemplateColumns: 'repeat(2, 1fr)',
-                        gridAutoRows: '1fr',
+                        gridAutoRows: '340px',
                         gap: '16px',
                     }}>
-                        <AnimatePresence mode="popLayout">
-                            {filteredProducts.map((product, index) => (
-                                <motion.div
-                                    key={product.id}
-                                    layout
-                                    initial={{ opacity: 0, scale: 0.9 }}
-                                    animate={{ opacity: 1, scale: 1 }}
-                                    exit={{ opacity: 0, scale: 0.9 }}
-                                    transition={{ duration: 0.2, delay: index * 0.05 }}
-                                    style={{ height: '100%' }}
-                                >
-                                    <PremiumProductCard
-                                        product={product}
-                                        onAddToCart={handleAddToCart}
-                                        onClick={() => navigate(`/product/${product.id}`)}
-                                    />
-                                </motion.div>
-                            ))}
-                        </AnimatePresence>
+                        {filteredProducts.map((product, index) => (
+                            <motion.div
+                                key={product.id}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: index * 0.1 }}
+                                style={{ height: '100%' }}
+                            >
+                                <PremiumProductCard
+                                    product={product}
+                                    onAddToCart={handleAddToCart}
+                                    onClick={() => navigate(`/product/${product.id}`)}
+                                />
+                            </motion.div>
+                        ))}
                     </div>
                 )}
             </div>

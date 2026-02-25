@@ -54,7 +54,7 @@ const CapsPage: React.FC = () => {
                     <div style={{
                         display: 'grid',
                         gridTemplateColumns: 'repeat(2, 1fr)',
-                        gridAutoRows: '280px',
+                        gridAutoRows: '340px',
                         gap: '16px',
                     }}>
                         {[1, 2, 3, 4, 5, 6].map(i => (
@@ -91,7 +91,7 @@ const CapsPage: React.FC = () => {
                     <div style={{
                         display: 'grid',
                         gridTemplateColumns: 'repeat(2, 1fr)',
-                        gridAutoRows: '1fr',
+                        gridAutoRows: '340px',
                         gap: '16px',
                     }}>
                         {filteredProducts.map((product, index) => (

@@ -508,7 +508,7 @@ const Home: React.FC = () => {
                                 <div style={{
                                     display: 'grid',
                                     gridTemplateColumns: "repeat(2, 1fr)",
-                                    gridAutoRows: '280px',
+                                    gridAutoRows: '340px',
                                     gap: '16px',
                                     paddingBottom: '20px'
                                 }}>
@@ -529,7 +529,7 @@ const Home: React.FC = () => {
                                 <div style={{
                                     display: 'grid',
                                     gridTemplateColumns: "repeat(2, 1fr)",
-                                    gridAutoRows: '1fr',
+                                    gridAutoRows: '340px',
                                     gap: '16px',
                                     paddingBottom: '20px'
                                 }}>
