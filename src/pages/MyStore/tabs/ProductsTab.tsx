@@ -61,7 +61,7 @@ const ProductsTab: React.FC<ProductsTabProps> = ({
                         gap: '6px',
                         alignSelf: 'flex-end',
                         padding: '6px 14px',
-                        background: 'linear-gradient(135deg, var(--secondary) 0%, #10b981 100%)',
+                        background: 'var(--secondary)',
                         color: 'var(--primary)',
                         borderRadius: '10px',
                         border: 'none',

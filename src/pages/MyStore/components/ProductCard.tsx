@@ -89,8 +89,8 @@ const ProductCard: React.FC<ProductCardProps> = ({
                         {/* Status Badge */}
                         <div style={{
                             position: 'absolute',
-                            top: '-5px',
-                            left: '-5px',
+                            top: '8px',
+                            left: '8px',
                             background: product.status === 'active' ? 'var(--secondary)' : '#f59e0b',
                             padding: '4px 8px',
                             borderRadius: '10px',
@@ -99,7 +99,6 @@ const ProductCard: React.FC<ProductCardProps> = ({
                             gap: '4px',
                             boxShadow: '0 4px 10px rgba(0,0,0,0.3)',
                             zIndex: 2,
-                            border: '1px solid rgba(255,255,255,0.1)'
                         }}>
                             {product.status === 'active' ? (
                                 <CheckCircle2 size={10} color="var(--primary)" strokeWidth={3} />
@@ -129,13 +128,14 @@ const ProductCard: React.FC<ProductCardProps> = ({
                             fontFamily: 'var(--font-main)'
                         }}>{product.name}</h3>
 
-                        <div style={{ display: 'flex', gap: '8px', alignItems: 'baseline', marginBottom: '10px' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', marginBottom: '12px' }}>
                             <span style={{
                                 color: 'var(--secondary)',
                                 fontWeight: '700',
                                 fontSize: '20px',
                                 letterSpacing: '-0.02em',
-                                fontFamily: 'var(--font-main)'
+                                fontFamily: 'var(--font-main)',
+                                lineHeight: 1
                             }}>
                                 {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(product.price || 0)}
                             </span>
@@ -147,7 +147,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
                             }}>
                                 <Truck size={11} color="#38bdf8" />
                                 <span style={{
-                                    fontSize: '10px',
+                                    fontSize: '11px',
                                     fontWeight: '600',
                                     color: '#38bdf8',
                                     fontFamily: 'var(--font-main)'
@@ -161,8 +161,8 @@ const ProductCard: React.FC<ProductCardProps> = ({
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                             <div style={{
                                 background: 'rgba(255,255,255,0.05)',
-                                padding: '5px 12px',
-                                borderRadius: '12px',
+                                padding: '4px 10px',
+                                borderRadius: '10px',
                                 fontSize: '11px',
                                 color: 'white',
                                 fontWeight: '800',
@@ -171,7 +171,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
                                 gap: '6px',
                                 border: '1px solid rgba(255,255,255,0.08)'
                             }}>
-                                <span style={{ color: 'var(--text-dim)', fontSize: '9px' }}>STOCK</span>
+                                <span style={{ color: 'var(--text-dim)', fontSize: '9px', fontWeight: '600' }}>STOCK</span>
                                 <span style={{ color: (product as any).stock_quantity > 0 ? 'var(--secondary)' : '#ff6b6b' }}>
                                     {(product as any).stock_quantity || 0}
                                 </span>
@@ -205,7 +205,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
                     </div>
 
                     {/* Actions Pillar */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', justifyContent: 'center' }}>
                         <motion.button
                             whileTap={{ scale: 0.9 }}
                             onClick={(e: React.MouseEvent) => { e.stopPropagation(); onEdit(product); }}
@@ -213,9 +213,9 @@ const ProductCard: React.FC<ProductCardProps> = ({
                                 color: 'white',
                                 background: 'rgba(255,255,255,0.06)',
                                 border: '1px solid rgba(255,255,255,0.1)',
-                                borderRadius: '16px',
-                                width: '48px',
-                                height: '48px',
+                                borderRadius: '12px',
+                                width: '40px',
+                                height: '40px',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
@@ -223,7 +223,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
                                 transition: 'all 0.2s ease'
                             }}
                         >
-                            <Pencil size={20} strokeWidth={2.5} />
+                            <Pencil size={18} strokeWidth={2} />
                         </motion.button>
                         <motion.button
                             whileTap={{ scale: 0.9 }}
@@ -232,9 +232,9 @@ const ProductCard: React.FC<ProductCardProps> = ({
                                 color: '#ff6b6b',
                                 background: 'rgba(255, 107, 107, 0.08)',
                                 border: '1px solid rgba(255, 107, 107, 0.15)',
-                                borderRadius: '16px',
-                                width: '48px',
-                                height: '48px',
+                                borderRadius: '12px',
+                                width: '40px',
+                                height: '40px',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
@@ -242,7 +242,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
                                 transition: 'all 0.2s ease'
                             }}
                         >
-                            <Trash2 size={20} strokeWidth={2.5} />
+                            <Trash2 size={18} strokeWidth={2} />
                         </motion.button>
                     </div>
                 </div>
