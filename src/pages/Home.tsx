@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
-import { Heart, ChevronRight, ShoppingCart, Loader2, CheckCircle2, ArrowLeft, DollarSign, Handshake } from 'lucide-react';
+import { Heart, ChevronRight, ShoppingCart, Loader2, CheckCircle2, ArrowLeft, DollarSign, Handshake, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { supabase, optimizeImage } from '../services/SupabaseManager';
 import { useProfile } from '../hooks/useProfile';
@@ -39,6 +39,9 @@ const Home: React.FC = () => {
     const [buying, setBuying] = React.useState(false);
     const [selectedSize, setSelectedSize] = React.useState<string | null>(null);
     const [myOffers, setMyOffers] = React.useState<any[]>([]);
+    const [selectedOffer, setSelectedOffer] = React.useState<any>(null);
+    const [replyMessage, setReplyMessage] = React.useState('');
+    const [sendingReply, setSendingReply] = React.useState(false);
     const { likedProducts, toggleLike } = useLikes();
     const [currentImageIndex, setCurrentImageIndex] = React.useState(0);
 
@@ -487,18 +490,16 @@ const Home: React.FC = () => {
                     right: '0',
                     bottom: 'calc(var(--nav-height) + 5px)',
                     overflowY: 'auto',
-                    padding: '10px 40px 20px 20px',
+                    padding: '10px 20px 20px 20px',
                     overflowX: 'hidden'
                 }}>
 
 
-                    {/* Content starts directly with the grid */}
+                    {/* Content Area */}
 
                     <div
                         style={{
-                            display: 'grid',
-                            gridTemplateColumns: viewTab === "marketplace" ? "repeat(2, 1fr)" : "1fr",
-                            gap: '10px',
+                            width: '100%',
                             paddingBottom: '20px'
                         }}
                     >
@@ -518,6 +519,8 @@ const Home: React.FC = () => {
                                             className="skeleton"
                                             style={{
                                                 height: '100%',
+                                                minWidth: 0,
+                                                overflow: 'hidden',
                                                 borderRadius: '32px',
                                                 background: 'rgba(255, 255, 255, 0.03)',
                                                 border: '1px solid rgba(255, 255, 255, 0.05)'
@@ -539,7 +542,7 @@ const Home: React.FC = () => {
                                             initial={{ opacity: 0, y: 15 }}
                                             whileInView={{ opacity: 1, y: 0 }}
                                             viewport={{ once: true, margin: "0px 0px -50px 0px" }}
-                                            style={{ height: '100%' }}
+                                            style={{ height: '100%', minWidth: 0, overflow: 'hidden' }}
                                         >
                                             <PremiumProductCard
                                                 product={product}
@@ -568,6 +571,7 @@ const Home: React.FC = () => {
                                                     <motion.div
                                                         key={offer.id}
                                                         whileTap={{ scale: 0.98 }}
+                                                        onClick={() => setSelectedOffer(offer)}
                                                         style={{
                                                             width: '100%',
                                                             padding: '16px',
@@ -576,19 +580,20 @@ const Home: React.FC = () => {
                                                             border: '1px solid rgba(255, 255, 255, 0.05)',
                                                             display: 'flex',
                                                             flexDirection: 'column',
-                                                            gap: '8px'
+                                                            gap: '8px',
+                                                            cursor: 'pointer'
                                                         }}
                                                     >
                                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                                             <span style={{
-                                                                background: offer.status === 'accepted' ? '#10b981' : (offer.status === 'rejected' ? '#ef4444' : '#f59e0b'),
+                                                                background: offer.status === 'accepted' ? '#10b981' : (offer.status === 'rejected' ? '#ef4444' : (offer.status === 'countered' ? '#8b5cf6' : '#f59e0b')),
                                                                 padding: '4px 8px',
                                                                 borderRadius: '6px',
                                                                 fontSize: '10px',
                                                                 fontWeight: '900',
                                                                 color: 'white'
                                                             }}>
-                                                                {offer.status?.toUpperCase()}
+                                                                {offer.status === 'countered' ? 'CONTRAOFERTA' : offer.status?.toUpperCase()}
                                                             </span>
                                                             <span style={{ fontSize: '10px', color: 'var(--text-dim)' }}>{new Date(offer.created_at).toLocaleDateString()}</span>
                                                         </div>
@@ -603,8 +608,13 @@ const Home: React.FC = () => {
                                                                     {offer.product?.name}
                                                                 </div>
                                                                 <div style={{ fontSize: '12px', fontWeight: '700', color: 'var(--secondary)' }}>
-                                                                    Oferta: ${offer.amount?.toLocaleString()}
+                                                                    Tu oferta: ${offer.amount?.toLocaleString() || offer.offer_amount?.toLocaleString()}
                                                                 </div>
+                                                                {offer.status === 'countered' && offer.counter_amount && (
+                                                                    <div style={{ fontSize: '12px', fontWeight: '900', color: '#8b5cf6', marginTop: '2px' }}>
+                                                                        Contraoferta: ${offer.counter_amount.toLocaleString()}
+                                                                    </div>
+                                                                )}
                                                             </div>
                                                         </div>
                                                     </motion.div>
@@ -1425,6 +1435,186 @@ const Home: React.FC = () => {
                         </motion.div>
                     </div>
                 )}
+
+                {/* Detalle de Oferta (Para el comprador) */}
+                <AnimatePresence>
+                    {selectedOffer && (
+                        <div style={{
+                            position: 'fixed',
+                            inset: 0,
+                            zIndex: 110000,
+                            display: 'flex',
+                            alignItems: 'flex-end',
+                            justifyContent: 'center'
+                        }}>
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                onClick={() => setSelectedOffer(null)}
+                                style={{
+                                    position: 'fixed',
+                                    inset: 0,
+                                    background: 'rgba(0,0,0,0.6)',
+                                    backdropFilter: 'blur(10px)'
+                                }}
+                            />
+                            <motion.div
+                                initial={{ y: '100%' }}
+                                animate={{ y: 0 }}
+                                exit={{ y: '100%' }}
+                                style={{
+                                    width: '100%',
+                                    maxWidth: 'var(--app-max-width)',
+                                    background: '#121212',
+                                    borderTopLeftRadius: '32px',
+                                    borderTopRightRadius: '32px',
+                                    padding: '30px 25px calc(110px + env(safe-area-inset-bottom)) 25px',
+                                    position: 'relative',
+                                    boxShadow: '0 -10px 40px rgba(0,0,0,0.5)',
+                                    border: '1px solid rgba(255,255,255,0.05)',
+                                    maxHeight: '90vh',
+                                    overflowY: 'auto'
+                                }}
+                            >
+                                <button
+                                    onClick={() => setSelectedOffer(null)}
+                                    style={{
+                                        position: 'absolute',
+                                        top: '20px',
+                                        right: '25px',
+                                        background: 'rgba(255,255,255,0.05)',
+                                        border: 'none',
+                                        borderRadius: '50%',
+                                        width: '36px',
+                                        height: '36px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        color: 'white'
+                                    }}
+                                >
+                                    <X size={20} />
+                                </button>
+
+                                <div style={{ display: 'flex', gap: '20px', marginBottom: '25px', alignItems: 'center' }}>
+                                    <img
+                                        src={selectedOffer.product?.image_url || ''}
+                                        style={{ width: '70px', height: '70px', borderRadius: '16px', objectFit: 'cover' }}
+                                        alt=""
+                                    />
+                                    <div>
+                                        <h3 style={{ fontSize: '18px', fontWeight: '900', color: 'white' }}>Detalle de la Oferta</h3>
+                                        <p style={{ fontSize: '14px', color: 'var(--text-dim)' }}>{selectedOffer.product?.name}</p>
+                                    </div>
+                                </div>
+
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '24px' }}>
+                                    <div style={{ background: 'rgba(255,255,255,0.03)', padding: '16px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                        <div style={{ fontSize: '11px', fontWeight: '900', color: 'var(--text-dim)', textTransform: 'uppercase', marginBottom: '4px' }}>Tu Oferta Original</div>
+                                        <div style={{ fontSize: '20px', fontWeight: '900', color: 'white' }}>${(selectedOffer.amount || selectedOffer.offer_amount)?.toLocaleString()}</div>
+                                    </div>
+
+                                    {selectedOffer.status === 'countered' && (
+                                        <div style={{ background: 'rgba(139, 92, 246, 0.1)', padding: '20px', borderRadius: '24px', border: '1px solid rgba(139, 92, 246, 0.2)' }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
+                                                <div>
+                                                    <div style={{ fontSize: '11px', fontWeight: '900', color: '#a78bfa', textTransform: 'uppercase', marginBottom: '4px' }}>Contraoferta del Vendedor</div>
+                                                    <div style={{ fontSize: '24px', fontWeight: '900', color: 'white' }}>${selectedOffer.counter_amount?.toLocaleString()}</div>
+                                                </div>
+                                                <div style={{ background: '#8b5cf6', padding: '4px 10px', borderRadius: '8px', fontSize: '10px', fontWeight: '900', color: 'white' }}>
+                                                    REVISAR
+                                                </div>
+                                            </div>
+
+                                            {selectedOffer.counter_message && (
+                                                <div style={{ background: 'rgba(0,0,0,0.2)', padding: '12px', borderRadius: '12px', marginTop: '8px' }}>
+                                                    <div style={{ fontSize: '11px', fontWeight: '800', color: '#a78bfa', marginBottom: '4px' }}>Respuesta del vendedor:</div>
+                                                    <p style={{ fontSize: '14px', color: 'white', fontStyle: 'italic', margin: 0 }}>"{selectedOffer.counter_message}"</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+
+                                    {selectedOffer.status === 'accepted' && (
+                                        <div style={{ background: 'rgba(16, 185, 129, 0.1)', padding: '20px', borderRadius: '24px', border: '1px solid rgba(16, 185, 129, 0.2)' }}>
+                                            <div style={{ fontSize: '11px', fontWeight: '900', color: '#10b981', textTransform: 'uppercase', marginBottom: '4px' }}>Estado</div>
+                                            <div style={{ fontSize: '18px', fontWeight: '900', color: 'white' }}>¡Oferta Aceptada!</div>
+                                            <p style={{ fontSize: '14px', color: 'var(--text-dim)', marginTop: '8px' }}>El vendedor ha aceptado tu oferta. Pronto recibirás noticias para completar el pago.</p>
+                                        </div>
+                                    )}
+
+                                    {selectedOffer.status === 'rejected' && (
+                                        <div style={{ background: 'rgba(239, 68, 68, 0.1)', padding: '20px', borderRadius: '24px', border: '1px solid rgba(239, 68, 68, 0.2)' }}>
+                                            <div style={{ fontSize: '11px', fontWeight: '900', color: '#ef4444', textTransform: 'uppercase', marginBottom: '4px' }}>Estado</div>
+                                            <div style={{ fontSize: '18px', fontWeight: '900', color: 'white' }}>Oferta Rechazada</div>
+                                            <p style={{ fontSize: '14px', color: 'var(--text-dim)', marginTop: '8px' }}>Lo sentimos, el vendedor no ha aceptado tu propuesta en este momento.</p>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Enviar Mensaje al Vendedor */}
+                                {selectedOffer.status !== 'rejected' && (
+                                    <div style={{ marginTop: '10px' }}>
+                                        <label style={{ display: 'block', fontSize: '11px', fontWeight: '900', color: 'var(--text-dim)', textTransform: 'uppercase', marginBottom: '10px' }}>Responder al Vendedor</label>
+                                        <textarea
+                                            placeholder="Escribe un mensaje aquí..."
+                                            value={replyMessage}
+                                            onChange={(e) => setReplyMessage(e.target.value)}
+                                            style={{
+                                                width: '100%',
+                                                background: 'rgba(255,255,255,0.03)',
+                                                border: '1px solid rgba(255,255,255,0.1)',
+                                                borderRadius: '20px',
+                                                padding: '16px',
+                                                color: 'white',
+                                                fontSize: '14px',
+                                                fontWeight: '500',
+                                                outline: 'none',
+                                                minHeight: '100px',
+                                                resize: 'none',
+                                                marginBottom: '16px'
+                                            }}
+                                        />
+                                        <motion.button
+                                            whileTap={{ scale: 0.95 }}
+                                            disabled={sendingReply || !replyMessage}
+                                            onClick={async () => {
+                                                setSendingReply(true);
+                                                try {
+                                                    const { error } = await supabase
+                                                        .from('notifications')
+                                                        .insert([{
+                                                            user_id: selectedOffer.seller_id,
+                                                            title: 'Nuevo mensaje sobre oferta',
+                                                            message: `El comprador de ${selectedOffer.product?.name} dice: ${replyMessage}`,
+                                                            type: 'offer',
+                                                            link: '/mystore?tab=offers',
+                                                            read: false
+                                                        }]);
+
+                                                    if (error) throw error;
+
+                                                    warning('¡Mensaje enviado al vendedor!');
+                                                    setReplyMessage('');
+                                                    setSelectedOffer(null);
+                                                } catch (err) {
+                                                    console.error(err);
+                                                } finally {
+                                                    setSendingReply(false);
+                                                }
+                                            }}
+                                            className="btn-primary"
+                                            style={{ width: '100%', height: '54px' }}
+                                        >
+                                            {sendingReply ? 'ENVIANDO...' : 'ENVIAR MENSAJE'}
+                                        </motion.button>
+                                    </div>
+                                )}
+                            </motion.div>
+                        </div>
+                    )}
+                </AnimatePresence>
             </AnimatePresence>
         </div>
     );
