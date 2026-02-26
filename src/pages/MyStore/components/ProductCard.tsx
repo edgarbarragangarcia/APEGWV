@@ -72,9 +72,9 @@ const ProductCard: React.FC<ProductCardProps> = ({
                     {/* Image Section */}
                     <div style={{ position: 'relative', flexShrink: 0 }}>
                         <div style={{
-                            width: '100px',
-                            height: '100px',
-                            borderRadius: '24px',
+                            width: '120px',
+                            height: '120px',
+                            borderRadius: '28px',
                             overflow: 'hidden',
                             background: 'rgba(255,255,255,0.03)',
                             border: '1px solid var(--glass-border)',
