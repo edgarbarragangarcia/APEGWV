@@ -420,12 +420,8 @@ const ProductForm: React.FC<ProductFormProps> = ({
 
                 {/* Submit Button */}
                 <div style={{
-                    position: 'fixed',
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    padding: '24px',
-                    background: 'linear-gradient(to top, var(--primary) 70%, transparent)',
+                    marginTop: '10px',
+                    paddingBottom: '40px',
                     zIndex: 10
                 }}>
                     <button

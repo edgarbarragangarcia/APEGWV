@@ -290,31 +290,45 @@ const MyStore: React.FC = () => {
             {showForm && (
                 <div style={{
                     position: 'fixed',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
+                    inset: 0,
                     background: 'var(--primary)',
-                    zIndex: 10000,
-                    overflowY: 'auto'
-                }}>
+                    zIndex: 100000,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    overflow: 'hidden'
+                }} className="animate-fade">
                     <PageHero opacity={0.4} />
-                    <div style={{
-                        position: 'relative',
-                        zIndex: 10,
-                        padding: '0 20px',
-                        paddingTop: 'var(--header-offset-top)',
-                        maxWidth: '600px',
-                        margin: '0 auto'
-                    }}>
-                        <PageHeader
-                            title={editingId ? 'Editar Producto' : 'Nuevo Producto'}
-                            subtitle="Publica tu producto en el marketplace"
-                            onBack={() => setShowForm(false)}
-                            noMargin
-                        />
 
-                        <div style={{ marginTop: '30px', paddingBottom: '80px' }}>
+                    {/* Fixed Header */}
+                    <div style={{
+                        flexShrink: 0,
+                        position: 'relative',
+                        zIndex: 20,
+                        padding: '0 24px',
+                        paddingTop: 'var(--header-offset-top)',
+                        paddingBottom: '15px',
+                        background: 'linear-gradient(to bottom, var(--primary) 80%, transparent)'
+                    }}>
+                        <div style={{ maxWidth: '600px', margin: '0 auto' }}>
+                            <PageHeader
+                                title={editingId ? 'Editar Producto' : 'Nuevo Producto'}
+                                subtitle="Publica tu producto en el marketplace"
+                                onBack={() => setShowForm(false)}
+                                noMargin
+                            />
+                        </div>
+                    </div>
+
+                    {/* Scrollable Content */}
+                    <div style={{
+                        flex: 1,
+                        overflowY: 'auto',
+                        padding: '0 24px',
+                        paddingBottom: '120px',
+                        position: 'relative',
+                        zIndex: 10
+                    }} className="hide-scrollbar">
+                        <div style={{ maxWidth: '600px', margin: '0 auto', paddingTop: '10px' }}>
                             <ProductForm
                                 formData={formData as any}
                                 editingId={editingId}
@@ -336,16 +350,55 @@ const MyStore: React.FC = () => {
             )}
 
             {showCouponForm && (
-                <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.9)', backdropFilter: 'blur(10px)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-                    <div style={{ width: '100%', maxWidth: '450px' }}>
-                        <CouponForm
-                            formData={couponFormData as any}
-                            editingId={editingCouponId}
-                            saving={saving}
-                            onClose={() => setShowCouponForm(false)}
-                            onChange={setCouponFormData as any}
-                            onSubmit={handleCouponSubmit}
-                        />
+                <div style={{
+                    position: 'fixed',
+                    inset: 0,
+                    background: 'var(--primary)',
+                    zIndex: 100000,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    overflow: 'hidden'
+                }} className="animate-fade">
+                    <PageHero opacity={0.4} />
+
+                    {/* Fixed Header */}
+                    <div style={{
+                        flexShrink: 0,
+                        position: 'relative',
+                        zIndex: 20,
+                        padding: '0 24px',
+                        paddingTop: 'var(--header-offset-top)',
+                        paddingBottom: '15px',
+                        background: 'linear-gradient(to bottom, var(--primary) 80%, transparent)'
+                    }}>
+                        <div style={{ maxWidth: '600px', margin: '0 auto' }}>
+                            <PageHeader
+                                title={editingCouponId ? 'Editar Cupón' : 'Nuevo Cupón'}
+                                subtitle="Configura descuentos para tus clientes"
+                                onBack={() => setShowCouponForm(false)}
+                                noMargin
+                            />
+                        </div>
+                    </div>
+
+                    {/* Scrollable Content */}
+                    <div style={{
+                        flex: 1,
+                        overflowY: 'auto',
+                        padding: '0 24px',
+                        paddingBottom: '120px',
+                        position: 'relative',
+                        zIndex: 10
+                    }} className="hide-scrollbar">
+                        <div style={{ maxWidth: '600px', margin: '0 auto', paddingTop: '10px' }}>
+                            <CouponForm
+                                formData={couponFormData as any}
+                                editingId={editingCouponId}
+                                saving={saving}
+                                onChange={setCouponFormData as any}
+                                onSubmit={handleCouponSubmit}
+                            />
+                        </div>
                     </div>
                 </div>
             )}

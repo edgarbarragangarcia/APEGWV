@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Calendar, Settings, Package, User, Phone, MapPin, Loader2, Camera, Truck, CheckCircle2, Pencil } from 'lucide-react';
+import { Calendar, Package, User, Phone, MapPin, Loader2, Camera, Truck, CheckCircle2, Pencil } from 'lucide-react';
 import { optimizeImage } from '../../../services/SupabaseManager';
 
 import type { Order } from '../hooks/useStoreData';
@@ -63,33 +63,54 @@ const OrderCard: React.FC<OrderCardProps> = ({
                         </span>
                     )}
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-dim)', fontSize: '11px', fontWeight: '800' }}>
+                <div style={{ display: 'flex', alignItems: 'start', gap: '12px' }}>
+                    <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        color: 'var(--text-dim)',
+                        fontSize: '11px',
+                        fontWeight: '800',
+                        marginTop: '12px'
+                    }}>
                         <Calendar size={14} strokeWidth={2.5} />
                         {order.created_at ? new Date(order.created_at).toLocaleDateString() : '---'}
                     </div>
-                    <motion.button
-                        whileTap={{ scale: 0.9 }}
-                        onClick={(e: React.MouseEvent) => {
-                            e.stopPropagation();
-                            onEditClick(order);
-                        }}
-                        style={{
-                            width: '40px',
-                            height: '40px',
-                            borderRadius: '14px',
-                            background: 'rgba(255,255,255,0.05)',
-                            border: '1px solid rgba(255,255,255,0.1)',
-                            color: 'white',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            transition: '0.2s'
-                        }}
-                    >
-                        <Settings size={18} strokeWidth={2.5} />
-                    </motion.button>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
+                        <motion.button
+                            whileTap={{ scale: 0.9 }}
+                            onClick={(e: React.MouseEvent) => {
+                                e.stopPropagation();
+                                onEditClick(order);
+                            }}
+                            style={{
+                                width: '40px',
+                                height: '40px',
+                                borderRadius: '14px',
+                                background: 'rgba(255,255,255,0.05)',
+                                border: '1px solid rgba(255,255,255,0.1)',
+                                color: 'white',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                transition: '0.2s'
+                            }}
+                        >
+                            <Truck size={20} strokeWidth={2.5} />
+                        </motion.button>
+                        <span style={{
+                            fontSize: '8px',
+                            fontWeight: '950',
+                            color: 'var(--text-dim)',
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.2px',
+                            textAlign: 'center',
+                            width: '45px',
+                            lineHeight: '1.1'
+                        }}>Gestionar Envío</span>
+                    </div>
                 </div>
             </div>
 

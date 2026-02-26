@@ -1,6 +1,4 @@
 import React from 'react';
-import { X, Ticket } from 'lucide-react';
-import { motion } from 'framer-motion';
 
 interface CouponFormData {
     code: string;
@@ -15,7 +13,6 @@ interface CouponFormProps {
     formData: CouponFormData;
     editingId: string | null;
     saving: boolean;
-    onClose: () => void;
     onChange: (data: CouponFormData) => void;
     onSubmit: (e: React.FormEvent) => void;
 }
@@ -24,7 +21,6 @@ const CouponForm: React.FC<CouponFormProps> = ({
     formData,
     editingId,
     saving,
-    onClose,
     onChange,
     onSubmit
 }) => {
@@ -55,65 +51,8 @@ const CouponForm: React.FC<CouponFormProps> = ({
     };
 
     return (
-        <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            style={{
-                padding: '30px',
-                background: 'linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%)',
-                backdropFilter: 'blur(30px)',
-                WebkitBackdropFilter: 'blur(30px)',
-                border: '1px solid var(--glass-border)',
-                borderRadius: '32px',
-                boxShadow: '0 40px 100px rgba(0,0,0,0.5)',
-                position: 'relative'
-            }}
-        >
+        <div style={{ position: 'relative', zIndex: 10 }}>
             <form onSubmit={onSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '25px', fontFamily: 'var(--font-main)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <div style={{
-                            width: '44px',
-                            height: '44px',
-                            borderRadius: '14px',
-                            background: 'rgba(163, 230, 53, 0.1)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            border: '1px solid rgba(163, 230, 53, 0.2)'
-                        }}>
-                            <Ticket size={22} color="var(--secondary)" />
-                        </div>
-                        <h3 style={{
-                            fontSize: '22px',
-                            fontWeight: '900',
-                            color: 'white',
-                            letterSpacing: '-0.3px',
-                            lineHeight: 1.2
-                        }}>
-                            {editingId ? 'Editar Cupón' : 'Nuevo Cupón'}
-                        </h3>
-                    </div>
-                    <motion.button
-                        whileTap={{ scale: 0.9 }}
-                        type="button"
-                        onClick={onClose}
-                        style={{
-                            color: 'rgba(255,255,255,0.4)',
-                            background: 'rgba(255,255,255,0.05)',
-                            border: '1px solid var(--glass-border)',
-                            borderRadius: '50%',
-                            width: '36px',
-                            height: '36px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            cursor: 'pointer'
-                        }}
-                    >
-                        <X size={18} />
-                    </motion.button>
-                </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                     <div>
@@ -130,21 +69,14 @@ const CouponForm: React.FC<CouponFormProps> = ({
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
                         <div>
                             <label style={labelStyle}>Tipo</label>
-                            <div style={{ position: 'relative' }}>
-                                <select
-                                    value={formData.discount_type}
-                                    onChange={e => onChange({ ...formData, discount_type: e.target.value as any })}
-                                    style={{ ...inputStyle, appearance: 'none', cursor: 'pointer' }}
-                                >
-                                    <option value="percentage" style={{ background: 'var(--primary)', color: 'white' }}>Porcentaje (%)</option>
-                                    <option value="fixed" style={{ background: 'var(--primary)', color: 'white' }}>Valor Fijo ($)</option>
-                                </select>
-                                <div style={{ position: 'absolute', right: '15px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', opacity: 0.5 }}>
-                                    <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M1 1L5 5L9 1" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                                    </svg>
-                                </div>
-                            </div>
+                            <select
+                                value={formData.discount_type}
+                                onChange={e => onChange({ ...formData, discount_type: e.target.value as any })}
+                                style={inputStyle}
+                            >
+                                <option value="percentage" style={{ background: 'var(--primary)', color: 'white' }}>Porcentaje (%)</option>
+                                <option value="fixed" style={{ background: 'var(--primary)', color: 'white' }}>Valor Fijo ($)</option>
+                            </select>
                         </div>
 
                         <div>
@@ -221,15 +153,15 @@ const CouponForm: React.FC<CouponFormProps> = ({
                     </div>
                 </div>
 
-                <div style={{ marginTop: '10px' }}>
+                <div style={{ marginTop: '10px', paddingBottom: '40px' }}>
                     <button
                         type="submit"
                         disabled={saving}
-                        className="btn-primary"
-                        style={{ height: '60px', width: '100%', borderRadius: '20px', fontSize: '15px', fontWeight: '900', letterSpacing: '0.05em' }}
+                        className={saving ? 'btn-disabled' : 'btn-primary'}
+                        style={{ height: '64px', width: '100%', borderRadius: '18px', fontSize: '16px', fontWeight: '950' }}
                     >
                         {saving ? (
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                                 <div className="spinner-small" style={{ borderColor: 'var(--primary)', borderTopColor: 'transparent' }} />
                                 <span>GUARDANDO...</span>
                             </div>
@@ -237,27 +169,9 @@ const CouponForm: React.FC<CouponFormProps> = ({
                             editingId ? 'GUARDAR CAMBIOS' : 'CREAR CUPÓN'
                         )}
                     </button>
-                    <button
-                        type="button"
-                        onClick={onClose}
-                        style={{
-                            width: '100%',
-                            background: 'transparent',
-                            border: 'none',
-                            color: 'rgba(255,255,255,0.4)',
-                            fontSize: '13px',
-                            fontWeight: '800',
-                            marginTop: '16px',
-                            cursor: 'pointer',
-                            textTransform: 'uppercase',
-                            letterSpacing: '0.05em'
-                        }}
-                    >
-                        Cancelar
-                    </button>
                 </div>
             </form>
-        </motion.div>
+        </div>
     );
 };
 

@@ -1,6 +1,7 @@
 import React from 'react';
-import { X, Truck, User, Phone, MapPin, DollarSign, QrCode } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { Truck, User, Phone, MapPin, DollarSign, QrCode, CheckCircle2 } from 'lucide-react';
+import PageHero from '../../../components/PageHero';
+import PageHeader from '../../../components/PageHeader';
 
 interface OrderEditFormData {
     order_number: string;
@@ -61,72 +62,49 @@ const OrderEditModal: React.FC<OrderEditModalProps> = ({
     return (
         <div style={{
             position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: 'rgba(0,0,0,0.85)',
-            backdropFilter: 'blur(15px)',
+            inset: 0,
+            background: 'var(--primary)',
+            zIndex: 99999,
             display: 'flex',
-            alignItems: 'end',
-            justifyContent: 'center',
-            zIndex: 1100,
+            flexDirection: 'column',
+            overflow: 'hidden'
         }} className="animate-fade">
-            <motion.div
-                initial={{ y: '100%' }}
-                animate={{ y: 0 }}
-                exit={{ y: '100%' }}
-                transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                style={{
-                    width: '100%',
-                    maxWidth: 'var(--app-max-width)',
-                    background: 'var(--primary)',
-                    borderTopLeftRadius: '32px',
-                    borderTopRightRadius: '32px',
-                    borderTop: '1px solid var(--glass-border)',
-                    boxShadow: '0 -10px 40px rgba(0,0,0,0.5)',
-                    height: '92vh',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    overflow: 'hidden'
-                }}
-            >
-                {/* Header */}
-                <div style={{
-                    padding: '25px',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    borderBottom: '1px solid rgba(255,255,255,0.05)',
-                    flexShrink: 0
-                }}>
-                    <div style={{ display: 'flex', flexDirection: 'column' }}>
-                        <span style={{ fontSize: '10px', fontWeight: '900', color: 'var(--secondary)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '4px' }}>Gestión de Ventas</span>
-                        <h3 style={{ fontSize: '24px', fontWeight: '900', color: 'white', letterSpacing: '-0.02em', margin: 0 }}>Editar Pedido</h3>
-                    </div>
-                    <button
-                        onClick={onClose}
-                        style={{
-                            background: 'rgba(255,255,255,0.08)',
-                            border: '1px solid rgba(255,255,255,0.1)',
-                            borderRadius: '14px',
-                            width: '40px',
-                            height: '40px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            color: 'white'
-                        }}
-                    >
-                        <X size={20} strokeWidth={2.5} />
-                    </button>
-                </div>
+            <PageHero opacity={0.4} />
 
-                {/* Form Content */}
-                <div style={{ flex: 1, overflowY: 'auto', padding: '25px', paddingBottom: '120px' }}>
+            {/* Header Area - STATIC (Fixed) */}
+            <div style={{
+                flexShrink: 0,
+                position: 'relative',
+                zIndex: 20,
+                padding: '0 24px',
+                paddingTop: 'var(--header-offset-top)',
+                paddingBottom: '15px',
+                background: 'linear-gradient(to bottom, var(--primary) 80%, transparent)'
+            }}>
+                <div style={{ maxWidth: '600px', margin: '0 auto' }}>
+                    <PageHeader
+                        title="Gestionar Pedido"
+                        subtitle="Administra los detalles y el estado del envío"
+                        onBack={onClose}
+                        noMargin
+                    />
+                </div>
+            </div>
+
+            {/* Scrollable Content */}
+            <div style={{
+                flex: 1,
+                overflowY: 'auto',
+                padding: '0 24px',
+                paddingBottom: '120px',
+                position: 'relative',
+                zIndex: 10
+            }} className="hide-scrollbar">
+                <div style={{ maxWidth: '600px', margin: '0 auto', paddingTop: '10px' }}>
                     <form onSubmit={onSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '25px' }}>
 
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '15px' }}>
+                        {/* Basic Info Row */}
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
                             <div>
                                 <label style={labelStyle}># Pedido</label>
                                 <input
@@ -137,24 +115,30 @@ const OrderEditModal: React.FC<OrderEditModalProps> = ({
                             </div>
                             <div>
                                 <label style={labelStyle}>Estado Actual</label>
-                                <div style={{ position: 'relative' }}>
-                                    <select
-                                        value={formData.status}
-                                        onChange={e => onChange({ ...formData, status: e.target.value })}
-                                        style={inputStyle}
-                                    >
-                                        <option value="Pendiente">Pendiente</option>
-                                        <option value="Enviado">Enviado</option>
-                                        <option value="Completado">Completado</option>
-                                        <option value="Cancelado">Cancelado</option>
-                                    </select>
-                                </div>
+                                <select
+                                    value={formData.status}
+                                    onChange={e => onChange({ ...formData, status: e.target.value })}
+                                    style={inputStyle}
+                                >
+                                    <option value="Pendiente">Pendiente</option>
+                                    <option value="Enviado">Enviado</option>
+                                    <option value="Completado">Completado</option>
+                                    <option value="Cancelado">Cancelado</option>
+                                </select>
                             </div>
                         </div>
 
-                        {/* Shipping Info Card */}
-                        <div className="glass" style={{ padding: '20px', borderRadius: '24px', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.05)' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                        {/* Shipping Logistics Card */}
+                        <div style={{
+                            background: 'rgba(255,255,255,0.03)',
+                            padding: '24px',
+                            borderRadius: '24px',
+                            border: '1px solid var(--glass-border)',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '20px'
+                        }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                                     <div style={{ width: '32px', height: '32px', background: 'rgba(163, 230, 53, 0.15)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                         <Truck size={18} color="var(--secondary)" />
@@ -168,7 +152,7 @@ const OrderEditModal: React.FC<OrderEditModalProps> = ({
                                         display: 'flex',
                                         alignItems: 'center',
                                         gap: '6px',
-                                        padding: '8px 14px',
+                                        padding: '10px 16px',
                                         background: 'var(--secondary)',
                                         color: 'var(--primary)',
                                         borderRadius: '12px',
@@ -177,112 +161,117 @@ const OrderEditModal: React.FC<OrderEditModalProps> = ({
                                         fontWeight: '950'
                                     }}
                                 >
-                                    <QrCode size={16} /> SCANEAR GUÍA
+                                    <QrCode size={16} /> SCANEAR
                                 </button>
                             </div>
 
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                                 <div>
-                                    <label style={{ ...labelStyle, color: 'var(--text-dim)', fontSize: '10px' }}>Transportadora</label>
+                                    <label style={{ ...labelStyle, fontSize: '10px', color: 'var(--text-dim)' }}>Transportadora</label>
                                     <input
                                         placeholder="Ej: Servientrega, Envía, DHL..."
                                         value={formData.shipping_provider}
                                         onChange={e => onChange({ ...formData, shipping_provider: e.target.value })}
-                                        style={{ ...inputStyle, background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.05)' }}
+                                        style={inputStyle}
                                     />
                                 </div>
                                 <div>
-                                    <label style={{ ...labelStyle, color: 'var(--text-dim)', fontSize: '10px' }}>Número de Guía / Tracking</label>
-                                    <input
-                                        placeholder="Ingresa el código de seguimiento"
-                                        value={formData.tracking_number}
-                                        onChange={e => onChange({ ...formData, tracking_number: e.target.value })}
-                                        style={{ ...inputStyle, background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.05)' }}
-                                    />
+                                    <label style={{ ...labelStyle, fontSize: '10px', color: 'var(--text-dim)' }}>Número de Guía</label>
+                                    <div style={{ position: 'relative' }}>
+                                        <input
+                                            placeholder="Ingresa el código"
+                                            value={formData.tracking_number}
+                                            onChange={e => onChange({ ...formData, tracking_number: e.target.value })}
+                                            style={{ ...inputStyle, paddingRight: '40px' }}
+                                        />
+                                        <QrCode size={18} color="var(--secondary)" style={{ position: 'absolute', right: '16px', top: '50%', transform: 'translateY(-50%)', opacity: 0.5 }} />
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Buyer Info Section */}
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                                <label style={labelStyle}>Datos del Cliente</label>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '15px', background: 'rgba(255,255,255,0.03)', padding: '16px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                                    <User size={20} color="var(--secondary)" opacity={0.6} />
-                                    <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                        <span style={{ fontSize: '16px', fontWeight: '800', color: 'white' }}>{formData.buyer_name}</span>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '4px' }}>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                                <Phone size={12} color="var(--text-dim)" />
-                                                <span style={{ fontSize: '12px', color: 'var(--text-dim)' }}>{formData.buyer_phone}</span>
-                                            </div>
-                                        </div>
-                                    </div>
+                        {/* Customer Info Card */}
+                        <div style={{
+                            background: 'rgba(255,255,255,0.03)',
+                            padding: '24px',
+                            borderRadius: '24px',
+                            border: '1px solid var(--glass-border)',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '15px'
+                        }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <div style={{ width: '32px', height: '32px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    <User size={18} color="var(--secondary)" />
                                 </div>
+                                <span style={{ fontSize: '15px', fontWeight: '900', color: 'white' }}>Datos del Cliente</span>
                             </div>
 
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                                <label style={labelStyle}>Dirección de Entrega</label>
-                                <div style={{ display: 'flex', alignItems: 'start', gap: '15px', background: 'rgba(255,255,255,0.03)', padding: '16px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                                    <MapPin size={20} color="var(--secondary)" opacity={0.6} style={{ marginTop: '2px' }} />
-                                    <span style={{ fontSize: '14px', color: 'white', lineHeight: '1.5', fontWeight: '500' }}>{formData.shipping_address}</span>
+                                <div style={{ fontSize: '16px', fontWeight: '800', color: 'white' }}>{formData.buyer_name}</div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-dim)', fontSize: '13px' }}>
+                                    <Phone size={14} /> {formData.buyer_phone}
+                                </div>
+                            </div>
+
+                            <div style={{ paddingTop: '10px', borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', gap: '10px' }}>
+                                <MapPin size={18} color="var(--secondary)" style={{ marginTop: '2px', flexShrink: 0 }} />
+                                <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.7)', lineHeight: '1.5' }}>
+                                    {formData.shipping_address}
                                 </div>
                             </div>
                         </div>
 
                         {/* Financial Section */}
-                        <div style={{ marginTop: '10px' }}>
+                        <div style={{
+                            padding: '24px',
+                            background: 'rgba(163, 230, 53, 0.05)',
+                            borderRadius: '24px',
+                            border: '1px solid rgba(163, 230, 53, 0.15)'
+                        }}>
                             <label style={labelStyle}>Monto Neto a Recibir (Vendedor)</label>
                             <div style={{ position: 'relative' }}>
-                                <div style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--secondary)' }}>
-                                    <DollarSign size={20} strokeWidth={3} />
-                                </div>
                                 <input
-                                    type="number"
                                     readOnly
-                                    value={formData.seller_net_amount}
+                                    value={`$ ${Number(formData.seller_net_amount).toLocaleString()}`}
                                     style={{
                                         ...inputStyle,
-                                        paddingLeft: '45px',
-                                        fontSize: '22px',
-                                        fontWeight: '900',
+                                        fontSize: '24px',
+                                        fontWeight: '950',
                                         color: 'var(--secondary)',
-                                        background: 'rgba(163, 230, 53, 0.05)',
-                                        border: '1px solid rgba(163, 230, 53, 0.2)'
+                                        background: 'transparent',
+                                        border: 'none',
+                                        padding: '0'
                                     }}
                                 />
+                                <DollarSign size={20} color="var(--secondary)" style={{ position: 'absolute', right: '0', top: '50%', transform: 'translateY(-50%)' }} />
                             </div>
+                        </div>
+
+                        {/* Submit Button - Integrated BUT Static height */}
+                        <div style={{ marginTop: '10px' }}>
+                            <button
+                                type="submit"
+                                disabled={updating}
+                                className={updating ? 'btn-disabled' : 'btn-primary'}
+                                style={{ height: '64px', fontSize: '16px', borderRadius: '18px' }}
+                            >
+                                {updating ? (
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                        <div className="spinner-small" style={{ borderColor: 'var(--primary)', borderTopColor: 'transparent' }} />
+                                        <span>PROCESANDO...</span>
+                                    </div>
+                                ) : (
+                                    <>
+                                        <CheckCircle2 size={24} />
+                                        <span>GUARDAR CAMBIOS</span>
+                                    </>
+                                )}
+                            </button>
                         </div>
                     </form>
                 </div>
-
-                {/* Footer Action */}
-                <div style={{
-                    position: 'absolute',
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    padding: '25px',
-                    background: 'linear-gradient(to top, var(--primary) 70%, transparent)',
-                    zIndex: 2,
-                    pointerEvents: 'auto'
-                }}>
-                    <button
-                        type="button"
-                        onClick={onSubmit}
-                        disabled={updating}
-                        className={updating ? 'btn-disabled' : 'btn-primary'}
-                        style={{ height: '60px', fontSize: '16px' }}
-                    >
-                        {updating ? (
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                <div className="spinner-small" />
-                                ACTUALIZANDO...
-                            </div>
-                        ) : 'GUARDAR CAMBIOS'}
-                    </button>
-                </div>
-            </motion.div>
+            </div>
         </div>
     );
 };
