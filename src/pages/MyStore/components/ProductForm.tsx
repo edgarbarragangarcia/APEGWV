@@ -63,27 +63,29 @@ const ProductForm: React.FC<ProductFormProps> = ({
         background: 'rgba(255,255,255,0.05)',
         border: '1px solid var(--glass-border)',
         borderRadius: '16px',
-        padding: '14px',
+        padding: '16px 16px 16px 20px',
         color: 'white',
         fontSize: '15px',
         fontFamily: 'var(--font-main)',
         outline: 'none',
-        transition: 'all 0.2s ease'
+        transition: 'all 0.2s ease',
+        boxSizing: 'border-box' as const
     };
 
     const labelStyle = {
         display: 'block',
-        marginBottom: '8px',
+        marginBottom: '10px',
         fontSize: '11px',
         fontWeight: '900',
         color: 'var(--secondary)',
         textTransform: 'uppercase' as const,
         letterSpacing: '0.05em',
-        paddingLeft: '4px'
+        paddingLeft: '4px',
+        fontFamily: 'var(--font-main)'
     };
 
     return (
-        <form onSubmit={onSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '25px', paddingBottom: '100px' }}>
+        <form onSubmit={onSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '25px', paddingBottom: '100px', fontFamily: 'var(--font-main)' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '25px' }}>
 
                 {/* Image Upload Area */}
@@ -97,8 +99,8 @@ const ProductForm: React.FC<ProductFormProps> = ({
                                     width: '100%',
                                     aspectRatio: '1/1',
                                     background: 'rgba(255,255,255,0.03)',
-                                    borderRadius: '18px',
-                                    border: `2px ${images[idx] ? 'solid' : 'dashed'} ${images[idx] ? 'var(--secondary)' : 'rgba(255,255,255,0.1)'}`,
+                                    borderRadius: '20px',
+                                    border: `2px ${images[idx] ? 'solid' : 'dashed'} ${images[idx] ? 'var(--secondary)' : 'var(--glass-border)'}`,
                                     display: 'flex',
                                     flexDirection: 'column',
                                     alignItems: 'center',
@@ -218,13 +220,16 @@ const ProductForm: React.FC<ProductFormProps> = ({
                                             onClick={() => onToggleSize(size)}
                                             style={{
                                                 flex: '1 0 60px',
-                                                padding: '12px',
-                                                borderRadius: '12px',
+                                                padding: '14px',
+                                                borderRadius: '16px',
                                                 border: isSelected ? '1px solid var(--secondary)' : '1px solid var(--glass-border)',
-                                                background: isSelected ? 'var(--secondary)' : 'rgba(255,255,255,0.05)',
-                                                color: isSelected ? 'var(--primary)' : 'white',
+                                                background: isSelected ? 'rgba(163, 230, 53, 0.15)' : 'rgba(255,255,255,0.05)',
+                                                color: isSelected ? 'var(--secondary)' : 'rgba(255,255,255,0.6)',
                                                 fontWeight: '900',
-                                                fontSize: '13px'
+                                                fontSize: '14px',
+                                                cursor: 'pointer',
+                                                transition: 'all 0.2s',
+                                                fontFamily: 'var(--font-main)'
                                             }}
                                         >
                                             {size}
@@ -269,13 +274,16 @@ const ProductForm: React.FC<ProductFormProps> = ({
                                         onClick={() => onToggleSize(size)}
                                         style={{
                                             flex: '1 0 50px',
-                                            padding: '12px',
-                                            borderRadius: '12px',
+                                            padding: '14px',
+                                            borderRadius: '16px',
                                             border: isSelected ? '1px solid var(--secondary)' : '1px solid var(--glass-border)',
-                                            background: isSelected ? 'var(--secondary)' : 'rgba(255,255,255,0.05)',
-                                            color: isSelected ? 'var(--primary)' : 'white',
+                                            background: isSelected ? 'rgba(163, 230, 53, 0.15)' : 'rgba(255,255,255,0.05)',
+                                            color: isSelected ? 'var(--secondary)' : 'rgba(255,255,255,0.6)',
                                             fontWeight: '900',
-                                            fontSize: '13px'
+                                            fontSize: '13px',
+                                            cursor: 'pointer',
+                                            transition: 'all 0.2s',
+                                            fontFamily: 'var(--font-main)'
                                         }}
                                     >
                                         {size}
@@ -288,16 +296,16 @@ const ProductForm: React.FC<ProductFormProps> = ({
 
                 {/* Inventory Quantities */}
                 {formData.sizes_inventory.length > 0 && (
-                    <div style={{ background: 'rgba(0,0,0,0.2)', padding: '20px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                        <p style={{ fontSize: '10px', color: 'var(--secondary)', marginBottom: '15px', fontWeight: '950', letterSpacing: '0.1em' }}>CANTIDADES REQUERIDAS</p>
+                    <div style={{ background: 'rgba(255,255,255,0.03)', padding: '24px', borderRadius: '24px', border: '1px solid var(--glass-border)' }}>
+                        <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', marginBottom: '15px', fontWeight: '900', letterSpacing: '0.1em' }}>CANTIDADES REQUERIDAS</p>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                             {formData.sizes_inventory.map(s => (
-                                <div key={s.size} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.02)', padding: '10px 15px', borderRadius: '12px' }}>
+                                <div key={s.size} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.02)', padding: '12px 18px', borderRadius: '16px' }}>
                                     <span style={{ fontSize: '15px', fontWeight: '900', color: 'white' }}>Talla {s.size}</span>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                        <button type="button" onClick={() => onUpdateSizeQuantity(s.size, s.quantity - 1)} style={{ width: '32px', height: '32px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: 'white', fontWeight: '900' }}>-</button>
-                                        <input type="number" readOnly value={s.quantity} style={{ width: '30px', textAlign: 'center', background: 'transparent', border: 'none', color: 'white', fontWeight: '950', fontSize: '16px' }} />
-                                        <button type="button" onClick={() => onUpdateSizeQuantity(s.size, s.quantity + 1)} style={{ width: '32px', height: '32px', borderRadius: '10px', border: 'none', background: 'white', color: 'var(--primary)', fontWeight: '900' }}>+</button>
+                                        <button type="button" onClick={() => onUpdateSizeQuantity(s.size, s.quantity - 1)} style={{ width: '36px', height: '36px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: 'white', fontWeight: '900', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>-</button>
+                                        <input type="number" readOnly value={s.quantity} style={{ width: '30px', textAlign: 'center', background: 'transparent', border: 'none', color: 'white', fontWeight: '950', fontSize: '16px', outline: 'none' }} />
+                                        <button type="button" onClick={() => onUpdateSizeQuantity(s.size, s.quantity + 1)} style={{ width: '36px', height: '36px', borderRadius: '12px', border: 'none', background: 'white', color: 'var(--primary)', fontWeight: '900', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>+</button>
                                     </div>
                                 </div>
                             ))}
@@ -311,7 +319,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
                     <textarea
                         value={formData.description}
                         onChange={e => onChange({ ...formData, description: e.target.value })}
-                        style={{ ...inputStyle, minHeight: '100px', resize: 'none' }}
+                        style={{ ...inputStyle, minHeight: '120px', resize: 'none' }}
                         placeholder="Describe el estado de tu producto..."
                     />
                 </div>
@@ -323,32 +331,52 @@ const ProductForm: React.FC<ProductFormProps> = ({
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'space-between',
-                        padding: '18px',
-                        background: 'rgba(255,255,255,0.03)',
-                        borderRadius: '18px',
+                        padding: '24px',
+                        background: 'linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%)',
+                        borderRadius: '24px',
                         border: '1px solid var(--glass-border)',
-                        cursor: 'pointer'
+                        cursor: 'pointer',
+                        backdropFilter: 'blur(10px)',
+                        WebkitBackdropFilter: 'blur(10px)'
                     }}
                 >
-                    <div>
-                        <p style={{ fontSize: '15px', fontWeight: '900', color: 'white' }}>Precio Negociable</p>
-                        <p style={{ fontSize: '12px', color: 'var(--text-dim)' }}>Recibir ofertas de posibles compradores</p>
+                    <div style={{ paddingRight: '15px' }}>
+                        <p style={{ fontSize: '16px', fontWeight: '900', color: 'white', marginBottom: '4px' }}>Precio Negociable</p>
+                        <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.6)', lineHeight: '1.4' }}>Permitir a los compradores enviarte contraofertas por este producto.</p>
                     </div>
-                    <div style={{ width: '48px', height: '26px', background: formData.is_negotiable ? 'var(--secondary)' : 'rgba(255,255,255,0.1)', borderRadius: '20px', position: 'relative', transition: 'all 0.3s ease' }}>
-                        <div style={{ width: '20px', height: '20px', background: formData.is_negotiable ? 'var(--primary)' : 'var(--text-dim)', borderRadius: '50%', position: 'absolute', top: '3px', left: formData.is_negotiable ? '25px' : '3px', transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)' }} />
+                    <div style={{
+                        width: '56px',
+                        height: '32px',
+                        background: formData.is_negotiable ? 'var(--secondary)' : 'rgba(255,255,255,0.1)',
+                        borderRadius: '20px',
+                        position: 'relative',
+                        transition: 'all 0.3s ease',
+                        flexShrink: 0
+                    }}>
+                        <div style={{
+                            width: '26px',
+                            height: '26px',
+                            background: formData.is_negotiable ? 'var(--primary)' : 'rgba(255,255,255,0.5)',
+                            borderRadius: '50%',
+                            position: 'absolute',
+                            top: '3px',
+                            left: formData.is_negotiable ? '27px' : '3px',
+                            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                            boxShadow: '0 2px 5px rgba(0,0,0,0.2)'
+                        }} />
                     </div>
                 </div>
 
                 {/* Coupon Selection */}
-                <div style={{ background: 'rgba(255,255,255,0.03)', padding: '20px', borderRadius: '20px', border: '1px solid var(--glass-border)' }}>
+                <div style={{ background: 'rgba(255,255,255,0.03)', padding: '24px', borderRadius: '24px', border: '1px solid var(--glass-border)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px' }}>
-                        <Ticket size={16} color="var(--secondary)" />
-                        <label style={{ fontSize: '13px', fontWeight: '900', color: 'white' }}>Cupón de Venta (Opcional)</label>
+                        <Ticket size={20} color="var(--secondary)" />
+                        <label style={{ fontSize: '14px', fontWeight: '900', color: 'white' }}>Cupón de Venta (Opcional)</label>
                     </div>
                     <select
                         value={formData.selectedCouponId}
                         onChange={e => onChange({ ...formData, selectedCouponId: e.target.value })}
-                        style={{ ...inputStyle, background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.05)' }}
+                        style={{ ...inputStyle, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}
                     >
                         <option value="">Sin cupón aplicado</option>
                         {coupons.map(c => (
@@ -369,22 +397,22 @@ const ProductForm: React.FC<ProductFormProps> = ({
                     const total = discounted - comm + ship;
 
                     return (
-                        <div className="glass" style={{ padding: '20px', background: 'rgba(163, 230, 53, 0.04)', borderRadius: '20px', border: '1px solid rgba(163, 230, 53, 0.1)' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>
+                        <div style={{ padding: '24px', background: 'rgba(163, 230, 53, 0.04)', borderRadius: '24px', border: '1px solid rgba(163, 230, 53, 0.15)' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', fontSize: '13px', color: 'rgba(255,255,255,0.7)', fontWeight: '600' }}>
                                 <span>Precio de venta</span>
-                                <span style={{ fontWeight: '700' }}>$ {formatPrice(base.toFixed(0))}</span>
+                                <span style={{ fontWeight: '800', color: 'white' }}>$ {formatPrice(base.toFixed(0))}</span>
                             </div>
-                            {disc > 0 && <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '13px', color: '#ef4444', fontWeight: '900' }}>
+                            {disc > 0 && <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', fontSize: '13px', color: '#ff6b6b', fontWeight: '800' }}>
                                 <span>Descuento cupón</span>
                                 <span>- $ {formatPrice(disc.toFixed(0))}</span>
                             </div>}
-                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '13px', color: '#ff6b6b' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px', fontSize: '13px', color: '#ff6b6b', fontWeight: '800' }}>
                                 <span>Comisión Servicio (5%)</span>
                                 <span>- $ {formatPrice(comm.toFixed(0))}</span>
                             </div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '16px', fontWeight: '1000', paddingTop: '15px', borderTop: '1px solid rgba(255,255,255,0.08)', marginTop: '8px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '18px', fontWeight: '950', paddingTop: '15px', borderTop: '1px solid rgba(255,255,255,0.1)', marginTop: '8px' }}>
                                 <span style={{ color: 'white' }}>TOTAL A RECIBIR</span>
-                                <span style={{ color: 'var(--secondary)', fontSize: '20px' }}>$ {formatPrice(total.toFixed(0))}</span>
+                                <span style={{ color: 'var(--secondary)', fontSize: '22px' }}>$ {formatPrice(total.toFixed(0))}</span>
                             </div>
                         </div>
                     );
@@ -396,7 +424,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
                     bottom: 0,
                     left: 0,
                     right: 0,
-                    padding: '25px',
+                    padding: '24px',
                     background: 'linear-gradient(to top, var(--primary) 70%, transparent)',
                     zIndex: 10
                 }}>
@@ -408,13 +436,13 @@ const ProductForm: React.FC<ProductFormProps> = ({
                     >
                         {saving ? (
                             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                <div className="spinner-small" />
-                                GUARDANDO...
+                                <div className="spinner-small" style={{ borderColor: 'var(--primary)', borderTopColor: 'transparent' }} />
+                                <span>GUARDANDO...</span>
                             </div>
                         ) : (
                             <>
-                                <CheckCircle2 size={20} />
-                                {editingId ? 'GUARDAR CAMBIOS' : 'PUBLICAR PRODUCTO'}
+                                <CheckCircle2 size={24} />
+                                <span>{editingId ? 'GUARDAR CAMBIOS' : 'PUBLICAR PRODUCTO'}</span>
                             </>
                         )}
                     </button>

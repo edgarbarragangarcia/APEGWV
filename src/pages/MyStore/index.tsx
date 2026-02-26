@@ -52,13 +52,13 @@ const MyStore: React.FC = () => {
 
     if (loading) {
         return (
-            <div style={{ minHeight: '100vh', background: 'var(--primary)', padding: '20px' }}>
-                <Skeleton width="100%" height="200px" borderRadius="24px" />
-                <div style={{ marginTop: '20px', display: 'flex', gap: '10px' }}>
-                    {[1, 2, 3, 4].map(i => <Skeleton key={i} width="80px" height="40px" borderRadius="12px" />)}
+            <div style={{ minHeight: '100vh', background: 'var(--primary)', padding: '24px' }}>
+                <Skeleton width="100%" height="200px" borderRadius="32px" />
+                <div style={{ marginTop: '24px', display: 'flex', gap: '10px' }}>
+                    {[1, 2, 3, 4].map(i => <Skeleton key={i} width="80px" height="48px" borderRadius="16px" />)}
                 </div>
-                <div style={{ marginTop: '20px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
-                    {[1, 2, 3, 4].map(i => <Skeleton key={i} width="100%" height="250px" borderRadius="20px" />)}
+                <div style={{ marginTop: '24px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                    {[1, 2, 3, 4].map(i => <Skeleton key={i} width="100%" height="250px" borderRadius="24px" />)}
                 </div>
             </div>
         );
@@ -92,7 +92,7 @@ const MyStore: React.FC = () => {
                 flexShrink: 0,
                 position: 'relative',
                 zIndex: 10,
-                padding: '0 20px',
+                padding: '0 24px',
                 paddingTop: 'var(--header-offset-top)'
             }}>
                 <PageHeader
@@ -107,11 +107,11 @@ const MyStore: React.FC = () => {
                     display: 'flex',
                     gap: '4px',
                     width: '100%',
-                    marginBottom: '20px',
-                    marginTop: '20px',
+                    marginBottom: '24px',
+                    marginTop: '24px',
                     background: 'rgba(255,255,255,0.02)',
-                    padding: '6px',
-                    borderRadius: '18px',
+                    padding: '8px',
+                    borderRadius: '20px',
                     border: '1px solid rgba(255,255,255,0.05)'
                 }}>
                     {tabs.map(tab => {
@@ -128,22 +128,24 @@ const MyStore: React.FC = () => {
                                     alignItems: 'center',
                                     justifyContent: 'center',
                                     gap: '6px',
-                                    padding: '10px 0',
-                                    borderRadius: '14px',
+                                    padding: '12px 0',
+                                    borderRadius: '16px',
                                     background: isActive ? 'rgba(163, 230, 53, 0.15)' : 'transparent',
                                     color: isActive ? 'var(--secondary)' : 'rgba(255,255,255,0.5)',
                                     border: '1px solid ' + (isActive ? 'rgba(163, 230, 53, 0.3)' : 'transparent'),
-                                    fontWeight: isActive ? '900' : '700',
-                                    fontSize: '9px',
-                                    textTransform: 'uppercase',
-                                    letterSpacing: '0.03em',
+                                    cursor: 'pointer',
                                     transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                                     position: 'relative',
                                     fontFamily: 'var(--font-main)'
                                 }}
                             >
-                                <Icon size={18} strokeWidth={isActive ? 2.5 : 2} />
-                                {tab.label}
+                                <Icon size={20} strokeWidth={isActive ? 2.5 : 2} />
+                                <span style={{
+                                    fontWeight: isActive ? '900' : '700',
+                                    fontSize: '10px',
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.03em',
+                                }}>{tab.label}</span>
 
                                 {tab.id === 'orders' && orders.filter(o => o.status === 'Pendiente').length > 0 && (
                                     <span style={{
@@ -194,7 +196,7 @@ const MyStore: React.FC = () => {
             <div style={{
                 flex: 1,
                 overflowY: 'auto',
-                padding: '0 20px',
+                padding: '0 24px',
                 paddingBottom: '100px'
             }} className="hide-scrollbar">
                 {/* Tab Content */}

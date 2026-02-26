@@ -33,7 +33,7 @@ const CouponForm: React.FC<CouponFormProps> = ({
         background: 'rgba(255,255,255,0.05)',
         border: '1px solid var(--glass-border)',
         borderRadius: '16px',
-        padding: '14px',
+        padding: '16px 16px 16px 20px',
         color: 'white',
         fontSize: '15px',
         fontFamily: 'var(--font-main)',
@@ -44,7 +44,7 @@ const CouponForm: React.FC<CouponFormProps> = ({
 
     const labelStyle = {
         display: 'block',
-        marginBottom: '8px',
+        marginBottom: '10px',
         fontSize: '11px',
         fontWeight: '900',
         color: 'var(--secondary)',
@@ -64,32 +64,32 @@ const CouponForm: React.FC<CouponFormProps> = ({
                 backdropFilter: 'blur(30px)',
                 WebkitBackdropFilter: 'blur(30px)',
                 border: '1px solid var(--glass-border)',
-                borderRadius: '35px',
+                borderRadius: '32px',
                 boxShadow: '0 40px 100px rgba(0,0,0,0.5)',
                 position: 'relative'
             }}
         >
-            <form onSubmit={onSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '25px' }}>
+            <form onSubmit={onSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '25px', fontFamily: 'var(--font-main)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                         <div style={{
-                            width: '40px',
-                            height: '40px',
-                            borderRadius: '12px',
+                            width: '44px',
+                            height: '44px',
+                            borderRadius: '14px',
                             background: 'rgba(163, 230, 53, 0.1)',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
                             border: '1px solid rgba(163, 230, 53, 0.2)'
                         }}>
-                            <Ticket size={20} color="var(--secondary)" />
+                            <Ticket size={22} color="var(--secondary)" />
                         </div>
                         <h3 style={{
-                            fontSize: '20px',
+                            fontSize: '22px',
                             fontWeight: '900',
                             color: 'white',
-                            fontFamily: 'var(--font-main)',
-                            letterSpacing: '-0.02em'
+                            letterSpacing: '-0.3px',
+                            lineHeight: 1.2
                         }}>
                             {editingId ? 'Editar Cupón' : 'Nuevo Cupón'}
                         </h3>
@@ -101,10 +101,10 @@ const CouponForm: React.FC<CouponFormProps> = ({
                         style={{
                             color: 'rgba(255,255,255,0.4)',
                             background: 'rgba(255,255,255,0.05)',
-                            border: 'none',
+                            border: '1px solid var(--glass-border)',
                             borderRadius: '50%',
-                            width: '32px',
-                            height: '32px',
+                            width: '36px',
+                            height: '36px',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
@@ -115,7 +115,7 @@ const CouponForm: React.FC<CouponFormProps> = ({
                     </motion.button>
                 </div>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                     <div>
                         <label style={labelStyle}>Código del Cupón</label>
                         <input
@@ -124,7 +124,6 @@ const CouponForm: React.FC<CouponFormProps> = ({
                             value={formData.code}
                             onChange={e => onChange({ ...formData, code: e.target.value.toUpperCase() })}
                             style={inputStyle}
-                            className="glass-input"
                         />
                     </div>
 
@@ -135,10 +134,10 @@ const CouponForm: React.FC<CouponFormProps> = ({
                                 <select
                                     value={formData.discount_type}
                                     onChange={e => onChange({ ...formData, discount_type: e.target.value as any })}
-                                    style={{ ...inputStyle, appearance: 'none' }}
+                                    style={{ ...inputStyle, appearance: 'none', cursor: 'pointer' }}
                                 >
-                                    <option value="percentage">Porcentaje (%)</option>
-                                    <option value="fixed">Valor Fijo ($)</option>
+                                    <option value="percentage" style={{ background: 'var(--primary)', color: 'white' }}>Porcentaje (%)</option>
+                                    <option value="fixed" style={{ background: 'var(--primary)', color: 'white' }}>Valor Fijo ($)</option>
                                 </select>
                                 <div style={{ position: 'absolute', right: '15px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', opacity: 0.5 }}>
                                     <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -190,29 +189,30 @@ const CouponForm: React.FC<CouponFormProps> = ({
                             display: 'flex',
                             alignItems: 'center',
                             gap: '12px',
-                            padding: '12px 18px',
+                            padding: '16px 20px',
                             background: formData.is_active ? 'rgba(163, 230, 53, 0.08)' : 'rgba(255,255,255,0.03)',
                             borderRadius: '16px',
-                            border: '1px solid ' + (formData.is_active ? 'rgba(163, 230, 53, 0.2)' : 'rgba(255,255,255,0.05)'),
+                            border: '1px solid ' + (formData.is_active ? 'rgba(163, 230, 53, 0.2)' : 'var(--glass-border)'),
                             cursor: 'pointer',
-                            transition: 'all 0.2s ease'
+                            transition: 'all 0.2s ease',
+                            marginTop: '4px'
                         }}
                     >
                         <div style={{
-                            width: '20px',
-                            height: '20px',
-                            borderRadius: '6px',
+                            width: '24px',
+                            height: '24px',
+                            borderRadius: '8px',
                             background: formData.is_active ? 'var(--secondary)' : 'rgba(255,255,255,0.1)',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
                             transition: 'all 0.2s ease'
                         }}>
-                            {formData.is_active && <svg width="12" height="9" viewBox="0 0 12 9" fill="none"><path d="M1 4.5L4.5 8L11 1.5" stroke="var(--primary)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" /></svg>}
+                            {formData.is_active && <svg width="14" height="10" viewBox="0 0 12 9" fill="none"><path d="M1 4.5L4.5 8L11 1.5" stroke="var(--primary)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" /></svg>}
                         </div>
                         <span style={{
-                            fontSize: '14px',
-                            fontWeight: '700',
+                            fontSize: '15px',
+                            fontWeight: '800',
                             color: formData.is_active ? 'white' : 'rgba(255,255,255,0.5)',
                             fontFamily: 'var(--font-main)'
                         }}>
@@ -221,12 +221,12 @@ const CouponForm: React.FC<CouponFormProps> = ({
                     </div>
                 </div>
 
-                <div style={{ marginTop: '5px' }}>
+                <div style={{ marginTop: '10px' }}>
                     <button
                         type="submit"
                         disabled={saving}
                         className="btn-primary"
-                        style={{ height: '56px' }}
+                        style={{ height: '60px', width: '100%', borderRadius: '20px', fontSize: '15px', fontWeight: '900', letterSpacing: '0.05em' }}
                     >
                         {saving ? (
                             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -246,8 +246,8 @@ const CouponForm: React.FC<CouponFormProps> = ({
                             border: 'none',
                             color: 'rgba(255,255,255,0.4)',
                             fontSize: '13px',
-                            fontWeight: '700',
-                            marginTop: '15px',
+                            fontWeight: '800',
+                            marginTop: '16px',
                             cursor: 'pointer',
                             textTransform: 'uppercase',
                             letterSpacing: '0.05em'

@@ -54,21 +54,21 @@ const ProductCard: React.FC<ProductCardProps> = ({
         <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            style={{ marginBottom: '15px' }}
+            style={{ marginBottom: '20px', fontFamily: 'var(--font-main)' }}
         >
             <div
                 style={{
                     position: 'relative',
                     background: 'linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%)',
-                    borderRadius: '30px',
+                    borderRadius: '32px',
                     border: '1px solid rgba(255,255,255,0.06)',
                     overflow: 'hidden',
                     boxShadow: '0 15px 35px rgba(0,0,0,0.2)',
-                    backdropFilter: 'blur(10px)',
-                    WebkitBackdropFilter: 'blur(10px)'
+                    backdropFilter: 'blur(12px)',
+                    WebkitBackdropFilter: 'blur(12px)'
                 }}
             >
-                <div style={{ padding: '20px', display: 'flex', gap: '20px', alignItems: 'center' }}>
+                <div style={{ padding: '24px', display: 'flex', gap: '20px', alignItems: 'center' }}>
                     {/* Image Section */}
                     <div style={{ position: 'relative', flexShrink: 0 }}>
                         <div style={{
@@ -100,8 +100,8 @@ const ProductCard: React.FC<ProductCardProps> = ({
                             left: '-8px',
                             background: product.status === 'active' ? 'var(--secondary)' : 'rgba(255,166,0,0.9)',
                             backdropFilter: 'blur(5px)',
-                            padding: '6px 12px',
-                            borderRadius: '12px',
+                            padding: '6px 14px',
+                            borderRadius: '14px',
                             display: 'flex',
                             alignItems: 'center',
                             gap: '5px',
@@ -115,12 +115,11 @@ const ProductCard: React.FC<ProductCardProps> = ({
                                 <Package size={12} color="white" strokeWidth={3} />
                             )}
                             <span style={{
-                                fontSize: '9px',
+                                fontSize: '10px',
                                 fontWeight: '950',
                                 color: product.status === 'active' ? 'var(--primary)' : 'white',
                                 textTransform: 'uppercase',
-                                letterSpacing: '0.05em',
-                                fontFamily: 'var(--font-main)'
+                                letterSpacing: '0.08em'
                             }}>
                                 {product.status === 'active' ? 'Activo' : 'Borrador'}
                             </span>
@@ -131,12 +130,11 @@ const ProductCard: React.FC<ProductCardProps> = ({
                     <div style={{ flex: 1, minWidth: 0 }}>
                         <h3 style={{
                             fontSize: '17px',
-                            fontWeight: '800',
+                            fontWeight: '950',
                             marginBottom: '6px',
                             color: 'white',
-                            letterSpacing: '-0.02em',
-                            lineHeight: 1.1,
-                            fontFamily: 'var(--font-main)'
+                            letterSpacing: '-0.3px',
+                            lineHeight: 1.1
                         }}>{product.name}</h3>
 
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', marginBottom: '14px' }}>
@@ -144,8 +142,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
                                 color: 'var(--secondary)',
                                 fontWeight: '950',
                                 fontSize: '22px',
-                                letterSpacing: '-0.03em',
-                                fontFamily: 'var(--font-main)',
+                                letterSpacing: '-0.5px',
                                 lineHeight: 1
                             }}>
                                 {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(product.price || 0)}
@@ -155,17 +152,18 @@ const ProductCard: React.FC<ProductCardProps> = ({
                                 alignItems: 'center',
                                 gap: '5px',
                                 background: 'rgba(56, 189, 248, 0.1)',
-                                padding: '3px 8px',
-                                borderRadius: '8px',
+                                padding: '4px 8px',
+                                borderRadius: '10px',
                                 width: 'fit-content',
                                 border: '1px solid rgba(56, 189, 248, 0.2)'
                             }}>
                                 <Truck size={12} color="#38bdf8" />
                                 <span style={{
-                                    fontSize: '11px',
-                                    fontWeight: '800',
+                                    fontSize: '10px',
+                                    fontWeight: '900',
                                     color: '#38bdf8',
-                                    fontFamily: 'var(--font-main)'
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.5px'
                                 }}>
                                     Envío: {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(product.shipping_cost || 0)}
                                 </span>
@@ -176,16 +174,15 @@ const ProductCard: React.FC<ProductCardProps> = ({
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                             <div style={{
                                 background: 'rgba(255,255,255,0.06)',
-                                padding: '5px 12px',
-                                borderRadius: '12px',
+                                padding: '6px 14px',
+                                borderRadius: '14px',
                                 fontSize: '11px',
                                 color: 'white',
                                 fontWeight: '900',
                                 display: 'flex',
                                 alignItems: 'center',
                                 gap: '8px',
-                                border: '1px solid var(--glass-border)',
-                                fontFamily: 'var(--font-main)'
+                                border: '1px solid var(--glass-border)'
                             }}>
                                 <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: '10px', fontWeight: '800', textTransform: 'uppercase' }}>Disponibles</span>
                                 <span style={{ color: (product as any).stock_quantity > 0 ? 'var(--secondary)' : '#ff6b6b' }}>
@@ -198,17 +195,16 @@ const ProductCard: React.FC<ProductCardProps> = ({
                                 <div style={{
                                     display: 'flex',
                                     gap: '8px',
-                                    padding: '5px 12px',
+                                    padding: '6px 14px',
                                     background: 'rgba(255,255,255,0.04)',
-                                    borderRadius: '12px',
+                                    borderRadius: '14px',
                                     border: '1px solid var(--glass-border)'
                                 }}>
                                     {(product as any).sizes_inventory.slice(0, 3).map((inv: { size: string; quantity: number }, i: number) => (
                                         <span key={i} style={{
                                             fontSize: '11px',
                                             color: inv.quantity > 0 ? 'white' : 'rgba(255,255,255,0.2)',
-                                            fontWeight: '900',
-                                            fontFamily: 'var(--font-main)'
+                                            fontWeight: '900'
                                         }}>
                                             {inv.size}
                                         </span>
@@ -231,9 +227,9 @@ const ProductCard: React.FC<ProductCardProps> = ({
                                 color: 'white',
                                 background: 'rgba(255,255,255,0.05)',
                                 border: '1px solid var(--glass-border)',
-                                borderRadius: '15px',
-                                width: '44px',
-                                height: '44px',
+                                borderRadius: '16px',
+                                width: '48px',
+                                height: '48px',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
@@ -244,16 +240,16 @@ const ProductCard: React.FC<ProductCardProps> = ({
                             <Pencil size={18} strokeWidth={2.5} />
                         </motion.button>
                         <motion.button
-                            whileHover={{ scale: 1.05, backgroundColor: 'rgba(255, 107, 107, 0.15)' }}
+                            whileHover={{ scale: 1.05, backgroundColor: 'rgba(239, 68, 68, 0.15)' }}
                             whileTap={{ scale: 0.95 }}
                             onClick={(e: React.MouseEvent) => { e.stopPropagation(); onDelete(product); }}
                             style={{
-                                color: '#ff6b6b',
-                                background: 'rgba(255, 107, 107, 0.08)',
-                                border: '1px solid rgba(255, 107, 107, 0.2)',
-                                borderRadius: '15px',
-                                width: '44px',
-                                height: '44px',
+                                color: '#ef4444',
+                                background: 'rgba(239, 68, 68, 0.08)',
+                                border: '1px solid rgba(239, 68, 68, 0.2)',
+                                borderRadius: '16px',
+                                width: '48px',
+                                height: '48px',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
@@ -267,15 +263,16 @@ const ProductCard: React.FC<ProductCardProps> = ({
                 </div>
 
                 {product.status === 'pending_payment' && (
-                    <div style={{ padding: '0 20px 20px' }}>
+                    <div style={{ padding: '0 24px 24px' }}>
                         <button
                             onClick={handlePublishNow}
                             className="btn-primary"
                             style={{
-                                height: '54px',
+                                height: '56px',
                                 fontSize: '14px',
                                 letterSpacing: '0.05em',
-                                background: 'linear-gradient(135deg, var(--secondary) 0%, #a3e635 100%)'
+                                background: 'linear-gradient(135deg, var(--secondary) 0%, #10b981 100%)',
+                                borderRadius: '20px'
                             }}
                         >
                             <CheckCircle2 size={20} strokeWidth={3} />
