@@ -127,17 +127,15 @@ const OfferCard: React.FC<OfferCardProps> = ({
                 </div>
             </div>
 
-            <div style={{ background: 'rgba(255,255,255,0.02)', borderRadius: '24px', padding: '18px', marginBottom: '20px', border: '1px solid rgba(255,255,255,0.04)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: offer.message ? '14px' : '0' }}>
-                    <div style={{ width: '32px', height: '32px', borderRadius: '10px', background: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(255,255,255,0.06)' }}>
-                        <User size={14} color="var(--secondary)" strokeWidth={2.5} />
-                    </div>
+            <div style={{ marginBottom: '20px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: offer.message ? '10px' : '0' }}>
+                    <User size={14} color="var(--secondary)" strokeWidth={3} />
                     <span style={{ fontWeight: '800', fontSize: '14px', color: 'white' }}>{offer.buyer?.full_name || 'Comprador APEG'}</span>
                 </div>
 
                 {offer.message && (
-                    <div style={{ padding: '14px', background: 'rgba(255,255,255,0.02)', borderRadius: '16px', borderLeft: '3px solid var(--secondary)', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.1)' }}>
-                        <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.7)', fontStyle: 'italic', lineHeight: '1.5', margin: 0 }}>
+                    <div style={{ padding: '0 0 0 12px', borderLeft: '2px solid var(--secondary)' }}>
+                        <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.6)', fontStyle: 'italic', lineHeight: '1.5', margin: 0 }}>
                             "{offer.message}"
                         </p>
                     </div>
@@ -216,28 +214,37 @@ const OfferCard: React.FC<OfferCardProps> = ({
             )}
 
             {offer.status === 'countered' && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    <div style={{ background: 'rgba(255, 255, 255, 0.02)', border: '1px solid rgba(255, 255, 255, 0.05)', padding: '18px', borderRadius: '20px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    <div style={{ padding: '0 0 10px', borderBottom: '1px solid rgba(255, 255, 255, 0.05)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
                             <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', fontWeight: '950', textTransform: 'uppercase', letterSpacing: '1px' }}>Tu Contraoferta</span>
                             <span style={{ fontSize: '20px', fontWeight: '950', color: 'var(--secondary)' }}>${offer.counter_amount?.toLocaleString()}</span>
                         </div>
                         {offer.counter_message && (
-                            <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.6)', fontStyle: 'italic', margin: 0 }}>
+                            <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)', fontStyle: 'italic', margin: 0 }}>
                                 "{offer.counter_message}"
                             </p>
                         )}
                     </div>
-                    <div style={{ background: 'rgba(59, 130, 246, 0.05)', border: '1px solid rgba(59, 130, 246, 0.15)', padding: '14px', borderRadius: '16px', color: '#60a5fa', textAlign: 'center', fontWeight: '900', fontSize: '11px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
-                        <Info size={16} strokeWidth={2.5} />
+                    <div style={{ color: '#60a5fa', fontWeight: '900', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '8px', padding: '4px 0' }}>
+                        <Info size={14} strokeWidth={3} />
                         RESERVADO • Esperando respuesta del comprador
                     </div>
                 </div>
             )}
 
             {offer.status === 'accepted' && (
-                <div style={{ background: 'rgba(16, 185, 129, 0.05)', border: '1px solid rgba(16, 185, 129, 0.15)', padding: '18px', borderRadius: '20px', color: '#10b981', textAlign: 'center', fontWeight: '950', fontSize: '13px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
-                    <CheckCircle2 size={20} strokeWidth={2.5} />
+                <div style={{
+                    padding: '8px 0',
+                    color: '#10b981',
+                    textAlign: 'left',
+                    fontWeight: '950',
+                    fontSize: '13px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '10px'
+                }}>
+                    <CheckCircle2 size={18} strokeWidth={3} />
                     OFERTA ACEPTADA • Esperando pago
                 </div>
             )}
