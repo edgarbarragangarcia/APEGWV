@@ -1011,7 +1011,7 @@ const Home: React.FC = () => {
                                                 </div>
                                                 {/* Botones de acción */}
                                                 <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
-                                                    {selectedProduct.is_negotiable && selectedProduct.seller_id !== user?.id && (
+                                                    {selectedProduct.is_negotiable && (
                                                         <motion.button
                                                             whileTap={{ scale: 0.95 }}
                                                             onClick={(e) => {
@@ -1024,9 +1024,9 @@ const Home: React.FC = () => {
                                                                 width: '38px',
                                                                 height: '38px',
                                                                 borderRadius: '10px',
-                                                                background: 'rgba(255,255,255,0.05)',
-                                                                border: '1px solid rgba(255,255,255,0.1)',
-                                                                color: 'white',
+                                                                background: 'rgba(163, 230, 53, 0.1)',
+                                                                border: '1px solid var(--secondary)',
+                                                                color: 'var(--secondary)',
                                                                 display: 'flex',
                                                                 alignItems: 'center',
                                                                 justifyContent: 'center',
@@ -1108,7 +1108,7 @@ const Home: React.FC = () => {
                                     ) : (
                                         /* Sin tallas: botones solos */
                                         <div style={{ display: 'flex', gap: '8px', marginBottom: '15px' }}>
-                                            {selectedProduct.is_negotiable && selectedProduct.seller_id !== user?.id && (
+                                            {selectedProduct.is_negotiable && (
                                                 <motion.button
                                                     whileTap={{ scale: 0.95 }}
                                                     onClick={(e) => {
@@ -1121,9 +1121,9 @@ const Home: React.FC = () => {
                                                         width: '38px',
                                                         height: '38px',
                                                         borderRadius: '10px',
-                                                        background: 'rgba(255,255,255,0.05)',
-                                                        border: '1px solid rgba(255,255,255,0.1)',
-                                                        color: 'white',
+                                                        background: 'rgba(163, 230, 53, 0.1)',
+                                                        border: '1px solid var(--secondary)',
+                                                        color: 'var(--secondary)',
                                                         display: 'flex',
                                                         alignItems: 'center',
                                                         justifyContent: 'center',
