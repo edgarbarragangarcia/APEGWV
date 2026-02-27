@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, useAnimation } from 'framer-motion';
-import { Calendar, User, CheckCircle2, Loader2, Info, Handshake, Trash2 } from 'lucide-react';
+import { Calendar, User, CheckCircle2, Loader2, Handshake, Trash2 } from 'lucide-react';
 import { optimizeImage } from '../../../services/SupabaseManager';
 
 interface Offer {
