@@ -220,6 +220,10 @@ const MyStore: React.FC = () => {
                                     if (!error) fetchStoreData();
                                 }}
                                 onAddClick={() => { resetForm(); setShowForm(true); }}
+                                onSuccess={(title, message, type) => {
+                                    store.setSuccessMessage({ title, message, type });
+                                    store.setShowSuccessModal(true);
+                                }}
                             />
                         )}
                         {activeTab === 'orders' && (

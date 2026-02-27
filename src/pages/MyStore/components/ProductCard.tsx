@@ -54,232 +54,264 @@ const ProductCard: React.FC<ProductCardProps> = ({
         <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            style={{ marginBottom: '20px', fontFamily: 'var(--font-main)' }}
+            style={{ marginBottom: '16px', fontFamily: 'var(--font-main)', position: 'relative' }}
         >
             <div
                 style={{
                     position: 'relative',
-                    background: 'linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%)',
-                    borderRadius: '32px',
-                    border: '1px solid rgba(255,255,255,0.06)',
+                    background: 'rgba(255,255,255,0.02)',
+                    borderRadius: '24px',
                     overflow: 'hidden',
-                    boxShadow: '0 15px 35px rgba(0,0,0,0.2)',
-                    backdropFilter: 'blur(12px)',
-                    WebkitBackdropFilter: 'blur(12px)'
                 }}
             >
-                <div style={{ padding: '24px', display: 'flex', gap: '20px', alignItems: 'center' }}>
-                    {/* Image Section */}
-                    <div style={{ position: 'relative', flexShrink: 0 }}>
-                        <div style={{
-                            width: '120px',
-                            height: '120px',
-                            borderRadius: '28px',
-                            overflow: 'hidden',
-                            background: 'rgba(255,255,255,0.03)',
-                            border: '1px solid var(--glass-border)',
-                            boxShadow: '0 8px 25px rgba(0,0,0,0.4)',
-                            position: 'relative'
-                        }}>
-                            <img
-                                src={optimizeImage(product.image_url, { width: 300, height: 300 })}
-                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                alt={product.name}
-                                onError={(e) => {
-                                    const target = e.target as HTMLImageElement;
-                                    target.src = 'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?auto=format&fit=crop&q=80&w=200';
-                                }}
-                            />
-                            {/* Inner Shadow Mesh */}
-                            <div style={{ position: 'absolute', inset: 0, boxShadow: 'inset 0 0 20px rgba(0,0,0,0.2)', pointerEvents: 'none' }} />
-                        </div>
-                        {/* Status Badge */}
-                        <div style={{
-                            position: 'absolute',
-                            top: '-8px',
-                            left: '-8px',
-                            background: product.status === 'active' ? 'var(--secondary)' : 'rgba(255,166,0,0.9)',
-                            backdropFilter: 'blur(5px)',
-                            padding: '6px 14px',
-                            borderRadius: '14px',
+                {/* Actions Layer (Behind) */}
+                <div style={{
+                    position: 'absolute',
+                    top: 0,
+                    right: 0,
+                    bottom: 0,
+                    width: '90px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '10px',
+                    paddingRight: '10px',
+                    zIndex: 1
+                }}>
+                    <motion.button
+                        whileTap={{ scale: 0.9 }}
+                        onClick={(e) => { e.stopPropagation(); onEdit(product); }}
+                        style={{
+                            color: 'white',
+                            background: 'rgba(255,255,255,0.05)',
+                            border: '1px solid rgba(255,255,255,0.1)',
+                            borderRadius: '12px',
+                            width: '40px',
+                            height: '40px',
                             display: 'flex',
                             alignItems: 'center',
-                            gap: '5px',
-                            boxShadow: '0 8px 15px rgba(0,0,0,0.3)',
-                            zIndex: 2,
-                            border: '1px solid rgba(255,255,255,0.2)'
-                        }}>
-                            {product.status === 'active' ? (
-                                <CheckCircle2 size={12} color="var(--primary)" strokeWidth={3} />
-                            ) : (
-                                <Package size={12} color="white" strokeWidth={3} />
-                            )}
-                            <span style={{
-                                fontSize: '10px',
-                                fontWeight: '950',
-                                color: product.status === 'active' ? 'var(--primary)' : 'white',
-                                textTransform: 'uppercase',
-                                letterSpacing: '0.08em'
-                            }}>
-                                {product.status === 'active' ? 'Activo' : 'Borrador'}
-                            </span>
-                        </div>
-                    </div>
-
-                    {/* Content Section */}
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                        <h3 style={{
-                            fontSize: '17px',
-                            fontWeight: '950',
-                            marginBottom: '6px',
-                            color: 'white',
-                            letterSpacing: '-0.3px',
-                            lineHeight: 1.1
-                        }}>{product.name}</h3>
-
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', marginBottom: '14px' }}>
-                            <span style={{
-                                color: 'var(--secondary)',
-                                fontWeight: '950',
-                                fontSize: '22px',
-                                letterSpacing: '-0.5px',
-                                lineHeight: 1
-                            }}>
-                                {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(product.price || 0)}
-                            </span>
-                            <div style={{
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: '5px',
-                                background: 'rgba(56, 189, 248, 0.1)',
-                                padding: '4px 8px',
-                                borderRadius: '10px',
-                                width: 'fit-content',
-                                border: '1px solid rgba(56, 189, 248, 0.2)'
-                            }}>
-                                <Truck size={12} color="#38bdf8" />
-                                <span style={{
-                                    fontSize: '10px',
-                                    fontWeight: '900',
-                                    color: '#38bdf8',
-                                    textTransform: 'uppercase',
-                                    letterSpacing: '0.5px'
-                                }}>
-                                    Envío: {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(product.shipping_cost || 0)}
-                                </span>
-                            </div>
-                        </div>
-
-                        {/* Stock & Info Pills */}
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                            <div style={{
-                                background: 'rgba(255,255,255,0.06)',
-                                padding: '6px 14px',
-                                borderRadius: '14px',
-                                fontSize: '11px',
-                                color: 'white',
-                                fontWeight: '900',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '8px',
-                                border: '1px solid var(--glass-border)'
-                            }}>
-                                <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: '10px', fontWeight: '800', textTransform: 'uppercase' }}>Disponibles</span>
-                                <span style={{ color: (product as any).stock_quantity > 0 ? 'var(--secondary)' : '#ff6b6b' }}>
-                                    {(product as any).stock_quantity || 0}
-                                </span>
-                            </div>
-
-                            {/* Sizes Pill Container */}
-                            {Array.isArray((product as any).sizes_inventory) && (product as any).sizes_inventory.length > 0 && (
-                                <div style={{
-                                    display: 'flex',
-                                    gap: '8px',
-                                    padding: '6px 14px',
-                                    background: 'rgba(255,255,255,0.04)',
-                                    borderRadius: '14px',
-                                    border: '1px solid var(--glass-border)'
-                                }}>
-                                    {(product as any).sizes_inventory.slice(0, 3).map((inv: { size: string; quantity: number }, i: number) => (
-                                        <span key={i} style={{
-                                            fontSize: '11px',
-                                            color: inv.quantity > 0 ? 'white' : 'rgba(255,255,255,0.2)',
-                                            fontWeight: '900'
-                                        }}>
-                                            {inv.size}
-                                        </span>
-                                    ))}
-                                    {(product as any).sizes_inventory.length > 3 && (
-                                        <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontWeight: '900' }}>+{(product as any).sizes_inventory.length - 3}</span>
-                                    )}
-                                </div>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Actions Pillar */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', justifyContent: 'center' }}>
-                        <motion.button
-                            whileHover={{ scale: 1.05, backgroundColor: 'rgba(255,255,255,0.1)' }}
-                            whileTap={{ scale: 0.95 }}
-                            onClick={(e: React.MouseEvent) => { e.stopPropagation(); onEdit(product); }}
-                            style={{
-                                color: 'white',
-                                background: 'rgba(255,255,255,0.05)',
-                                border: '1px solid var(--glass-border)',
-                                borderRadius: '16px',
-                                width: '48px',
-                                height: '48px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                cursor: 'pointer',
-                                transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
-                            }}
-                        >
-                            <Pencil size={18} strokeWidth={2.5} />
-                        </motion.button>
-                        <motion.button
-                            whileHover={{ scale: 1.05, backgroundColor: 'rgba(239, 68, 68, 0.15)' }}
-                            whileTap={{ scale: 0.95 }}
-                            onClick={(e: React.MouseEvent) => { e.stopPropagation(); onDelete(product); }}
-                            style={{
-                                color: '#ef4444',
-                                background: 'rgba(239, 68, 68, 0.08)',
-                                border: '1px solid rgba(239, 68, 68, 0.2)',
-                                borderRadius: '16px',
-                                width: '48px',
-                                height: '48px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                cursor: 'pointer',
-                                transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
-                            }}
-                        >
-                            <Trash2 size={18} strokeWidth={2.5} />
-                        </motion.button>
-                    </div>
+                            justifyContent: 'center',
+                            cursor: 'pointer',
+                        }}
+                    >
+                        <Pencil size={18} strokeWidth={2.5} />
+                    </motion.button>
+                    <motion.button
+                        whileTap={{ scale: 0.9 }}
+                        onClick={(e) => { e.stopPropagation(); onDelete(product); }}
+                        style={{
+                            color: '#ef4444',
+                            background: 'rgba(239, 68, 68, 0.1)',
+                            border: '1px solid rgba(239, 68, 68, 0.2)',
+                            borderRadius: '12px',
+                            width: '40px',
+                            height: '40px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            cursor: 'pointer',
+                        }}
+                    >
+                        <Trash2 size={18} strokeWidth={2.5} />
+                    </motion.button>
                 </div>
 
-                {product.status === 'pending_payment' && (
-                    <div style={{ padding: '0 24px 24px' }}>
-                        <button
-                            onClick={handlePublishNow}
-                            className="btn-primary"
-                            style={{
-                                height: '56px',
-                                fontSize: '14px',
-                                letterSpacing: '0.05em',
-                                background: 'linear-gradient(135deg, var(--secondary) 0%, #10b981 100%)',
-                                borderRadius: '20px'
-                            }}
-                        >
-                            <CheckCircle2 size={20} strokeWidth={3} />
-                            PUBLICAR AHORA ($120.000)
-                        </button>
+                {/* Draggable Content Layer */}
+                <motion.div
+                    drag="x"
+                    dragConstraints={{ left: -90, right: 0 }}
+                    dragElastic={0.1}
+                    dragSnapToOrigin={true}
+                    style={{
+                        position: 'relative',
+                        zIndex: 2,
+                        background: 'rgba(23, 37, 84, 0.98)',
+                        borderRadius: '24px',
+                        border: '1px solid rgba(255,255,255,0.06)',
+                        boxShadow: '0 8px 30px rgba(0,0,0,0.2)',
+                        backdropFilter: 'blur(20px)',
+                        WebkitBackdropFilter: 'blur(20px)',
+                        cursor: 'grab',
+                        touchAction: 'pan-y'
+                    }}
+                    whileDrag={{ cursor: 'grabbing' }}
+                >
+                    <div style={{ padding: '16px', display: 'flex', gap: '16px', alignItems: 'center' }}>
+                        {/* Image Section */}
+                        <div style={{ position: 'relative', flexShrink: 0 }}>
+                            <div style={{
+                                width: '100px',
+                                height: '100px',
+                                borderRadius: '20px',
+                                overflow: 'hidden',
+                                background: 'rgba(255,255,255,0.03)',
+                                border: '1px solid rgba(255,255,255,0.1)',
+                                position: 'relative'
+                            }}>
+                                <img
+                                    src={optimizeImage(product.image_url, { width: 250, height: 250 })}
+                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                    alt={product.name}
+                                    onError={(e) => {
+                                        const target = e.target as HTMLImageElement;
+                                        target.src = 'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?auto=format&fit=crop&q=80&w=200';
+                                    }}
+                                />
+                            </div>
+                            {/* Status Badge */}
+                            <div style={{
+                                position: 'absolute',
+                                top: '-6px',
+                                left: '-6px',
+                                background: product.status === 'active' ? 'var(--secondary)' : '#f59e0b',
+                                padding: '4px 10px',
+                                borderRadius: '10px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                                boxShadow: '0 4px 10px rgba(0,0,0,0.3)',
+                                zIndex: 3,
+                                border: '1px solid rgba(255,255,255,0.2)'
+                            }}>
+                                {product.status === 'active' ? (
+                                    <CheckCircle2 size={10} color="var(--primary)" strokeWidth={3} />
+                                ) : (
+                                    <Package size={10} color="white" strokeWidth={3} />
+                                )}
+                                <span style={{
+                                    fontSize: '9px',
+                                    fontWeight: '900',
+                                    color: product.status === 'active' ? 'var(--primary)' : 'white',
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.05em'
+                                }}>
+                                    {product.status === 'active' ? 'Activo' : 'Borrador'}
+                                </span>
+                            </div>
+                        </div>
+
+                        {/* Content Section */}
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                            <h3 style={{
+                                fontSize: '15px',
+                                fontWeight: '800',
+                                marginBottom: '4px',
+                                color: 'white',
+                                whiteSpace: 'nowrap',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis'
+                            }}>{product.name}</h3>
+
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', marginBottom: '8px' }}>
+                                <span style={{
+                                    color: 'var(--secondary)',
+                                    fontWeight: '900',
+                                    fontSize: '18px',
+                                    lineHeight: 1
+                                }}>
+                                    {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(product.price || 0)}
+                                </span>
+                                <div style={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '4px',
+                                    background: 'rgba(163, 230, 53, 0.08)',
+                                    padding: '3px 6px',
+                                    borderRadius: '8px',
+                                    width: 'fit-content',
+                                    border: '1px solid rgba(163, 230, 53, 0.15)'
+                                }}>
+                                    <Truck size={10} color="var(--secondary)" />
+                                    <span style={{
+                                        fontSize: '9px',
+                                        fontWeight: '800',
+                                        color: 'var(--secondary)',
+                                        textTransform: 'uppercase'
+                                    }}>
+                                        Envío: {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(product.shipping_cost || 0)}
+                                    </span>
+                                </div>
+                            </div>
+
+                            {/* Stock & Info Pills */}
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                                <div style={{
+                                    background: 'rgba(255,255,255,0.04)',
+                                    padding: '4px 10px',
+                                    borderRadius: '10px',
+                                    fontSize: '10px',
+                                    color: 'white',
+                                    fontWeight: '800',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '6px',
+                                    border: '1px solid rgba(255,255,255,0.05)'
+                                }}>
+                                    <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: '9px', textTransform: 'uppercase' }}>Stock</span>
+                                    <span style={{ color: (product as any).stock_quantity > 0 ? 'var(--secondary)' : '#ff6b6b' }}>
+                                        {(product as any).stock_quantity || 0}
+                                    </span>
+                                </div>
+
+                                {Array.isArray((product as any).sizes_inventory) && (product as any).sizes_inventory.length > 0 && (
+                                    <div style={{
+                                        display: 'flex',
+                                        gap: '6px',
+                                        padding: '4px 10px',
+                                        background: 'rgba(255,255,255,0.03)',
+                                        borderRadius: '10px',
+                                        border: '1px solid rgba(255,255,255,0.05)'
+                                    }}>
+                                        {(product as any).sizes_inventory.slice(0, 3).map((inv: any, i: number) => (
+                                            <span key={i} style={{
+                                                fontSize: '10px',
+                                                color: inv.quantity > 0 ? 'white' : 'rgba(255,255,255,0.2)',
+                                                fontWeight: '700'
+                                            }}>
+                                                {inv.size}
+                                            </span>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Swipe Hint */}
+                        <div style={{ opacity: 0.2 }}>
+                            <motion.div animate={{ x: [0, -3, 0] }} transition={{ repeat: Infinity, duration: 2 }}>
+                                <Trash2 size={12} />
+                            </motion.div>
+                        </div>
                     </div>
-                )}
+
+                    {product.status === 'pending_payment' && (
+                        <div style={{ padding: '0 16px 16px' }}>
+                            <button
+                                onClick={handlePublishNow}
+                                style={{
+                                    width: '100%',
+                                    height: '44px',
+                                    background: 'var(--secondary)',
+                                    color: 'var(--primary)',
+                                    border: 'none',
+                                    borderRadius: '14px',
+                                    fontSize: '11px',
+                                    fontWeight: '900',
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.05em',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '8px'
+                                }}
+                            >
+                                <CheckCircle2 size={16} strokeWidth={3} />
+                                PUBLICAR AHORA
+                            </button>
+                        </div>
+                    )}
+                </motion.div>
             </div>
 
             <ConfirmationModal
@@ -287,7 +319,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
                 onClose={() => setIsPublishModalOpen(false)}
                 onConfirm={confirmPublish}
                 title="¿Publicar Producto?"
-                message={`Estás por publicar "${product.name}". Esto activará el producto en el marketplace para que todos puedan verlo.`}
+                message={`Estás por publicar "${product.name}".`}
                 confirmText={isPublishing ? "Publicando..." : "Sí, publicar ahora"}
                 type="info"
                 isLoading={isPublishing}
