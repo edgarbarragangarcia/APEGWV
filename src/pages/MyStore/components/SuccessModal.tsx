@@ -23,7 +23,7 @@ const SuccessModal: React.FC<SuccessModalProps> = ({
                 <div style={{
                     position: 'fixed',
                     inset: 0,
-                    zIndex: 3000,
+                    zIndex: 999999, // Ensure modal is above everything (MyStore forms use 100000)
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',

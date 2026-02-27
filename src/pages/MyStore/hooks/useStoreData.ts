@@ -461,6 +461,7 @@ export const useStoreData = () => {
 
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
         const file = e.target.files?.[0];
+        const inputElement = e.target;
         if (!file) return;
 
         setUploading(true);
@@ -493,11 +494,14 @@ export const useStoreData = () => {
             });
         } catch (err) {
             console.error('Error uploading image:', err);
-            setSuccessMessage({ title: 'Error', message: 'Error al subir la imagen', type: 'error' });
+            setSuccessMessage({ title: 'Error', message: 'Error al subir la imagen. Verifica permisos o intenta de nuevo.', type: 'error' });
             setShowSuccessModal(true);
             setTimeout(() => setShowSuccessModal(false), 3000);
         } finally {
             setUploading(false);
+            if (inputElement) {
+                inputElement.value = '';
+            }
         }
     };
 
