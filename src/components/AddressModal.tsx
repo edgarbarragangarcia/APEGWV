@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { X, Check, Search, ChevronDown, MapPin } from 'lucide-react';
+import { Check, Search, ChevronDown, MapPin } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../services/SupabaseManager';
+import PageHeader from './PageHeader';
+import PageHero from './PageHero';
 
 interface AddressModalProps {
     isOpen: boolean;
@@ -95,7 +97,6 @@ const AddressModal: React.FC<AddressModalProps> = ({ isOpen, onClose, currentAdd
     );
 
     const handleConfirm = () => {
-        // We favor selected names from IDs if they exist, otherwise use what's in text
         const cityName = citySearch || details.city;
         const deptName = deptSearch || details.dept;
 
@@ -107,208 +108,151 @@ const AddressModal: React.FC<AddressModalProps> = ({ isOpen, onClose, currentAdd
         onClose();
     };
 
+    if (!isOpen) return null;
+
     return (
-        <AnimatePresence>
-            {isOpen && (
-                <>
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        onClick={onClose}
-                        style={{
-                            position: 'fixed', inset: 0,
-                            background: 'rgba(0,0,0,0.85)',
-                            backdropFilter: 'blur(10px)',
-                            zIndex: 9998
-                        }}
+        <div className="animate-fade" style={pageStyles.pageContainer}>
+            <PageHero />
+            <div style={pageStyles.headerArea}>
+                <PageHeader noMargin title="Dirección de Envío" onBack={onClose} />
+            </div>
+
+            <div style={pageStyles.scrollArea}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+
+                    {/* Street */}
+                    <FormInput
+                        label="Calle / Carrera / Apto"
+                        value={details.street}
+                        onChange={v => setDetails({ ...details, street: v })}
+                        placeholder="Ej: Calle 100 #15-30 Apto 402"
                     />
-                    <motion.div
-                        initial={{ y: '100%' }}
-                        animate={{ y: 0 }}
-                        exit={{ y: '100%' }}
-                        transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                        style={{
-                            position: 'fixed', bottom: 0, left: 0, right: 0,
-                            background: '#0E1A11',
-                            borderTop: '1px solid rgba(163, 230, 53, 0.2)',
-                            borderRadius: '32px 32px 0 0',
-                            padding: '16px 24px calc(env(safe-area-inset-bottom) + 20px) 24px',
-                            zIndex: 9999,
-                            maxWidth: '768px',
-                            margin: '0 auto',
-                            maxHeight: '85vh',
-                            display: 'flex',
-                            flexDirection: 'column'
-                        }}
+
+                    {/* Department Selection */}
+                    <div className="form-group" style={{ position: 'relative' }}>
+                        <Label text="Departamento" />
+                        <div
+                            onClick={() => { setShowDeptList(!showDeptList); setShowCityList(false); }}
+                            style={fieldStyles.dropdownTrigger}
+                        >
+                            <span style={{ color: deptSearch ? 'white' : 'rgba(255,255,255,0.3)' }}>
+                                {deptSearch || 'Selecciona un departamento'}
+                            </span>
+                            <ChevronDown size={16} />
+                        </div>
+                        <AnimatePresence>
+                            {showDeptList && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: -10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -10 }}
+                                    style={fieldStyles.dropdownList}
+                                >
+                                    <div style={fieldStyles.searchWrapper}>
+                                        <Search size={14} />
+                                        <input
+                                            autoFocus
+                                            placeholder="Buscar departamento..."
+                                            value={deptSearch}
+                                            onChange={e => setDeptSearch(e.target.value)}
+                                            style={fieldStyles.searchInput}
+                                            onClick={e => e.stopPropagation()}
+                                        />
+                                    </div>
+                                    <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
+                                        {filteredDepts.map(d => (
+                                            <div
+                                                key={d.id}
+                                                onClick={() => {
+                                                    setSelectedDeptId(d.id);
+                                                    setDeptSearch(d.name);
+                                                    setShowDeptList(false);
+                                                    setCitySearch('');
+                                                    setSelectedCityId(null);
+                                                }}
+                                                style={fieldStyles.listItem}
+                                            >
+                                                {d.name}
+                                            </div>
+                                        ))}
+                                        {filteredDepts.length === 0 && <div style={{ padding: '15px', textAlign: 'center', color: 'var(--text-dim)' }}>No se encontraron resultados</div>}
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </div>
+
+                    {/* City Selection */}
+                    <div className="form-group" style={{ position: 'relative' }}>
+                        <Label text="Ciudad" />
+                        <div
+                            onClick={() => { if (cities.length > 0) setShowCityList(!showCityList); setShowDeptList(false); }}
+                            style={{ ...fieldStyles.dropdownTrigger, opacity: cities.length > 0 ? 1 : 0.5, cursor: cities.length > 0 ? 'pointer' : 'not-allowed' }}
+                        >
+                            <span style={{ color: citySearch ? 'white' : 'rgba(255,255,255,0.3)' }}>
+                                {citySearch || (selectedDeptId ? 'Busca tu ciudad' : 'Selecciona departamento primero')}
+                            </span>
+                            {loading ? <div className="animate-spin" style={{ width: 14, height: 14, border: '2px solid white', borderTopColor: 'transparent', borderRadius: '50%' }} /> : <ChevronDown size={16} />}
+                        </div>
+                        <AnimatePresence>
+                            {showCityList && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: -10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -10 }}
+                                    style={fieldStyles.dropdownList}
+                                >
+                                    <div style={fieldStyles.searchWrapper}>
+                                        <Search size={14} />
+                                        <input
+                                            autoFocus
+                                            placeholder="Buscar ciudad..."
+                                            value={citySearch}
+                                            onChange={e => setCitySearch(e.target.value)}
+                                            style={fieldStyles.searchInput}
+                                            onClick={e => e.stopPropagation()}
+                                        />
+                                    </div>
+                                    <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
+                                        {filteredCities.map(c => (
+                                            <div
+                                                key={c.id}
+                                                onClick={() => {
+                                                    setSelectedCityId(c.id);
+                                                    setCitySearch(c.name);
+                                                    setShowCityList(false);
+                                                }}
+                                                style={fieldStyles.listItem}
+                                            >
+                                                {c.name}
+                                            </div>
+                                        ))}
+                                        {filteredCities.length === 0 && <div style={{ padding: '15px', textAlign: 'center', color: 'var(--text-dim)' }}>No se encontraron resultados</div>}
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </div>
+
+                    {/* Zip Code */}
+                    <FormInput
+                        label="Código Postal"
+                        value={details.zip}
+                        onChange={v => setDetails({ ...details, zip: v })}
+                        placeholder="110111"
+                    />
+
+                    {/* Confirm Button */}
+                    <button
+                        onClick={handleConfirm}
+                        style={fieldStyles.confirmButton}
                     >
-                        <div style={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                            marginBottom: '20px',
-                            paddingBottom: '15px',
-                            borderBottom: '1px solid rgba(255,255,255,0.08)',
-                            flexShrink: 0,
-                            position: 'relative',
-                            zIndex: 10
-                        }}>
-                            <h2 style={{ fontSize: '18px', fontWeight: '900', color: '#FFFFFF', margin: 0, display: 'flex', alignItems: 'center' }}>
-                                <MapPin size={20} style={{ marginRight: '10px', color: 'var(--secondary)' }} />
-                                DIRECCIÓN <span style={{ color: 'var(--secondary)', margin: '0 5px' }}>de</span> ENTREGA
-                            </h2>
-                            <button
-                                onClick={(e) => { e.stopPropagation(); onClose(); }}
-                                style={{ background: 'rgba(255,255,255,0.1)', border: 'none', color: 'white', padding: '10px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                            >
-                                <X size={20} />
-                            </button>
-                        </div>
-
-                        <div style={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: '18px',
-                            overflowY: 'auto',
-                            paddingRight: '8px',
-                            flex: '1 1 auto',
-                            minHeight: 0,
-                            marginBottom: '10px'
-                        }}>
-                            <FormInput
-                                label="Calle / Carrera / Apto"
-                                value={details.street}
-                                onChange={v => setDetails({ ...details, street: v })}
-                                placeholder="Ej: Calle 100 #15-30 Apto 402"
-                            />
-
-                            {/* Department Selection */}
-                            <div className="form-group" style={{ position: 'relative' }}>
-                                <Label text="Departamento" />
-                                <div
-                                    onClick={() => { setShowDeptList(!showDeptList); setShowCityList(false); }}
-                                    style={styles.dropdownTrigger}
-                                >
-                                    <span style={{ color: deptSearch ? 'white' : 'rgba(255,255,255,0.3)' }}>
-                                        {deptSearch || 'Selecciona un departamento'}
-                                    </span>
-                                    <ChevronDown size={16} />
-                                </div>
-                                <AnimatePresence>
-                                    {showDeptList && (
-                                        <motion.div
-                                            initial={{ opacity: 0, y: -10 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            exit={{ opacity: 0, y: -10 }}
-                                            style={styles.dropdownList}
-                                        >
-                                            <div style={styles.searchWrapper}>
-                                                <Search size={14} />
-                                                <input
-                                                    autoFocus
-                                                    placeholder="Buscar departamento..."
-                                                    value={deptSearch}
-                                                    onChange={e => setDeptSearch(e.target.value)}
-                                                    style={styles.searchInput}
-                                                    onClick={e => e.stopPropagation()}
-                                                />
-                                            </div>
-                                            <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
-                                                {filteredDepts.map(d => (
-                                                    <div
-                                                        key={d.id}
-                                                        onClick={() => {
-                                                            setSelectedDeptId(d.id);
-                                                            setDeptSearch(d.name);
-                                                            setShowDeptList(false);
-                                                            setCitySearch('');
-                                                            setSelectedCityId(null);
-                                                        }}
-                                                        style={styles.listItem}
-                                                    >
-                                                        {d.name}
-                                                    </div>
-                                                ))}
-                                                {filteredDepts.length === 0 && <div style={{ padding: '15px', textAlign: 'center', color: 'var(--text-dim)' }}>No se encontraron resultados</div>}
-                                            </div>
-                                        </motion.div>
-                                    )}
-                                </AnimatePresence>
-                            </div>
-
-                            {/* City Selection */}
-                            <div className="form-group" style={{ position: 'relative' }}>
-                                <Label text="Ciudad" />
-                                <div
-                                    onClick={() => { if (cities.length > 0) setShowCityList(!showCityList); setShowDeptList(false); }}
-                                    style={{ ...styles.dropdownTrigger, opacity: cities.length > 0 ? 1 : 0.5, cursor: cities.length > 0 ? 'pointer' : 'not-allowed' }}
-                                >
-                                    <span style={{ color: citySearch ? 'white' : 'rgba(255,255,255,0.3)' }}>
-                                        {citySearch || (selectedDeptId ? 'Busca tu ciudad' : 'Selecciona departamento primero')}
-                                    </span>
-                                    {loading ? <div className="animate-spin" style={{ width: 14, height: 14, border: '2px solid white', borderTopColor: 'transparent', borderRadius: '50%' }} /> : <ChevronDown size={16} />}
-                                </div>
-                                <AnimatePresence>
-                                    {showCityList && (
-                                        <motion.div
-                                            initial={{ opacity: 0, y: -10 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            exit={{ opacity: 0, y: -10 }}
-                                            style={styles.dropdownList}
-                                        >
-                                            <div style={styles.searchWrapper}>
-                                                <Search size={14} />
-                                                <input
-                                                    autoFocus
-                                                    placeholder="Buscar ciudad..."
-                                                    value={citySearch}
-                                                    onChange={e => setCitySearch(e.target.value)}
-                                                    style={styles.searchInput}
-                                                    onClick={e => e.stopPropagation()}
-                                                />
-                                            </div>
-                                            <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
-                                                {filteredCities.map(c => (
-                                                    <div
-                                                        key={c.id}
-                                                        onClick={() => {
-                                                            setSelectedCityId(c.id);
-                                                            setCitySearch(c.name);
-                                                            setShowCityList(false);
-                                                        }}
-                                                        style={styles.listItem}
-                                                    >
-                                                        {c.name}
-                                                    </div>
-                                                ))}
-                                                {filteredCities.length === 0 && <div style={{ padding: '15px', textAlign: 'center', color: 'var(--text-dim)' }}>No se encontraron resultados</div>}
-                                            </div>
-                                        </motion.div>
-                                    )}
-                                </AnimatePresence>
-                            </div>
-
-                            <FormInput
-                                label="Código Postal"
-                                value={details.zip}
-                                onChange={v => setDetails({ ...details, zip: v })}
-                                placeholder="110111"
-                            />
-                        </div>
-
-                        <div style={styles.footer}>
-                            <button
-                                onClick={handleConfirm}
-                                style={styles.confirmButton}
-                            >
-                                <Check size={20} />
-                                CONFIRMAR DIRECCIÓN
-                            </button>
-                        </div>
-                    </motion.div>
-                </>
-            )}
-        </AnimatePresence>
+                        <MapPin size={18} />
+                        CONFIRMAR DIRECCIÓN
+                    </button>
+                </div>
+            </div>
+        </div>
     );
 };
 
@@ -318,7 +262,7 @@ const FormInput = ({ label, value, onChange, placeholder }: { label: string; val
         <input
             type="text"
             className="glass"
-            style={styles.input}
+            style={fieldStyles.input}
             value={value}
             onChange={e => onChange(e.target.value)}
             placeholder={placeholder}
@@ -327,28 +271,63 @@ const FormInput = ({ label, value, onChange, placeholder }: { label: string; val
 );
 
 const Label = ({ text }: { text: string }) => (
-    <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'rgba(255,255,255,0.5)', fontWeight: '600' }}>{text}</label>
+    <label style={{ display: 'block', marginBottom: '4px', fontSize: '11px', color: 'var(--text-dim)', fontWeight: '700', textTransform: 'uppercase' as 'uppercase', letterSpacing: '0.5px' }}>{text}</label>
 );
 
-const styles = {
+const pageStyles = {
+    pageContainer: {
+        position: 'fixed' as 'fixed',
+        inset: 0,
+        width: '100%',
+        maxWidth: 'var(--app-max-width)',
+        margin: '0 auto',
+        overflow: 'hidden',
+        background: 'var(--primary)',
+        zIndex: 2000,
+    },
+    headerArea: {
+        position: 'absolute' as 'absolute',
+        top: 'var(--header-offset-top)',
+        left: '0',
+        right: '0',
+        width: '100%',
+        zIndex: 900,
+        background: 'transparent',
+        paddingLeft: '20px',
+        paddingRight: '20px',
+        pointerEvents: 'auto' as 'auto',
+    },
+    scrollArea: {
+        position: 'absolute' as 'absolute',
+        top: 'calc(var(--header-offset-top) + 58px)',
+        left: '0',
+        right: '0',
+        bottom: 0,
+        overflowY: 'auto' as 'auto',
+        padding: '0 20px 120px 20px',
+        overflowX: 'hidden' as 'hidden',
+    },
+};
+
+const fieldStyles = {
     input: {
         width: '100%',
-        padding: '16px',
-        borderRadius: '16px',
+        padding: '12px',
+        borderRadius: '12px',
         border: '1px solid rgba(255,255,255,0.05)',
         color: 'white',
         background: 'rgba(255,255,255,0.03)',
-        fontSize: '15px',
+        fontSize: '14px',
         outline: 'none'
     },
     dropdownTrigger: {
         width: '100%',
-        padding: '16px',
-        borderRadius: '16px',
+        padding: '12px',
+        borderRadius: '12px',
         border: '1px solid rgba(255,255,255,0.05)',
         color: 'white',
         background: 'rgba(255,255,255,0.03)',
-        fontSize: '15px',
+        fontSize: '14px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
@@ -357,7 +336,7 @@ const styles = {
     dropdownList: {
         marginTop: '8px',
         background: 'rgba(255,255,255,0.03)',
-        borderRadius: '16px',
+        borderRadius: '12px',
         border: '1px solid rgba(163, 230, 53, 0.2)',
         zIndex: 10,
         overflow: 'hidden'
@@ -366,7 +345,7 @@ const styles = {
         display: 'flex',
         alignItems: 'center',
         gap: '10px',
-        padding: '12px 16px',
+        padding: '12px',
         borderBottom: '1px solid rgba(255,255,255,0.05)',
         color: 'rgba(255,255,255,0.4)',
         background: 'rgba(255,255,255,0.02)'
@@ -387,28 +366,23 @@ const styles = {
         borderBottom: '1px solid rgba(255,255,255,0.02)',
         transition: 'background 0.2s'
     },
-    footer: {
-        paddingTop: '20px',
-        paddingBottom: '110px', // Raised specifically here to clear BottomNav
-        borderTop: '1px solid rgba(255,255,255,0.05)',
-        background: '#0E1A11',
-        flexShrink: 0
-    },
     confirmButton: {
-        width: '100%',
-        background: 'var(--secondary)',
-        color: 'var(--primary)',
-        padding: '18px',
-        borderRadius: '18px',
-        fontWeight: '900',
-        border: 'none',
+        marginTop: '15px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         gap: '10px',
+        padding: '16px',
+        borderRadius: '14px',
+        background: 'var(--secondary)',
+        color: 'var(--primary)',
+        border: 'none',
+        fontWeight: '900',
+        fontSize: '15px',
+        boxShadow: '0 8px 20px rgba(163, 230, 53, 0.2)',
+        width: '100%',
         letterSpacing: '0.5px',
-        boxShadow: '0 8px 20px rgba(163, 230, 53, 0.3)',
-        fontSize: '15px'
+        cursor: 'pointer'
     }
 };
 
