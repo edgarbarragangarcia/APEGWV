@@ -161,6 +161,8 @@ const ProductForm: React.FC<ProductFormProps> = ({
                             <option value="Bolas">Bolas</option>
                             <option value="Ropa">Ropa</option>
                             <option value="Zapatos">Zapatos</option>
+                            <option value="Guantes">Guantes</option>
+                            <option value="Gorras">Gorras</option>
                             <option value="Accesorios">Accesorios</option>
                             <option value="Bolsas">Bolsas</option>
                         </select>
@@ -205,7 +207,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
                                 onChange={e => onChange({ ...formData, clothing_type: e.target.value, size_clothing: '' })}
                                 style={inputStyle}
                             >
-                                {['Camisa', 'Camiseta', 'Pantalón', 'Short', 'Buso / Chaqueta', 'Gorra', 'Otro'].map(t => <option key={t} value={t}>{t}</option>)}
+                                {['Camisa', 'Camiseta', 'Pantalón', 'Short', 'Buso / Chaqueta', 'Otro'].map(t => <option key={t} value={t}>{t}</option>)}
                             </select>
                         </div>
                         <div>
@@ -290,6 +292,78 @@ const ProductForm: React.FC<ProductFormProps> = ({
                                     </button>
                                 );
                             })}
+                        </div>
+                    </div>
+                )}
+
+                {/* Gloves Options */}
+                {formData.category === 'Guantes' && (
+                    <div className="animate-fade" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                        <div>
+                            <label style={labelStyle}>Tallas de Guantes</label>
+                            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                                {['S', 'M', 'ML', 'L', 'XL'].map(size => {
+                                    const isSelected = !!formData.sizes_inventory.find(s => s.size === size);
+                                    return (
+                                        <button
+                                            key={size}
+                                            type="button"
+                                            onClick={() => onToggleSize(size)}
+                                            style={{
+                                                flex: '1 0 60px',
+                                                padding: '14px',
+                                                borderRadius: '16px',
+                                                border: isSelected ? '1px solid var(--secondary)' : '1px solid var(--glass-border)',
+                                                background: isSelected ? 'rgba(163, 230, 53, 0.15)' : 'rgba(255,255,255,0.05)',
+                                                color: isSelected ? 'var(--secondary)' : 'rgba(255,255,255,0.6)',
+                                                fontWeight: '900',
+                                                fontSize: '14px',
+                                                cursor: 'pointer',
+                                                transition: 'all 0.2s',
+                                                fontFamily: 'var(--font-main)'
+                                            }}
+                                        >
+                                            {size}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Caps Options */}
+                {formData.category === 'Gorras' && (
+                    <div className="animate-fade" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                        <div>
+                            <label style={labelStyle}>Tallas de Gorras</label>
+                            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                                {['Única', 'S/M', 'L/XL', 'Ajustable'].map(size => {
+                                    const isSelected = !!formData.sizes_inventory.find(s => s.size === size);
+                                    return (
+                                        <button
+                                            key={size}
+                                            type="button"
+                                            onClick={() => onToggleSize(size)}
+                                            style={{
+                                                flex: '1 0 80px',
+                                                padding: '14px',
+                                                borderRadius: '16px',
+                                                border: isSelected ? '1px solid var(--secondary)' : '1px solid var(--glass-border)',
+                                                background: isSelected ? 'rgba(163, 230, 53, 0.15)' : 'rgba(255,255,255,0.05)',
+                                                color: isSelected ? 'var(--secondary)' : 'rgba(255,255,255,0.6)',
+                                                fontWeight: '900',
+                                                fontSize: '14px',
+                                                cursor: 'pointer',
+                                                transition: 'all 0.2s',
+                                                fontFamily: 'var(--font-main)'
+                                            }}
+                                        >
+                                            {size}
+                                        </button>
+                                    );
+                                })}
+                            </div>
                         </div>
                     </div>
                 )}
