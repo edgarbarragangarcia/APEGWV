@@ -107,10 +107,10 @@ const MyStore: React.FC = () => {
                     display: 'flex',
                     gap: '4px',
                     width: '100%',
-                    marginBottom: '12px',
-                    marginTop: '16px',
+                    marginBottom: '8px',
+                    marginTop: '8px',
                     background: 'rgba(255,255,255,0.02)',
-                    padding: '8px',
+                    padding: '6px',
                     borderRadius: '20px',
                     border: '1px solid rgba(255,255,255,0.05)'
                 }}>
@@ -207,6 +207,7 @@ const MyStore: React.FC = () => {
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -10 }}
                         transition={{ duration: 0.2 }}
+                        style={{ overflow: 'visible' }}
                     >
                         {activeTab === 'products' && (
                             <ProductsTab
