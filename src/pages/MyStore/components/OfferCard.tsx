@@ -127,7 +127,7 @@ const OfferCard: React.FC<OfferCardProps> = ({
                     style={{
                         position: 'relative',
                         zIndex: 2,
-                        padding: '24px',
+                        padding: '16px 20px',
                         background: 'rgba(6, 46, 36, 0.98)',
                         border: '1px solid rgba(255,255,255,0.06)',
                         borderRadius: '32px',
@@ -139,11 +139,11 @@ const OfferCard: React.FC<OfferCardProps> = ({
                     whileDrag={{ cursor: 'grabbing' }}
                     onClick={() => { if (isOpen) closeActions(); }}
                 >
-                    <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '20px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '12px' }}>
                         <span style={{
-                            padding: '6px 14px',
-                            borderRadius: '14px',
-                            fontSize: '10px',
+                            padding: '4px 10px',
+                            borderRadius: '10px',
+                            fontSize: '9px',
                             fontWeight: '950',
                             background: offer.status === 'pending' ? 'rgba(245, 158, 11, 0.1)' :
                                 offer.status === 'accepted' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
@@ -151,7 +151,7 @@ const OfferCard: React.FC<OfferCardProps> = ({
                                 offer.status === 'accepted' ? '#10b981' : '#ef4444',
                             border: `1px solid ${offer.status === 'pending' ? 'rgba(245, 158, 11, 0.2)' :
                                 offer.status === 'accepted' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)'}`,
-                            letterSpacing: '0.08em',
+                            letterSpacing: '0.05em',
                             textTransform: 'uppercase'
                         }}>
                             {offer.status === 'pending' ? 'PENDIENTE' :
@@ -160,16 +160,16 @@ const OfferCard: React.FC<OfferCardProps> = ({
                         </span>
                     </div>
 
-                    <div style={{ display: 'flex', gap: '18px', marginBottom: '22px', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', gap: '14px', marginBottom: '14px', alignItems: 'center' }}>
                         <div style={{ position: 'relative' }}>
                             <div style={{
-                                width: '74px',
-                                height: '74px',
-                                borderRadius: '20px',
+                                width: '64px',
+                                height: '64px',
+                                borderRadius: '16px',
                                 overflow: 'hidden',
                                 background: 'rgba(255,255,255,0.03)',
                                 border: '1px solid rgba(255,255,255,0.1)',
-                                boxShadow: '0 8px 20px rgba(0,0,0,0.3)'
+                                boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
                             }}>
                                 <img
                                     src={optimizeImage(offer.product?.image_url || null, { width: 150, height: 150 })}
@@ -181,46 +181,62 @@ const OfferCard: React.FC<OfferCardProps> = ({
                                     }}
                                 />
                             </div>
-                            <div style={{ position: 'absolute', bottom: '-5px', right: '-5px', background: '#3b82f6', width: '22px', height: '22px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #062e24', boxShadow: '0 4px 10px rgba(0,0,0,0.3)' }}>
-                                <Handshake size={12} color="white" strokeWidth={3} />
+                            <div style={{ position: 'absolute', bottom: '-4px', right: '-4px', background: '#3b82f6', width: '20px', height: '20px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #062e24', boxShadow: '0 4px 10px rgba(0,0,0,0.3)' }}>
+                                <Handshake size={10} color="white" strokeWidth={3} />
                             </div>
                         </div>
                         <div style={{ flex: 1, minWidth: 0 }}>
-                            <h4 style={{ fontSize: '15px', fontWeight: '900', marginBottom: '4px', color: 'white', letterSpacing: '-0.3px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{offer.product?.name}</h4>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <p style={{ fontSize: '18px', color: 'var(--secondary)', fontWeight: '950', letterSpacing: '-0.5px' }}>
+                            <h4 style={{ fontSize: '14px', fontWeight: '900', marginBottom: '2px', color: 'white', letterSpacing: '-0.3px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{offer.product?.name}</h4>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+                                <p style={{ fontSize: '16px', color: 'var(--secondary)', fontWeight: '950', letterSpacing: '-0.5px' }}>
                                     {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(offer.offer_amount || 0)}
                                 </p>
-                                <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.3)', textDecoration: 'line-through', fontWeight: '800' }}>
+                                <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.2)', textDecoration: 'line-through', fontWeight: '800' }}>
                                     {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(offer.product?.price || 0)}
                                 </p>
                             </div>
-                        </div>
-                    </div>
 
-                    <div style={{ marginBottom: '20px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                            <User size={14} color="var(--secondary)" strokeWidth={3} />
-                            <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                <span style={{ fontWeight: '800', fontSize: '14px', color: 'white' }}>{offer.buyer?.full_name || 'Comprador APEG'}</span>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'rgba(255,255,255,0.4)', fontSize: '10px', fontWeight: '800', marginTop: '2px' }}>
-                                    <Calendar size={10} strokeWidth={3} />
-                                    {offer.created_at ? new Date(offer.created_at).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '---'}
+                            {/* Buyer Info under Prices */}
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                <User size={10} color="var(--secondary)" strokeWidth={3} />
+                                <div style={{ display: 'flex', flexDirection: 'row', gap: '6px', alignItems: 'center' }}>
+                                    <span style={{ fontWeight: '800', fontSize: '11px', color: 'rgba(255,255,255,0.7)' }}>
+                                        {offer.buyer?.full_name?.split(' ')[0] || 'Comprador'}
+                                    </span>
+                                    <div style={{ height: '10px', width: '1px', background: 'rgba(255,255,255,0.1)' }} />
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '3px', color: 'rgba(255,255,255,0.3)', fontSize: '9px', fontWeight: '800' }}>
+                                        <Calendar size={8} strokeWidth={3} />
+                                        {offer.created_at ? new Date(offer.created_at).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' }) : '--/--'}
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        {offer.message && (
-                            <div style={{ padding: '0 0 0 12px', borderLeft: '2px solid var(--secondary)', marginTop: '10px' }}>
-                                <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.6)', fontStyle: 'italic', lineHeight: '1.5', margin: 0 }}>
-                                    "{offer.message}"
-                                </p>
-                            </div>
-                        )}
+                        {/* Swipe Hint Icon */}
+                        <div style={{ opacity: isOpen ? 1 : 0.2, transition: '0.3s all', marginLeft: 'auto' }}>
+                            <motion.div
+                                animate={isOpen ? { x: 0, rotate: 180 } : { x: [0, -3, 0] }}
+                                transition={{ repeat: isOpen ? 0 : Infinity, duration: 2 }}
+                            >
+                                {isOpen ? (
+                                    <CheckCircle2 size={16} color="var(--secondary)" />
+                                ) : (
+                                    <Trash2 size={14} color="rgba(255,255,255,0.3)" />
+                                )}
+                            </motion.div>
+                        </div>
                     </div>
 
+                    {offer.message && (
+                        <div style={{ padding: '0 0 0 10px', borderLeft: '2px solid var(--secondary)', marginBottom: '14px' }}>
+                            <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)', fontStyle: 'italic', lineHeight: '1.4', margin: 0 }}>
+                                "{offer.message}"
+                            </p>
+                        </div>
+                    )}
+
                     {offer.status === 'pending' && (
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: '4px' }}>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '4px' }}>
                             <motion.button
                                 whileTap={{ scale: 0.95 }}
                                 onClick={() => onAction(offer.id, 'rejected')}
@@ -230,10 +246,10 @@ const OfferCard: React.FC<OfferCardProps> = ({
                                     background: 'rgba(239, 68, 68, 0.05)',
                                     border: '1px solid rgba(239, 68, 68, 0.1)',
                                     color: '#f87171',
-                                    padding: '12px',
-                                    borderRadius: '16px',
+                                    padding: '10px',
+                                    borderRadius: '14px',
                                     fontWeight: '900',
-                                    fontSize: '10px',
+                                    fontSize: '9px',
                                     textTransform: 'uppercase'
                                 }}
                             >
@@ -247,20 +263,20 @@ const OfferCard: React.FC<OfferCardProps> = ({
                                     flex: 2,
                                     background: 'var(--secondary)',
                                     color: 'var(--primary)',
-                                    padding: '12px',
-                                    borderRadius: '16px',
+                                    padding: '10px',
+                                    borderRadius: '14px',
                                     fontWeight: '950',
-                                    fontSize: '11px',
+                                    fontSize: '10px',
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
-                                    gap: '8px',
+                                    gap: '6px',
                                     textTransform: 'uppercase',
                                     border: 'none',
-                                    boxShadow: '0 8px 20px rgba(163, 230, 53, 0.2)'
+                                    boxShadow: '0 4px 15px rgba(163, 230, 53, 0.15)'
                                 }}
                             >
-                                {updatingOffer === offer.id ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle2 size={16} strokeWidth={3} />}
+                                {updatingOffer === offer.id ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle2 size={14} strokeWidth={3} />}
                                 ACEPTAR
                             </motion.button>
                         </div>

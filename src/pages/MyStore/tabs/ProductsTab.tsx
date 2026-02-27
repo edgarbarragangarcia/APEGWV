@@ -192,7 +192,7 @@ const ProductsTab: React.FC<ProductsTabProps> = ({
                     <p style={{ color: 'var(--text-dim)', fontSize: '14px' }}>No se encontraron productos con estos filtros.</p>
                 </div>
             ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', paddingTop: '12px' }}>
                     {filteredProducts.map((product, index) => (
                         <ProductCard
                             key={product.id || `product-${index}`}
