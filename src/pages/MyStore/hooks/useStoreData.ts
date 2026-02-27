@@ -304,7 +304,7 @@ export const useStoreData = () => {
         try {
             const { data: userOffers, error: offersError } = await supabase
                 .from('offers')
-                .select('id, created_at, status, buyer_id, offer_amount, message, counter_amount, counter_message, product:products(id, name, image_url, price)')
+                .select('id, created_at, status, buyer_id, offer_amount, message, counter_amount, counter_message, product:products(id, name, image_url, price, is_negotiable)')
 
                 .eq('seller_id', userId)
                 .order('created_at', { ascending: false });

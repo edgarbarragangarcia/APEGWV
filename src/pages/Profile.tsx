@@ -175,11 +175,7 @@ const Profile: React.FC = () => {
                         label={storeName ? `Mi Marketplace ${storeName}` : "Mi Marketplace"}
                         onClick={() => navigate('/my-store')}
                     />
-                    <MenuButton
-                        icon={Shield}
-                        label="Mi Talega (My Bag)"
-                        onClick={() => navigate('/my-bag')}
-                    />
+
                     <MenuButton icon={Trophy} label="Mis Eventos Organizados" onClick={() => navigate('/my-events')} />
 
                     <button

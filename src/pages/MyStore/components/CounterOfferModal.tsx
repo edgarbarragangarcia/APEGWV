@@ -1,6 +1,8 @@
 import React from 'react';
-import { X, DollarSign, Send, Handshake } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { DollarSign, Send, Handshake } from 'lucide-react';
+
+import PageHeader from '../../../components/PageHeader';
+import PageHero from '../../../components/PageHero';
 
 interface CounterOfferModalProps {
     isOpen: boolean;
@@ -52,170 +54,178 @@ const CounterOfferModal: React.FC<CounterOfferModalProps> = ({
         fontFamily: 'var(--font-main)'
     };
 
-    return (
-        <AnimatePresence>
-            {isOpen && (
-                <div style={{
-                    position: 'fixed',
-                    inset: 0,
-                    zIndex: 1100,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    padding: '24px'
-                }}>
-                    {/* Backdrop */}
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        onClick={onClose}
-                        style={{
-                            position: 'absolute',
-                            inset: 0,
-                            background: 'rgba(0, 0, 0, 0.85)',
-                            backdropFilter: 'blur(10px)',
-                            WebkitBackdropFilter: 'blur(10px)'
-                        }}
-                    />
+    if (!isOpen) return null;
 
-                    {/* Modal Content */}
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.95, y: 20 }}
+    return (
+        <div className="animate-fade" style={pageStyles.pageContainer}>
+            <PageHero />
+            <div style={pageStyles.headerArea}>
+                <PageHeader noMargin title="Contraoferta" onBack={onClose} />
+            </div>
+
+            <div style={pageStyles.scrollArea}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                    <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '12px',
+                        background: 'rgba(255,255,255,0.03)',
+                        padding: '16px',
+                        borderRadius: '20px',
+                        border: '1px solid rgba(255,255,255,0.05)',
+                        marginBottom: '10px'
+                    }}>
+                        <div style={{
+                            width: '48px',
+                            height: '48px',
+                            borderRadius: '14px',
+                            background: 'rgba(163, 230, 53, 0.1)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            border: '1px solid rgba(163, 230, 53, 0.2)'
+                        }}>
+                            <Handshake size={24} color="var(--secondary)" />
+                        </div>
+                        <div style={{ flex: 1 }}>
+                            <h3 style={{
+                                fontSize: '14px',
+                                fontWeight: '900',
+                                color: 'white',
+                                fontFamily: 'var(--font-main)',
+                                letterSpacing: '-0.02em',
+                                lineHeight: 1.1,
+                                marginBottom: '4px'
+                            }}>Producto a Negociar</h3>
+                            <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.7)', fontWeight: '700' }}>{productName}</p>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label style={labelStyle}>Monto de la Contraoferta</label>
+                        <div style={{ position: 'relative' }}>
+                            <div style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--secondary)' }}>
+                                <DollarSign size={20} />
+                            </div>
+                            <input
+                                autoFocus
+                                type="number"
+                                value={counterAmount}
+                                onChange={e => onCounterAmountChange(e.target.value)}
+                                placeholder="Ingresa el valor..."
+                                style={inputStyle}
+                            />
+                        </div>
+                    </div>
+
+                    <div>
+                        <label style={labelStyle}>Mensaje (Opcional)</label>
+                        <textarea
+                            value={counterMessage}
+                            onChange={e => onCounterMessageChange(e.target.value)}
+                            placeholder="Ej: Te lo dejo en este precio porque está impecable..."
+                            style={{
+                                ...inputStyle,
+                                padding: '16px',
+                                minHeight: '120px',
+                                resize: 'none',
+                                fontSize: '14px',
+                                fontWeight: '600'
+                            }}
+                        />
+                    </div>
+
+                    <button
+                        onClick={onSubmit}
+                        disabled={updating || !counterAmount}
                         style={{
-                            width: '100%',
-                            maxWidth: '420px',
-                            background: 'linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%)',
-                            backdropFilter: 'blur(30px)',
-                            WebkitBackdropFilter: 'blur(30px)',
-                            border: '1px solid var(--glass-border)',
-                            borderRadius: '35px',
-                            boxShadow: '0 40px 100px rgba(0,0,0,0.6)',
-                            position: 'relative',
-                            overflow: 'hidden'
+                            ...pageStyles.confirmButton,
+                            opacity: (!counterAmount || updating) ? 0.5 : 1
                         }}
                     >
-                        <div style={{ padding: '24px', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                <div style={{
-                                    width: '40px',
-                                    height: '40px',
-                                    borderRadius: '12px',
-                                    background: 'rgba(163, 230, 53, 0.1)',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    border: '1px solid rgba(163, 230, 53, 0.2)'
-                                }}>
-                                    <Handshake size={20} color="var(--secondary)" />
-                                </div>
-                                <div>
-                                    <h3 style={{
-                                        fontSize: '18px',
-                                        fontWeight: '900',
-                                        color: 'white',
-                                        fontFamily: 'var(--font-main)',
-                                        letterSpacing: '-0.02em',
-                                        lineHeight: 1.1
-                                    }}>Contraoferta</h3>
-                                    <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', marginTop: '2px', fontWeight: '700' }}>{productName}</p>
-                                </div>
+                        {updating ? (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', justifyContent: 'center' }}>
+                                <div className="spinner-small" style={{ borderColor: 'var(--primary)', borderTopColor: 'transparent' }} />
+                                <span>ENVIANDO...</span>
                             </div>
-                            <motion.button
-                                whileTap={{ scale: 0.9 }}
-                                onClick={onClose}
-                                style={{
-                                    color: 'rgba(255,255,255,0.4)',
-                                    background: 'rgba(255,255,255,0.05)',
-                                    border: 'none',
-                                    borderRadius: '50%',
-                                    width: '32px',
-                                    height: '32px',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    cursor: 'pointer'
-                                }}
-                            >
-                                <X size={18} />
-                            </motion.button>
-                        </div>
+                        ) : (
+                            <>
+                                <Send size={18} />
+                                <span>ENVIAR CONTRAOFERTA</span>
+                            </>
+                        )}
+                    </button>
 
-                        <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                            <div>
-                                <label style={labelStyle}>Monto de la Contraoferta</label>
-                                <div style={{ position: 'relative' }}>
-                                    <div style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--secondary)' }}>
-                                        <DollarSign size={20} />
-                                    </div>
-                                    <input
-                                        autoFocus
-                                        type="number"
-                                        value={counterAmount}
-                                        onChange={e => onCounterAmountChange(e.target.value)}
-                                        placeholder="Ingresa el valor..."
-                                        style={inputStyle}
-                                    />
-                                </div>
-                            </div>
-
-                            <div>
-                                <label style={labelStyle}>Mensaje (Opcional)</label>
-                                <textarea
-                                    value={counterMessage}
-                                    onChange={e => onCounterMessageChange(e.target.value)}
-                                    placeholder="Ej: Te lo dejo en este precio porque está impecable..."
-                                    style={{
-                                        ...inputStyle,
-                                        padding: '16px',
-                                        minHeight: '100px',
-                                        resize: 'none',
-                                        fontSize: '14px',
-                                        fontWeight: '600'
-                                    }}
-                                />
-                            </div>
-
-                            <button
-                                onClick={onSubmit}
-                                disabled={updating || !counterAmount}
-                                className="btn-primary"
-                                style={{
-                                    height: '56px',
-                                    opacity: (!counterAmount || updating) ? 0.5 : 1
-                                }}
-                            >
-                                {updating ? (
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                        <div className="spinner-small" style={{ borderColor: 'var(--primary)', borderTopColor: 'transparent' }} />
-                                        <span>ENVIANDO...</span>
-                                    </div>
-                                ) : (
-                                    <>
-                                        <Send size={18} />
-                                        <span>ENVIAR CONTRAOFERTA</span>
-                                    </>
-                                )}
-                            </button>
-
-                            <div style={{
-                                background: 'rgba(255,255,255,0.03)',
-                                padding: '15px',
-                                borderRadius: '16px',
-                                border: '1px solid rgba(255,255,255,0.05)'
-                            }}>
-                                <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', textAlign: 'center', lineHeight: '1.4', fontWeight: '600' }}>
-                                    Al enviar esta contraoferta, el producto quedará reservado por 1 hora para este comprador.
-                                </p>
-                            </div>
-                        </div>
-                    </motion.div>
+                    <div style={{
+                        background: 'rgba(255,255,255,0.02)',
+                        padding: '16px',
+                        borderRadius: '16px',
+                        border: '1px solid rgba(255,255,255,0.05)',
+                        marginTop: '10px'
+                    }}>
+                        <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', textAlign: 'center', lineHeight: '1.5', fontWeight: '600' }}>
+                            Al enviar esta contraoferta, el producto quedará reservado por 1 hora para este comprador.
+                        </p>
+                    </div>
                 </div>
-            )}
-        </AnimatePresence>
+            </div>
+        </div>
     );
+};
+
+const pageStyles = {
+    pageContainer: {
+        position: 'fixed' as 'fixed',
+        inset: 0,
+        width: '100%',
+        maxWidth: 'var(--app-max-width)',
+        margin: '0 auto',
+        overflow: 'hidden',
+        background: 'var(--primary)',
+        zIndex: 2000,
+    },
+    headerArea: {
+        position: 'absolute' as 'absolute',
+        top: 'var(--header-offset-top)',
+        left: '0',
+        right: '0',
+        width: '100%',
+        zIndex: 900,
+        background: 'transparent',
+        paddingLeft: '20px',
+        paddingRight: '20px',
+        pointerEvents: 'auto' as 'auto',
+    },
+    scrollArea: {
+        position: 'absolute' as 'absolute',
+        top: 'calc(var(--header-offset-top) + 58px)',
+        left: '0',
+        right: '0',
+        bottom: 0,
+        overflowY: 'auto' as 'auto',
+        padding: '20px 20px 120px 20px',
+        overflowX: 'hidden' as 'hidden',
+    },
+    confirmButton: {
+        marginTop: '15px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '10px',
+        padding: '16px',
+        borderRadius: '14px',
+        background: 'var(--secondary)',
+        color: 'var(--primary)',
+        border: 'none',
+        fontWeight: '950',
+        fontSize: '14px',
+        boxShadow: '0 8px 20px rgba(163, 230, 53, 0.2)',
+        width: '100%',
+        letterSpacing: '0.05em',
+        cursor: 'pointer',
+        transition: 'all 0.2s ease',
+        fontFamily: 'var(--font-main)'
+    }
 };
 
 export default CounterOfferModal;

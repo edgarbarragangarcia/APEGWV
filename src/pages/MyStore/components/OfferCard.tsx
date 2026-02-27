@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, useAnimation } from 'framer-motion';
-import { Calendar, User, CheckCircle2, Loader2, Handshake, Trash2 } from 'lucide-react';
+import { Calendar, User, CheckCircle2, Loader2, Handshake, Trash2, X, ChevronLeft } from 'lucide-react';
 import { optimizeImage } from '../../../services/SupabaseManager';
 
 interface Offer {
@@ -34,9 +34,13 @@ const OfferCard: React.FC<OfferCardProps> = ({
     const controls = useAnimation();
     const [isOpen, setIsOpen] = useState(false);
 
+    // Calculate drag distance based on available actions
+    const actionsCount = offer.status === 'pending' ? (offer.product?.is_negotiable ? 4 : 3) : 1;
+    const dragDistance = -(actionsCount * 64) - 16;
+
     const onDragEnd = (_: any, info: any) => {
-        if (info.offset.x < -40) {
-            controls.start({ x: -90 });
+        if (info.offset.x < -30) {
+            controls.start({ x: dragDistance });
             setIsOpen(true);
         } else {
             controls.start({ x: 0 });
@@ -49,12 +53,85 @@ const OfferCard: React.FC<OfferCardProps> = ({
         setIsOpen(false);
     };
 
+    const ActionBtn = ({ hexColor, icon, onClick, loading, label }: any) => (
+        <motion.button
+            whileTap={{ scale: 0.9 }}
+            onClick={(e) => { e.stopPropagation(); onClick(); }}
+            style={{
+                width: '56px',
+                height: '80px',
+                borderRadius: '18px',
+                background: `color-mix(in srgb, ${hexColor} 15%, transparent)`,
+                border: `1px solid color-mix(in srgb, ${hexColor} 30%, transparent)`,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px',
+                color: hexColor,
+                boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
+                cursor: 'pointer'
+            }}
+        >
+            {loading ? <Loader2 size={20} className="animate-spin" /> : icon}
+            <span style={{ fontSize: '8px', fontWeight: '950', textTransform: 'uppercase' }}>{label}</span>
+        </motion.button>
+    );
+
     return (
         <motion.div
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
             style={{ marginBottom: '16px', position: 'relative', fontFamily: 'var(--font-main)' }}
         >
+            {/* Background Actions Layer */}
+            <div style={{
+                position: 'absolute',
+                top: 0,
+                bottom: 0,
+                right: 0,
+                width: Math.abs(dragDistance) + 'px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'flex-end',
+                paddingRight: '16px',
+                gap: '8px',
+                zIndex: 1
+            }}>
+                {offer.status === 'pending' && (
+                    <>
+                        <ActionBtn
+                            hexColor="#ef4444"
+                            icon={<X size={20} />}
+                            onClick={() => { onAction(offer.id, 'rejected'); closeActions(); }}
+                            loading={updatingOffer === offer.id}
+                            label="RECHAZAR"
+                        />
+                        {offer.product?.is_negotiable && onCounterClick && (
+                            <ActionBtn
+                                hexColor="#fbbf24"
+                                icon={<Handshake size={20} />}
+                                onClick={() => { onCounterClick(offer); closeActions(); }}
+                                label="CONTRA"
+                            />
+                        )}
+                        <ActionBtn
+                            hexColor="#a3e635"
+                            icon={<CheckCircle2 size={20} />}
+                            onClick={() => { onAction(offer.id, 'accepted'); closeActions(); }}
+                            loading={updatingOffer === offer.id}
+                            label="ACEPTAR"
+                        />
+                    </>
+                )}
+                <ActionBtn
+                    hexColor="#ef4444"
+                    icon={<Trash2 size={20} />}
+                    onClick={() => { onDelete(offer.id); closeActions(); }}
+                    label="BORRAR"
+                />
+            </div>
+
             <div style={{
                 position: 'relative',
                 background: 'rgba(255,255,255,0.02)',
@@ -62,83 +139,38 @@ const OfferCard: React.FC<OfferCardProps> = ({
                 overflow: 'hidden',
                 boxShadow: '0 15px 35px rgba(0,0,0,0.2)',
             }}>
-                {/* Actions Layer (Behind) */}
-                <div style={{
-                    position: 'absolute',
-                    top: 0,
-                    right: 0,
-                    bottom: 0,
-                    width: '90px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '10px',
-                    paddingRight: '10px',
-                    zIndex: 1
-                }}>
-                    {offer.status === 'pending' && (
-                        <motion.button
-                            whileTap={{ scale: 0.9 }}
-                            onClick={(e) => { e.stopPropagation(); onCounterClick(offer); closeActions(); }}
-                            style={{
-                                color: 'white',
-                                background: 'rgba(255,255,255,0.05)',
-                                border: '1px solid rgba(255,255,255,0.1)',
-                                borderRadius: '12px',
-                                width: '40px',
-                                height: '40px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                cursor: 'pointer',
-                            }}
-                        >
-                            <Handshake size={18} strokeWidth={2.5} />
-                        </motion.button>
-                    )}
-                    <motion.button
-                        whileTap={{ scale: 0.9 }}
-                        onClick={(e) => { e.stopPropagation(); onDelete(offer.id); closeActions(); }}
-                        style={{
-                            color: '#ef4444',
-                            background: 'rgba(239, 68, 68, 0.1)',
-                            border: '1px solid rgba(239, 68, 68, 0.2)',
-                            borderRadius: '12px',
-                            width: '40px',
-                            height: '40px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            cursor: 'pointer',
-                        }}
-                    >
-                        <Trash2 size={18} strokeWidth={2.5} />
-                    </motion.button>
-                </div>
-
-                {/* Draggable Content Layer */}
+                {/* Content Layer (Draggable) */}
                 <motion.div
                     drag="x"
-                    dragConstraints={{ left: -90, right: 0 }}
+                    dragConstraints={{ left: dragDistance, right: 0 }}
                     dragElastic={0.1}
                     animate={controls}
                     onDragEnd={onDragEnd}
+                    whileDrag={{ cursor: 'grabbing' }}
+                    onClick={() => { if (isOpen) closeActions(); }}
                     style={{
                         position: 'relative',
                         zIndex: 2,
                         padding: '16px 20px',
-                        background: 'rgba(6, 46, 36, 0.98)',
+                        background: 'rgba(6, 46, 36, 1)',
                         border: '1px solid rgba(255,255,255,0.06)',
                         borderRadius: '32px',
-                        backdropFilter: 'blur(20px)',
-                        WebkitBackdropFilter: 'blur(20px)',
                         cursor: 'grab',
                         touchAction: 'pan-y'
                     }}
-                    whileDrag={{ cursor: 'grabbing' }}
-                    onClick={() => { if (isOpen) closeActions(); }}
                 >
+                    {/* Swipe Hint Indicator */}
+                    {!isOpen && (
+                        <motion.div
+                            initial={{ opacity: 0.4 }}
+                            animate={{ opacity: [0.4, 1, 0.4], x: [0, -3, 0] }}
+                            transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+                            style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', display: 'flex', alignItems: 'center', color: 'rgba(255,255,255,0.2)' }}
+                        >
+                            <ChevronLeft size={16} />
+                        </motion.div>
+                    )}
+
                     <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '12px' }}>
                         <span style={{
                             padding: '4px 10px',
@@ -185,7 +217,7 @@ const OfferCard: React.FC<OfferCardProps> = ({
                                 <Handshake size={10} color="white" strokeWidth={3} />
                             </div>
                         </div>
-                        <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ flex: 1, minWidth: 0, paddingRight: '20px' }}>
                             <h4 style={{ fontSize: '14px', fontWeight: '900', marginBottom: '2px', color: 'white', letterSpacing: '-0.3px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{offer.product?.name}</h4>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
                                 <p style={{ fontSize: '16px', color: 'var(--secondary)', fontWeight: '950', letterSpacing: '-0.5px' }}>
@@ -211,94 +243,13 @@ const OfferCard: React.FC<OfferCardProps> = ({
                                 </div>
                             </div>
                         </div>
-
-                        {/* Swipe Hint Icon */}
-                        <div style={{ opacity: isOpen ? 1 : 0.2, transition: '0.3s all', marginLeft: 'auto' }}>
-                            <motion.div
-                                animate={isOpen ? { x: 0, rotate: 180 } : { x: [0, -3, 0] }}
-                                transition={{ repeat: isOpen ? 0 : Infinity, duration: 2 }}
-                            >
-                                {isOpen ? (
-                                    <CheckCircle2 size={16} color="var(--secondary)" />
-                                ) : (
-                                    <Trash2 size={14} color="rgba(255,255,255,0.3)" />
-                                )}
-                            </motion.div>
-                        </div>
                     </div>
 
                     {offer.message && (
-                        <div style={{ padding: '0 0 0 10px', borderLeft: '2px solid var(--secondary)', marginBottom: '14px' }}>
+                        <div style={{ padding: '0 0 0 10px', borderLeft: '2px solid var(--secondary)' }}>
                             <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)', fontStyle: 'italic', lineHeight: '1.4', margin: 0 }}>
                                 "{offer.message}"
                             </p>
-                        </div>
-                    )}
-
-                    {offer.status === 'pending' && (
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '4px' }}>
-                            <motion.button
-                                whileTap={{ scale: 0.95 }}
-                                onClick={() => onAction(offer.id, 'rejected')}
-                                disabled={updatingOffer === offer.id}
-                                style={{
-                                    flex: 1,
-                                    background: 'rgba(239, 68, 68, 0.05)',
-                                    border: '1px solid rgba(239, 68, 68, 0.1)',
-                                    color: '#f87171',
-                                    padding: '10px 4px',
-                                    borderRadius: '14px',
-                                    fontWeight: '900',
-                                    fontSize: '9px',
-                                    textTransform: 'uppercase'
-                                }}
-                            >
-                                RECHAZAR
-                            </motion.button>
-                            {offer.product?.is_negotiable && onCounterClick && (
-                                <motion.button
-                                    whileTap={{ scale: 0.95 }}
-                                    onClick={() => onCounterClick(offer)}
-                                    disabled={updatingOffer === offer.id}
-                                    style={{
-                                        flex: 1,
-                                        background: 'rgba(245, 158, 11, 0.1)',
-                                        border: '1px solid rgba(245, 158, 11, 0.2)',
-                                        color: '#fbbf24',
-                                        padding: '10px 4px',
-                                        borderRadius: '14px',
-                                        fontWeight: '900',
-                                        fontSize: '9px',
-                                        textTransform: 'uppercase'
-                                    }}
-                                >
-                                    CONTRAOFERTA
-                                </motion.button>
-                            )}
-                            <motion.button
-                                whileTap={{ scale: 0.98 }}
-                                onClick={() => onAction(offer.id, 'accepted')}
-                                disabled={updatingOffer === offer.id}
-                                style={{
-                                    flex: 1,
-                                    background: 'var(--secondary)',
-                                    color: 'var(--primary)',
-                                    padding: '10px 4px',
-                                    borderRadius: '14px',
-                                    fontWeight: '950',
-                                    fontSize: '10px',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    gap: '4px',
-                                    textTransform: 'uppercase',
-                                    border: 'none',
-                                    boxShadow: '0 4px 15px rgba(163, 230, 53, 0.15)'
-                                }}
-                            >
-                                {updatingOffer === offer.id ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle2 size={14} strokeWidth={3} />}
-                                ACEPTAR
-                            </motion.button>
                         </div>
                     )}
                 </motion.div>
