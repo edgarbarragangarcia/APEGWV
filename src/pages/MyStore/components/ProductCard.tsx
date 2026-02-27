@@ -52,7 +52,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
         }
     };
 
-    const onDragEnd = (event: any, info: any) => {
+    const onDragEnd = (_: any, info: any) => {
         // If dragged more than 40px to the left, snap to open position
         if (info.offset.x < -40) {
             controls.start({ x: -90 });

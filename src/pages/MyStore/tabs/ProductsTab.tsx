@@ -50,18 +50,18 @@ const ProductsTab: React.FC<ProductsTabProps> = ({
             {/* Sticky Filter Section */}
             <div style={{
                 position: 'sticky',
-                top: '-1px', // Slight offset to hide gap
+                top: '-1px',
                 zIndex: 50,
                 background: 'var(--primary)',
-                paddingTop: '4px',
-                paddingBottom: '12px',
+                paddingTop: '0px',
+                paddingBottom: '8px',
                 margin: '0 -24px',
                 paddingLeft: '24px',
                 paddingRight: '24px',
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '8px',
-                boxShadow: '0 10px 20px -10px rgba(0,0,0,0.5)'
+                gap: '6px',
+                boxShadow: '0 10px 20px -12px rgba(0,0,0,0.5)'
             }}>
                 <div style={{ position: 'relative' }}>
                     <Search style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--secondary)', opacity: 0.8 }} size={14} />
