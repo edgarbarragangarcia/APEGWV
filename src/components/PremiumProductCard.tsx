@@ -1,21 +1,20 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { ShoppingCart, Star, Heart } from 'lucide-react';
+import { Heart } from 'lucide-react';
 import { useLikes } from '../hooks/useLikes';
 
 import { optimizeImage } from '../services/SupabaseManager';
 
 interface PremiumProductCardProps {
     product: any;
-    onAddToCart: (product: any) => void;
+    onAddToCart?: (product: any) => void;
     onClick: () => void;
 }
 
-const PremiumProductCard: React.FC<PremiumProductCardProps> = ({ product, onAddToCart, onClick }) => {
+const PremiumProductCard: React.FC<PremiumProductCardProps> = ({ product, onClick }) => {
     const { likedProducts, toggleLike } = useLikes();
     const isLiked = likedProducts.has(product.id);
-    // Generate a pseudo-random rating for aesthetics
-    const rating = (4 + (Math.floor(Math.random() * 10) / 10)).toFixed(1);
+
 
     return (
         <motion.div
@@ -129,46 +128,11 @@ const PremiumProductCard: React.FC<PremiumProductCardProps> = ({ product, onAddT
                     </button>
                 </div>
 
-                {/* Buy Button Overlay */}
-                <div style={{
-                    position: 'absolute',
-                    bottom: '12px',
-                    right: '12px',
-                    zIndex: 2
-                }}>
-                    <motion.button
-                        whileTap={{ scale: 0.9 }}
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            if (product.sizes_inventory && product.sizes_inventory.length > 0) {
-                                // Trigger product detail to select size
-                                onClick();
-                            } else {
-                                onAddToCart(product);
-                            }
-                        }}
-                        style={{
-                            width: '40px',
-                            height: '40px',
-                            borderRadius: '14px',
-                            background: 'var(--secondary)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            border: 'none',
-                            color: 'var(--primary)',
-                            boxShadow: '0 8px 15px rgba(163, 230, 53, 0.3)'
-                        }}
-                    >
-                        <ShoppingCart size={18} strokeWidth={2.5} />
-                    </motion.button>
-                </div>
             </div>
 
             {/* Info Section */}
             <div style={{
-                padding: '0 12px 12px 12px', // Reduced padding
-                flex: 1,
+                padding: '0 12px 12px 12px',
                 display: 'flex',
                 flexDirection: 'column',
             }}>
@@ -190,13 +154,12 @@ const PremiumProductCard: React.FC<PremiumProductCardProps> = ({ product, onAddT
                     </span>
                 </div>
 
-                {/* Category & Rating - Fixed height */}
+                {/* Category */}
                 <div style={{
                     display: 'flex',
-                    justifyContent: 'space-between',
                     alignItems: 'center',
                     height: '18px',
-                    marginBottom: '6px'
+                    marginBottom: '4px'
                 }}>
                     <span style={{
                         fontSize: '9px',
@@ -207,45 +170,31 @@ const PremiumProductCard: React.FC<PremiumProductCardProps> = ({ product, onAddT
                     }}>
                         {product.category}
                     </span>
-                    <div style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '2px',
-                        background: 'rgba(255,255,255,0.05)',
-                        padding: '1px 4px',
-                        borderRadius: '4px'
-                    }}>
-                        <Star size={8} color="var(--accent)" fill="var(--accent)" />
-                        <span style={{ fontSize: '9px', fontWeight: '600', color: 'white' }}>{rating}</span>
-                    </div>
                 </div>
 
-                {/* Name - Fixed height with 2 lines */}
+                {/* Name */}
                 <h3 style={{
                     fontSize: '13px',
                     fontWeight: '700',
                     color: 'white',
                     lineHeight: '1.2',
-                    margin: '0 0 8px 0',
+                    margin: '0 0 4px 0',
                     display: '-webkit-box',
                     WebkitLineClamp: 2,
                     WebkitBoxOrient: 'vertical',
                     overflow: 'hidden',
-                    height: '32px',
                 }}>
                     {product.name}
                 </h3>
 
-                {/* Price */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span style={{
-                        fontSize: '16px',
-                        fontWeight: '900',
-                        color: 'white'
-                    }}>
-                        ${Number(product.price).toLocaleString()}
-                    </span>
-                </div>
+                {/* Price — justo debajo del nombre */}
+                <span style={{
+                    fontSize: '15px',
+                    fontWeight: '900',
+                    color: 'var(--secondary)',
+                }}>
+                    ${Number(product.price).toLocaleString()}
+                </span>
             </div>
         </motion.div>
     );
