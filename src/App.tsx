@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'r
 import Navbar from './components/Navbar';
 import BottomNav from './components/BottomNav';
 import { OnboardingTour } from './components/OnboardingTour';
+import PermissionsOnboarding from './components/PermissionsOnboarding';
 import { supabase } from './services/SupabaseManager';
 
 import './index.css';
@@ -51,6 +52,14 @@ const AppContent: React.FC = () => {
   const location = useLocation();
   const isOnline = useOnlineStatus();
   const [showOnboarding, setShowOnboarding] = React.useState(false);
+  const [showPermissionsOnboarding, setShowPermissionsOnboarding] = React.useState(false);
+
+  // Check if permissions onboarding has been completed
+  React.useEffect(() => {
+    if (session && !localStorage.getItem('permissions_onboarding_completed')) {
+      setShowPermissionsOnboarding(true);
+    }
+  }, [session]);
 
   React.useEffect(() => {
     // Intentar bloquear la orientación
@@ -193,6 +202,12 @@ const AppContent: React.FC = () => {
       )}
 
       <OfflineOverlay isOnline={isOnline} />
+
+      {showPermissionsOnboarding && session && (
+        <PermissionsOnboarding
+          onComplete={() => setShowPermissionsOnboarding(false)}
+        />
+      )}
     </div>
   );
 };
