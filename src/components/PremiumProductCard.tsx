@@ -74,6 +74,30 @@ const PremiumProductCard: React.FC<PremiumProductCardProps> = ({ product, onAddT
                             target.src = 'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?auto=format&fit=crop&q=80&w=400';
                         }}
                     />
+                    {/* Negociable Ribbon */}
+                    {product.is_negotiable && (
+                        <div style={{
+                            position: 'absolute',
+                            top: '14px',
+                            left: '-22px',
+                            width: '90px',
+                            background: 'var(--secondary)',
+                            color: 'var(--primary)',
+                            fontSize: '8px',
+                            fontWeight: '950',
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.08em',
+                            textAlign: 'center',
+                            padding: '5px 0',
+                            transform: 'rotate(-45deg)',
+                            transformOrigin: 'center center',
+                            boxShadow: '0 3px 10px rgba(163, 230, 53, 0.4)',
+                            zIndex: 10,
+                            pointerEvents: 'none'
+                        }}>
+                            NEGOCIABLE
+                        </div>
+                    )}
                 </div>
 
                 {/* Heart Icon Overlay */}
@@ -198,7 +222,7 @@ const PremiumProductCard: React.FC<PremiumProductCardProps> = ({ product, onAddT
 
                 {/* Name - Fixed height with 2 lines */}
                 <h3 style={{
-                    fontSize: '13px', // Reduced from 15px
+                    fontSize: '13px',
                     fontWeight: '700',
                     color: 'white',
                     lineHeight: '1.2',
@@ -207,35 +231,20 @@ const PremiumProductCard: React.FC<PremiumProductCardProps> = ({ product, onAddT
                     WebkitLineClamp: 2,
                     WebkitBoxOrient: 'vertical',
                     overflow: 'hidden',
-                    height: '32px', // Reduced from 36px
+                    height: '32px',
                 }}>
                     {product.name}
                 </h3>
 
-                {/* Price - Follows name tightly */}
-                <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px'
-                }}>
+                {/* Price */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <span style={{
-                        fontSize: '16px', // Reduced from 18px
+                        fontSize: '16px',
                         fontWeight: '900',
                         color: 'white'
                     }}>
                         ${Number(product.price).toLocaleString()}
                     </span>
-                    {product.is_negotiable && (
-                        <span style={{
-                            fontSize: '8px',
-                            fontWeight: '700',
-                            color: 'var(--secondary)',
-                            opacity: 0.8,
-                            textTransform: 'uppercase'
-                        }}>
-                            Negociable
-                        </span>
-                    )}
                 </div>
             </div>
         </motion.div>

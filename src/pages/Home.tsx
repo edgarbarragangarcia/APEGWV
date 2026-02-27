@@ -856,6 +856,31 @@ const Home: React.FC = () => {
                                             pointerEvents: 'none'
                                         }} />
 
+                                        {/* Negociable Ribbon */}
+                                        {selectedProduct.is_negotiable && (
+                                            <div style={{
+                                                position: 'absolute',
+                                                top: '28px',
+                                                left: '-30px',
+                                                width: '130px',
+                                                background: 'var(--secondary)',
+                                                color: 'var(--primary)',
+                                                fontSize: '10px',
+                                                fontWeight: '950',
+                                                textTransform: 'uppercase',
+                                                letterSpacing: '0.08em',
+                                                textAlign: 'center',
+                                                padding: '7px 0',
+                                                transform: 'rotate(-45deg)',
+                                                transformOrigin: 'center center',
+                                                boxShadow: '0 4px 15px rgba(163, 230, 53, 0.5)',
+                                                zIndex: 10,
+                                                pointerEvents: 'none'
+                                            }}>
+                                                NEGOCIABLE
+                                            </div>
+                                        )}
+
                                         {/* Heart Button Overlay */}
                                         <div style={{
                                             position: 'absolute',
@@ -886,24 +911,37 @@ const Home: React.FC = () => {
                                             </motion.button>
                                         </div>
 
-                                        {/* Condition Overlay */}
-                                        {selectedProduct.condition && (
+                                        {/* Price + Envío + Condición Overlay sobre la foto */}
+                                        <div style={{
+                                            position: 'absolute',
+                                            bottom: '20px',
+                                            left: '20px',
+                                            zIndex: 10,
+                                            pointerEvents: 'none'
+                                        }}>
                                             <div style={{
-                                                position: 'absolute',
-                                                bottom: '20px',
-                                                right: '20px',
-                                                zIndex: 10,
-                                                background: 'rgba(0,0,0,0.3)',
-                                                backdropFilter: 'blur(10px)',
-                                                padding: '4px 10px',
-                                                borderRadius: '8px',
-                                                border: '1px solid rgba(255,255,255,0.1)'
+                                                fontSize: '26px',
+                                                fontWeight: '900',
+                                                color: 'var(--secondary)',
+                                                letterSpacing: '-0.5px',
+                                                textShadow: '0 2px 10px rgba(0,0,0,0.5)',
+                                                lineHeight: 1
                                             }}>
-                                                <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.9)', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                                                    {selectedProduct.condition}
-                                                </span>
+                                                ${new Intl.NumberFormat('es-CO').format(selectedProduct.price)}
                                             </div>
-                                        )}
+                                            <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.75)', fontWeight: '600', marginTop: '2px' }}>
+                                                {Number(selectedProduct.shipping_cost) > 0 ? (
+                                                    <>+ $ {new Intl.NumberFormat('es-CO').format(selectedProduct.shipping_cost)} envío</>
+                                                ) : (
+                                                    <span style={{ color: 'var(--secondary)', opacity: 0.85 }}>Envío GRATIS</span>
+                                                )}
+                                            </div>
+                                            {selectedProduct.condition && (
+                                                <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.6)', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.5px', marginTop: '3px' }}>
+                                                    {selectedProduct.condition}
+                                                </div>
+                                            )}
+                                        </div>
                                     </motion.div>
 
                                 </div>
@@ -930,40 +968,146 @@ const Home: React.FC = () => {
                                         margin: '0 auto 15px'
                                     }} />
 
-                                    {/* Price & Actions Row */}
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '15px', marginBottom: '25px' }}>
-                                        <div>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                                <div style={{ fontSize: '24px', fontWeight: '900', color: 'var(--secondary)' }}>
-                                                    ${new Intl.NumberFormat('es-CO').format(selectedProduct.price)}
-                                                </div>
-                                                {selectedProduct.is_negotiable && (
-                                                    <div style={{
-                                                        fontSize: '10px',
-                                                        background: 'rgba(163, 230, 53, 0.1)',
-                                                        color: 'var(--secondary)',
-                                                        padding: '3px 8px',
-                                                        borderRadius: '8px',
-                                                        border: '1px solid rgba(163, 230, 53, 0.2)',
-                                                        fontWeight: '800',
-                                                        textTransform: 'uppercase',
-                                                        letterSpacing: '0.05em'
-                                                    }}>
-                                                        Negociable
-                                                    </div>
+                                    {/* Sizes + Action Buttons in same row */}
+                                    {selectedProduct.sizes_inventory && selectedProduct.sizes_inventory.length > 0 ? (
+                                        <div style={{ marginBottom: '15px' }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                                                <h4 style={{ color: 'rgba(255,255,255,0.8)', fontSize: '11px', fontWeight: '800', margin: 0, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Talla</h4>
+                                                {selectedSize && (
+                                                    <span style={{ fontSize: '10px', color: 'var(--secondary)', fontWeight: '700' }}>
+                                                        {selectedProduct.sizes_inventory?.find((s: { size: string; quantity: number }) => s.size === selectedSize)?.quantity} disponibles
+                                                    </span>
                                                 )}
                                             </div>
-                                            <div style={{ fontSize: '12px', color: 'var(--text-dim)', marginTop: '2px', fontWeight: '600' }}>
-                                                {Number(selectedProduct.shipping_cost) > 0 ? (
-                                                    <>+ $ {new Intl.NumberFormat('es-CO').format(selectedProduct.shipping_cost)} envío</>
-                                                ) : (
-                                                    <span style={{ color: 'var(--secondary)' }}>Envío GRATIS</span>
-                                                )}
+                                            {/* Tallas y botones en la misma fila */}
+                                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+                                                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', flex: 1 }}>
+                                                    {selectedProduct.sizes_inventory.map((s: { size: string; quantity: number }, idx: number) => (
+                                                        <button
+                                                            key={s.size || `size-${idx}`}
+                                                            disabled={s.quantity <= 0}
+                                                            onClick={() => setSelectedSize(s.size)}
+                                                            style={{
+                                                                minWidth: '32px',
+                                                                height: '32px',
+                                                                borderRadius: '8px',
+                                                                border: '1px solid ' + (selectedSize === s.size ? 'var(--secondary)' : 'rgba(255,255,255,0.1)'),
+                                                                background: selectedSize === s.size ? 'var(--secondary)' : 'rgba(255,255,255,0.05)',
+                                                                color: selectedSize === s.size ? 'var(--primary)' : (s.quantity <= 0 ? 'rgba(255,255,255,0.2)' : 'white'),
+                                                                fontSize: '11px',
+                                                                fontWeight: '800',
+                                                                padding: '0 8px',
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                justifyContent: 'center',
+                                                                transition: 'all 0.2s ease',
+                                                                opacity: s.quantity <= 0 ? 0.5 : 1,
+                                                                cursor: s.quantity <= 0 ? 'not-allowed' : 'pointer'
+                                                            }}
+                                                        >
+                                                            {s.size}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                                {/* Botones de acción */}
+                                                <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
+                                                    {selectedProduct.is_negotiable && selectedProduct.seller_id !== user?.id && (
+                                                        <motion.button
+                                                            whileTap={{ scale: 0.95 }}
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                if (!user) return navigate('/auth');
+                                                                setShowOfferModal(true);
+                                                                setOfferAmount(selectedProduct.price.toString());
+                                                            }}
+                                                            style={{
+                                                                width: '38px',
+                                                                height: '38px',
+                                                                borderRadius: '10px',
+                                                                background: 'rgba(255,255,255,0.05)',
+                                                                border: '1px solid rgba(255,255,255,0.1)',
+                                                                color: 'white',
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                justifyContent: 'center',
+                                                                cursor: 'pointer'
+                                                            }}
+                                                        >
+                                                            <Handshake size={18} />
+                                                        </motion.button>
+                                                    )}
+                                                    <motion.button
+                                                        whileTap={{ scale: 0.95 }}
+                                                        onClick={async (e) => {
+                                                            e.stopPropagation();
+                                                            if (selectedProduct.sizes_inventory && selectedProduct.sizes_inventory.length > 0 && !selectedSize) {
+                                                                warning('Falta seleccionar la talla');
+                                                                return;
+                                                            }
+                                                            try {
+                                                                setAddingToCart(selectedProduct.id);
+                                                                await addToCart({ ...selectedProduct } as any, selectedSize);
+                                                                setTimeout(() => setAddingToCart(null), 1500);
+                                                            } catch (err) {
+                                                                setAddingToCart(null);
+                                                            }
+                                                        }}
+                                                        style={{
+                                                            width: '38px',
+                                                            height: '38px',
+                                                            borderRadius: '10px',
+                                                            background: 'rgba(163, 230, 53, 0.1)',
+                                                            color: 'var(--secondary)',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
+                                                            border: '1px solid rgba(163, 230, 53, 0.2)',
+                                                            cursor: 'pointer'
+                                                        }}
+                                                    >
+                                                        {addingToCart === selectedProduct.id ? <CheckCircle2 size={18} /> : <ShoppingCart size={18} />}
+                                                    </motion.button>
+                                                    <motion.button
+                                                        whileTap={{ scale: 0.95 }}
+                                                        onClick={async (e) => {
+                                                            e.stopPropagation();
+                                                            if (!user) return navigate('/auth');
+                                                            if (selectedProduct.sizes_inventory && selectedProduct.sizes_inventory.length > 0 && !selectedSize) {
+                                                                warning('Falta seleccionar la talla');
+                                                                return;
+                                                            }
+                                                            try {
+                                                                setBuying(true);
+                                                                await addToCart({ ...selectedProduct } as any, selectedSize);
+                                                                setSelectedProduct(null);
+                                                                navigate('/checkout');
+                                                            } catch (err) {
+                                                                setBuying(false);
+                                                            }
+                                                        }}
+                                                        disabled={buying}
+                                                        style={{
+                                                            width: '38px',
+                                                            height: '38px',
+                                                            borderRadius: '10px',
+                                                            background: 'var(--secondary)',
+                                                            color: 'var(--primary)',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
+                                                            border: 'none',
+                                                            cursor: buying ? 'not-allowed' : 'pointer',
+                                                            opacity: buying ? 0.5 : 1
+                                                        }}
+                                                    >
+                                                        {buying ? <Loader2 className="animate-spin" size={18} /> : <DollarSign size={18} />}
+                                                    </motion.button>
+                                                </div>
                                             </div>
                                         </div>
-
-                                        <div style={{ display: 'flex', gap: '8px' }}>
-                                            {/* Offer/Negotiate Icon */}
+                                    ) : (
+                                        /* Sin tallas: botones solos */
+                                        <div style={{ display: 'flex', gap: '8px', marginBottom: '15px' }}>
                                             {selectedProduct.is_negotiable && selectedProduct.seller_id !== user?.id && (
                                                 <motion.button
                                                     whileTap={{ scale: 0.95 }}
@@ -989,16 +1133,10 @@ const Home: React.FC = () => {
                                                     <Handshake size={18} />
                                                 </motion.button>
                                             )}
-
-                                            {/* Cart Icon */}
                                             <motion.button
                                                 whileTap={{ scale: 0.95 }}
                                                 onClick={async (e) => {
                                                     e.stopPropagation();
-                                                    if (selectedProduct.sizes_inventory && selectedProduct.sizes_inventory.length > 0 && !selectedSize) {
-                                                        warning('Falta seleccionar la talla');
-                                                        return;
-                                                    }
                                                     try {
                                                         setAddingToCart(selectedProduct.id);
                                                         await addToCart({ ...selectedProduct } as any, selectedSize);
@@ -1022,17 +1160,11 @@ const Home: React.FC = () => {
                                             >
                                                 {addingToCart === selectedProduct.id ? <CheckCircle2 size={18} /> : <ShoppingCart size={18} />}
                                             </motion.button>
-
-                                            {/* Buy Now Icon */}
                                             <motion.button
                                                 whileTap={{ scale: 0.95 }}
                                                 onClick={async (e) => {
                                                     e.stopPropagation();
                                                     if (!user) return navigate('/auth');
-                                                    if (selectedProduct.sizes_inventory && selectedProduct.sizes_inventory.length > 0 && !selectedSize) {
-                                                        warning('Falta seleccionar la talla');
-                                                        return;
-                                                    }
                                                     try {
                                                         setBuying(true);
                                                         await addToCart({ ...selectedProduct } as any, selectedSize);
@@ -1059,48 +1191,6 @@ const Home: React.FC = () => {
                                             >
                                                 {buying ? <Loader2 className="animate-spin" size={18} /> : <DollarSign size={18} />}
                                             </motion.button>
-                                        </div>
-                                    </div>
-
-                                    {/* Sizes Inventory Selection */}
-                                    {selectedProduct.sizes_inventory && selectedProduct.sizes_inventory.length > 0 && (
-                                        <div style={{ marginBottom: '15px' }}>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                                                <h4 style={{ color: 'rgba(255,255,255,0.8)', fontSize: '11px', fontWeight: '800', margin: 0, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Talla</h4>
-                                                {selectedSize && (
-                                                    <span style={{ fontSize: '10px', color: 'var(--secondary)', fontWeight: '700' }}>
-                                                        {selectedProduct.sizes_inventory?.find((s: { size: string; quantity: number }) => s.size === selectedSize)?.quantity} disponibles
-                                                    </span>
-                                                )}
-                                            </div>
-                                            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                                                {selectedProduct.sizes_inventory.map((s: { size: string; quantity: number }, idx: number) => (
-                                                    <button
-                                                        key={s.size || `size-${idx}`}
-                                                        disabled={s.quantity <= 0}
-                                                        onClick={() => setSelectedSize(s.size)}
-                                                        style={{
-                                                            minWidth: '32px',
-                                                            height: '32px',
-                                                            borderRadius: '8px',
-                                                            border: '1px solid ' + (selectedSize === s.size ? 'var(--secondary)' : 'rgba(255,255,255,0.1)'),
-                                                            background: selectedSize === s.size ? 'var(--secondary)' : 'rgba(255,255,255,0.05)',
-                                                            color: selectedSize === s.size ? 'var(--primary)' : (s.quantity <= 0 ? 'rgba(255,255,255,0.2)' : 'white'),
-                                                            fontSize: '11px',
-                                                            fontWeight: '800',
-                                                            padding: '0 8px',
-                                                            display: 'flex',
-                                                            alignItems: 'center',
-                                                            justifyContent: 'center',
-                                                            transition: 'all 0.2s ease',
-                                                            opacity: s.quantity <= 0 ? 0.5 : 1,
-                                                            cursor: s.quantity <= 0 ? 'not-allowed' : 'pointer'
-                                                        }}
-                                                    >
-                                                        {s.size}
-                                                    </button>
-                                                ))}
-                                            </div>
                                         </div>
                                     )}
 
