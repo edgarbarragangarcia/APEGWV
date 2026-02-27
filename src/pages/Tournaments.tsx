@@ -213,15 +213,15 @@ const Tournaments: React.FC = () => {
                 <div style={{
                     display: 'flex',
                     background: 'rgba(255,255,255,0.05)',
-                    padding: '4px',
+                    padding: '3px',
                     borderRadius: '16px',
-                    marginBottom: '15px'
+                    marginBottom: '0px'
                 }}>
                     <button
                         onClick={() => setActiveTab('all')}
                         style={{
                             flex: 1,
-                            padding: '12px',
+                            padding: '8px',
                             borderRadius: '12px',
                             border: 'none',
                             background: activeTab === 'all' ? 'var(--secondary)' : 'transparent',
@@ -236,13 +236,13 @@ const Tournaments: React.FC = () => {
                             transition: 'all 0.3s ease'
                         }}
                     >
-                        <Trophy size={18} /> Todos
+                        <Trophy size={16} /> Todos
                     </button>
                     <button
                         onClick={() => setActiveTab('my')}
                         style={{
                             flex: 1,
-                            padding: '12px',
+                            padding: '8px',
                             borderRadius: '12px',
                             border: 'none',
                             background: activeTab === 'my' ? 'var(--secondary)' : 'transparent',
@@ -257,13 +257,13 @@ const Tournaments: React.FC = () => {
                             transition: 'all 0.3s ease'
                         }}
                     >
-                        <Users size={18} /> Mis Inscripciones
+                        <Users size={16} /> Mis Inscripciones
                     </button>
                 </div>
 
                 {/* Search Bar */}
                 <div className="glass" style={{
-                    margin: '0',
+                    margin: '10px 0 0 0',
                     padding: '12px 20px',
                     display: 'flex',
                     alignItems: 'center',
