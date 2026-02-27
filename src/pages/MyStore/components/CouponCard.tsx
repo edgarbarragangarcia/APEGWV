@@ -105,7 +105,14 @@ const CouponCard: React.FC<CouponCardProps> = ({ coupon, onEdit, onDelete }) => 
                     animate={controls}
                     onDragEnd={onDragEnd}
                     whileDrag={{ cursor: 'grabbing' }}
-                    onClick={() => { if (isOpen) closeActions(); }}
+                    onClick={() => {
+                        if (isOpen) {
+                            closeActions();
+                        } else {
+                            controls.start({ x: -90 });
+                            setIsOpen(true);
+                        }
+                    }}
                     style={{
                         position: 'relative',
                         zIndex: 2,

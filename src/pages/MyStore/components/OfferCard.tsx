@@ -147,7 +147,14 @@ const OfferCard: React.FC<OfferCardProps> = ({
                     animate={controls}
                     onDragEnd={onDragEnd}
                     whileDrag={{ cursor: 'grabbing' }}
-                    onClick={() => { if (isOpen) closeActions(); }}
+                    onClick={() => {
+                        if (isOpen) {
+                            closeActions();
+                        } else {
+                            controls.start({ x: dragDistance });
+                            setIsOpen(true);
+                        }
+                    }}
                     style={{
                         position: 'relative',
                         zIndex: 2,

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, useAnimation } from 'framer-motion';
-import { CheckCircle2, Package, Truck, Pencil, Trash2, ArrowLeft } from 'lucide-react';
+import { CheckCircle2, Package, Truck, Pencil, Trash2, ChevronLeft } from 'lucide-react';
 import { optimizeImage } from '../../../services/SupabaseManager';
 import { supabase } from '../../../services/SupabaseManager';
 import ConfirmationModal from '../../../components/ConfirmationModal';
@@ -52,10 +52,13 @@ const ProductCard: React.FC<ProductCardProps> = ({
         }
     };
 
+    const actionsCount = 2; // Edit and Delete
+    const dragDistance = -(actionsCount * 64) - 16;
+
     const onDragEnd = (_: any, info: any) => {
-        // If dragged more than 40px to the left, snap to open position
-        if (info.offset.x < -40) {
-            controls.start({ x: -90 });
+        // If dragged to the left enough, open actions
+        if (info.offset.x < -30) {
+            controls.start({ x: dragDistance });
             setIsOpen(true);
         } else {
             controls.start({ x: 0 });
@@ -68,6 +71,31 @@ const ProductCard: React.FC<ProductCardProps> = ({
         setIsOpen(false);
     };
 
+    const ActionBtn = ({ hexColor, icon, onClick, label }: any) => (
+        <motion.button
+            whileTap={{ scale: 0.9 }}
+            onClick={(e) => { e.stopPropagation(); onClick(); }}
+            style={{
+                width: '56px',
+                height: '80px',
+                borderRadius: '18px',
+                background: `color-mix(in srgb, ${hexColor} 15%, transparent)`,
+                border: `1px solid color-mix(in srgb, ${hexColor} 30%, transparent)`,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px',
+                color: hexColor,
+                boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
+                cursor: 'pointer'
+            }}
+        >
+            {icon}
+            <span style={{ fontSize: '8px', fontWeight: '950', textTransform: 'uppercase' }}>{label}</span>
+        </motion.button>
+    );
+
     return (
         <motion.div
             initial={{ opacity: 0, y: 10 }}
@@ -78,8 +106,9 @@ const ProductCard: React.FC<ProductCardProps> = ({
                 style={{
                     position: 'relative',
                     background: 'rgba(255,255,255,0.02)',
-                    borderRadius: '24px',
+                    borderRadius: '32px',
                     overflow: 'hidden',
+                    boxShadow: '0 15px 35px rgba(0,0,0,0.2)',
                 }}
             >
                 {/* Actions Layer (Behind) */}
@@ -88,57 +117,32 @@ const ProductCard: React.FC<ProductCardProps> = ({
                     top: 0,
                     right: 0,
                     bottom: 0,
-                    width: '90px',
+                    width: Math.abs(dragDistance) + 'px',
                     display: 'flex',
-                    flexDirection: 'column',
                     alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '10px',
-                    paddingRight: '10px',
+                    justifyContent: 'flex-end',
+                    gap: '8px',
+                    paddingRight: '16px',
                     zIndex: 1
                 }}>
-                    <motion.button
-                        whileTap={{ scale: 0.9 }}
-                        onClick={(e) => { e.stopPropagation(); onEdit(product); closeActions(); }}
-                        style={{
-                            color: 'white',
-                            background: 'rgba(255,255,255,0.05)',
-                            border: '1px solid rgba(255,255,255,0.1)',
-                            borderRadius: '12px',
-                            width: '40px',
-                            height: '40px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            cursor: 'pointer',
-                        }}
-                    >
-                        <Pencil size={18} strokeWidth={2.5} />
-                    </motion.button>
-                    <motion.button
-                        whileTap={{ scale: 0.9 }}
-                        onClick={(e) => { e.stopPropagation(); onDelete(product); closeActions(); }}
-                        style={{
-                            color: '#ef4444',
-                            background: 'rgba(239, 68, 68, 0.1)',
-                            border: '1px solid rgba(239, 68, 68, 0.2)',
-                            borderRadius: '12px',
-                            width: '40px',
-                            height: '40px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            cursor: 'pointer',
-                        }}
-                    >
-                        <Trash2 size={18} strokeWidth={2.5} />
-                    </motion.button>
+                    <ActionBtn
+                        hexColor="#a3e635"
+                        icon={<Pencil size={20} />}
+                        onClick={() => { onEdit(product); closeActions(); }}
+                        label="EDITAR"
+                    />
+                    <ActionBtn
+                        hexColor="#ef4444"
+                        icon={<Trash2 size={20} />}
+                        onClick={() => { onDelete(product); closeActions(); }}
+                        label="BORRAR"
+                    />
                 </div>
 
                 {/* Draggable Content Layer */}
                 <motion.div
                     drag="x"
-                    dragConstraints={{ left: -90, right: 0 }}
+                    dragConstraints={{ left: dragDistance, right: 0 }}
                     dragElastic={0.1}
                     animate={controls}
                     onDragEnd={onDragEnd}
@@ -146,7 +150,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
                         position: 'relative',
                         zIndex: 2,
                         background: 'rgba(6, 46, 36, 0.98)', // Even Darker Emerald Green
-                        borderRadius: '24px',
+                        borderRadius: '32px',
                         border: '1px solid rgba(255,255,255,0.06)',
                         boxShadow: '0 8px 30px rgba(0,0,0,0.2)',
                         backdropFilter: 'blur(20px)',
@@ -155,7 +159,14 @@ const ProductCard: React.FC<ProductCardProps> = ({
                         touchAction: 'pan-y'
                     }}
                     whileDrag={{ cursor: 'grabbing' }}
-                    onClick={() => { if (isOpen) closeActions(); }}
+                    onClick={() => {
+                        if (isOpen) {
+                            closeActions();
+                        } else {
+                            controls.start({ x: dragDistance });
+                            setIsOpen(true);
+                        }
+                    }}
                 >
                     <div style={{ padding: '16px', display: 'flex', gap: '16px', alignItems: 'center' }}>
                         {/* Image Section */}
@@ -297,13 +308,19 @@ const ProductCard: React.FC<ProductCardProps> = ({
                             </div>
                         </div>
 
-                        {/* Swipe Hint */}
-                        <div style={{ opacity: isOpen ? 1 : 0.2, transition: '0.3s all' }}>
-                            <motion.div animate={isOpen ? { x: 0, rotate: 180 } : { x: [0, -3, 0] }} transition={{ repeat: isOpen ? 0 : Infinity, duration: 2 }}>
-                                {isOpen ? <ArrowLeft size={16} color="var(--secondary)" /> : <Trash2 size={12} />}
-                            </motion.div>
-                        </div>
                     </div>
+
+                    {/* Swipe Hint Indicator */}
+                    {!isOpen && (
+                        <motion.div
+                            initial={{ opacity: 0.4 }}
+                            animate={{ opacity: [0.4, 1, 0.4], x: [0, -3, 0] }}
+                            transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+                            style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', display: 'flex', alignItems: 'center', color: 'rgba(255,255,255,0.2)' }}
+                        >
+                            <ChevronLeft size={16} />
+                        </motion.div>
+                    )}
 
                     {product.status === 'pending_payment' && (
                         <div style={{ padding: '0 16px 16px' }}>
