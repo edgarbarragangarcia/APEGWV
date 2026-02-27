@@ -47,9 +47,9 @@ const ProductsTab: React.FC<ProductsTabProps> = ({
 
     return (
         <div className="animate-fade">
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '20px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '12px' }}>
                 <div style={{ position: 'relative' }}>
-                    <Search style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--secondary)', opacity: 0.8 }} size={16} />
+                    <Search style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--secondary)', opacity: 0.8 }} size={14} />
                     <input
                         type="text"
                         placeholder="Buscar en mis productos..."
@@ -59,10 +59,10 @@ const ProductsTab: React.FC<ProductsTabProps> = ({
                             width: '100%',
                             background: 'rgba(255,255,255,0.03)',
                             border: '1px solid rgba(255,255,255,0.06)',
-                            borderRadius: '16px',
-                            padding: '12px 16px 12px 42px',
+                            borderRadius: '12px',
+                            padding: '10px 14px 10px 38px',
                             color: 'white',
-                            fontSize: '14px',
+                            fontSize: '13px',
                             fontWeight: '600',
                             outline: 'none',
                             transition: 'all 0.3s ease',
@@ -74,9 +74,9 @@ const ProductsTab: React.FC<ProductsTabProps> = ({
                 {/* Category Filter */}
                 <div style={{
                     display: 'flex',
-                    gap: '8px',
+                    gap: '6px',
                     overflowX: 'auto',
-                    padding: '2px 0 8px',
+                    padding: '0 0 4px',
                     margin: '0 -16px',
                     paddingLeft: '16px',
                     paddingRight: '16px'
@@ -87,8 +87,8 @@ const ProductsTab: React.FC<ProductsTabProps> = ({
                             whileTap={{ scale: 0.95 }}
                             onClick={() => setSelectedCategory(cat)}
                             style={{
-                                padding: '8px 14px',
-                                borderRadius: '12px',
+                                padding: '6px 12px',
+                                borderRadius: '10px',
                                 background: selectedCategory === cat ? 'rgba(163, 230, 53, 0.15)' : 'rgba(255,255,255,0.03)',
                                 color: selectedCategory === cat ? 'var(--secondary)' : 'rgba(255,255,255,0.5)',
                                 border: '1px solid ' + (selectedCategory === cat ? 'rgba(163, 230, 53, 0.3)' : 'rgba(255,255,255,0.06)'),
@@ -104,20 +104,20 @@ const ProductsTab: React.FC<ProductsTabProps> = ({
                     ))}
                 </div>
 
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px' }}>
-                    <div style={{ display: 'flex', gap: '3px', background: 'rgba(255,255,255,0.03)', padding: '3px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
+                    <div style={{ display: 'flex', gap: '2px', background: 'rgba(255,255,255,0.03)', padding: '2px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
                         {['Todos', 'Activos', 'Borradores'].map(status => (
                             <motion.button
                                 key={status}
                                 whileTap={{ scale: 0.95 }}
                                 onClick={() => setSelectedStatus(status)}
                                 style={{
-                                    padding: '5px 10px',
-                                    borderRadius: '7px',
+                                    padding: '4px 8px',
+                                    borderRadius: '6px',
                                     background: selectedStatus === status ? 'rgba(255,255,255,0.08)' : 'transparent',
                                     color: selectedStatus === status ? 'white' : 'rgba(255,255,255,0.4)',
                                     border: 'none',
-                                    fontSize: '10px',
+                                    fontSize: '9px',
                                     fontWeight: '800',
                                     cursor: 'pointer',
                                     transition: 'all 0.2s ease'
@@ -135,20 +135,20 @@ const ProductsTab: React.FC<ProductsTabProps> = ({
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            gap: '6px',
-                            padding: '8px 14px',
+                            gap: '4px',
+                            padding: '6px 12px',
                             background: 'var(--secondary)',
                             color: 'var(--primary)',
-                            borderRadius: '10px',
+                            borderRadius: '8px',
                             border: 'none',
                             fontWeight: '900',
                             fontSize: '10px',
                             textTransform: 'uppercase',
-                            letterSpacing: '0.05em',
+                            letterSpacing: '0.04em',
                             fontFamily: 'var(--font-main)'
                         }}
                     >
-                        <Plus size={14} strokeWidth={3} /> Publicar
+                        <Plus size={12} strokeWidth={3} /> Publicar
                     </motion.button>
                 </div>
             </div>

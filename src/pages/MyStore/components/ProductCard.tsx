@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { CheckCircle2, Package, Truck, Pencil, Trash2 } from 'lucide-react';
+import { motion, useAnimation } from 'framer-motion';
+import { CheckCircle2, Package, Truck, Pencil, Trash2, ArrowLeft } from 'lucide-react';
 import { optimizeImage } from '../../../services/SupabaseManager';
 import { supabase } from '../../../services/SupabaseManager';
 import ConfirmationModal from '../../../components/ConfirmationModal';
@@ -24,6 +24,8 @@ const ProductCard: React.FC<ProductCardProps> = ({
 }) => {
     const [isPublishModalOpen, setIsPublishModalOpen] = useState(false);
     const [isPublishing, setIsPublishing] = useState(false);
+    const controls = useAnimation();
+    const [isOpen, setIsOpen] = useState(false);
 
     const handlePublishNow = (e: React.MouseEvent) => {
         e.stopPropagation();
@@ -48,6 +50,22 @@ const ProductCard: React.FC<ProductCardProps> = ({
         } finally {
             setIsPublishing(false);
         }
+    };
+
+    const onDragEnd = (event: any, info: any) => {
+        // If dragged more than 40px to the left, snap to open position
+        if (info.offset.x < -40) {
+            controls.start({ x: -90 });
+            setIsOpen(true);
+        } else {
+            controls.start({ x: 0 });
+            setIsOpen(false);
+        }
+    };
+
+    const closeActions = () => {
+        controls.start({ x: 0 });
+        setIsOpen(false);
     };
 
     return (
@@ -81,7 +99,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
                 }}>
                     <motion.button
                         whileTap={{ scale: 0.9 }}
-                        onClick={(e) => { e.stopPropagation(); onEdit(product); }}
+                        onClick={(e) => { e.stopPropagation(); onEdit(product); closeActions(); }}
                         style={{
                             color: 'white',
                             background: 'rgba(255,255,255,0.05)',
@@ -99,7 +117,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
                     </motion.button>
                     <motion.button
                         whileTap={{ scale: 0.9 }}
-                        onClick={(e) => { e.stopPropagation(); onDelete(product); }}
+                        onClick={(e) => { e.stopPropagation(); onDelete(product); closeActions(); }}
                         style={{
                             color: '#ef4444',
                             background: 'rgba(239, 68, 68, 0.1)',
@@ -122,11 +140,12 @@ const ProductCard: React.FC<ProductCardProps> = ({
                     drag="x"
                     dragConstraints={{ left: -90, right: 0 }}
                     dragElastic={0.1}
-                    dragSnapToOrigin={true}
+                    animate={controls}
+                    onDragEnd={onDragEnd}
                     style={{
                         position: 'relative',
                         zIndex: 2,
-                        background: 'rgba(23, 37, 84, 0.98)',
+                        background: 'rgba(6, 46, 36, 0.98)', // Even Darker Emerald Green
                         borderRadius: '24px',
                         border: '1px solid rgba(255,255,255,0.06)',
                         boxShadow: '0 8px 30px rgba(0,0,0,0.2)',
@@ -136,6 +155,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
                         touchAction: 'pan-y'
                     }}
                     whileDrag={{ cursor: 'grabbing' }}
+                    onClick={() => { if (isOpen) closeActions(); }}
                 >
                     <div style={{ padding: '16px', display: 'flex', gap: '16px', alignItems: 'center' }}>
                         {/* Image Section */}
@@ -278,9 +298,9 @@ const ProductCard: React.FC<ProductCardProps> = ({
                         </div>
 
                         {/* Swipe Hint */}
-                        <div style={{ opacity: 0.2 }}>
-                            <motion.div animate={{ x: [0, -3, 0] }} transition={{ repeat: Infinity, duration: 2 }}>
-                                <Trash2 size={12} />
+                        <div style={{ opacity: isOpen ? 1 : 0.2, transition: '0.3s all' }}>
+                            <motion.div animate={isOpen ? { x: 0, rotate: 180 } : { x: [0, -3, 0] }} transition={{ repeat: isOpen ? 0 : Infinity, duration: 2 }}>
+                                {isOpen ? <ArrowLeft size={16} color="var(--secondary)" /> : <Trash2 size={12} />}
                             </motion.div>
                         </div>
                     </div>
