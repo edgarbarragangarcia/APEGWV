@@ -11,7 +11,7 @@ interface Offer {
     buyer_id: string;
     counter_amount?: number;
     counter_message?: string;
-    product: { id: string; name: string; image_url: string | null; price: number } | null;
+    product: { id: string; name: string; image_url: string | null; price: number; is_negotiable?: boolean } | null;
     buyer: { id: string; full_name: string | null; id_photo_url: string | null } | null;
 }
 

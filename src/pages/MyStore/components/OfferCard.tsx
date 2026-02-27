@@ -12,7 +12,7 @@ interface Offer {
     buyer_id: string;
     counter_amount?: number;
     counter_message?: string;
-    product: { id: string; name: string; image_url: string | null; price: number } | null;
+    product: { id: string; name: string; image_url: string | null; price: number; is_negotiable?: boolean } | null;
     buyer: { id: string; full_name: string | null; id_photo_url: string | null } | null;
 }
 
@@ -246,7 +246,7 @@ const OfferCard: React.FC<OfferCardProps> = ({
                                     background: 'rgba(239, 68, 68, 0.05)',
                                     border: '1px solid rgba(239, 68, 68, 0.1)',
                                     color: '#f87171',
-                                    padding: '10px',
+                                    padding: '10px 4px',
                                     borderRadius: '14px',
                                     fontWeight: '900',
                                     fontSize: '9px',
@@ -255,22 +255,42 @@ const OfferCard: React.FC<OfferCardProps> = ({
                             >
                                 RECHAZAR
                             </motion.button>
+                            {offer.product?.is_negotiable && onCounterClick && (
+                                <motion.button
+                                    whileTap={{ scale: 0.95 }}
+                                    onClick={() => onCounterClick(offer)}
+                                    disabled={updatingOffer === offer.id}
+                                    style={{
+                                        flex: 1,
+                                        background: 'rgba(245, 158, 11, 0.1)',
+                                        border: '1px solid rgba(245, 158, 11, 0.2)',
+                                        color: '#fbbf24',
+                                        padding: '10px 4px',
+                                        borderRadius: '14px',
+                                        fontWeight: '900',
+                                        fontSize: '9px',
+                                        textTransform: 'uppercase'
+                                    }}
+                                >
+                                    CONTRAOFERTA
+                                </motion.button>
+                            )}
                             <motion.button
                                 whileTap={{ scale: 0.98 }}
                                 onClick={() => onAction(offer.id, 'accepted')}
                                 disabled={updatingOffer === offer.id}
                                 style={{
-                                    flex: 2,
+                                    flex: 1,
                                     background: 'var(--secondary)',
                                     color: 'var(--primary)',
-                                    padding: '10px',
+                                    padding: '10px 4px',
                                     borderRadius: '14px',
                                     fontWeight: '950',
                                     fontSize: '10px',
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
-                                    gap: '6px',
+                                    gap: '4px',
                                     textTransform: 'uppercase',
                                     border: 'none',
                                     boxShadow: '0 4px 15px rgba(163, 230, 53, 0.15)'
