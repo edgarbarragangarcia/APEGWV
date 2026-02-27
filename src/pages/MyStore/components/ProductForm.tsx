@@ -154,7 +154,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
                         <label style={labelStyle}>Categoría</label>
                         <select
                             value={formData.category}
-                            onChange={e => onChange({ ...formData, category: e.target.value })}
+                            onChange={e => onChange({ ...formData, category: e.target.value, sizes_inventory: [] })}
                             style={inputStyle}
                         >
                             <option value="Clubs">Palos (Clubs)</option>
