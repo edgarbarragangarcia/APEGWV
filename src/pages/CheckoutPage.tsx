@@ -157,11 +157,16 @@ const CheckoutPage: React.FC = () => {
                     ? `${shipping.address}, ${shipping.city} `
                     : shipping.address;
 
+                const commissionAmount = Math.round(totalAmount * 0.10); // 10% commission
+                const sellerPayout = totalAmount - commissionAmount;
+
                 const { data: orderData, error: orderError } = await supabase.from('orders').insert({
                     user_id: user.id,
                     buyer_id: user.id,
                     seller_id: sellerId,
                     total_amount: totalAmount,
+                    commission_amount: commissionAmount,
+                    seller_payout: sellerPayout,
                     status: 'Pendiente de Pago',
                     shipping_address: fullAddress,
                     buyer_name: shipping.name,
@@ -207,7 +212,8 @@ const CheckoutPage: React.FC = () => {
                     body: {
                         items: allItemsForMp,
                         buyer_email: user.email,
-                        order_id: newOrderId
+                        order_id: newOrderId,
+                        seller_id: sellerId
                     }
                 });
 
@@ -242,11 +248,18 @@ const CheckoutPage: React.FC = () => {
                     ? `${shipping.address}, ${shipping.city} `
                     : shipping.address;
 
+                const commissionAmount = Math.round(sellerSubtotal * 0.10); // 10% commission
+                const platformFee = items.reduce((acc, item) => acc + (item.platform_fee || 0), 0);
+                const sellerPayout = sellerSubtotal - commissionAmount;
+
                 const { data: orderData, error: orderError } = await supabase.from('orders').insert({
                     user_id: user.id,
                     buyer_id: user.id,
                     seller_id: sellerId === 'admin' ? null : sellerId,
                     total_amount: sellerTotal,
+                    commission_amount: commissionAmount,
+                    platform_fee: platformFee,
+                    seller_payout: sellerPayout,
                     status: 'Pendiente de Pago',
                     shipping_address: fullAddress,
                     buyer_name: shipping.name,
@@ -292,7 +305,8 @@ const CheckoutPage: React.FC = () => {
                 body: {
                     items: allItemsForMp,
                     buyer_email: user.email,
-                    order_id: firstOrderId
+                    order_id: firstOrderId,
+                    seller_id: Object.keys(ordersBySeller)[0] // Pass the first seller ID for split logic
                 }
             });
 

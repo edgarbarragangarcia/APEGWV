@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pencil, Store, User, Landmark } from 'lucide-react';
+import { Pencil, Store, User } from 'lucide-react';
 import Card from '../../../components/Card';
 import ProfileEditForm from '../components/ProfileEditForm';
 
@@ -87,24 +87,62 @@ const ProfileTab: React.FC<ProfileTabProps> = ({
                                 </div>
                             </div>
 
-                            <div style={{ background: 'rgba(255,255,255,0.02)', borderRadius: '20px', padding: '20px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                                <h4 style={{ fontSize: '11px', color: 'var(--secondary)', fontWeight: '900', marginBottom: '18px', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '8px', letterSpacing: '0.05em' }}>
-                                    <Landmark size={14} /> Información Bancaria
-                                </h4>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                        <span style={{ color: 'var(--text-dim)', fontSize: '14px' }}>Banco</span>
-                                        <span style={{ fontWeight: '700', fontSize: '14px' }}>{profile?.bank_name}</span>
+
+                            <div style={{
+                                background: profile?.mp_connected ? 'rgba(0, 158, 227, 0.05)' : 'rgba(255, 255, 255, 0.02)',
+                                borderRadius: '24px',
+                                padding: '25px',
+                                border: profile?.mp_connected ? '1px solid rgba(0, 158, 227, 0.2)' : '1px solid rgba(255, 255, 255, 0.05)',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: '15px'
+                            }}>
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                        <img src="https://logodownload.org/wp-content/uploads/2019/06/mercado-pago-logo-1.png" alt="MP" style={{ height: '20px', filter: profile?.mp_connected ? 'none' : 'grayscale(1) opacity(0.5)' }} />
+                                        <h4 style={{ fontSize: '14px', fontWeight: '800', color: 'white' }}>Mercado Pago</h4>
                                     </div>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                        <span style={{ color: 'var(--text-dim)', fontSize: '14px' }}>Tipo de Cuenta</span>
-                                        <span style={{ fontWeight: '700', fontSize: '14px', textTransform: 'capitalize' }}>{profile?.account_type}</span>
-                                    </div>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                        <span style={{ color: 'var(--text-dim)', fontSize: '14px' }}>Número de Cuenta</span>
-                                        <span style={{ fontWeight: '700', fontSize: '14px' }}>•••• {profile?.account_number?.slice(-4) || '****'}</span>
+                                    <div style={{
+                                        padding: '4px 10px',
+                                        borderRadius: '20px',
+                                        background: profile?.mp_connected ? 'rgba(163, 230, 53, 0.1)' : 'rgba(255, 255, 255, 0.05)',
+                                        color: profile?.mp_connected ? 'var(--secondary)' : 'var(--text-dim)',
+                                        fontSize: '10px',
+                                        fontWeight: '900',
+                                        textTransform: 'uppercase'
+                                    }}>
+                                        {profile?.mp_connected ? 'CONECTADO' : 'NO VINCULADO'}
                                     </div>
                                 </div>
+
+                                <p style={{ fontSize: '13px', color: 'var(--text-dim)', lineHeight: '1.5' }}>
+                                    {profile?.mp_connected
+                                        ? 'Tu cuenta está vinculada. Tus ganancias se transferirán automáticamente tras cada venta.'
+                                        : 'Vincula tu cuenta para recibir tus pagos de forma automática y segura.'}
+                                </p>
+
+                                {!profile?.mp_connected && (
+                                    <button
+                                        onClick={() => {
+                                            const clientId = 'YOUR_MP_CLIENT_ID'; // This should come from config or ENV via edge function
+                                            const redirectUri = window.location.origin + '/mercadopago-callback';
+                                            const authUrl = `https://auth.mercadopago.com/authorization?client_id=${clientId}&response_type=code&platform_id=mp&state=${profile?.id}&redirect_uri=${encodeURIComponent(redirectUri)}`;
+                                            window.open(authUrl, '_blank');
+                                        }}
+                                        style={{
+                                            background: '#009ee3',
+                                            color: 'white',
+                                            border: 'none',
+                                            padding: '12px',
+                                            borderRadius: '12px',
+                                            fontWeight: '800',
+                                            fontSize: '13px',
+                                            cursor: 'pointer'
+                                        }}
+                                    >
+                                        VINCULAR CUENTA
+                                    </button>
+                                )}
                             </div>
                         </div>
 

@@ -41,6 +41,7 @@ import LiveBetting from './pages/LiveBetting';
 import MyPurchases from './pages/MyPurchases';
 import { useOnlineStatus } from './hooks/useOnlineStatus';
 import OfflineOverlay from './components/OfflineOverlay';
+import MercadoPagoCallback from './pages/MercadoPagoCallback';
 
 
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -179,6 +180,7 @@ const AppContent: React.FC = () => {
               <Route path="/rounds/edit/:id" element={<EditRound />} />
               <Route path="/cart" element={<CartPage />} />
               <Route path="/checkout" element={<CheckoutPage />} />
+              <Route path="/mercadopago-callback" element={<MercadoPagoCallback />} />
               <Route path="/my-purchases" element={<MyPurchases />} />
               <Route path="/category/:categoryId" element={<CategoryPage />} />
               <Route path="/my-bag" element={<MyBag />} />

@@ -1392,6 +1392,10 @@ export type Database = {
           id: string
           legal_representative: string | null
           nit: string | null
+          mp_access_token: string | null
+          mp_connected: boolean | null
+          mp_refresh_token: string | null
+          mp_user_id: string | null
           status: string | null
           store_name: string
           updated_at: string | null
@@ -1412,6 +1416,10 @@ export type Database = {
           id?: string
           legal_representative?: string | null
           nit?: string | null
+          mp_access_token?: string | null
+          mp_connected?: boolean | null
+          mp_refresh_token?: string | null
+          mp_user_id?: string | null
           status?: string | null
           store_name: string
           updated_at?: string | null
@@ -1432,6 +1440,10 @@ export type Database = {
           id?: string
           legal_representative?: string | null
           nit?: string | null
+          mp_access_token?: string | null
+          mp_connected?: boolean | null
+          mp_refresh_token?: string | null
+          mp_user_id?: string | null
           status?: string | null
           store_name?: string
           updated_at?: string | null
