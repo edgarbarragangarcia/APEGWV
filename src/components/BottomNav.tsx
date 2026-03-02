@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { Home, Calendar, Ticket, PlayCircle, Users } from 'lucide-react';
+import { Home, Calendar, PlayCircle, Users } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const BottomNav: React.FC = () => {
@@ -10,7 +10,7 @@ const BottomNav: React.FC = () => {
     const navItems = [
         { path: '/', icon: Home, label: 'Inicio' },
         { path: '/play-mode', icon: PlayCircle, label: 'Jugar' },
-        { path: '/green-fee', icon: Ticket, label: 'Green Fee' },
+        // { path: '/green-fee', icon: Ticket, label: 'Green Fee' },
         { path: '/tournaments', icon: Calendar, label: 'Eventos' },
         { path: '/community', icon: Users, label: 'Comunidad' },
     ];

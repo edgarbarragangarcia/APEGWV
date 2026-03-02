@@ -201,13 +201,6 @@ const Home: React.FC = () => {
             color: "rgba(139, 92, 246, 0.4)"
         },
         {
-            badge: "⛳ Reservas VIP",
-            title: "Campos Signature",
-            subtitle: "Los mejores campos a tu alcance",
-            image: "/images/promos/course.png",
-            color: "rgba(16, 185, 129, 0.4)"
-        },
-        {
             badge: "🆕 Nueva Temporada",
             title: "Guantes de Piel Natural",
             subtitle: "Siente cada golpe con precisión",
