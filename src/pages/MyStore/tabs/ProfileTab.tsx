@@ -124,7 +124,7 @@ const ProfileTab: React.FC<ProfileTabProps> = ({
                                 {!profile?.mp_connected && (
                                     <button
                                         onClick={() => {
-                                            const clientId = 'YOUR_MP_CLIENT_ID'; // This should come from config or ENV via edge function
+                                            const clientId = import.meta.env.VITE_MP_CLIENT_ID;
                                             const redirectUri = window.location.origin + '/mercadopago-callback';
                                             const authUrl = `https://auth.mercadopago.com/authorization?client_id=${clientId}&response_type=code&platform_id=mp&state=${profile?.id}&redirect_uri=${encodeURIComponent(redirectUri)}`;
 
