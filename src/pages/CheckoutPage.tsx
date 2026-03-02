@@ -219,7 +219,11 @@ const CheckoutPage: React.FC = () => {
 
                 if (mpError) throw mpError;
                 if (mpData?.init_point) {
-                    window.location.href = mpData.init_point;
+                    if (window.iOSNative?.openExternalURL) {
+                        window.iOSNative.openExternalURL(mpData.init_point);
+                    } else {
+                        window.location.href = mpData.init_point;
+                    }
                 } else {
                     throw new Error('No se pudo generar el link de pago');
                 }
@@ -313,7 +317,11 @@ const CheckoutPage: React.FC = () => {
             if (mpError) throw mpError;
             if (mpData?.init_point) {
                 // Redirect to Mercado Pago
-                window.location.href = mpData.init_point;
+                if (window.iOSNative?.openExternalURL) {
+                    window.iOSNative.openExternalURL(mpData.init_point);
+                } else {
+                    window.location.href = mpData.init_point;
+                }
             } else {
                 throw new Error('No se pudo generar el link de pago');
             }

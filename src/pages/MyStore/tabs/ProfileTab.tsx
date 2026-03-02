@@ -127,7 +127,13 @@ const ProfileTab: React.FC<ProfileTabProps> = ({
                                             const clientId = 'YOUR_MP_CLIENT_ID'; // This should come from config or ENV via edge function
                                             const redirectUri = window.location.origin + '/mercadopago-callback';
                                             const authUrl = `https://auth.mercadopago.com/authorization?client_id=${clientId}&response_type=code&platform_id=mp&state=${profile?.id}&redirect_uri=${encodeURIComponent(redirectUri)}`;
-                                            window.open(authUrl, '_blank');
+
+                                            // Check for Native Bridge (iOS/Android WebView)
+                                            if (window.iOSNative?.openExternalURL) {
+                                                window.iOSNative.openExternalURL(authUrl);
+                                            } else {
+                                                window.open(authUrl, '_blank');
+                                            }
                                         }}
                                         style={{
                                             background: '#009ee3',
