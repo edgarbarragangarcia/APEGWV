@@ -67,7 +67,7 @@ serve(async (req) => {
       },
       external_reference: String(order_id),
       payer: {
-        email: (buyer_email && buyer_email.includes('@')) ? buyer_email : 'test_user_123@test.com'
+        email: (buyer_email && buyer_email.includes('@') && !buyer_email.includes('test.com')) ? buyer_email : buyer_email
       },
       statement_descriptor: 'APEG GOLF',
       theme: {
@@ -81,17 +81,8 @@ serve(async (req) => {
     }
 
     // Split Payment Logic
-    // If we have a seller with a linked account, we create the preference using the platform token
-    // but specifying the marketplace_fee. 
-    // IMPORTANT: For marketplace_fee to work, the preference must be created with the platform token
-    // AND the seller must have authorized the platform's APP.
     if (marketplaceFee > 0) {
       payload.marketplace_fee = marketplaceFee
-      // Note: We create this preference with the Platform Token, 
-      // but MP knows who the seller is because we specify the collector_id if needed,
-      // or we use the seller's token.
-      // In Mercado Pago Marketplace, you usually use your platform token to create
-      // the preference on behalf of the seller by providing his access token in the header.
     }
 
     const tokenToUse = sellerMpToken || MP_ACCESS_TOKEN
@@ -108,8 +99,12 @@ serve(async (req) => {
     const mpData = await mpResponse.json()
     
     if (!mpResponse.ok) {
-        console.error('❌ Mercado Pago Error:', mpData)
-        return new Response(JSON.stringify({ error: mpData.message, details: mpData }), {
+        console.error('❌ Mercado Pago Detailed Error:', JSON.stringify(mpData, null, 2))
+        return new Response(JSON.stringify({ 
+            error: mpData.message || 'Error de Mercado Pago', 
+            details: mpData.code || 'Unauthorized',
+            raw: mpData 
+        }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           status: 400
         })
