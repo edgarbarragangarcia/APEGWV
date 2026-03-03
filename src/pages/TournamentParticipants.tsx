@@ -67,10 +67,10 @@ const TournamentParticipants: React.FC = () => {
             if (regError) throw regError;
 
             const flattenedParticipants = registrations?.map((reg: any) => ({
-                id: reg.id,
+                ...reg.profiles,
+                id: reg.id, // Ensure registration_id is the final 'id'
                 user_id: reg.user_id,
-                registration_status: reg.registration_status,
-                ...reg.profiles
+                registration_status: reg.registration_status
             })) || [];
 
             setParticipants(flattenedParticipants);
