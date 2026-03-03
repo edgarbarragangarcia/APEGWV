@@ -415,7 +415,7 @@ const TournamentManager: React.FC = () => {
             displayPrice: '',
             participants_limit: '100',
             image_url: 'https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?q=80&w=1000&auto=format&fit=crop',
-            status: 'Abierto',
+            status: 'Borrador',
             game_mode: 'Juego por Golpes',
             address: '',
             budget_items: [
@@ -663,7 +663,6 @@ const TournamentManager: React.FC = () => {
                                                     style={{ background: 'rgba(255,b255,b255,0.05)', color: 'white' }}
                                                 >
                                                     <option value="Borrador">Borrador</option>
-                                                    <option value="Publicado">Publicado</option>
                                                     <option value="Abierto">Abierto (Inscripciones)</option>
                                                     <option value="Cerrado">Cerrado (Inscripciones)</option>
                                                     <option value="Finalizado">Finalizado</option>
@@ -755,45 +754,14 @@ const TournamentManager: React.FC = () => {
                                     </>
                                 )}
 
-                                {editingId && formData.status === 'Borrador' ? (
-                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginTop: '10px' }}>
-                                        <button
-                                            type="submit"
-                                            disabled={saving}
-                                            className="glass"
-                                            style={{ padding: '15px', fontSize: '14px', boxSizing: 'border-box', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-dim)', fontWeight: '800', borderRadius: '16px' }}
-                                        >
-                                            {saving ? <Loader2 className="animate-spin" size={20} /> : 'GUARDAR BORRADOR'}
-                                        </button>
-                                        <button
-                                            type="button"
-                                            disabled={saving}
-                                            onClick={() => {
-                                                setFormData({ ...formData, status: 'Publicado' });
-                                                // We need to trigger submit programmatically or setTimeout
-                                                setTimeout(() => {
-                                                    const form = document.getElementById('main-tournament-form') as HTMLFormElement;
-                                                    if (form) form.requestSubmit();
-                                                }, 100);
-                                            }}
-                                            className="btn-primary"
-                                            style={{ padding: '15px', fontSize: '14px', boxSizing: 'border-box' }}
-                                        >
-                                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-                                                PUBLICAR <Trophy size={16} />
-                                            </div>
-                                        </button>
-                                    </div>
-                                ) : (
-                                    <button
-                                        type="submit"
-                                        disabled={saving}
-                                        className="btn-primary"
-                                        style={{ marginTop: '10px', padding: '15px', fontSize: '14px', boxSizing: 'border-box' }}
-                                    >
-                                        {saving ? <Loader2 className="animate-spin" size={20} /> : (editingId ? 'GUARDAR TODOS LOS CAMBIOS' : 'ENVIAR SOLICITUD')}
-                                    </button>
-                                )}
+                                <button
+                                    type="submit"
+                                    disabled={saving}
+                                    className="btn-primary"
+                                    style={{ marginTop: '10px', padding: '15px', fontSize: '14px', boxSizing: 'border-box' }}
+                                >
+                                    {saving ? <Loader2 className="animate-spin" size={20} /> : (editingId ? 'GUARDAR TODOS LOS CAMBIOS' : 'GUARDAR EVENTO')}
+                                </button>
                             </div>
                         </motion.form>
                     ) : (
