@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import {
     MapPin, CreditCard,
     ShieldCheck, Loader2,
-    CheckCircle2, Sparkles, X, AlertCircle, User, Phone, Edit3
+    CheckCircle2, Sparkles, X, AlertCircle, User, Phone, Edit3, Smartphone, Copy, Check, ExternalLink
 } from 'lucide-react';
 import PageHeader from '../components/PageHeader';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -36,6 +36,10 @@ const CheckoutPage: React.FC = () => {
 
     // Payment Methods State
     const [selectedMethodId, setSelectedMethodId] = useState<string>('mercadopago');
+
+    // Nequi State
+    const [showNequiModal, setShowNequiModal] = useState(false);
+    const [copiedField, setCopiedField] = useState<string | null>(null);
 
     const [shipping, setShipping] = useState({
         name: '',
@@ -161,15 +165,14 @@ const CheckoutPage: React.FC = () => {
                 return;
             }
 
-            // --- NEQUI DIRECT PAYMENT LOGIC ---
+            // --- NEQUI DIRECT PAYMENT ---
             if (selectedMethodId === 'nequi') {
+                const fullAddress = shipping.city && !shipping.address.toLowerCase().includes(shipping.city.toLowerCase())
+                    ? `${shipping.address}, ${shipping.city} `
+                    : shipping.address;
+
                 if (isOffer) {
                     const sellerId = offerData.seller_id;
-                    const fullAddress = shipping.city && !shipping.address.toLowerCase().includes(shipping.city.toLowerCase())
-                        ? `${shipping.address}, ${shipping.city} `
-                        : shipping.address;
-
-                    // Manual payment creates the order but skips the payment link
                     const { data: orderData, error: orderError } = await supabase.from('orders').insert({
                         user_id: user.id,
                         buyer_id: user.id,
@@ -180,34 +183,27 @@ const CheckoutPage: React.FC = () => {
                         buyer_name: shipping.name,
                         buyer_phone: shipping.phone
                     } as any).select().single();
-
                     if (orderError) throw orderError;
 
-                    const { error: itemError } = await supabase.from('order_items').insert({
+                    await supabase.from('order_items').insert({
                         order_id: (orderData as any).id,
                         product_id: offerData.product_id,
                         quantity: 1,
-                        price_at_purchase: isOffer ? (offerData.counter_amount || offerData.offer_amount || offerData.amount) : totalAmount
+                        price_at_purchase: offerData.counter_amount || offerData.offer_amount || offerData.amount
                     });
-                    if (itemError) throw itemError;
-
                 } else {
-                    // Regular Cart Items for Nequi
+                    // Regular cart items
                     const ordersBySeller: Record<string, typeof cartItems> = {};
                     cartItems.forEach(item => {
-                        const sellerId = item.seller_id || 'admin';
-                        if (!ordersBySeller[sellerId]) ordersBySeller[sellerId] = [];
-                        ordersBySeller[sellerId].push(item);
+                        const sid = item.seller_id || 'admin';
+                        if (!ordersBySeller[sid]) ordersBySeller[sid] = [];
+                        ordersBySeller[sid].push(item);
                     });
 
                     for (const [sellerId, items] of Object.entries(ordersBySeller)) {
                         const sellerSubtotal = items.reduce((acc, item) => acc + (item.price * item.quantity), 0);
                         const sellerShipping = items.reduce((acc, item) => acc + (Number(item.shipping_cost) || 0), 0);
                         const sellerTotal = sellerSubtotal + sellerShipping;
-
-                        const fullAddress = shipping.city && !shipping.address.toLowerCase().includes(shipping.city.toLowerCase())
-                            ? `${shipping.address}, ${shipping.city} `
-                            : shipping.address;
 
                         const { data: orderData, error: orderError } = await supabase.from('orders').insert({
                             user_id: user.id,
@@ -219,7 +215,6 @@ const CheckoutPage: React.FC = () => {
                             buyer_name: shipping.name,
                             buyer_phone: shipping.phone
                         } as any).select().single();
-
                         if (orderError) throw orderError;
 
                         for (const item of items) {
@@ -233,8 +228,19 @@ const CheckoutPage: React.FC = () => {
                     }
                 }
 
-                setIsSuccess(true);
                 clearCart();
+
+                // Try to open Nequi app via deep link
+                const iOSNative = (window as any).iOSNative;
+                if (iOSNative?.openExternalURL) {
+                    iOSNative.openExternalURL('nequi://');
+                } else {
+                    window.location.href = 'nequi://';
+                }
+
+                // Show the transfer modal with copy buttons
+                setShowNequiModal(true);
+                setIsProcessing(false);
                 return;
             }
 
@@ -788,8 +794,8 @@ const CheckoutPage: React.FC = () => {
                                     style={{
                                         padding: '20px',
                                         borderRadius: '20px',
-                                        background: selectedMethodId === 'nequi' ? 'rgba(163, 230, 53, 0.05)' : 'rgba(255, 255, 255, 0.03)',
-                                        border: `1px solid ${selectedMethodId === 'nequi' ? 'var(--secondary)' : 'rgba(255, 255, 255, 0.1)'}`,
+                                        background: selectedMethodId === 'nequi' ? 'rgba(200, 50, 200, 0.08)' : 'rgba(255, 255, 255, 0.03)',
+                                        border: `1px solid ${selectedMethodId === 'nequi' ? 'rgba(200, 50, 200, 0.4)' : 'rgba(255, 255, 255, 0.1)'}`,
                                         display: 'flex',
                                         alignItems: 'center',
                                         gap: '15px',
@@ -801,19 +807,19 @@ const CheckoutPage: React.FC = () => {
                                         width: '24px',
                                         height: '24px',
                                         borderRadius: '50%',
-                                        border: `2px solid ${selectedMethodId === 'nequi' ? 'var(--secondary)' : 'rgba(255,255,255,0.2)'}`,
+                                        border: `2px solid ${selectedMethodId === 'nequi' ? '#c832c8' : 'rgba(255,255,255,0.2)'}`,
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center'
                                     }}>
-                                        {selectedMethodId === 'nequi' && <div style={{ width: '12px', height: '12px', background: 'var(--secondary)', borderRadius: '50%' }} />}
+                                        {selectedMethodId === 'nequi' && <div style={{ width: '12px', height: '12px', background: '#c832c8', borderRadius: '50%' }} />}
                                     </div>
                                     <div style={{ flex: 1 }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                                            <span style={{ fontWeight: '900', color: 'white' }}>TRANSFERENCIA NEQUI</span>
+                                            <span style={{ fontWeight: '900', color: 'white' }}>PAGAR CON NEQUI</span>
                                             <span style={{ background: 'var(--secondary)', color: 'black', fontSize: '9px', fontWeight: '900', padding: '2px 6px', borderRadius: '4px' }}>SIN COMISIÓN</span>
                                         </div>
-                                        <p style={{ fontSize: '12px', color: 'var(--text-dim)' }}>Transferencia directa a nuestro Nequi oficial.</p>
+                                        <p style={{ fontSize: '12px', color: 'var(--text-dim)' }}>Se abrirá la app de Nequi para transferir directamente.</p>
                                     </div>
                                 </div>
                             </div>
@@ -855,6 +861,8 @@ const CheckoutPage: React.FC = () => {
                                 >
                                     {isProcessing ? (
                                         <Loader2 className="animate-spin" size={24} />
+                                    ) : selectedMethodId === 'nequi' ? (
+                                        <><ExternalLink size={18} /> ABRIR NEQUI Y PAGAR</>
                                     ) : (
                                         <>PAGAR AHORA</>
                                     )}
@@ -872,6 +880,183 @@ const CheckoutPage: React.FC = () => {
                         <span style={{ fontSize: '11px', fontWeight: '700' }}>PAGO SEGURO CIFRADO</span>
                     </div>
                 </div>
+                {/* Nequi Transfer Modal */}
+                <AnimatePresence>
+                    {showNequiModal && (
+                        <div
+                            style={{
+                                position: 'fixed', inset: 0, zIndex: 10000,
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                background: 'rgba(0,0,0,0.92)', backdropFilter: 'blur(15px)',
+                                flexDirection: 'column', padding: '30px'
+                            }}
+                        >
+                            <motion.div
+                                initial={{ scale: 0.8, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                exit={{ scale: 0.8, opacity: 0 }}
+                                style={{
+                                    background: 'linear-gradient(135deg, rgba(30, 15, 35, 0.98), rgba(15, 10, 20, 0.98))',
+                                    borderRadius: '30px',
+                                    padding: '40px 30px',
+                                    textAlign: 'center',
+                                    maxWidth: '90%',
+                                    width: '340px',
+                                    border: '1px solid rgba(200, 50, 200, 0.3)',
+                                    boxShadow: '0 25px 60px rgba(200, 50, 200, 0.15)'
+                                }}
+                            >
+                                <div style={{
+                                    width: '70px', height: '70px',
+                                    borderRadius: '50%',
+                                    background: 'rgba(200, 50, 200, 0.15)',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    margin: '0 auto 20px'
+                                }}>
+                                    <Smartphone size={35} color="#e040e0" />
+                                </div>
+                                <h2 style={{ fontSize: '20px', fontWeight: '900', color: 'white', marginBottom: '8px' }}>
+                                    Transfiere a Nequi
+                                </h2>
+                                <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.6)', lineHeight: '1.5', marginBottom: '20px' }}>
+                                    Tu pedido fue registrado. Abre Nequi y transfiere con estos datos:
+                                </p>
+
+                                {/* Nequi Number to Copy */}
+                                <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', marginBottom: '6px', textTransform: 'uppercase', fontWeight: '800', letterSpacing: '0.1em' }}>Número Nequi</p>
+                                <button
+                                    onClick={() => {
+                                        navigator.clipboard.writeText('3105746516');
+                                        setCopiedField('phone');
+                                        setTimeout(() => setCopiedField(null), 2000);
+                                    }}
+                                    style={{
+                                        width: '100%',
+                                        padding: '16px',
+                                        background: 'rgba(200, 50, 200, 0.1)',
+                                        borderRadius: '14px',
+                                        border: '1px solid rgba(200, 50, 200, 0.2)',
+                                        color: 'white',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        gap: '10px',
+                                        marginBottom: '4px',
+                                        cursor: 'pointer'
+                                    }}
+                                >
+                                    <span style={{ fontSize: '22px', fontWeight: '900', letterSpacing: '0.12em' }}>310 574 6516</span>
+                                    {copiedField === 'phone' ? <Check size={18} color="#e040e0" /> : <Copy size={18} color="#e040e0" />}
+                                </button>
+                                <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.35)', marginBottom: '16px' }}>
+                                    {copiedField === 'phone' ? '✓ ¡Número copiado!' : 'Toca para copiar'}
+                                </p>
+
+                                {/* Amount to Copy */}
+                                <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', marginBottom: '6px', textTransform: 'uppercase', fontWeight: '800', letterSpacing: '0.1em' }}>Valor a transferir</p>
+                                <button
+                                    onClick={() => {
+                                        navigator.clipboard.writeText(String(Math.round(totalAmount)));
+                                        setCopiedField('amount');
+                                        setTimeout(() => setCopiedField(null), 2000);
+                                    }}
+                                    style={{
+                                        width: '100%',
+                                        padding: '14px',
+                                        background: 'rgba(200, 50, 200, 0.05)',
+                                        borderRadius: '14px',
+                                        border: '1px solid rgba(200, 50, 200, 0.1)',
+                                        color: '#e040e0',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        gap: '10px',
+                                        marginBottom: '4px',
+                                        cursor: 'pointer'
+                                    }}
+                                >
+                                    <span style={{ fontSize: '20px', fontWeight: '900' }}>$ {new Intl.NumberFormat('es-CO').format(totalAmount)}</span>
+                                    {copiedField === 'amount' ? <Check size={16} color="#e040e0" /> : <Copy size={16} color="#e040e0" />}
+                                </button>
+                                <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.35)', marginBottom: '22px' }}>
+                                    {copiedField === 'amount' ? '✓ ¡Monto copiado!' : 'Toca para copiar'}
+                                </p>
+
+                                {/* Open Nequi Again */}
+                                <button
+                                    onClick={() => {
+                                        const iOSNative = (window as any).iOSNative;
+                                        if (iOSNative?.openExternalURL) {
+                                            iOSNative.openExternalURL('nequi://');
+                                        } else {
+                                            window.location.href = 'nequi://';
+                                        }
+                                    }}
+                                    style={{
+                                        width: '100%',
+                                        padding: '16px',
+                                        borderRadius: '16px',
+                                        background: 'linear-gradient(135deg, #c832c8, #e040e0)',
+                                        color: 'white',
+                                        border: 'none',
+                                        fontWeight: '900',
+                                        fontSize: '14px',
+                                        cursor: 'pointer',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        gap: '8px',
+                                        marginBottom: '10px'
+                                    }}
+                                >
+                                    <ExternalLink size={16} /> ABRIR NEQUI
+                                </button>
+
+                                <button
+                                    onClick={() => {
+                                        setShowNequiModal(false);
+                                        setIsSuccess(true);
+                                    }}
+                                    style={{
+                                        width: '100%',
+                                        padding: '14px',
+                                        borderRadius: '14px',
+                                        background: 'rgba(255,255,255,0.06)',
+                                        color: 'white',
+                                        border: '1px solid rgba(255,255,255,0.1)',
+                                        fontWeight: '900',
+                                        fontSize: '13px',
+                                        cursor: 'pointer',
+                                        marginBottom: '8px'
+                                    }}
+                                >
+                                    YA TRANSFERÍ ✓
+                                </button>
+
+                                <button
+                                    onClick={() => {
+                                        setShowNequiModal(false);
+                                        navigate('/?tab=myorders');
+                                    }}
+                                    style={{
+                                        width: '100%',
+                                        padding: '12px',
+                                        borderRadius: '14px',
+                                        background: 'none',
+                                        color: 'rgba(255,255,255,0.35)',
+                                        border: 'none',
+                                        fontWeight: '700',
+                                        fontSize: '12px',
+                                        cursor: 'pointer'
+                                    }}
+                                >
+                                    VER MIS PEDIDOS
+                                </button>
+                            </motion.div>
+                        </div>
+                    )}
+                </AnimatePresence>
+
                 {/* Standardized Status Modal */}
                 <AnimatePresence>
                     {showStatusModal && (
