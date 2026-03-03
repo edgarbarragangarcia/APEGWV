@@ -39,6 +39,7 @@ const CheckoutPage: React.FC = () => {
 
     // Nequi State
     const [showNequiModal, setShowNequiModal] = useState(false);
+    const [nequiFinalAmount, setNequiFinalAmount] = useState(0);
     const [copiedField, setCopiedField] = useState<string | null>(null);
 
     const [shipping, setShipping] = useState({
@@ -167,6 +168,7 @@ const CheckoutPage: React.FC = () => {
 
             // --- NEQUI DIRECT PAYMENT ---
             if (selectedMethodId === 'nequi') {
+                setNequiFinalAmount(totalAmount);
                 const fullAddress = shipping.city && !shipping.address.toLowerCase().includes(shipping.city.toLowerCase())
                     ? `${shipping.address}, ${shipping.city} `
                     : shipping.address;
@@ -226,9 +228,8 @@ const CheckoutPage: React.FC = () => {
                             });
                         }
                     }
+                    clearCart();
                 }
-
-                clearCart();
 
                 // Try to open Nequi app via deep link
                 const iOSNative = (window as any).iOSNative;
@@ -956,7 +957,7 @@ const CheckoutPage: React.FC = () => {
                                 <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', marginBottom: '6px', textTransform: 'uppercase', fontWeight: '800', letterSpacing: '0.1em' }}>Valor a transferir</p>
                                 <button
                                     onClick={() => {
-                                        navigator.clipboard.writeText(String(Math.round(totalAmount)));
+                                        navigator.clipboard.writeText(String(Math.round(nequiFinalAmount || totalAmount)));
                                         setCopiedField('amount');
                                         setTimeout(() => setCopiedField(null), 2000);
                                     }}
@@ -975,7 +976,7 @@ const CheckoutPage: React.FC = () => {
                                         cursor: 'pointer'
                                     }}
                                 >
-                                    <span style={{ fontSize: '20px', fontWeight: '900' }}>$ {new Intl.NumberFormat('es-CO').format(totalAmount)}</span>
+                                    <span style={{ fontSize: '20px', fontWeight: '900' }}>$ {new Intl.NumberFormat('es-CO').format(nequiFinalAmount || totalAmount)}</span>
                                     {copiedField === 'amount' ? <Check size={16} color="#e040e0" /> : <Copy size={16} color="#e040e0" />}
                                 </button>
                                 <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.35)', marginBottom: '22px' }}>
