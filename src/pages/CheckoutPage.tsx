@@ -34,8 +34,8 @@ const CheckoutPage: React.FC = () => {
     const [showStatusModal, setShowStatusModal] = useState(false);
     const [statusMessage, setStatusMessage] = useState({ title: '', message: '', type: 'success' as 'success' | 'error' });
 
-    // Payment Methods State (Hardcoded to Mercado Pago)
-    const [selectedMethodId] = useState<string>('mercadopago');
+    // Payment Methods State
+    const [selectedMethodId, setSelectedMethodId] = useState<string>('mercadopago');
 
     const [shipping, setShipping] = useState({
         name: '',
@@ -143,10 +143,98 @@ const CheckoutPage: React.FC = () => {
 
                 if (error) throw error;
 
+                if (selectedMethodId === 'nequi') {
+                    setStatusMessage({
+                        title: '¡Reserva Registrada!',
+                        message: 'Por favor realiza la transferencia a Nequi para confirmar tu reserva.',
+                        type: 'success'
+                    });
+                    setShowStatusModal(true);
+                    setTimeout(() => navigate('/green-fee', { state: { tab: 'reservations' } }), 3000);
+                    return;
+                }
+
                 setIsSuccess(true);
                 setTimeout(() => {
                     navigate('/green-fee', { state: { tab: 'reservations' } });
                 }, 3000);
+                return;
+            }
+
+            // --- NEQUI DIRECT PAYMENT LOGIC ---
+            if (selectedMethodId === 'nequi') {
+                if (isOffer) {
+                    const sellerId = offerData.seller_id;
+                    const fullAddress = shipping.city && !shipping.address.toLowerCase().includes(shipping.city.toLowerCase())
+                        ? `${shipping.address}, ${shipping.city} `
+                        : shipping.address;
+
+                    // Manual payment creates the order but skips the payment link
+                    const { data: orderData, error: orderError } = await supabase.from('orders').insert({
+                        user_id: user.id,
+                        buyer_id: user.id,
+                        seller_id: sellerId,
+                        total_amount: totalAmount,
+                        status: 'Pendiente de Pago (Nequi)',
+                        shipping_address: fullAddress,
+                        buyer_name: shipping.name,
+                        buyer_phone: shipping.phone
+                    } as any).select().single();
+
+                    if (orderError) throw orderError;
+
+                    const { error: itemError } = await supabase.from('order_items').insert({
+                        order_id: (orderData as any).id,
+                        product_id: offerData.product_id,
+                        quantity: 1,
+                        price_at_purchase: isOffer ? (offerData.counter_amount || offerData.offer_amount || offerData.amount) : totalAmount
+                    });
+                    if (itemError) throw itemError;
+
+                } else {
+                    // Regular Cart Items for Nequi
+                    const ordersBySeller: Record<string, typeof cartItems> = {};
+                    cartItems.forEach(item => {
+                        const sellerId = item.seller_id || 'admin';
+                        if (!ordersBySeller[sellerId]) ordersBySeller[sellerId] = [];
+                        ordersBySeller[sellerId].push(item);
+                    });
+
+                    for (const [sellerId, items] of Object.entries(ordersBySeller)) {
+                        const sellerSubtotal = items.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+                        const sellerShipping = items.reduce((acc, item) => acc + (Number(item.shipping_cost) || 0), 0);
+                        const sellerTotal = sellerSubtotal + sellerShipping;
+
+                        const fullAddress = shipping.city && !shipping.address.toLowerCase().includes(shipping.city.toLowerCase())
+                            ? `${shipping.address}, ${shipping.city} `
+                            : shipping.address;
+
+                        const { data: orderData, error: orderError } = await supabase.from('orders').insert({
+                            user_id: user.id,
+                            buyer_id: user.id,
+                            seller_id: sellerId === 'admin' ? null : sellerId,
+                            total_amount: sellerTotal,
+                            status: 'Pendiente de Pago (Nequi)',
+                            shipping_address: fullAddress,
+                            buyer_name: shipping.name,
+                            buyer_phone: shipping.phone
+                        } as any).select().single();
+
+                        if (orderError) throw orderError;
+
+                        for (const item of items) {
+                            await supabase.from('order_items').insert({
+                                order_id: (orderData as any).id,
+                                product_id: item.id,
+                                quantity: item.quantity,
+                                price_at_purchase: item.price
+                            });
+                        }
+                    }
+                }
+
+                setIsSuccess(true);
+                clearCart();
                 return;
             }
 
@@ -440,7 +528,9 @@ const CheckoutPage: React.FC = () => {
                 >
                     {isReservation
                         ? 'Tu reserva ha sido procesada con éxito. Te hemos enviado un correo con los detalles.'
-                        : 'Tu pedido ha sido procesado con éxito. El vendedor ya recibió tu notificación y está preparando el envío.'}
+                        : selectedMethodId === 'nequi'
+                            ? 'Tu pedido se ha registrado. Por favor realiza la transferencia al Nequi: 3105746516 y envía el comprobante para confirmarlo.'
+                            : 'Tu pedido ha sido procesado con éxito. El vendedor ya recibió tu notificación y está preparando el envío.'}
                 </motion.p>
 
                 <motion.div
@@ -652,31 +742,78 @@ const CheckoutPage: React.FC = () => {
 
                             </div>
 
-                            {/* Mercado Pago Option Only */}
-                            <div className="animate-fade-up">
-                                <div style={{
-                                    padding: '25px',
-                                    borderRadius: '24px',
-                                    background: 'rgba(0, 158, 227, 0.05)',
-                                    border: '1px solid rgba(0, 158, 227, 0.2)',
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    alignItems: 'center',
-                                    gap: '15px',
-                                    textAlign: 'center'
-                                }}>
-                                    <img
-                                        src="https://logodownload.org/wp-content/uploads/2019/06/mercado-pago-logo-1.png"
-                                        alt="Mercado Pago"
-                                        style={{ width: '160px', height: 'auto', filter: 'brightness(1.2)' }}
-                                    />
-                                    <div>
-                                        <p style={{ fontWeight: '800', fontSize: '16px', color: 'white', marginBottom: '4px' }}>
-                                            Pago Seguro con Mercado Pago
-                                        </p>
-                                        <p style={{ fontSize: '13px', color: 'var(--text-dim)', maxWidth: '250px' }}>
-                                            Paga con tarjeta de crédito, débito o efectivo a través de la plataforma más segura.
-                                        </p>
+                            {/* Payment Options Selection */}
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                {/* Mercado Pago Option */}
+                                <div
+                                    onClick={() => setSelectedMethodId('mercadopago')}
+                                    className="animate-fade-up"
+                                    style={{
+                                        padding: '20px',
+                                        borderRadius: '20px',
+                                        background: selectedMethodId === 'mercadopago' ? 'rgba(0, 158, 227, 0.1)' : 'rgba(255, 255, 255, 0.03)',
+                                        border: `1px solid ${selectedMethodId === 'mercadopago' ? 'rgba(0, 158, 227, 0.5)' : 'rgba(255, 255, 255, 0.1)'}`,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '15px',
+                                        cursor: 'pointer',
+                                        transition: 'all 0.3s ease'
+                                    }}
+                                >
+                                    <div style={{
+                                        width: '24px',
+                                        height: '24px',
+                                        borderRadius: '50%',
+                                        border: `2px solid ${selectedMethodId === 'mercadopago' ? '#009ee3' : 'rgba(255,255,255,0.2)'}`,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center'
+                                    }}>
+                                        {selectedMethodId === 'mercadopago' && <div style={{ width: '12px', height: '12px', background: '#009ee3', borderRadius: '50%' }} />}
+                                    </div>
+                                    <div style={{ flex: 1 }}>
+                                        <img
+                                            src="https://logodownload.org/wp-content/uploads/2019/06/mercado-pago-logo-1.png"
+                                            alt="Mercado Pago"
+                                            style={{ height: '24px', width: 'auto', marginBottom: '4px' }}
+                                        />
+                                        <p style={{ fontSize: '12px', color: 'var(--text-dim)' }}>Tarjetas, PSE, Efecty (Con comisión)</p>
+                                    </div>
+                                </div>
+
+                                {/* Nequi Direct Option */}
+                                <div
+                                    onClick={() => setSelectedMethodId('nequi')}
+                                    className="animate-fade-up"
+                                    style={{
+                                        padding: '20px',
+                                        borderRadius: '20px',
+                                        background: selectedMethodId === 'nequi' ? 'rgba(163, 230, 53, 0.05)' : 'rgba(255, 255, 255, 0.03)',
+                                        border: `1px solid ${selectedMethodId === 'nequi' ? 'var(--secondary)' : 'rgba(255, 255, 255, 0.1)'}`,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '15px',
+                                        cursor: 'pointer',
+                                        transition: 'all 0.3s ease'
+                                    }}
+                                >
+                                    <div style={{
+                                        width: '24px',
+                                        height: '24px',
+                                        borderRadius: '50%',
+                                        border: `2px solid ${selectedMethodId === 'nequi' ? 'var(--secondary)' : 'rgba(255,255,255,0.2)'}`,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center'
+                                    }}>
+                                        {selectedMethodId === 'nequi' && <div style={{ width: '12px', height: '12px', background: 'var(--secondary)', borderRadius: '50%' }} />}
+                                    </div>
+                                    <div style={{ flex: 1 }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                                            <span style={{ fontWeight: '900', color: 'white' }}>TRANSFERENCIA NEQUI</span>
+                                            <span style={{ background: 'var(--secondary)', color: 'black', fontSize: '9px', fontWeight: '900', padding: '2px 6px', borderRadius: '4px' }}>SIN COMISIÓN</span>
+                                        </div>
+                                        <p style={{ fontSize: '12px', color: 'var(--text-dim)' }}>Transferencia directa a nuestro Nequi oficial.</p>
                                     </div>
                                 </div>
                             </div>
