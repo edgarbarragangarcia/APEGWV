@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../services/SupabaseManager';
-import { Plus, Trophy, Trash2, Calendar, Loader2, CheckCircle2, Pencil, Users, ChevronDown } from 'lucide-react';
+import { Plus, Trophy, Trash2, Calendar, Loader2, CheckCircle2, Pencil, Users } from 'lucide-react';
 import Card from '../components/Card';
 import Skeleton from '../components/Skeleton';
 import PageHero from '../components/PageHero';
@@ -39,96 +39,7 @@ interface BudgetItem {
     type: 'per_player' | 'fixed';
 }
 
-interface CustomSelectProps {
-    value: string;
-    onChange: (value: string) => void;
-    options: { value: string; label: string }[];
-    placeholder?: string;
-    style?: React.CSSProperties;
-}
 
-const CustomSelect: React.FC<CustomSelectProps> = ({ value, onChange, options, placeholder = "Seleccionar", style }) => {
-    const [isOpen, setIsOpen] = useState(false);
-    const containerRef = React.useRef<HTMLDivElement>(null);
-
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-                setIsOpen(false);
-            }
-        };
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, []);
-
-    const selectedLabel = options.find(o => o.value === value)?.label || value || placeholder;
-
-    return (
-        <div ref={containerRef} style={{ position: 'relative', width: '100%', ...style }}>
-            <div
-                onClick={() => setIsOpen(!isOpen)}
-                style={{
-                    width: '100%',
-                    background: 'rgba(255,255,255,0.05)',
-                    border: '1px solid var(--glass-border)',
-                    borderRadius: '12px',
-                    padding: '12px',
-                    color: 'white',
-                    fontSize: '15px',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    cursor: 'pointer',
-                    userSelect: 'none'
-                }}
-            >
-                <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{selectedLabel}</span>
-                <ChevronDown size={16} style={{ transform: isOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s', color: 'var(--text-dim)' }} />
-            </div>
-
-            {isOpen && (
-                <div className="animate-fade-in" style={{
-                    position: 'absolute',
-                    top: 'calc(100% + 5px)',
-                    left: 0,
-                    right: 0,
-                    background: '#1a1a1a', // Solid dark background
-                    border: '1px solid rgba(255,255,255,0.1)',
-                    borderRadius: '12px',
-                    zIndex: 100,
-                    boxShadow: '0 10px 40px rgba(0,0,0,0.5)',
-                    maxHeight: '200px',
-                    overflowY: 'auto'
-                }}>
-                    {options.map((option) => (
-                        <div
-                            key={option.value}
-                            onClick={() => {
-                                onChange(option.value);
-                                setIsOpen(false);
-                            }}
-                            style={{
-                                padding: '12px',
-                                borderBottom: '1px solid rgba(255,255,255,0.05)',
-                                color: option.value === value ? 'var(--secondary)' : 'white',
-                                background: option.value === value ? 'rgba(163, 230, 53, 0.05)' : 'transparent',
-                                cursor: 'pointer',
-                                fontSize: '14px',
-                                fontWeight: option.value === value ? '700' : '400',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '8px'
-                            }}
-                        >
-                            {option.value === value && <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--secondary)' }} />}
-                            {option.label}
-                        </div>
-                    ))}
-                </div>
-            )}
-        </div>
-    );
-};
 
 const TournamentManager: React.FC = () => {
     const navigate = useNavigate();
@@ -148,6 +59,8 @@ const TournamentManager: React.FC = () => {
     const [isAdmin, setIsAdmin] = useState(false);
     const [pendingTournaments, setPendingTournaments] = useState<Tournament[]>([]);
     const [viewingAdmin, setViewingAdmin] = useState(false);
+
+
 
 
 
@@ -171,63 +84,13 @@ const TournamentManager: React.FC = () => {
         ] as BudgetItem[]
     });
 
-    const calculateBudget = () => {
-        const income = (parseInt(formData.displayPrice.replace(/\D/g, '')) || 0) * (parseInt(formData.participants_limit) || 0);
-        let expenses = 0;
-
-        formData.budget_items.forEach(item => {
-            const amount = parseInt(item.amount) || 0;
-            if (item.type === 'per_player') {
-                expenses += amount * (parseInt(formData.participants_limit) || 0);
-            } else {
-                expenses += amount;
-            }
-        });
-
-        return { income, expenses, profit: income - expenses };
-    };
-
-    const addBudgetItem = () => {
-        setFormData(prev => ({
-            ...prev,
-            budget_items: [
-                ...prev.budget_items,
-                { id: Date.now().toString(), label: '', amount: '', type: 'fixed' }
-            ]
-        }));
-    };
-
-    const removeBudgetItem = (id: string) => {
-        setFormData(prev => ({
-            ...prev,
-            budget_items: prev.budget_items.filter(item => item.id !== id)
-        }));
-    };
-
-    const updateBudgetItem = (id: string, field: keyof BudgetItem, value: string) => {
-        setFormData(prev => ({
-            ...prev,
-            budget_items: prev.budget_items.map(item =>
-                item.id === id ? { ...item, [field]: value } : item
-            )
-        }));
-    };
-
     const formatPrice = (val: string) => {
         const numeric = val.replace(/\D/g, '');
         if (!numeric) return '';
         return new Intl.NumberFormat('es-CO').format(parseInt(numeric));
     };
 
-    const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const val = e.target.value;
-        const numeric = val.replace(/\D/g, '');
-        setFormData(prev => ({
-            ...prev,
-            price: numeric,
-            displayPrice: formatPrice(numeric)
-        }));
-    };
+
 
     const fetchTournamentData = async () => {
         if (!user) return;
@@ -633,6 +496,7 @@ const TournamentManager: React.FC = () => {
                         </div>
 
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                            {/* Core Fields: Name, Club, Date */}
                             <div>
                                 <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Nombre del Torneo</label>
                                 <input
@@ -644,90 +508,19 @@ const TournamentManager: React.FC = () => {
                                 />
                             </div>
 
-                            {isPremium && (
-                                <>
-                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
-                                        <div>
-                                            <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Cant. Jugadores</label>
-                                            <input
-                                                type="number"
-                                                required
-                                                value={formData.participants_limit}
-                                                onChange={e => setFormData({ ...formData, participants_limit: e.target.value })}
-                                                style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '12px', color: 'white', fontSize: '15px' }}
-                                            />
-                                        </div>
-                                        <div>
-                                            <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Precio (COP)</label>
-                                            <div style={{ position: 'relative' }}>
-                                                <input
-                                                    required
-                                                    type="text"
-                                                    inputMode="numeric"
-                                                    value={formData.displayPrice}
-                                                    onChange={handlePriceChange}
-                                                    style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '12px', color: 'white', fontSize: '15px' }}
-                                                    placeholder="0"
-                                                />
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div>
-                                        <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Modalidad de Juego</label>
-                                        <CustomSelect
-                                            value={formData.game_mode}
-                                            onChange={(val) => setFormData({ ...formData, game_mode: val })}
-                                            options={[
-                                                { value: "Juego por Golpes", label: "Juego por Golpes (Medal Play)" },
-                                                { value: "Juego por Hoyos", label: "Juego por Hoyos (Match Play)" },
-                                                { value: "Stableford", label: "Stableford" },
-                                                { value: "Foursome", label: "Foursome" },
-                                                { value: "Fourball", label: "Fourball" }
-                                            ]}
-                                        />
-                                    </div>
-                                </>
-                            )}
-
-                            <div>
-                                <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Club de Golf</label>
-                                <input
-                                    required
-                                    value={formData.club}
-                                    onChange={e => setFormData({ ...formData, club: e.target.value })}
-                                    style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '12px', color: 'white', fontSize: '15px' }}
-                                    placeholder="Nombre del club"
-                                />
-                            </div>
-
-                            <div>
-                                <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Dirección (Google Maps)</label>
-                                <input
-                                    value={formData.address}
-                                    onChange={e => setFormData({ ...formData, address: e.target.value })}
-                                    style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '12px', color: 'white', fontSize: '15px' }}
-                                    placeholder="Pegar enlace o dirección"
-                                />
-                            </div>
-
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                                {isPremium && (
-                                    <div>
-                                        <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Estado</label>
-                                        <CustomSelect
-                                            value={formData.status}
-                                            onChange={(val) => setFormData({ ...formData, status: val })}
-                                            options={[
-                                                { value: "Abierto", label: "Abierto" },
-                                                { value: "Cerrado", label: "Cerrado" },
-                                                { value: "Finalizado", label: "Finalizado" }
-                                            ]}
-                                        />
-                                    </div>
-                                )}
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
                                 <div>
-                                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Fecha del Evento</label>
+                                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Club / Lugar</label>
+                                    <input
+                                        required
+                                        value={formData.club}
+                                        onChange={e => setFormData({ ...formData, club: e.target.value })}
+                                        style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '12px', color: 'white', fontSize: '15px' }}
+                                        placeholder="Nombre del club"
+                                    />
+                                </div>
+                                <div>
+                                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Fecha</label>
                                     <input
                                         required
                                         type="date"
@@ -736,112 +529,6 @@ const TournamentManager: React.FC = () => {
                                         style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '12px', color: 'white', fontSize: '15px', boxSizing: 'border-box' }}
                                     />
                                 </div>
-                            </div>
-
-                            <hr style={{ borderColor: 'rgba(255,255,255,0.1)', margin: '10px 0' }} />
-
-                            {isPremium && (
-                                <>
-                                    <hr style={{ borderColor: 'rgba(255,255,255,0.1)', margin: '10px 0' }} />
-
-                                    {/* Budget Section */}
-                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-                                        <h3 style={{ fontSize: '16px', fontWeight: '800', color: 'var(--secondary)', margin: 0 }}>Mini Presupuesto</h3>
-                                        <button
-                                            type="button"
-                                            onClick={addBudgetItem}
-                                            style={{
-                                                background: 'rgba(163, 230, 53, 0.1)',
-                                                color: 'var(--secondary)',
-                                                border: 'none',
-                                                padding: '6px 12px',
-                                                borderRadius: '8px',
-                                                fontSize: '12px',
-                                                fontWeight: '700',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                gap: '5px'
-                                            }}
-                                        >
-                                            <Plus size={14} /> Agregar campo
-                                        </button>
-                                    </div>
-
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                                        {formData.budget_items.map((item) => (
-                                            <div key={item.id} className="glass" style={{ padding: '15px', borderRadius: '15px', border: '1px solid rgba(255,255,255,0.05)', boxSizing: 'border-box', width: '100%' }}>
-                                                <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
-                                                    <input
-                                                        value={item.label}
-                                                        onChange={e => updateBudgetItem(item.id, 'label', e.target.value)}
-                                                        placeholder="Nombre del gasto..."
-                                                        style={{ flex: 1, minWidth: 0, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '10px', padding: '8px 12px', color: 'white', fontSize: '14px', boxSizing: 'border-box' }}
-                                                    />
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => removeBudgetItem(item.id)}
-                                                        style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: 'none', width: '35px', height: '35px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
-                                                    >
-                                                        <Trash2 size={16} />
-                                                    </button>
-                                                </div>
-                                                <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.2fr) minmax(0, 1fr)', gap: '10px' }}>
-                                                    <input
-                                                        type="number"
-                                                        value={item.amount}
-                                                        onChange={e => updateBudgetItem(item.id, 'amount', e.target.value)}
-                                                        placeholder="Monto"
-                                                        style={{ width: '100%', minWidth: 0, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '10px', padding: '8px 12px', color: 'white', fontSize: '14px', boxSizing: 'border-box' }}
-                                                    />
-                                                    <CustomSelect
-                                                        value={item.type}
-                                                        onChange={(val) => updateBudgetItem(item.id, 'type', val as 'per_player' | 'fixed')}
-                                                        options={[
-                                                            { value: "fixed", label: "Fijo (Total)" },
-                                                            { value: "per_player", label: "Por Jugador" }
-                                                        ]}
-                                                        style={{ fontSize: '13px' }}
-                                                    />
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-
-                                    {/* Live Budget Summary */}
-                                    <div style={{ background: 'rgba(0,0,0,0.2)', padding: '15px', borderRadius: '15px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                                        {(() => {
-                                            const { income, expenses, profit } = calculateBudget();
-                                            return (
-                                                <>
-                                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px', fontSize: '13px' }}>
-                                                        <span style={{ color: 'var(--text-dim)' }}>Ingresos Estimados:</span>
-                                                        <span style={{ color: '#4ade80' }}>+ {new Intl.NumberFormat('es-CO').format(income)}</span>
-                                                    </div>
-                                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', fontSize: '13px' }}>
-                                                        <span style={{ color: 'var(--text-dim)' }}>Gastos Totales:</span>
-                                                        <span style={{ color: '#f87171' }}>- {new Intl.NumberFormat('es-CO').format(expenses)}</span>
-                                                    </div>
-                                                    <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '8px', display: 'flex', justifyContent: 'space-between', fontWeight: '800' }}>
-                                                        <span>Utilidad Neta:</span>
-                                                        <span style={{ color: profit >= 0 ? 'var(--secondary)' : '#f87171' }}>
-                                                            {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(profit)}
-                                                        </span>
-                                                    </div>
-                                                </>
-                                            );
-                                        })()}
-                                    </div>
-                                </>
-                            )}
-
-                            <div>
-                                <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Descripción y Reglas</label>
-                                <textarea
-                                    value={formData.description}
-                                    onChange={e => setFormData({ ...formData, description: e.target.value })}
-                                    style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '12px', color: 'white', fontSize: '15px', minHeight: '80px', resize: 'none' }}
-                                    placeholder="Detalles del formato, premios, etc..."
-                                />
                             </div>
 
                             <button

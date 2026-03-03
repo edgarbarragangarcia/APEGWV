@@ -32,6 +32,8 @@ const CheckoutPage: React.FC = () => {
                 ? tournamentData.price
                 : (cartSubtotal + shippingTotal);
 
+    const isMarketplace = isOffer || (cartItems.length > 0 && cartItems.some(item => !!item.seller_id));
+
     const [step, setStep] = useState<1 | 2>(isReservation ? 2 : 1);
 
     const [isProcessing, setIsProcessing] = useState(false);
@@ -805,40 +807,42 @@ const CheckoutPage: React.FC = () => {
                                 )}
 
                                 {/* Nequi Direct Option */}
-                                <div
-                                    onClick={() => setSelectedMethodId('nequi')}
-                                    className="animate-fade-up"
-                                    style={{
-                                        padding: '20px',
-                                        borderRadius: '20px',
-                                        background: selectedMethodId === 'nequi' ? 'rgba(200, 50, 200, 0.08)' : 'rgba(255, 255, 255, 0.03)',
-                                        border: `1px solid ${selectedMethodId === 'nequi' ? 'rgba(200, 50, 200, 0.4)' : 'rgba(255, 255, 255, 0.1)'}`,
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: '15px',
-                                        cursor: 'pointer',
-                                        transition: 'all 0.3s ease'
-                                    }}
-                                >
-                                    <div style={{
-                                        width: '24px',
-                                        height: '24px',
-                                        borderRadius: '50%',
-                                        border: `2px solid ${selectedMethodId === 'nequi' ? '#c832c8' : 'rgba(255,255,255,0.2)'}`,
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center'
-                                    }}>
-                                        {selectedMethodId === 'nequi' && <div style={{ width: '12px', height: '12px', background: '#c832c8', borderRadius: '50%' }} />}
-                                    </div>
-                                    <div style={{ flex: 1 }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                                            <span style={{ fontWeight: '900', color: 'white' }}>PAGAR CON NEQUI</span>
-                                            <span style={{ background: 'var(--secondary)', color: 'black', fontSize: '9px', fontWeight: '900', padding: '2px 6px', borderRadius: '4px' }}>SIN COMISIÓN</span>
+                                {!isMarketplace && (
+                                    <div
+                                        onClick={() => setSelectedMethodId('nequi')}
+                                        className="animate-fade-up"
+                                        style={{
+                                            padding: '20px',
+                                            borderRadius: '20px',
+                                            background: selectedMethodId === 'nequi' ? 'rgba(200, 50, 200, 0.08)' : 'rgba(255, 255, 255, 0.03)',
+                                            border: `1px solid ${selectedMethodId === 'nequi' ? 'rgba(200, 50, 200, 0.4)' : 'rgba(255, 255, 255, 0.1)'}`,
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '15px',
+                                            cursor: 'pointer',
+                                            transition: 'all 0.3s ease'
+                                        }}
+                                    >
+                                        <div style={{
+                                            width: '24px',
+                                            height: '24px',
+                                            borderRadius: '50%',
+                                            border: `2px solid ${selectedMethodId === 'nequi' ? '#c832c8' : 'rgba(255,255,255,0.2)'}`,
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center'
+                                        }}>
+                                            {selectedMethodId === 'nequi' && <div style={{ width: '12px', height: '12px', background: '#c832c8', borderRadius: '50%' }} />}
                                         </div>
-                                        <p style={{ fontSize: '12px', color: 'var(--text-dim)' }}>Se abrirá la app de Nequi para transferir directamente.</p>
+                                        <div style={{ flex: 1 }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                                                <span style={{ fontWeight: '900', color: 'white' }}>PAGAR CON NEQUI</span>
+                                                <span style={{ background: 'var(--secondary)', color: 'black', fontSize: '9px', fontWeight: '900', padding: '2px 6px', borderRadius: '4px' }}>SIN COMISIÓN</span>
+                                            </div>
+                                            <p style={{ fontSize: '12px', color: 'var(--text-dim)' }}>Se abrirá la app de Nequi para transferir directamente.</p>
+                                        </div>
                                     </div>
-                                </div>
+                                )}
                             </div>
 
                             <div style={{ marginTop: '30px' }}>
