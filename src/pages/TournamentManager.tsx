@@ -6,6 +6,7 @@ import { Plus, Trophy, Trash2, Calendar, Loader2, CheckCircle2, Pencil, Users, C
 import Card from '../components/Card';
 import Skeleton from '../components/Skeleton';
 import PageHero from '../components/PageHero';
+import PageHeader from '../components/PageHeader';
 import { useAuth } from '../context/AuthContext';
 import ConfirmationModal from '../components/ConfirmationModal';
 
@@ -478,72 +479,33 @@ const TournamentManager: React.FC = () => {
         );
     }
 
-    if (!isPremium) {
-        return (
-            <div className="animate-fade" style={{ textAlign: 'center', padding: '40px 20px' }}>
-                <div style={{ background: 'rgba(212, 175, 55, 0.1)', padding: '30px', borderRadius: '30px', border: '1px solid rgba(212, 175, 55, 0.2)' }}>
-                    <Trophy size={48} color="var(--accent)" style={{ marginBottom: '20px', marginInline: 'auto' }} />
-                    <h2 style={{ fontSize: '22px', fontWeight: '900', color: 'white', marginBottom: '10px' }}>
-                        Crea <span style={{ color: 'var(--secondary)' }}>tu</span> propio Torneo
-                    </h2>
-                    <p style={{ color: 'var(--text-dim)', marginBottom: '25px', fontSize: '15px' }}>
-                        Solo los miembros Premium pueden organizar torneos y eventos para la comunidad APEG.
-                    </p>
-                    <button
-                        onClick={() => navigate('/profile')}
-                        className="btn-primary"
-                        style={{ width: 'auto', display: 'inline-flex' }}
-                    >
-                        MEJORAR A PREMIUM
-                    </button>
-                </div>
-            </div>
-        );
-    }
+    // We will handle the Premium check inside the main container to allow proposals
+    const showPremiumInvitation = !isPremium && !isAdmin;
 
     return (
-        <div className="animate-fade" style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'var(--primary)',
-            display: 'flex',
-            flexDirection: 'column',
-            overflow: 'hidden',
-            zIndex: 900
-        }}>
+        <div className="animate-fade" style={styles.pageContainer}>
             <PageHero />
-            {/* Fixed Title Header */}
-            <div style={{ flexShrink: 0, zIndex: 10, background: 'transparent', padding: '0 20px 20px 20px', paddingTop: 'var(--header-offset-top)', textAlign: 'center' }}>
-                <span style={{
-                    fontSize: '11px',
-                    fontWeight: '900',
-                    color: 'var(--secondary)',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.1em',
-                    opacity: 0.8
-                }}>
-                    Panel de Organización
-                </span>
-                <h1 style={{
-                    fontSize: '26px',
-                    fontWeight: '900',
-                    color: 'white',
-                    marginTop: '4px'
-                }}>
-                    Gestión <span style={{ color: 'var(--secondary)' }}>de</span> Eventos
-                </h1>
+            <div style={styles.headerArea}>
+                <PageHeader
+                    noMargin
+                    title="Gestión de Eventos"
+                    onBack={() => navigate('/profile')}
+                />
             </div>
 
-            {/* Scrollable Content */}
-            <div style={{
-                flex: 1,
-                overflowY: 'auto',
-                padding: '0 20px calc(var(--nav-height) + 20px) 20px',
-                display: 'flex',
-                flexDirection: 'column',
-                WebkitOverflowScrolling: 'touch',
-                gap: '20px'
-            }}>
+            <div style={styles.contentContainer}>
+                <div style={{ textAlign: 'center', marginBottom: '15px' }}>
+                    <span style={{
+                        fontSize: '11px',
+                        fontWeight: '900',
+                        color: 'var(--secondary)',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.1em',
+                        opacity: 0.8
+                    }}>
+                        Panel de Organización
+                    </span>
+                </div>
                 {isAdmin && (
                     <div className="glass" style={{ padding: '8px', borderRadius: '15px', display: 'flex', gap: '8px' }}>
                         <button
@@ -633,7 +595,22 @@ const TournamentManager: React.FC = () => {
                 ) : (
                     // Regular Creator View
                     <>
-                        {!showForm && (
+                        {showPremiumInvitation && !showForm && (
+                            <div className="glass" style={{ padding: '20px', borderRadius: '25px', textAlign: 'center', background: 'rgba(212, 175, 55, 0.05)', border: '1px solid rgba(212, 175, 55, 0.1)' }}>
+                                <Trophy size={24} color="var(--accent)" style={{ marginBottom: '10px', marginInline: 'auto' }} />
+                                <h3 style={{ fontSize: '16px', fontWeight: '800', color: 'white', marginBottom: '5px' }}>¿Quieres organizar un torneo?</h3>
+                                <p style={{ fontSize: '13px', color: 'var(--text-dim)', marginBottom: '15px' }}>Envía tu propuesta básica para que el administrador la valide.</p>
+                                <button
+                                    onClick={() => setShowForm(true)}
+                                    className="btn-primary"
+                                    style={{ background: 'var(--secondary)', color: 'var(--primary)', padding: '12px', fontSize: '13px' }}
+                                >
+                                    Enviar Propuesta de Torneo
+                                </button>
+                            </div>
+                        )}
+
+                        {isPremium && !showForm && (
                             <button
                                 onClick={() => setShowForm(true)}
                                 className="btn-primary"
@@ -648,7 +625,10 @@ const TournamentManager: React.FC = () => {
                 {showForm ? (
                     <form onSubmit={handleSubmit} className="glass" style={{ padding: '25px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
-                            <h2 style={{ fontSize: '18px', fontWeight: '700' }}>{editingId ? 'Editar Evento' : 'Nuevo Evento'}</h2>
+                            <div>
+                                <h2 style={{ fontSize: '18px', fontWeight: '700' }}>{editingId ? 'Editar Evento' : (isPremium ? 'Nuevo Evento' : 'Propuesta de Torneo')}</h2>
+                                {!isPremium && <p style={{ fontSize: '11px', color: 'var(--secondary)', fontWeight: '700' }}>PREFORMATO BÁSICO</p>}
+                            </div>
                             <button type="button" onClick={() => { setShowForm(false); resetForm(); }} style={{ color: 'var(--text-dim)', fontSize: '14px' }}>Cancelar</button>
                         </div>
 
@@ -664,47 +644,51 @@ const TournamentManager: React.FC = () => {
                                 />
                             </div>
 
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
-                                <div>
-                                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Cant. Jugadores</label>
-                                    <input
-                                        type="number"
-                                        required
-                                        value={formData.participants_limit}
-                                        onChange={e => setFormData({ ...formData, participants_limit: e.target.value })}
-                                        style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '12px', color: 'white', fontSize: '15px' }}
-                                    />
-                                </div>
-                                <div>
-                                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Precio (COP)</label>
-                                    <div style={{ position: 'relative' }}>
-                                        <input
-                                            required
-                                            type="text"
-                                            inputMode="numeric"
-                                            value={formData.displayPrice}
-                                            onChange={handlePriceChange}
-                                            style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '12px', color: 'white', fontSize: '15px' }}
-                                            placeholder="0"
+                            {isPremium && (
+                                <>
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                                        <div>
+                                            <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Cant. Jugadores</label>
+                                            <input
+                                                type="number"
+                                                required
+                                                value={formData.participants_limit}
+                                                onChange={e => setFormData({ ...formData, participants_limit: e.target.value })}
+                                                style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '12px', color: 'white', fontSize: '15px' }}
+                                            />
+                                        </div>
+                                        <div>
+                                            <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Precio (COP)</label>
+                                            <div style={{ position: 'relative' }}>
+                                                <input
+                                                    required
+                                                    type="text"
+                                                    inputMode="numeric"
+                                                    value={formData.displayPrice}
+                                                    onChange={handlePriceChange}
+                                                    style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '12px', color: 'white', fontSize: '15px' }}
+                                                    placeholder="0"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Modalidad de Juego</label>
+                                        <CustomSelect
+                                            value={formData.game_mode}
+                                            onChange={(val) => setFormData({ ...formData, game_mode: val })}
+                                            options={[
+                                                { value: "Juego por Golpes", label: "Juego por Golpes (Medal Play)" },
+                                                { value: "Juego por Hoyos", label: "Juego por Hoyos (Match Play)" },
+                                                { value: "Stableford", label: "Stableford" },
+                                                { value: "Foursome", label: "Foursome" },
+                                                { value: "Fourball", label: "Fourball" }
+                                            ]}
                                         />
                                     </div>
-                                </div>
-                            </div>
-
-                            <div>
-                                <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Modalidad de Juego</label>
-                                <CustomSelect
-                                    value={formData.game_mode}
-                                    onChange={(val) => setFormData({ ...formData, game_mode: val })}
-                                    options={[
-                                        { value: "Juego por Golpes", label: "Juego por Golpes (Medal Play)" },
-                                        { value: "Juego por Hoyos", label: "Juego por Hoyos (Match Play)" },
-                                        { value: "Stableford", label: "Stableford" },
-                                        { value: "Foursome", label: "Foursome" },
-                                        { value: "Fourball", label: "Fourball" }
-                                    ]}
-                                />
-                            </div>
+                                </>
+                            )}
 
                             <div>
                                 <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Club de Golf</label>
@@ -728,20 +712,22 @@ const TournamentManager: React.FC = () => {
                             </div>
 
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                                {isPremium && (
+                                    <div>
+                                        <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Estado</label>
+                                        <CustomSelect
+                                            value={formData.status}
+                                            onChange={(val) => setFormData({ ...formData, status: val })}
+                                            options={[
+                                                { value: "Abierto", label: "Abierto" },
+                                                { value: "Cerrado", label: "Cerrado" },
+                                                { value: "Finalizado", label: "Finalizado" }
+                                            ]}
+                                        />
+                                    </div>
+                                )}
                                 <div>
-                                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Estado</label>
-                                    <CustomSelect
-                                        value={formData.status}
-                                        onChange={(val) => setFormData({ ...formData, status: val })}
-                                        options={[
-                                            { value: "Abierto", label: "Abierto" },
-                                            { value: "Cerrado", label: "Cerrado" },
-                                            { value: "Finalizado", label: "Finalizado" }
-                                        ]}
-                                    />
-                                </div>
-                                <div>
-                                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Fecha</label>
+                                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Fecha del Evento</label>
                                     <input
                                         required
                                         type="date"
@@ -754,93 +740,99 @@ const TournamentManager: React.FC = () => {
 
                             <hr style={{ borderColor: 'rgba(255,255,255,0.1)', margin: '10px 0' }} />
 
-                            {/* Budget Section */}
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-                                <h3 style={{ fontSize: '16px', fontWeight: '800', color: 'var(--secondary)', margin: 0 }}>Mini Presupuesto</h3>
-                                <button
-                                    type="button"
-                                    onClick={addBudgetItem}
-                                    style={{
-                                        background: 'rgba(163, 230, 53, 0.1)',
-                                        color: 'var(--secondary)',
-                                        border: 'none',
-                                        padding: '6px 12px',
-                                        borderRadius: '8px',
-                                        fontSize: '12px',
-                                        fontWeight: '700',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: '5px'
-                                    }}
-                                >
-                                    <Plus size={14} /> Agregar campo
-                                </button>
-                            </div>
+                            {isPremium && (
+                                <>
+                                    <hr style={{ borderColor: 'rgba(255,255,255,0.1)', margin: '10px 0' }} />
 
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                                {formData.budget_items.map((item) => (
-                                    <div key={item.id} className="glass" style={{ padding: '15px', borderRadius: '15px', border: '1px solid rgba(255,255,255,0.05)', boxSizing: 'border-box', width: '100%' }}>
-                                        <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
-                                            <input
-                                                value={item.label}
-                                                onChange={e => updateBudgetItem(item.id, 'label', e.target.value)}
-                                                placeholder="Nombre del gasto..."
-                                                style={{ flex: 1, minWidth: 0, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '10px', padding: '8px 12px', color: 'white', fontSize: '14px', boxSizing: 'border-box' }}
-                                            />
-                                            <button
-                                                type="button"
-                                                onClick={() => removeBudgetItem(item.id)}
-                                                style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: 'none', width: '35px', height: '35px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
-                                            >
-                                                <Trash2 size={16} />
-                                            </button>
-                                        </div>
-                                        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.2fr) minmax(0, 1fr)', gap: '10px' }}>
-                                            <input
-                                                type="number"
-                                                value={item.amount}
-                                                onChange={e => updateBudgetItem(item.id, 'amount', e.target.value)}
-                                                placeholder="Monto"
-                                                style={{ width: '100%', minWidth: 0, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '10px', padding: '8px 12px', color: 'white', fontSize: '14px', boxSizing: 'border-box' }}
-                                            />
-                                            <CustomSelect
-                                                value={item.type}
-                                                onChange={(val) => updateBudgetItem(item.id, 'type', val as 'per_player' | 'fixed')}
-                                                options={[
-                                                    { value: "fixed", label: "Fijo (Total)" },
-                                                    { value: "per_player", label: "Por Jugador" }
-                                                ]}
-                                                style={{ fontSize: '13px' }}
-                                            />
-                                        </div>
+                                    {/* Budget Section */}
+                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+                                        <h3 style={{ fontSize: '16px', fontWeight: '800', color: 'var(--secondary)', margin: 0 }}>Mini Presupuesto</h3>
+                                        <button
+                                            type="button"
+                                            onClick={addBudgetItem}
+                                            style={{
+                                                background: 'rgba(163, 230, 53, 0.1)',
+                                                color: 'var(--secondary)',
+                                                border: 'none',
+                                                padding: '6px 12px',
+                                                borderRadius: '8px',
+                                                fontSize: '12px',
+                                                fontWeight: '700',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '5px'
+                                            }}
+                                        >
+                                            <Plus size={14} /> Agregar campo
+                                        </button>
                                     </div>
-                                ))}
-                            </div>
 
-                            {/* Live Budget Summary */}
-                            <div style={{ background: 'rgba(0,0,0,0.2)', padding: '15px', borderRadius: '15px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                                {(() => {
-                                    const { income, expenses, profit } = calculateBudget();
-                                    return (
-                                        <>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px', fontSize: '13px' }}>
-                                                <span style={{ color: 'var(--text-dim)' }}>Ingresos Estimados:</span>
-                                                <span style={{ color: '#4ade80' }}>+ {new Intl.NumberFormat('es-CO').format(income)}</span>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                        {formData.budget_items.map((item) => (
+                                            <div key={item.id} className="glass" style={{ padding: '15px', borderRadius: '15px', border: '1px solid rgba(255,255,255,0.05)', boxSizing: 'border-box', width: '100%' }}>
+                                                <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
+                                                    <input
+                                                        value={item.label}
+                                                        onChange={e => updateBudgetItem(item.id, 'label', e.target.value)}
+                                                        placeholder="Nombre del gasto..."
+                                                        style={{ flex: 1, minWidth: 0, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '10px', padding: '8px 12px', color: 'white', fontSize: '14px', boxSizing: 'border-box' }}
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => removeBudgetItem(item.id)}
+                                                        style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: 'none', width: '35px', height: '35px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
+                                                    >
+                                                        <Trash2 size={16} />
+                                                    </button>
+                                                </div>
+                                                <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.2fr) minmax(0, 1fr)', gap: '10px' }}>
+                                                    <input
+                                                        type="number"
+                                                        value={item.amount}
+                                                        onChange={e => updateBudgetItem(item.id, 'amount', e.target.value)}
+                                                        placeholder="Monto"
+                                                        style={{ width: '100%', minWidth: 0, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '10px', padding: '8px 12px', color: 'white', fontSize: '14px', boxSizing: 'border-box' }}
+                                                    />
+                                                    <CustomSelect
+                                                        value={item.type}
+                                                        onChange={(val) => updateBudgetItem(item.id, 'type', val as 'per_player' | 'fixed')}
+                                                        options={[
+                                                            { value: "fixed", label: "Fijo (Total)" },
+                                                            { value: "per_player", label: "Por Jugador" }
+                                                        ]}
+                                                        style={{ fontSize: '13px' }}
+                                                    />
+                                                </div>
                                             </div>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', fontSize: '13px' }}>
-                                                <span style={{ color: 'var(--text-dim)' }}>Gastos Totales:</span>
-                                                <span style={{ color: '#f87171' }}>- {new Intl.NumberFormat('es-CO').format(expenses)}</span>
-                                            </div>
-                                            <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '8px', display: 'flex', justifyContent: 'space-between', fontWeight: '800' }}>
-                                                <span>Utilidad Neta:</span>
-                                                <span style={{ color: profit >= 0 ? 'var(--secondary)' : '#f87171' }}>
-                                                    {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(profit)}
-                                                </span>
-                                            </div>
-                                        </>
-                                    );
-                                })()}
-                            </div>
+                                        ))}
+                                    </div>
+
+                                    {/* Live Budget Summary */}
+                                    <div style={{ background: 'rgba(0,0,0,0.2)', padding: '15px', borderRadius: '15px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                        {(() => {
+                                            const { income, expenses, profit } = calculateBudget();
+                                            return (
+                                                <>
+                                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px', fontSize: '13px' }}>
+                                                        <span style={{ color: 'var(--text-dim)' }}>Ingresos Estimados:</span>
+                                                        <span style={{ color: '#4ade80' }}>+ {new Intl.NumberFormat('es-CO').format(income)}</span>
+                                                    </div>
+                                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', fontSize: '13px' }}>
+                                                        <span style={{ color: 'var(--text-dim)' }}>Gastos Totales:</span>
+                                                        <span style={{ color: '#f87171' }}>- {new Intl.NumberFormat('es-CO').format(expenses)}</span>
+                                                    </div>
+                                                    <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '8px', display: 'flex', justifyContent: 'space-between', fontWeight: '800' }}>
+                                                        <span>Utilidad Neta:</span>
+                                                        <span style={{ color: profit >= 0 ? 'var(--secondary)' : '#f87171' }}>
+                                                            {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP' }).format(profit)}
+                                                        </span>
+                                                    </div>
+                                                </>
+                                            );
+                                        })()}
+                                    </div>
+                                </>
+                            )}
 
                             <div>
                                 <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: 'var(--text-dim)' }}>Descripción y Reglas</label>
@@ -855,11 +847,10 @@ const TournamentManager: React.FC = () => {
                             <button
                                 type="submit"
                                 disabled={saving}
-                                className={saving ? 'btn-disabled' : 'btn-primary'}
-                                style={{ marginTop: '10px' }}
+                                className="btn-primary"
+                                style={{ marginTop: '20px' }}
                             >
-                                {saving ? <Loader2 className="animate-spin" size={20} /> : <CheckCircle2 size={20} />}
-                                {saving ? 'GUARDANDO...' : 'PUBLICAR TORNEO'}
+                                {saving ? <Loader2 className="animate-spin" /> : (isPremium ? 'PUBLICAR EVENTO' : 'ENVIAR PARA VALIDACIÓN')}
                             </button>
                         </div>
                     </form>
@@ -1032,6 +1023,34 @@ const TournamentManager: React.FC = () => {
             </AnimatePresence>
         </div>
     );
+};
+
+// --- Styles ---
+const styles = {
+    pageContainer: {
+        position: 'fixed' as 'fixed', inset: 0,
+        background: 'var(--primary)',
+        display: 'flex', flexDirection: 'column' as 'column',
+        overflow: 'hidden', zIndex: 900
+    },
+    headerArea: {
+        flexShrink: 0,
+        position: 'relative' as 'relative',
+        zIndex: 10,
+        background: 'transparent',
+        padding: '0 20px',
+        paddingTop: 'var(--header-offset-top)'
+    },
+    contentContainer: {
+        flex: 1,
+        position: 'relative' as 'relative',
+        zIndex: 10,
+        display: 'flex', flexDirection: 'column' as 'column',
+        padding: '0 20px calc(var(--nav-height) + 20px) 20px',
+        overflowY: 'auto' as 'auto',
+        WebkitOverflowScrolling: 'touch' as 'touch',
+        gap: '15px'
+    }
 };
 
 export default TournamentManager;

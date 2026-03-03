@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Calendar, Users, MapPin, Search, UserPlus, Trophy, X, Gift } from 'lucide-react';
 import Card from '../components/Card';
 import PageHeader from '../components/PageHeader';
@@ -23,11 +24,12 @@ interface Tournament {
 }
 
 const Tournaments: React.FC = () => {
+    const navigate = useNavigate();
     const { user } = useAuth();
     const [activeTab, setActiveTab] = useState<'all' | 'my'>('all');
     const [searchQuery, setSearchQuery] = useState('');
     const [tournaments, setTournaments] = useState<Tournament[]>([]);
-    const [registrations, setRegistrations] = useState<string[]>([]);
+    const [registrations, setRegistrations] = useState<{ id: string, status: string }[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -52,10 +54,10 @@ const Tournaments: React.FC = () => {
             if (user) {
                 const { data: userRegs } = await supabase
                     .from('tournament_registrations')
-                    .select('tournament_id')
+                    .select('tournament_id, registration_status')
                     .eq('user_id', user.id);
 
-                setRegistrations(userRegs?.map((r: any) => r.tournament_id) || []);
+                setRegistrations(userRegs?.map((r: any) => ({ id: r.tournament_id, status: r.registration_status })) || []);
             }
         } catch (err) {
             console.error('Error fetching tournaments:', err);
@@ -64,36 +66,24 @@ const Tournaments: React.FC = () => {
         }
     };
 
-    const handleRegister = async (tournamentId: string) => {
-        // OPTIMISTIC UPDATE: Assume success
-        if (registrations.includes(tournamentId)) return;
-
-        const previousRegistrations = [...registrations];
-        setRegistrations(prev => [...prev, tournamentId]);
-        if (navigator.vibrate) navigator.vibrate(50);
-
-        try {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (!session) {
-                setRegistrations(previousRegistrations);
-                return;
-            }
-
-            const { error } = await supabase
-                .from('tournament_registrations')
-                .insert([{
-                    tournament_id: tournamentId,
-                    user_id: session.user.id
-                }]);
-
-            if (error) throw error;
-            // Success - keep the state
-        } catch (err) {
-            console.error('Error registering:', err);
-            // ROLLBACK if error
-            setRegistrations(previousRegistrations);
-            alert('Error al inscribirse');
+    const handleRegister = (tournament: Tournament) => {
+        if (!user) {
+            navigate('/auth');
+            return;
         }
+
+        if (registrations.some(r => r.id === tournament.id)) return;
+
+        // Redirect to checkout with tournament info
+        navigate('/checkout', {
+            state: {
+                tournament: {
+                    id: tournament.id,
+                    name: tournament.name,
+                    price: tournament.price
+                }
+            }
+        });
     };
 
     const [confirmModal, setConfirmModal] = useState<{ isOpen: boolean; tournamentId: string | null }>({
@@ -113,7 +103,7 @@ const Tournaments: React.FC = () => {
 
         const previousRegistrations = [...registrations];
         // Optimistic update
-        setRegistrations(prev => prev.filter(id => id !== tournamentId));
+        setRegistrations(prev => prev.filter(r => r.id !== tournamentId));
         if (navigator.vibrate) navigator.vibrate(50);
 
         try {
@@ -146,7 +136,7 @@ const Tournaments: React.FC = () => {
             t.address.toLowerCase().includes(searchQuery.toLowerCase());
 
         if (activeTab === 'my') {
-            return matchesSearch && registrations.includes(t.id);
+            return matchesSearch && registrations.some(r => r.id === t.id);
         }
         return matchesSearch;
     });
@@ -324,7 +314,9 @@ const Tournaments: React.FC = () => {
                     </div>
                 )) : (
                     filteredTournaments.map((tourney) => {
-                        const isRegistered = registrations.includes(tourney.id);
+                        const reg = registrations.find(r => r.id === tourney.id);
+                        const isRegistered = !!reg;
+                        const regStatus = reg?.status;
                         return (
                             <div key={tourney.id} className="animate-fade-up">
                                 <Card style={{
@@ -359,7 +351,7 @@ const Tournaments: React.FC = () => {
                                                 letterSpacing: '0.05em',
                                                 border: '1px solid rgba(255,255,255,0.2)'
                                             }}>
-                                                {isRegistered ? 'INSCRITO' : tourney.status}
+                                                {isRegistered ? (regStatus === 'Pendiente de Pago' ? 'PENDIENTE PAGO' : 'INSCRITO') : tourney.status}
                                             </span>
                                         </div>
                                         <div style={{ position: 'absolute', bottom: '15px', left: '20px', right: '20px' }}>
@@ -403,7 +395,7 @@ const Tournaments: React.FC = () => {
                                                 if (isRegistered) {
                                                     handleUnregisterClick(tourney.id);
                                                 } else if (tourney.status === 'Abierto') {
-                                                    handleRegister(tourney.id);
+                                                    handleRegister(tourney);
                                                 }
                                             }}
                                             disabled={!isRegistered && tourney.status !== 'Abierto'}

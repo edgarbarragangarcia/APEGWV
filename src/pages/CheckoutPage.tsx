@@ -19,13 +19,18 @@ const CheckoutPage: React.FC = () => {
 
     const reservationData = location.state?.reservation;
     const offerData = location.state?.offer;
+    const tournamentData = location.state?.tournament;
     const isReservation = !!reservationData;
     const isOffer = !!offerData;
+    const isTournament = !!tournamentData;
+
     const totalAmount = isReservation
         ? reservationData.price
         : isOffer
             ? ((offerData.counter_amount || offerData.offer_amount || offerData.amount) + (Number(offerData.product?.shipping_cost) || 0))
-            : (cartSubtotal + shippingTotal);
+            : isTournament
+                ? tournamentData.price
+                : (cartSubtotal + shippingTotal);
 
     const [step, setStep] = useState<1 | 2>(isReservation ? 2 : 1);
 
@@ -35,7 +40,7 @@ const CheckoutPage: React.FC = () => {
     const [statusMessage, setStatusMessage] = useState({ title: '', message: '', type: 'success' as 'success' | 'error' });
 
     // Payment Methods State
-    const [selectedMethodId, setSelectedMethodId] = useState<string>('mercadopago');
+    const [selectedMethodId, setSelectedMethodId] = useState<string>(isTournament ? 'nequi' : 'mercadopago');
 
     // Nequi State
     const [showNequiModal, setShowNequiModal] = useState(false);
@@ -173,7 +178,16 @@ const CheckoutPage: React.FC = () => {
                     ? `${shipping.address}, ${shipping.city} `
                     : shipping.address;
 
-                if (isOffer) {
+                if (isTournament) {
+                    const { error: regError } = await supabase
+                        .from('tournament_registrations')
+                        .insert([{
+                            tournament_id: tournamentData.id,
+                            user_id: user.id,
+                            registration_status: 'Pendiente de Pago'
+                        }] as any);
+                    if (regError) throw regError;
+                } else if (isOffer) {
                     const sellerId = offerData.seller_id;
                     const { data: orderData, error: orderError } = await supabase.from('orders').insert({
                         user_id: user.id,
@@ -752,41 +766,43 @@ const CheckoutPage: React.FC = () => {
                             {/* Payment Options Selection */}
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                                 {/* Mercado Pago Option */}
-                                <div
-                                    onClick={() => setSelectedMethodId('mercadopago')}
-                                    className="animate-fade-up"
-                                    style={{
-                                        padding: '20px',
-                                        borderRadius: '20px',
-                                        background: selectedMethodId === 'mercadopago' ? 'rgba(0, 158, 227, 0.1)' : 'rgba(255, 255, 255, 0.03)',
-                                        border: `1px solid ${selectedMethodId === 'mercadopago' ? 'rgba(0, 158, 227, 0.5)' : 'rgba(255, 255, 255, 0.1)'}`,
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: '15px',
-                                        cursor: 'pointer',
-                                        transition: 'all 0.3s ease'
-                                    }}
-                                >
-                                    <div style={{
-                                        width: '24px',
-                                        height: '24px',
-                                        borderRadius: '50%',
-                                        border: `2px solid ${selectedMethodId === 'mercadopago' ? '#009ee3' : 'rgba(255,255,255,0.2)'}`,
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center'
-                                    }}>
-                                        {selectedMethodId === 'mercadopago' && <div style={{ width: '12px', height: '12px', background: '#009ee3', borderRadius: '50%' }} />}
+                                {!isTournament && (
+                                    <div
+                                        onClick={() => setSelectedMethodId('mercadopago')}
+                                        className="animate-fade-up"
+                                        style={{
+                                            padding: '20px',
+                                            borderRadius: '20px',
+                                            background: selectedMethodId === 'mercadopago' ? 'rgba(0, 158, 227, 0.1)' : 'rgba(255, 255, 255, 0.03)',
+                                            border: `1px solid ${selectedMethodId === 'mercadopago' ? 'rgba(0, 158, 227, 0.5)' : 'rgba(255, 255, 255, 0.1)'}`,
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '15px',
+                                            cursor: 'pointer',
+                                            transition: 'all 0.3s ease'
+                                        }}
+                                    >
+                                        <div style={{
+                                            width: '24px',
+                                            height: '24px',
+                                            borderRadius: '50%',
+                                            border: `2px solid ${selectedMethodId === 'mercadopago' ? '#009ee3' : 'rgba(255,255,255,0.2)'}`,
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center'
+                                        }}>
+                                            {selectedMethodId === 'mercadopago' && <div style={{ width: '12px', height: '12px', background: '#009ee3', borderRadius: '50%' }} />}
+                                        </div>
+                                        <div style={{ flex: 1 }}>
+                                            <img
+                                                src="https://logodownload.org/wp-content/uploads/2019/06/mercado-pago-logo-1.png"
+                                                alt="Mercado Pago"
+                                                style={{ height: '24px', width: 'auto', marginBottom: '4px' }}
+                                            />
+                                            <p style={{ fontSize: '12px', color: 'var(--text-dim)' }}>Tarjetas, PSE, Efecty (Con comisión)</p>
+                                        </div>
                                     </div>
-                                    <div style={{ flex: 1 }}>
-                                        <img
-                                            src="https://logodownload.org/wp-content/uploads/2019/06/mercado-pago-logo-1.png"
-                                            alt="Mercado Pago"
-                                            style={{ height: '24px', width: 'auto', marginBottom: '4px' }}
-                                        />
-                                        <p style={{ fontSize: '12px', color: 'var(--text-dim)' }}>Tarjetas, PSE, Efecty (Con comisión)</p>
-                                    </div>
-                                </div>
+                                )}
 
                                 {/* Nequi Direct Option */}
                                 <div
