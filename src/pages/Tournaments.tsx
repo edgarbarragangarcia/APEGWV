@@ -152,10 +152,13 @@ const Tournaments: React.FC = () => {
         const matchesSearch = (t.name?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
             (t.address?.toLowerCase() || '').includes(searchQuery.toLowerCase());
 
+        const isUserRegistered = registrations.some(r => r.id === t.id);
+
         if (activeTab === 'my') {
-            return matchesSearch && registrations.some(r => r.id === t.id);
+            return matchesSearch && isUserRegistered;
         }
-        return matchesSearch;
+        // En la pestaña "Todos", ocultamos los torneos donde ya está inscrito
+        return matchesSearch && !isUserRegistered;
     });
 
     const renderSkeletons = () => (

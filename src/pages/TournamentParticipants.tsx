@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { supabase } from '../services/SupabaseManager';
-import { User, Trophy, Calendar, Users, ChevronLeft } from 'lucide-react';
+import { User, Trophy, Calendar, Users, ChevronLeft, Search, CheckCircle2, Clock } from 'lucide-react';
 import Skeleton from '../components/Skeleton';
 import PageHero from '../components/PageHero';
 import PageHeader from '../components/PageHeader';
 
 
 interface Participant {
-    id: string;
+    id: string; // registration_id
+    user_id: string;
     full_name: string | null;
     id_photo_url: string | null;
     handicap: number | null;
@@ -16,6 +18,7 @@ interface Participant {
     phone: string | null;
     total_rounds: number | null;
     average_score: number | null;
+    registration_status: string | null;
 }
 
 const TournamentParticipants: React.FC = () => {
@@ -26,6 +29,8 @@ const TournamentParticipants: React.FC = () => {
     const [tournamentName, setTournamentName] = useState('');
     const [participants, setParticipants] = useState<Participant[]>([]);
     const [selectedParticipant, setSelectedParticipant] = useState<Participant | null>(null);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [statusFilter, setStatusFilter] = useState<'all' | 'paid' | 'registered'>('all');
 
     useEffect(() => {
         if (id) {
@@ -46,34 +51,66 @@ const TournamentParticipants: React.FC = () => {
             if (tournamentError) throw tournamentError;
             setTournamentName(tournament.name);
 
-            // Fetch participants registrations
+            // Fetch participants registrations with profiles joined
             const { data: registrations, error: regError } = await supabase
                 .from('tournament_registrations')
-                .select('user_id')
+                .select(`
+                    id,
+                    registration_status,
+                    user_id,
+                    profiles (
+                        id, full_name, id_photo_url, handicap, email, phone, total_rounds, average_score
+                    )
+                `)
                 .eq('tournament_id', id || '');
 
             if (regError) throw regError;
 
-            // Fetch profiles separately
-            const userIds = registrations?.map(r => r.user_id).filter((uid): uid is string => uid !== null) || [];
+            const flattenedParticipants = registrations?.map((reg: any) => ({
+                id: reg.id,
+                user_id: reg.user_id,
+                registration_status: reg.registration_status,
+                ...reg.profiles
+            })) || [];
 
-            if (userIds.length > 0) {
-                const { data: profilesData, error: profilesError } = await supabase
-                    .from('profiles')
-                    .select('id, full_name, id_photo_url, handicap, email, phone, total_rounds, average_score')
-                    .in('id', userIds);
-
-                if (profilesError) throw profilesError;
-                setParticipants(profilesData as Participant[]);
-            } else {
-                setParticipants([]);
-            }
+            setParticipants(flattenedParticipants);
         } catch (err) {
             console.error('Error fetching data:', err);
         } finally {
             setLoading(false);
         }
     };
+    const togglePaymentStatus = async (participantId: string, currentStatus: string | null) => {
+        const newStatus = currentStatus === 'paid' ? 'registered' : 'paid';
+
+        try {
+            const { error } = await supabase
+                .from('tournament_registrations')
+                .update({ registration_status: newStatus })
+                .eq('id', participantId);
+
+            if (error) throw error;
+
+            setParticipants(prev => prev.map(p =>
+                p.id === participantId ? { ...p, registration_status: newStatus } : p
+            ));
+        } catch (err) {
+            console.error('Error updating status:', err);
+            alert('Error al actualizar el estado de pago');
+        }
+    };
+    const filteredParticipants = participants.filter(p => {
+        const matchesSearch =
+            (p.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) || false) ||
+            (p.email?.toLowerCase().includes(searchQuery.toLowerCase()) || false);
+
+        const matchesStatus =
+            statusFilter === 'all' ||
+            (statusFilter === 'paid' && p.registration_status === 'paid') ||
+            (statusFilter === 'registered' && p.registration_status !== 'paid');
+
+        return matchesSearch && matchesStatus;
+    });
 
     return (
         <div className="animate-fade" style={{
@@ -105,11 +142,65 @@ const TournamentParticipants: React.FC = () => {
                     subtitle={tournamentName || 'Cargando...'}
                     onBack={() => navigate(-1)}
                 />
+
+                <div style={{ marginTop: '15px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    {/* Search Bar */}
+                    <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                        <Search size={18} color="rgba(255,255,255,0.4)" style={{ position: 'absolute', left: '15px' }} />
+                        <input
+                            type="text"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            placeholder="Nombre o correo..."
+                            style={{
+                                width: '100%',
+                                background: 'rgba(255,255,255,0.05)',
+                                border: '1px solid rgba(255,255,255,0.1)',
+                                borderRadius: '15px',
+                                padding: '12px 12px 12px 45px',
+                                color: 'white',
+                                fontSize: '14px',
+                                outline: 'none'
+                            }}
+                        />
+                    </div>
+
+                    {/* Filter Chips */}
+                    <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '5px', scrollbarWidth: 'none' }}>
+                        {[
+                            { id: 'all', label: 'Todos', icon: <Users size={14} /> },
+                            { id: 'paid', label: 'Pagos', icon: <CheckCircle2 size={14} /> },
+                            { id: 'registered', label: 'Pendientes', icon: <Clock size={14} /> }
+                        ].map(filter => (
+                            <button
+                                key={filter.id}
+                                onClick={() => setStatusFilter(filter.id as any)}
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '6px',
+                                    padding: '8px 16px',
+                                    borderRadius: '12px',
+                                    fontSize: '13px',
+                                    fontWeight: '700',
+                                    whiteSpace: 'nowrap',
+                                    border: 'none',
+                                    background: statusFilter === filter.id ? 'var(--secondary)' : 'rgba(255,255,255,0.05)',
+                                    color: statusFilter === filter.id ? 'var(--primary)' : 'var(--text-dim)',
+                                    transition: 'all 0.2s'
+                                }}
+                            >
+                                {filter.icon}
+                                {filter.label}
+                            </button>
+                        ))}
+                    </div>
+                </div>
             </div>
 
             <div style={{
                 position: 'absolute',
-                top: 'calc(var(--header-offset-top) + 78px)',
+                top: 'calc(var(--header-offset-top) + 215px)',
                 left: '0',
                 right: '0',
                 bottom: 'calc(var(--nav-height))',
@@ -207,10 +298,12 @@ const TournamentParticipants: React.FC = () => {
                 ) : (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                            <p style={{ color: 'var(--text-dim)', fontSize: '14px' }}>Total de inscritos</p>
-                            <span style={{ background: 'var(--secondary)', color: 'var(--primary)', padding: '4px 10px', borderRadius: '12px', fontSize: '13px', fontWeight: '800' }}>{participants.length}</span>
+                            <p style={{ color: 'var(--text-dim)', fontSize: '14px' }}>
+                                {statusFilter === 'all' ? 'Total de inscritos' : statusFilter === 'paid' ? 'Total pagos' : 'Total pendientes'}
+                            </p>
+                            <span style={{ background: 'var(--secondary)', color: 'var(--primary)', padding: '4px 10px', borderRadius: '12px', fontSize: '13px', fontWeight: '800' }}>{filteredParticipants.length}</span>
                         </div>
-                        {participants.map(p => (
+                        {filteredParticipants.map(p => (
                             <div
                                 key={p.id}
                                 onClick={() => setSelectedParticipant(p)}
@@ -219,9 +312,13 @@ const TournamentParticipants: React.FC = () => {
                                     alignItems: 'center',
                                     gap: '15px',
                                     padding: '12px',
-                                    background: 'rgba(255,255,255,0.03)',
+                                    background: p.registration_status === 'paid'
+                                        ? 'rgba(163, 230, 53, 0.15)'
+                                        : 'rgba(255,255,255,0.03)',
                                     borderRadius: '18px',
-                                    border: '1px solid rgba(255,255,255,0.05)',
+                                    border: p.registration_status === 'paid'
+                                        ? '1px solid rgba(163, 230, 53, 0.3)'
+                                        : '1px solid rgba(255,255,255,0.05)',
                                     cursor: 'pointer',
                                     transition: 'all 0.2s',
                                 }}
@@ -238,11 +335,63 @@ const TournamentParticipants: React.FC = () => {
                                     <h4 style={{ fontSize: '16px', fontWeight: '700', color: 'white', marginBottom: '2px' }}>{p.full_name || 'Golfista APEG'}</h4>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                         <span style={{ fontSize: '12px', color: 'var(--text-dim)' }}>Hándicap: <span style={{ color: 'white', fontWeight: '600' }}>{p.handicap ?? '--'}</span></span>
+                                        {p.registration_status === 'paid' && (
+                                            <span style={{
+                                                fontSize: '10px',
+                                                background: 'var(--secondary)',
+                                                color: 'var(--primary)',
+                                                padding: '2px 6px',
+                                                borderRadius: '6px',
+                                                fontWeight: '900',
+                                                textTransform: 'uppercase'
+                                            }}>PAGO</span>
+                                        )}
                                     </div>
                                 </div>
-                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(255,255,255,0.05)' }}>
-                                    <ChevronLeft size={16} style={{ transform: 'rotate(180deg)', color: 'var(--text-dim)' }} />
-                                </div>
+                                <motion.div
+                                    whileHover={{ scale: 1.1 }}
+                                    whileTap={{ scale: 0.9 }}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        togglePaymentStatus(p.id, p.registration_status);
+                                    }}
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        width: '40px',
+                                        height: '40px',
+                                        borderRadius: '14px',
+                                        background: p.registration_status === 'paid' ? 'var(--secondary)' : 'rgba(163, 230, 53, 0.1)',
+                                        color: p.registration_status === 'paid' ? 'var(--primary)' : 'var(--secondary)',
+                                        border: '1px solid rgba(163, 230, 53, 0.2)',
+                                        transition: 'all 0.2s',
+                                        position: 'relative',
+                                        cursor: 'pointer'
+                                    }}
+                                >
+                                    {p.registration_status !== 'paid' && (
+                                        <motion.div
+                                            animate={{
+                                                scale: [1, 1.25, 1],
+                                                opacity: [0.4, 0, 0.4]
+                                            }}
+                                            transition={{
+                                                duration: 2,
+                                                repeat: Infinity,
+                                                ease: "easeInOut"
+                                            }}
+                                            style={{
+                                                position: 'absolute',
+                                                inset: -4,
+                                                borderRadius: '18px',
+                                                border: '2px solid var(--secondary)',
+                                                pointerEvents: 'none'
+                                            }}
+                                        />
+                                    )}
+                                    <Trophy size={18} />
+                                </motion.div>
                             </div>
                         ))}
                     </div>

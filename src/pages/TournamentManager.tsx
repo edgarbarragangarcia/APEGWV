@@ -31,6 +31,7 @@ interface Tournament {
     custom_rules?: string | null;
     sponsors?: string | null;
     prizes?: string | null;
+    guests?: string | null;
 }
 
 
@@ -157,7 +158,7 @@ const TournamentCard = ({ tourney, onEdit }: { tourney: Tournament, onEdit: () =
                         </motion.div>
                     )}
 
-                    <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '12px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'flex-start', marginBottom: '16px' }}>
                         <span style={{
                             padding: '4px 10px',
                             borderRadius: '10px',
@@ -174,6 +175,19 @@ const TournamentCard = ({ tourney, onEdit }: { tourney: Tournament, onEdit: () =
                         }}>
                             {tourney.approval_status === 'approved' ? 'APROBADO' :
                                 tourney.approval_status === 'rejected' ? 'RECHAZADA' : 'PENDIENTE ADMIN'}
+                        </span>
+                        <span style={{
+                            fontSize: '9px',
+                            fontWeight: '800',
+                            padding: '4px 10px',
+                            borderRadius: '10px',
+                            background: 'rgba(255,255,255,0.05)',
+                            color: 'var(--text-dim)',
+                            textTransform: 'uppercase',
+                            border: '1px solid rgba(255,255,255,0.1)',
+                            letterSpacing: '0.02em'
+                        }}>
+                            {tourney.status || 'ABIERTO'}
                         </span>
                     </div>
 
@@ -203,17 +217,6 @@ const TournamentCard = ({ tourney, onEdit }: { tourney: Tournament, onEdit: () =
                                 <p style={{ fontSize: '16px', color: 'var(--secondary)', fontWeight: '950', letterSpacing: '-0.5px' }}>
                                     {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(tourney.price || 0)}
                                 </p>
-                                <span style={{
-                                    fontSize: '9px',
-                                    fontWeight: '800',
-                                    padding: '2px 8px',
-                                    borderRadius: '6px',
-                                    background: 'rgba(255,255,255,0.05)',
-                                    color: 'var(--text-dim)',
-                                    textTransform: 'uppercase'
-                                }}>
-                                    {tourney.status || 'ABIERTO'}
-                                </span>
                             </div>
 
                             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -259,6 +262,10 @@ const TournamentManager: React.FC = () => {
     const [showRulesSection, setShowRulesSection] = useState(false);
     const [showSponsorsSection, setShowSponsorsSection] = useState(false);
     const [showPrizesSection, setShowPrizesSection] = useState(false);
+    const [showGuestsSection, setShowGuestsSection] = useState(false);
+    const [guestSearchQuery, setGuestSearchQuery] = useState('');
+    const [profileResults, setProfileResults] = useState<{ id: string, full_name: string, avatar_url: string | null }[]>([]);
+    const [searchingProfiles, setSearchingProfiles] = useState(false);
 
 
 
@@ -286,7 +293,8 @@ const TournamentManager: React.FC = () => {
         rules: [] as string[],
         custom_rules: '',
         sponsors: [] as { id: string, name: string }[],
-        prizes: ''
+        prizes: [] as { id: string, name: string }[],
+        guests: [] as { id: string, name: string }[]
     });
 
     const formatPrice = (val: string) => {
@@ -294,6 +302,45 @@ const TournamentManager: React.FC = () => {
         if (!numeric) return '';
         return new Intl.NumberFormat('es-CO').format(parseInt(numeric));
     };
+
+    const searchProfiles = async (query: string) => {
+        if (!query || query.length < 2) {
+            setProfileResults([]);
+            return;
+        }
+
+        setSearchingProfiles(true);
+        try {
+            const { data, error } = await supabase
+                .from('profiles')
+                .select('id, full_name, avatar_url')
+                .ilike('full_name', `%${query}%`)
+                .limit(5);
+
+            if (error) throw error;
+            const mappedResults = (data || []).map(p => ({
+                id: p.id,
+                full_name: p.full_name || 'Usuario APEG',
+                avatar_url: p.avatar_url
+            }));
+            setProfileResults(mappedResults);
+        } catch (err) {
+            console.error('Error searching profiles:', err);
+        } finally {
+            setSearchingProfiles(false);
+        }
+    };
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (guestSearchQuery) {
+                searchProfiles(guestSearchQuery);
+            } else {
+                setProfileResults([]);
+            }
+        }, 300);
+        return () => clearTimeout(timer);
+    }, [guestSearchQuery]);
 
 
 
@@ -376,7 +423,8 @@ const TournamentManager: React.FC = () => {
                         rules: formData.rules,
                         custom_rules: formData.custom_rules,
                         sponsors: formData.sponsors.map(s => s.name).filter(Boolean).join('\n'),
-                        prizes: formData.prizes,
+                        prizes: formData.prizes.map(p => p.name).filter(Boolean).join('\n'),
+                        guests: formData.guests.map(g => g.name).filter(Boolean).join('\n'),
                         approval_status: 'pending',
                         updated_at: new Date().toISOString()
                     })
@@ -401,7 +449,8 @@ const TournamentManager: React.FC = () => {
                         rules: formData.rules,
                         custom_rules: formData.custom_rules,
                         sponsors: formData.sponsors.map(s => s.name).filter(Boolean).join('\n'),
-                        prizes: formData.prizes,
+                        prizes: formData.prizes.map(p => p.name).filter(Boolean).join('\n'),
+                        guests: formData.guests.map(g => g.name).filter(Boolean).join('\n'),
                         creator_id: user.id,
                         approval_status: 'pending'
                     } as any])
@@ -449,7 +498,8 @@ const TournamentManager: React.FC = () => {
             rules: [],
             custom_rules: '',
             sponsors: [],
-            prizes: ''
+            prizes: [],
+            guests: []
         });
         setEditingId(null);
     };
@@ -478,7 +528,8 @@ const TournamentManager: React.FC = () => {
             rules: tournament.rules || [],
             custom_rules: tournament.custom_rules || '',
             sponsors: tournament.sponsors ? tournament.sponsors.split('\n').filter(Boolean).map((name, i) => ({ id: i.toString(), name })) : [],
-            prizes: tournament.prizes || ''
+            prizes: tournament.prizes ? tournament.prizes.split('\n').filter(Boolean).map((name, i) => ({ id: i.toString(), name })) : [],
+            guests: tournament.guests ? tournament.guests.split('\n').filter(Boolean).map((name, i) => ({ id: i.toString(), name })) : []
         });
         setEditingId(tournament.id);
         setShowForm(true);
@@ -1100,14 +1151,214 @@ const TournamentManager: React.FC = () => {
                                                         exit={{ height: 0, opacity: 0 }}
                                                         style={{ overflow: 'hidden' }}
                                                     >
-                                                        <div className="input-group" style={{ marginTop: '15px' }}>
-                                                            <textarea
-                                                                value={formData.prizes || ''}
-                                                                onChange={(e) => setFormData({ ...formData, prizes: e.target.value })}
-                                                                className="form-input"
-                                                                rows={2}
-                                                                placeholder="Ej. Hole in One (Carro nuevo), Mejor Acercamiento..."
-                                                            />
+                                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '15px' }}>
+                                                            {formData.prizes.map((prize, idx) => (
+                                                                <div key={prize.id} style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                                                    <input
+                                                                        type="text"
+                                                                        value={prize.name}
+                                                                        onChange={(e) => {
+                                                                            const newPrizes = [...formData.prizes];
+                                                                            newPrizes[idx].name = e.target.value;
+                                                                            setFormData({ ...formData, prizes: newPrizes });
+                                                                        }}
+                                                                        className="form-input-sm"
+                                                                        placeholder="Ej: Hole in One, Mejor Acercamiento..."
+                                                                    />
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => {
+                                                                            const newPrizes = formData.prizes.filter((_, i) => i !== idx);
+                                                                            setFormData({ ...formData, prizes: newPrizes });
+                                                                        }}
+                                                                        style={{ width: '38px', height: '38px', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.2)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, cursor: 'pointer' }}
+                                                                    >
+                                                                        <Trash2 size={16} />
+                                                                    </button>
+                                                                </div>
+                                                            ))}
+                                                            <button
+                                                                type="button"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    setFormData({ ...formData, prizes: [...formData.prizes, { id: Date.now().toString(), name: '' }] });
+                                                                }}
+                                                                style={{
+                                                                    background: 'rgba(255,255,255,0.05)',
+                                                                    border: '1px solid rgba(255,255,255,0.1)',
+                                                                    color: 'white',
+                                                                    fontSize: '11px',
+                                                                    padding: '8px 12px',
+                                                                    borderRadius: '12px',
+                                                                    display: 'flex',
+                                                                    alignItems: 'center',
+                                                                    gap: '6px',
+                                                                    cursor: 'pointer',
+                                                                    fontWeight: '800',
+                                                                    width: 'fit-content'
+                                                                }}
+                                                            >
+                                                                <Plus size={14} /> Añadir Premio
+                                                            </button>
+                                                        </div>
+                                                    </motion.div>
+                                                )}
+                                            </AnimatePresence>
+                                        </div>
+
+                                        <div style={{ marginTop: '10px', padding: '15px', background: 'rgba(255,255,255,0.03)', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                            <div
+                                                style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}
+                                                onClick={() => setShowGuestsSection(!showGuestsSection)}
+                                            >
+                                                <h3 style={{ fontSize: '14px', fontWeight: '900', color: 'var(--secondary)', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
+                                                    <div style={{ width: '20px', height: '20px', borderRadius: '6px', background: 'var(--secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                        <Users size={12} color="var(--primary)" />
+                                                    </div>
+                                                    Invitados Especiales
+                                                </h3>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                    {showGuestsSection ? <ChevronUp size={20} color="var(--text-dim)" /> : <ChevronDown size={20} color="var(--text-dim)" />}
+                                                </div>
+                                            </div>
+
+                                            <AnimatePresence>
+                                                {showGuestsSection && (
+                                                    <motion.div
+                                                        initial={{ height: 0, opacity: 0 }}
+                                                        animate={{ height: 'auto', opacity: 1 }}
+                                                        exit={{ height: 0, opacity: 0 }}
+                                                        style={{ overflow: 'hidden' }}
+                                                    >
+                                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '15px' }}>
+                                                            {/* Search Input for existing profiles */}
+                                                            <div style={{ position: 'relative' }}>
+                                                                <div className="input-group" style={{ marginBottom: '10px' }}>
+                                                                    <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                                                                        <Users size={16} color="var(--text-dim)" style={{ position: 'absolute', left: '12px' }} />
+                                                                        <input
+                                                                            type="text"
+                                                                            value={guestSearchQuery}
+                                                                            onChange={(e) => setGuestSearchQuery(e.target.value)}
+                                                                            className="form-input"
+                                                                            style={{ paddingLeft: '40px' }}
+                                                                            placeholder="Buscar usuarios inscritos..."
+                                                                        />
+                                                                        {searchingProfiles && (
+                                                                            <Loader2 className="animate-spin" size={16} color="var(--secondary)" style={{ position: 'absolute', right: '12px' }} />
+                                                                        )}
+                                                                    </div>
+                                                                </div>
+
+                                                                {/* Search Results Dropdown */}
+                                                                <AnimatePresence>
+                                                                    {profileResults.length > 0 && (
+                                                                        <motion.div
+                                                                            initial={{ opacity: 0, y: -10 }}
+                                                                            animate={{ opacity: 1, y: 0 }}
+                                                                            exit={{ opacity: 0, y: -10 }}
+                                                                            style={{
+                                                                                position: 'absolute',
+                                                                                top: '100%',
+                                                                                left: 0,
+                                                                                right: 0,
+                                                                                background: '#151c18',
+                                                                                borderRadius: '16px',
+                                                                                border: '1px solid rgba(255,255,255,0.1)',
+                                                                                boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
+                                                                                zIndex: 20,
+                                                                                marginTop: '5px',
+                                                                                overflow: 'hidden'
+                                                                            }}
+                                                                        >
+                                                                            {profileResults.map((profile) => (
+                                                                                <div
+                                                                                    key={profile.id}
+                                                                                    onClick={() => {
+                                                                                        if (!formData.guests.some(g => g.name === profile.full_name)) {
+                                                                                            setFormData({
+                                                                                                ...formData,
+                                                                                                guests: [...formData.guests, { id: profile.id, name: profile.full_name }]
+                                                                                            });
+                                                                                        }
+                                                                                        setGuestSearchQuery('');
+                                                                                        setProfileResults([]);
+                                                                                    }}
+                                                                                    style={{
+                                                                                        padding: '12px 15px',
+                                                                                        display: 'flex',
+                                                                                        alignItems: 'center',
+                                                                                        gap: '12px',
+                                                                                        cursor: 'pointer',
+                                                                                        borderBottom: '1px solid rgba(255,255,255,0.05)'
+                                                                                    }}
+                                                                                    className="item-hover"
+                                                                                >
+                                                                                    <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'var(--primary-light)', overflow: 'hidden' }}>
+                                                                                        <img
+                                                                                            src={profile.avatar_url || `https://ui-avatars.com/api/?name=${profile.full_name}&background=0E2F1F&color=A3E635`}
+                                                                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                                                                            alt={profile.full_name}
+                                                                                        />
+                                                                                    </div>
+                                                                                    <span style={{ color: 'white', fontSize: '13px', fontWeight: '600' }}>{profile.full_name}</span>
+                                                                                </div>
+                                                                            ))}
+                                                                        </motion.div>
+                                                                    )}
+                                                                </AnimatePresence>
+                                                            </div>
+
+                                                            <div style={{ height: '1px', background: 'rgba(255,255,255,0.05)', margin: '5px 0' }} />
+
+                                                            {formData.guests.map((guest, idx) => (
+                                                                <div key={guest.id} style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                                                    <input
+                                                                        type="text"
+                                                                        value={guest.name}
+                                                                        onChange={(e) => {
+                                                                            const newGuests = [...formData.guests];
+                                                                            newGuests[idx].name = e.target.value;
+                                                                            setFormData({ ...formData, guests: newGuests });
+                                                                        }}
+                                                                        className="form-input-sm"
+                                                                        placeholder="Nombre del invitado"
+                                                                    />
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => {
+                                                                            const newGuests = formData.guests.filter((_, i) => i !== idx);
+                                                                            setFormData({ ...formData, guests: newGuests });
+                                                                        }}
+                                                                        style={{ width: '38px', height: '38px', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.2)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, cursor: 'pointer' }}
+                                                                    >
+                                                                        <Trash2 size={16} />
+                                                                    </button>
+                                                                </div>
+                                                            ))}
+                                                            <button
+                                                                type="button"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    setFormData({ ...formData, guests: [...formData.guests, { id: Date.now().toString(), name: '' }] });
+                                                                }}
+                                                                style={{
+                                                                    background: 'rgba(255,255,255,0.05)',
+                                                                    border: '1px solid rgba(255,255,255,0.1)',
+                                                                    color: 'white',
+                                                                    fontSize: '11px',
+                                                                    padding: '8px 12px',
+                                                                    borderRadius: '12px',
+                                                                    display: 'flex',
+                                                                    alignItems: 'center',
+                                                                    gap: '6px',
+                                                                    cursor: 'pointer',
+                                                                    fontWeight: '800',
+                                                                    width: 'fit-content'
+                                                                }}
+                                                            >
+                                                                <Plus size={14} /> Añadir Invitado
+                                                            </button>
                                                         </div>
                                                     </motion.div>
                                                 )}
