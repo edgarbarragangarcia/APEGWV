@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, useAnimation, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../services/SupabaseManager';
-import { Plus, Trophy, Trash2, Calendar, Loader2, Users, ChevronLeft, MapPin, Settings, ChevronDown, ChevronUp, Minus, ShieldCheck, HeartHandshake } from 'lucide-react';
+import { Plus, Trophy, Trash2, Calendar, Loader2, Users, ChevronLeft, MapPin, Settings, ChevronDown, ChevronUp, Minus, ShieldCheck, HeartHandshake, Copy } from 'lucide-react';
 import Skeleton from '../components/Skeleton';
 import PageHero from '../components/PageHero';
 import PageHeader from '../components/PageHeader';
@@ -771,7 +771,7 @@ const TournamentManager: React.FC = () => {
                                                     value={formData.game_mode}
                                                     onChange={(e) => setFormData({ ...formData, game_mode: e.target.value })}
                                                     className="form-input"
-                                                    style={{ background: 'rgba(255,b255,b255,0.05)', color: 'white' }}
+                                                    style={{ background: 'rgba(255,255,255,0.05)', color: 'white' }}
                                                 >
                                                     <option value="Juego por Golpes">Juego por Golpes</option>
                                                     <option value="Stableford">Stableford</option>
@@ -785,7 +785,7 @@ const TournamentManager: React.FC = () => {
                                                     value={formData.status}
                                                     onChange={(e) => setFormData({ ...formData, status: e.target.value })}
                                                     className="form-input"
-                                                    style={{ background: 'rgba(255,b255,b255,0.05)', color: 'white' }}
+                                                    style={{ background: 'rgba(255,255,255,0.05)', color: 'white' }}
                                                 >
                                                     <option value="Borrador">Borrador</option>
                                                     <option value="Abierto (Inscripciones)">Abierto (Inscripciones)</option>
@@ -794,6 +794,68 @@ const TournamentManager: React.FC = () => {
                                                 </select>
                                             </div>
                                         </div>
+
+                                        {formData.status === 'Abierto (Inscripciones)' && editingId && (
+                                            <motion.div
+                                                initial={{ opacity: 0, y: -10 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                className="glass"
+                                                style={{
+                                                    padding: '16px',
+                                                    borderRadius: '20px',
+                                                    background: 'rgba(163, 230, 53, 0.05)',
+                                                    border: '1px solid rgba(163, 230, 53, 0.2)',
+                                                    marginBottom: '15px'
+                                                }}
+                                            >
+                                                <label style={{ fontSize: '10px', fontWeight: '950', color: 'var(--secondary)', display: 'block', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                                    Link Público de Inscripción
+                                                </label>
+                                                <div style={{ display: 'flex', gap: '10px' }}>
+                                                    <div style={{
+                                                        flex: 1,
+                                                        background: 'rgba(0,0,0,0.2)',
+                                                        padding: '10px 14px',
+                                                        borderRadius: '12px',
+                                                        fontSize: '12px',
+                                                        color: 'white',
+                                                        overflow: 'hidden',
+                                                        textOverflow: 'ellipsis',
+                                                        whiteSpace: 'nowrap',
+                                                        border: '1px solid rgba(255,b255,b255,0.05)',
+                                                        fontFamily: 'monospace'
+                                                    }}>
+                                                        {`${window.location.origin}/tournament-register/${editingId}`}
+                                                    </div>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            const url = `${window.location.origin}/tournament-register/${editingId}`;
+                                                            navigator.clipboard.writeText(url);
+                                                            // Optional: show a toast or feedback
+                                                            if (navigator.vibrate) navigator.vibrate(50);
+                                                        }}
+                                                        style={{
+                                                            width: '40px',
+                                                            height: '40px',
+                                                            borderRadius: '12px',
+                                                            background: 'var(--secondary)',
+                                                            color: 'var(--primary)',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
+                                                            border: 'none',
+                                                            cursor: 'pointer'
+                                                        }}
+                                                    >
+                                                        <Copy size={18} />
+                                                    </button>
+                                                </div>
+                                                <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', marginTop: '8px', fontWeight: '600' }}>
+                                                    Copia este link para compartirlo con los jugadores.
+                                                </p>
+                                            </motion.div>
+                                        )}
 
                                         <div className="input-group">
                                             <label style={{ fontSize: '12px', fontWeight: '800', marginBottom: '5px', display: 'block', color: 'var(--text-dim)' }}>Descripción / Notas</label>
@@ -1235,13 +1297,12 @@ const TournamentManager: React.FC = () => {
                                                             <div style={{ position: 'relative' }}>
                                                                 <div className="input-group" style={{ marginBottom: '10px' }}>
                                                                     <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                                                                        <Users size={16} color="var(--text-dim)" style={{ position: 'absolute', left: '12px' }} />
+                                                                        <Users size={16} color="var(--text-dim)" style={{ position: 'absolute', left: '14px' }} />
                                                                         <input
                                                                             type="text"
                                                                             value={guestSearchQuery}
                                                                             onChange={(e) => setGuestSearchQuery(e.target.value)}
-                                                                            className="form-input"
-                                                                            style={{ paddingLeft: '40px' }}
+                                                                            className="form-input with-icon"
                                                                             placeholder="Buscar usuarios inscritos..."
                                                                         />
                                                                         {searchingProfiles && (

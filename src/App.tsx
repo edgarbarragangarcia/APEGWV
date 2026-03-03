@@ -42,6 +42,7 @@ import MyPurchases from './pages/MyPurchases';
 import { useOnlineStatus } from './hooks/useOnlineStatus';
 import OfflineOverlay from './components/OfflineOverlay';
 import MercadoPagoCallback from './pages/MercadoPagoCallback';
+import TournamentRegistration from './pages/TournamentRegistration';
 
 
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -149,6 +150,7 @@ const AppContent: React.FC = () => {
         style={!session ? { flex: 1, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', padding: 0, margin: 0 } : { flex: 1, overflow: isFixedPage ? 'hidden' : 'auto', position: 'relative' }}
       >
         <Routes>
+          <Route path="/tournament-register/:id" element={<TournamentRegistration />} />
           {!session ? (
             <>
               <Route path="/auth" element={<Auth />} />
