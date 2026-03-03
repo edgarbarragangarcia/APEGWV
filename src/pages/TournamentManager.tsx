@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, useAnimation, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../services/SupabaseManager';
-import { Plus, Trophy, Trash2, Calendar, Loader2, Users, ChevronLeft, MapPin, Settings, ChevronDown, ChevronUp, Minus } from 'lucide-react';
+import { Plus, Trophy, Trash2, Calendar, Loader2, Users, ChevronLeft, MapPin, Settings, ChevronDown, ChevronUp, Minus, ShieldCheck, HeartHandshake } from 'lucide-react';
 import Skeleton from '../components/Skeleton';
 import PageHero from '../components/PageHero';
 import PageHeader from '../components/PageHeader';
@@ -285,7 +285,7 @@ const TournamentManager: React.FC = () => {
         ] as BudgetItem[],
         rules: [] as string[],
         custom_rules: '',
-        sponsors: '',
+        sponsors: [] as { id: string, name: string }[],
         prizes: ''
     });
 
@@ -375,7 +375,7 @@ const TournamentManager: React.FC = () => {
                         budget_items: formData.budget_items as any,
                         rules: formData.rules,
                         custom_rules: formData.custom_rules,
-                        sponsors: formData.sponsors,
+                        sponsors: formData.sponsors.map(s => s.name).filter(Boolean).join('\n'),
                         prizes: formData.prizes,
                         approval_status: 'pending',
                         updated_at: new Date().toISOString()
@@ -400,7 +400,7 @@ const TournamentManager: React.FC = () => {
                         budget_items: formData.budget_items as any,
                         rules: formData.rules,
                         custom_rules: formData.custom_rules,
-                        sponsors: formData.sponsors,
+                        sponsors: formData.sponsors.map(s => s.name).filter(Boolean).join('\n'),
                         prizes: formData.prizes,
                         creator_id: user.id,
                         approval_status: 'pending'
@@ -448,7 +448,7 @@ const TournamentManager: React.FC = () => {
             ],
             rules: [],
             custom_rules: '',
-            sponsors: '',
+            sponsors: [],
             prizes: ''
         });
         setEditingId(null);
@@ -477,7 +477,7 @@ const TournamentManager: React.FC = () => {
                 ],
             rules: tournament.rules || [],
             custom_rules: tournament.custom_rules || '',
-            sponsors: tournament.sponsors || '',
+            sponsors: tournament.sponsors ? tournament.sponsors.split('\n').filter(Boolean).map((name, i) => ({ id: i.toString(), name })) : [],
             prizes: tournament.prizes || ''
         });
         setEditingId(tournament.id);
@@ -737,8 +737,8 @@ const TournamentManager: React.FC = () => {
                                                     style={{ background: 'rgba(255,b255,b255,0.05)', color: 'white' }}
                                                 >
                                                     <option value="Borrador">Borrador</option>
-                                                    <option value="Abierto">Abierto (Inscripciones)</option>
-                                                    <option value="Cerrado">Cerrado (Inscripciones)</option>
+                                                    <option value="Abierto (Inscripciones)">Abierto (Inscripciones)</option>
+                                                    <option value="Cerrado (Inscripciones)">Cerrado (Inscripciones)</option>
                                                     <option value="Finalizado">Finalizado</option>
                                                 </select>
                                             </div>
@@ -869,13 +869,29 @@ const TournamentManager: React.FC = () => {
                                                                                     setFormData({ ...formData, budget_items: newItems });
                                                                                 }}
                                                                                 className="form-input-sm"
-                                                                                style={{ width: '135px', background: 'rgba(255,255,255,0.05)', color: 'white', fontWeight: '700' }}
+                                                                                style={{ width: '110px', background: 'rgba(255,255,255,0.05)', color: 'white', fontWeight: '700' }}
                                                                             >
                                                                                 <option value="per_player">Por Jugador</option>
                                                                                 <option value="fixed">Fijo</option>
                                                                             </select>
                                                                             {isDefaultItem ? (
-                                                                                <div style={{ width: '38px', height: '38px', borderRadius: '12px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ef4444', fontSize: '10px', fontWeight: '800' }}>GASTO</div>
+                                                                                <button
+                                                                                    type="button"
+                                                                                    onClick={() => {
+                                                                                        const newItems = [...formData.budget_items];
+                                                                                        newItems[idx].category = (item.category || 'expense') === 'income' ? 'expense' : 'income';
+                                                                                        setFormData({ ...formData, budget_items: newItems });
+                                                                                    }}
+                                                                                    style={{
+                                                                                        width: '38px', height: '38px', borderRadius: '12px', flexShrink: 0,
+                                                                                        display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+                                                                                        background: (item.category || 'expense') === 'income' ? 'rgba(163, 230, 53, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                                                                                        color: (item.category || 'expense') === 'income' ? 'var(--secondary)' : '#ef4444',
+                                                                                        border: '1px solid ' + ((item.category || 'expense') === 'income' ? 'rgba(163, 230, 53, 0.2)' : 'rgba(239, 68, 68, 0.2)')
+                                                                                    }}
+                                                                                >
+                                                                                    {(item.category || 'expense') === 'income' ? <Plus size={18} /> : <Minus size={18} />}
+                                                                                </button>
                                                                             ) : (
                                                                                 <button
                                                                                     type="button"
@@ -931,7 +947,12 @@ const TournamentManager: React.FC = () => {
                                                 style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}
                                                 onClick={() => setShowRulesSection(!showRulesSection)}
                                             >
-                                                <h3 style={{ fontSize: '14px', fontWeight: '900', color: 'var(--text-dim)', margin: 0 }}>Reglas y Condiciones (Opcionales)</h3>
+                                                <h3 style={{ fontSize: '14px', fontWeight: '900', color: 'var(--secondary)', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
+                                                    <div style={{ width: '20px', height: '20px', borderRadius: '6px', background: 'var(--secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                        <ShieldCheck size={12} color="var(--primary)" />
+                                                    </div>
+                                                    Reglas y Condiciones (Opcionales)
+                                                </h3>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                                                     {showRulesSection ? <ChevronUp size={20} color="var(--text-dim)" /> : <ChevronDown size={20} color="var(--text-dim)" />}
                                                 </div>
@@ -981,7 +1002,12 @@ const TournamentManager: React.FC = () => {
                                                 style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}
                                                 onClick={() => setShowSponsorsSection(!showSponsorsSection)}
                                             >
-                                                <h3 style={{ fontSize: '14px', fontWeight: '900', color: 'var(--text-dim)', margin: 0 }}>Patrocinadores</h3>
+                                                <h3 style={{ fontSize: '14px', fontWeight: '900', color: 'var(--secondary)', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
+                                                    <div style={{ width: '20px', height: '20px', borderRadius: '6px', background: 'var(--secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                        <HeartHandshake size={12} color="var(--primary)" />
+                                                    </div>
+                                                    Patrocinadores
+                                                </h3>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                                                     {showSponsorsSection ? <ChevronUp size={20} color="var(--text-dim)" /> : <ChevronDown size={20} color="var(--text-dim)" />}
                                                 </div>
@@ -995,14 +1021,55 @@ const TournamentManager: React.FC = () => {
                                                         exit={{ height: 0, opacity: 0 }}
                                                         style={{ overflow: 'hidden' }}
                                                     >
-                                                        <div className="input-group" style={{ marginTop: '15px' }}>
-                                                            <textarea
-                                                                value={formData.sponsors || ''}
-                                                                onChange={(e) => setFormData({ ...formData, sponsors: e.target.value })}
-                                                                className="form-input"
-                                                                rows={2}
-                                                                placeholder="Menciona las marcas involucradas..."
-                                                            />
+                                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '15px' }}>
+                                                            {formData.sponsors.map((sponsor, idx) => (
+                                                                <div key={sponsor.id} style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                                                    <input
+                                                                        type="text"
+                                                                        value={sponsor.name}
+                                                                        onChange={(e) => {
+                                                                            const newSponsors = [...formData.sponsors];
+                                                                            newSponsors[idx].name = e.target.value;
+                                                                            setFormData({ ...formData, sponsors: newSponsors });
+                                                                        }}
+                                                                        className="form-input-sm"
+                                                                        placeholder="Nombre del patrocinador"
+                                                                    />
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => {
+                                                                            const newSponsors = formData.sponsors.filter((_, i) => i !== idx);
+                                                                            setFormData({ ...formData, sponsors: newSponsors });
+                                                                        }}
+                                                                        style={{ width: '38px', height: '38px', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.2)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, cursor: 'pointer' }}
+                                                                    >
+                                                                        <Trash2 size={16} />
+                                                                    </button>
+                                                                </div>
+                                                            ))}
+                                                            <button
+                                                                type="button"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    setFormData({ ...formData, sponsors: [...formData.sponsors, { id: Date.now().toString(), name: '' }] });
+                                                                }}
+                                                                style={{
+                                                                    background: 'rgba(255,255,255,0.05)',
+                                                                    border: '1px solid rgba(255,255,255,0.1)',
+                                                                    color: 'white',
+                                                                    fontSize: '11px',
+                                                                    padding: '8px 12px',
+                                                                    borderRadius: '12px',
+                                                                    display: 'flex',
+                                                                    alignItems: 'center',
+                                                                    gap: '6px',
+                                                                    cursor: 'pointer',
+                                                                    fontWeight: '800',
+                                                                    width: 'fit-content'
+                                                                }}
+                                                            >
+                                                                <Plus size={14} /> Añadir Patrocinador
+                                                            </button>
                                                         </div>
                                                     </motion.div>
                                                 )}
@@ -1014,7 +1081,12 @@ const TournamentManager: React.FC = () => {
                                                 style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}
                                                 onClick={() => setShowPrizesSection(!showPrizesSection)}
                                             >
-                                                <h3 style={{ fontSize: '14px', fontWeight: '900', color: 'var(--text-dim)', margin: 0 }}>Premios Especiales</h3>
+                                                <h3 style={{ fontSize: '14px', fontWeight: '900', color: 'var(--secondary)', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
+                                                    <div style={{ width: '20px', height: '20px', borderRadius: '6px', background: 'var(--secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                        <Trophy size={12} color="var(--primary)" />
+                                                    </div>
+                                                    Premios Especiales
+                                                </h3>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                                                     {showPrizesSection ? <ChevronUp size={20} color="var(--text-dim)" /> : <ChevronDown size={20} color="var(--text-dim)" />}
                                                 </div>

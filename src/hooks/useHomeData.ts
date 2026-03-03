@@ -33,6 +33,7 @@ export const useUpcomingTournaments = (limit = 3) => {
             const { data, error } = await supabase
                 .from('tournaments')
                 .select('*')
+                .eq('status', 'Abierto (Inscripciones)')
                 .order('date', { ascending: true })
                 .limit(limit);
 

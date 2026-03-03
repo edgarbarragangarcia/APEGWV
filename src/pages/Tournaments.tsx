@@ -395,12 +395,12 @@ const Tournaments: React.FC = () => {
                                             onClick={() => {
                                                 if (isRegistered) {
                                                     handleUnregisterClick(tourney.id);
-                                                } else if (tourney.status === 'Abierto') {
+                                                } else if (tourney.status === 'Abierto (Inscripciones)') {
                                                     handleRegister(tourney);
                                                 }
                                             }}
-                                            disabled={!isRegistered && tourney.status !== 'Abierto'}
-                                            className={isRegistered ? '' : (tourney.status !== 'Abierto' ? 'btn-disabled' : 'btn-primary')}
+                                            disabled={!isRegistered && tourney.status !== 'Abierto (Inscripciones)'}
+                                            className={isRegistered ? '' : (tourney.status !== 'Abierto (Inscripciones)' ? 'btn-disabled' : 'btn-primary')}
                                             style={isRegistered ? {
                                                 width: '100%',
                                                 background: 'rgba(239, 68, 68, 0.1)',
@@ -419,7 +419,7 @@ const Tournaments: React.FC = () => {
                                         >
                                             {isRegistered ? (
                                                 <><X size={18} /> CANCELAR INSCRIPCIÓN</>
-                                            ) : tourney.status === 'Abierto' ? (
+                                            ) : tourney.status === 'Abierto (Inscripciones)' ? (
                                                 <><UserPlus size={18} /> INSCRIBIRME AHORA</>
                                             ) : (
                                                 <><X size={18} /> INSCRIPCIONES CERRADAS</>
