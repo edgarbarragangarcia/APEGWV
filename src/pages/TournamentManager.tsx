@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, useAnimation, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../services/SupabaseManager';
-import { Plus, Trophy, Trash2, Calendar, Loader2, Users, ChevronLeft, MapPin, Settings } from 'lucide-react';
+import { Plus, Trophy, Trash2, Calendar, Loader2, Users, ChevronLeft, MapPin, Settings, ChevronDown, ChevronUp } from 'lucide-react';
 import Skeleton from '../components/Skeleton';
 import PageHero from '../components/PageHero';
 import PageHeader from '../components/PageHeader';
@@ -27,6 +27,10 @@ interface Tournament {
     budget_operational: number | null;
     budget_items: BudgetItem[] | null;
     approval_status?: 'pending' | 'approved' | 'rejected';
+    rules?: string[];
+    custom_rules?: string | null;
+    sponsors?: string | null;
+    prizes?: string | null;
 }
 
 
@@ -36,6 +40,7 @@ interface BudgetItem {
     label: string;
     amount: string;
     type: 'per_player' | 'fixed';
+    category?: 'income' | 'expense';
 }
 
 
@@ -249,6 +254,12 @@ const TournamentManager: React.FC = () => {
     const [isDeleting, setIsDeleting] = useState(false);
     const [isAdmin, setIsAdmin] = useState(false);
 
+    // Collapsible sections state
+    const [showBudgetSection, setShowBudgetSection] = useState(false);
+    const [showRulesSection, setShowRulesSection] = useState(false);
+    const [showSponsorsSection, setShowSponsorsSection] = useState(false);
+    const [showPrizesSection, setShowPrizesSection] = useState(false);
+
 
 
 
@@ -268,10 +279,14 @@ const TournamentManager: React.FC = () => {
         game_mode: 'Juego por Golpes',
         address: '',
         budget_items: [
-            { id: '1', label: 'Costo Op. por Jugador', amount: '', type: 'per_player' as const },
-            { id: '2', label: 'Bolsa de Premios', amount: '', type: 'fixed' as const },
-            { id: '3', label: 'Otros Gastos', amount: '', type: 'fixed' as const }
-        ] as BudgetItem[]
+            { id: '1', label: 'Costo Op. por Jugador', amount: '', type: 'per_player' as const, category: 'expense' },
+            { id: '2', label: 'Bolsa de Premios', amount: '', type: 'fixed' as const, category: 'expense' },
+            { id: '3', label: 'Otros Gastos', amount: '', type: 'fixed' as const, category: 'expense' }
+        ] as BudgetItem[],
+        rules: [] as string[],
+        custom_rules: '',
+        sponsors: '',
+        prizes: ''
     });
 
     const formatPrice = (val: string) => {
@@ -358,6 +373,10 @@ const TournamentManager: React.FC = () => {
                         game_mode: formData.game_mode,
                         address: formData.address,
                         budget_items: formData.budget_items as any,
+                        rules: formData.rules,
+                        custom_rules: formData.custom_rules,
+                        sponsors: formData.sponsors,
+                        prizes: formData.prizes,
                         approval_status: 'pending',
                         updated_at: new Date().toISOString()
                     })
@@ -379,6 +398,10 @@ const TournamentManager: React.FC = () => {
                         game_mode: formData.game_mode,
                         address: formData.address,
                         budget_items: formData.budget_items as any,
+                        rules: formData.rules,
+                        custom_rules: formData.custom_rules,
+                        sponsors: formData.sponsors,
+                        prizes: formData.prizes,
                         creator_id: user.id,
                         approval_status: 'pending'
                     } as any])
@@ -419,10 +442,14 @@ const TournamentManager: React.FC = () => {
             game_mode: 'Juego por Golpes',
             address: '',
             budget_items: [
-                { id: '1', label: 'Costo Op. por Jugador', amount: '', type: 'per_player' },
-                { id: '2', label: 'Bolsa de Premios', amount: '', type: 'fixed' },
-                { id: '3', label: 'Otros Gastos', amount: '', type: 'fixed' }
-            ]
+                { id: '1', label: 'Costo Op. por Jugador', amount: '', type: 'per_player', category: 'expense' },
+                { id: '2', label: 'Bolsa de Premios', amount: '', type: 'fixed', category: 'expense' },
+                { id: '3', label: 'Otros Gastos', amount: '', type: 'fixed', category: 'expense' }
+            ],
+            rules: [],
+            custom_rules: '',
+            sponsors: '',
+            prizes: ''
         });
         setEditingId(null);
     };
@@ -444,10 +471,14 @@ const TournamentManager: React.FC = () => {
             budget_items: tournament.budget_items && Array.isArray(tournament.budget_items) && tournament.budget_items.length > 0
                 ? (tournament.budget_items as BudgetItem[]).map(item => ({ ...item, amount: item.amount.toString() }))
                 : [
-                    { id: '1', label: 'Costo Op. por Jugador', amount: (tournament.budget_per_player || '').toString(), type: 'per_player' },
-                    { id: '2', label: 'Bolsa de Premios', amount: (tournament.budget_prizes || '').toString(), type: 'fixed' },
-                    { id: '3', label: 'Otros Gastos', amount: (tournament.budget_operational || '').toString(), type: 'fixed' }
-                ]
+                    { id: '1', label: 'Costo Op. por Jugador', amount: (tournament.budget_per_player || '').toString(), type: 'per_player', category: 'expense' },
+                    { id: '2', label: 'Bolsa de Premios', amount: (tournament.budget_prizes || '').toString(), type: 'fixed', category: 'expense' },
+                    { id: '3', label: 'Otros Gastos', amount: (tournament.budget_operational || '').toString(), type: 'fixed', category: 'expense' }
+                ],
+            rules: tournament.rules || [],
+            custom_rules: tournament.custom_rules || '',
+            sponsors: tournament.sponsors || '',
+            prizes: tournament.prizes || ''
         });
         setEditingId(tournament.id);
         setShowForm(true);
@@ -539,6 +570,34 @@ const TournamentManager: React.FC = () => {
                     background-position: right 12px center;
                     background-size: 18px;
                     padding-right: 40px;
+                }
+                .form-input-sm {
+                    width: 100%;
+                    background: rgba(255,255,255,0.04) !important;
+                    border: 1px solid rgba(255,255,255,0.08) !important;
+                    border-radius: 12px !important;
+                    padding: 8px 12px !important;
+                    color: white !important;
+                    font-size: 13px !important;
+                    font-family: var(--font-main);
+                    transition: all 0.3s ease;
+                    outline: none;
+                }
+                .form-input-sm:focus {
+                    background: rgba(255,255,255,0.07) !important;
+                    border-color: var(--secondary) !important;
+                    box-shadow: 0 0 0 4px rgba(163, 230, 53, 0.1);
+                }
+                .form-input-sm.with-icon {
+                    padding-left: 26px !important;
+                }
+                select.form-input-sm {
+                    appearance: none;
+                    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23A3E635' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+                    background-repeat: no-repeat;
+                    background-position: right 8px center;
+                    background-size: 14px;
+                    padding-right: 30px !important;
                 }
             `}</style>
             <PageHero />
@@ -683,52 +742,288 @@ const TournamentManager: React.FC = () => {
 
                                         {/* Budget Section */}
                                         <div style={{ marginTop: '10px', padding: '15px', background: 'rgba(255,255,255,0.03)', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                                            <h3 style={{ fontSize: '14px', fontWeight: '900', color: 'var(--secondary)', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                <div style={{ width: '20px', height: '20px', borderRadius: '6px', background: 'var(--secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                    <span style={{ fontSize: '10px', color: 'var(--primary)' }}>$</span>
+                                            <div
+                                                style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}
+                                                onClick={() => setShowBudgetSection(!showBudgetSection)}
+                                            >
+                                                <h3 style={{ fontSize: '14px', fontWeight: '900', color: 'var(--secondary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                    <div style={{ width: '20px', height: '20px', borderRadius: '6px', background: 'var(--secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                        <span style={{ fontSize: '10px', color: 'var(--primary)' }}>$</span>
+                                                    </div>
+                                                    Presupuesto Estimado
+                                                </h3>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                    {showBudgetSection ? <ChevronUp size={20} color="var(--text-dim)" /> : <ChevronDown size={20} color="var(--text-dim)" />}
                                                 </div>
-                                                Presupuesto Estimado
-                                            </h3>
+                                            </div>
 
-                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                                                {formData.budget_items.map((item, idx) => (
-                                                    <div key={item.id} style={{ display: 'flex', gap: '10px', alignItems: 'flex-end' }}>
-                                                        <div style={{ flex: 1 }}>
-                                                            <label style={{ fontSize: '10px', color: 'var(--text-dim)', marginBottom: '4px', display: 'block' }}>{item.label}</label>
-                                                            <input
-                                                                type="text"
-                                                                value={item.amount}
-                                                                onChange={(e) => {
-                                                                    const newItems = [...formData.budget_items];
-                                                                    newItems[idx].amount = e.target.value.replace(/\D/g, '');
-                                                                    setFormData({ ...formData, budget_items: newItems });
+                                            <AnimatePresence>
+                                                {showBudgetSection && (
+                                                    <motion.div
+                                                        initial={{ height: 0, opacity: 0 }}
+                                                        animate={{ height: 'auto', opacity: 1 }}
+                                                        exit={{ height: 0, opacity: 0 }}
+                                                        style={{ overflow: 'hidden' }}
+                                                    >
+                                                        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '15px', marginTop: '15px' }}>
+                                                            <button
+                                                                type="button"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    const newItem: BudgetItem = {
+                                                                        id: Date.now().toString(),
+                                                                        label: '',
+                                                                        amount: '',
+                                                                        type: 'fixed',
+                                                                        category: 'expense'
+                                                                    };
+                                                                    setFormData({ ...formData, budget_items: [...formData.budget_items, newItem] });
                                                                 }}
+                                                                style={{
+                                                                    background: 'rgba(255,b255,b255,0.05)',
+                                                                    border: '1px solid rgba(255,255,255,0.1)',
+                                                                    color: 'white',
+                                                                    fontSize: '11px',
+                                                                    padding: '6px 12px',
+                                                                    borderRadius: '12px',
+                                                                    display: 'flex',
+                                                                    alignItems: 'center',
+                                                                    gap: '6px',
+                                                                    cursor: 'pointer',
+                                                                    fontWeight: '800'
+                                                                }}
+                                                            >
+                                                                <Plus size={14} /> Rubro
+                                                            </button>
+                                                        </div>
+
+                                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                                                            {formData.budget_items.map((item, idx) => (
+                                                                <div key={item.id} style={{ display: 'flex', gap: '10px', alignItems: 'flex-start', background: 'rgba(255,255,255,0.02)', padding: '16px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                                                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                                                        {idx < 3 ? (
+                                                                            <label style={{ fontSize: '12px', color: 'var(--text-dim)', fontWeight: '800' }}>{item.label}</label>
+                                                                        ) : (
+                                                                            <input
+                                                                                type="text"
+                                                                                value={item.label}
+                                                                                onChange={(e) => {
+                                                                                    const newItems = [...formData.budget_items];
+                                                                                    newItems[idx].label = e.target.value;
+                                                                                    setFormData({ ...formData, budget_items: newItems });
+                                                                                }}
+                                                                                placeholder="Nombre del rubro"
+                                                                                className="form-input-sm"
+                                                                            />
+                                                                        )}
+                                                                        <div style={{ display: 'flex', gap: '8px' }}>
+                                                                            <div style={{ flex: 1, position: 'relative' }}>
+                                                                                <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-dim)', fontSize: '13px', fontWeight: '800' }}>$</span>
+                                                                                <input
+                                                                                    type="text"
+                                                                                    value={item.amount ? new Intl.NumberFormat('es-CO').format(parseInt(item.amount)) : ''}
+                                                                                    onChange={(e) => {
+                                                                                        const newItems = [...formData.budget_items];
+                                                                                        newItems[idx].amount = e.target.value.replace(/\D/g, '');
+                                                                                        setFormData({ ...formData, budget_items: newItems });
+                                                                                    }}
+                                                                                    className="form-input-sm with-icon"
+                                                                                    placeholder="0"
+                                                                                    style={{ fontSize: '13px', fontWeight: '700' }}
+                                                                                />
+                                                                            </div>
+                                                                            <select
+                                                                                value={item.type}
+                                                                                onChange={(e) => {
+                                                                                    const newItems = [...formData.budget_items];
+                                                                                    newItems[idx].type = e.target.value as any;
+                                                                                    setFormData({ ...formData, budget_items: newItems });
+                                                                                }}
+                                                                                className="form-input-sm"
+                                                                                style={{ width: '110px', background: 'rgba(255,255,255,0.05)', color: 'white', fontWeight: '700' }}
+                                                                            >
+                                                                                <option value="per_player">Por Jugador</option>
+                                                                                <option value="fixed">Fijo</option>
+                                                                            </select>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '80px' }}>
+                                                                        {idx < 3 ? (
+                                                                            <div style={{ height: '14px' }} /> // Spacer to align with input/label
+                                                                        ) : null}
+                                                                        {idx < 3 ? (
+                                                                            <div style={{ padding: '8px', fontSize: '12px', color: '#ef4444', fontWeight: '800', textAlign: 'center', height: '37px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Gasto</div>
+                                                                        ) : (
+                                                                            <select
+                                                                                value={item.category || 'expense'}
+                                                                                onChange={(e) => {
+                                                                                    const newItems = [...formData.budget_items];
+                                                                                    newItems[idx].category = e.target.value as any;
+                                                                                    setFormData({ ...formData, budget_items: newItems });
+                                                                                }}
+                                                                                className="form-input-sm"
+                                                                                style={{ background: 'rgba(255,255,255,0.05)', color: (item.category || 'expense') === 'income' ? 'var(--secondary)' : '#ef4444', fontWeight: '800' }}
+                                                                            >
+                                                                                <option value="expense">Gasto</option>
+                                                                                <option value="income">Ingreso</option>
+                                                                            </select>
+                                                                        )}
+                                                                        {idx >= 3 && (
+                                                                            <button
+                                                                                type="button"
+                                                                                onClick={() => {
+                                                                                    const newItems = formData.budget_items.filter((_, i) => i !== idx);
+                                                                                    setFormData({ ...formData, budget_items: newItems });
+                                                                                }}
+                                                                                style={{ padding: '10px', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', borderRadius: '12px', border: '1px solid rgba(239, 68, 68, 0.2)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                                                            >
+                                                                                <Trash2 size={16} />
+                                                                            </button>
+                                                                        )}
+                                                                    </div>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+
+                                                        <div style={{ marginTop: '20px', paddingTop: '15px', borderTop: '1px dotted rgba(255,255,255,0.1)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                            <span style={{ fontSize: '13px', color: 'var(--text-dim)', fontWeight: '800' }}>Balance Estimado:</span>
+                                                            <span style={{ fontSize: '20px', fontWeight: '950', color: 'white' }}>
+                                                                {(() => {
+                                                                    const limit = parseInt(formData.participants_limit || '0');
+                                                                    let income = limit * parseFloat(formData.price || '0');
+                                                                    let costs = 0;
+                                                                    formData.budget_items.forEach((item) => {
+                                                                        const val = parseFloat(item.amount || '0');
+                                                                        const calculatedVal = item.type === 'per_player' ? val * limit : val;
+                                                                        if ((item.category || 'expense') === 'income') {
+                                                                            income += calculatedVal;
+                                                                        } else {
+                                                                            costs += calculatedVal;
+                                                                        }
+                                                                    });
+                                                                    return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(income - costs);
+                                                                })()}
+                                                            </span>
+                                                        </div>
+                                                    </motion.div>
+                                                )}
+                                            </AnimatePresence>
+                                        </div>
+
+                                        <div style={{ marginTop: '10px', padding: '15px', background: 'rgba(255,b255,b255,0.03)', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                            <div
+                                                style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}
+                                                onClick={() => setShowRulesSection(!showRulesSection)}
+                                            >
+                                                <h3 style={{ fontSize: '14px', fontWeight: '900', color: 'var(--text-dim)', margin: 0 }}>Reglas y Condiciones (Opcionales)</h3>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                    {showRulesSection ? <ChevronUp size={20} color="var(--text-dim)" /> : <ChevronDown size={20} color="var(--text-dim)" />}
+                                                </div>
+                                            </div>
+
+                                            <AnimatePresence>
+                                                {showRulesSection && (
+                                                    <motion.div
+                                                        initial={{ height: 0, opacity: 0 }}
+                                                        animate={{ height: 'auto', opacity: 1 }}
+                                                        exit={{ height: 0, opacity: 0 }}
+                                                        style={{ overflow: 'hidden' }}
+                                                    >
+                                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '8px', marginTop: '15px' }}>
+                                                            {['Reglas de Invierno', 'Reglas Locales del Club', 'Reglas USGA'].map((rule) => (
+                                                                <label key={rule} style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', background: 'rgba(255,255,255,0.03)', padding: '10px 15px', borderRadius: '12px' }}>
+                                                                    <input
+                                                                        type="checkbox"
+                                                                        checked={formData.rules.includes(rule)}
+                                                                        onChange={(e) => {
+                                                                            if (e.target.checked) setFormData({ ...formData, rules: [...formData.rules, rule] });
+                                                                            else setFormData({ ...formData, rules: formData.rules.filter(r => r !== rule) });
+                                                                        }}
+                                                                        style={{ accentColor: 'var(--secondary)' }}
+                                                                    />
+                                                                    <span style={{ fontSize: '13px', color: 'white' }}>{rule}</span>
+                                                                </label>
+                                                            ))}
+                                                            <div className="input-group" style={{ marginTop: '5px' }}>
+                                                                <label style={{ fontSize: '12px', fontWeight: '800', marginBottom: '5px', display: 'block', color: 'var(--text-dim)' }}>Reglas Personalizadas</label>
+                                                                <textarea
+                                                                    value={formData.custom_rules || ''}
+                                                                    onChange={(e) => setFormData({ ...formData, custom_rules: e.target.value })}
+                                                                    className="form-input"
+                                                                    rows={2}
+                                                                    placeholder="Reglas adicionales..."
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                    </motion.div>
+                                                )}
+                                            </AnimatePresence>
+                                        </div>
+
+                                        <div style={{ marginTop: '10px', padding: '15px', background: 'rgba(255,b255,b255,0.03)', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                            <div
+                                                style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}
+                                                onClick={() => setShowSponsorsSection(!showSponsorsSection)}
+                                            >
+                                                <h3 style={{ fontSize: '14px', fontWeight: '900', color: 'var(--text-dim)', margin: 0 }}>Patrocinadores</h3>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                    {showSponsorsSection ? <ChevronUp size={20} color="var(--text-dim)" /> : <ChevronDown size={20} color="var(--text-dim)" />}
+                                                </div>
+                                            </div>
+
+                                            <AnimatePresence>
+                                                {showSponsorsSection && (
+                                                    <motion.div
+                                                        initial={{ height: 0, opacity: 0 }}
+                                                        animate={{ height: 'auto', opacity: 1 }}
+                                                        exit={{ height: 0, opacity: 0 }}
+                                                        style={{ overflow: 'hidden' }}
+                                                    >
+                                                        <div className="input-group" style={{ marginTop: '15px' }}>
+                                                            <textarea
+                                                                value={formData.sponsors || ''}
+                                                                onChange={(e) => setFormData({ ...formData, sponsors: e.target.value })}
                                                                 className="form-input"
-                                                                placeholder="0"
-                                                                style={{ padding: '8px 12px', fontSize: '13px' }}
+                                                                rows={2}
+                                                                placeholder="Menciona las marcas involucradas..."
                                                             />
                                                         </div>
-                                                        <div style={{ width: '80px', fontSize: '10px', color: 'var(--secondary)', fontWeight: '800', paddingBottom: '12px' }}>
-                                                            {item.type === 'per_player' ? '/ Jugador' : 'Fijo'}
-                                                        </div>
-                                                    </div>
-                                                ))}
+                                                    </motion.div>
+                                                )}
+                                            </AnimatePresence>
+                                        </div>
+
+                                        <div style={{ marginTop: '10px', padding: '15px', background: 'rgba(255,b255,b255,0.03)', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                            <div
+                                                style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}
+                                                onClick={() => setShowPrizesSection(!showPrizesSection)}
+                                            >
+                                                <h3 style={{ fontSize: '14px', fontWeight: '900', color: 'var(--text-dim)', margin: 0 }}>Premios Especiales</h3>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                    {showPrizesSection ? <ChevronUp size={20} color="var(--text-dim)" /> : <ChevronDown size={20} color="var(--text-dim)" />}
+                                                </div>
                                             </div>
 
-                                            <div style={{ marginTop: '15px', paddingTop: '10px', borderTop: '1px dotted rgba(255,255,255,0.1)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                <span style={{ fontSize: '12px', color: 'var(--text-dim)', fontWeight: '700' }}>Balance Estimado:</span>
-                                                <span style={{ fontSize: '16px', fontWeight: '950', color: 'white' }}>
-                                                    {(() => {
-                                                        const limit = parseInt(formData.participants_limit || '0');
-                                                        const income = limit * parseFloat(formData.price || '0');
-                                                        const costs = formData.budget_items.reduce((acc, item) => {
-                                                            const val = parseFloat(item.amount || '0');
-                                                            return acc + (item.type === 'per_player' ? val * limit : val);
-                                                        }, 0);
-                                                        return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(income - costs);
-                                                    })()}
-                                                </span>
-                                            </div>
+                                            <AnimatePresence>
+                                                {showPrizesSection && (
+                                                    <motion.div
+                                                        initial={{ height: 0, opacity: 0 }}
+                                                        animate={{ height: 'auto', opacity: 1 }}
+                                                        exit={{ height: 0, opacity: 0 }}
+                                                        style={{ overflow: 'hidden' }}
+                                                    >
+                                                        <div className="input-group" style={{ marginTop: '15px' }}>
+                                                            <textarea
+                                                                value={formData.prizes || ''}
+                                                                onChange={(e) => setFormData({ ...formData, prizes: e.target.value })}
+                                                                className="form-input"
+                                                                rows={2}
+                                                                placeholder="Ej. Hole in One (Carro nuevo), Mejor Acercamiento..."
+                                                            />
+                                                        </div>
+                                                    </motion.div>
+                                                )}
+                                            </AnimatePresence>
                                         </div>
 
                                         {/* Action buttons for admin/manage */}
