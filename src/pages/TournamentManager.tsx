@@ -26,6 +26,7 @@ interface Tournament {
     budget_prizes: number | null;
     budget_operational: number | null;
     budget_items: BudgetItem[] | null;
+    approval_status?: 'pending' | 'approved' | 'rejected';
 }
 
 
@@ -143,6 +144,9 @@ const TournamentManager: React.FC = () => {
         tournamentName: ''
     });
     const [isDeleting, setIsDeleting] = useState(false);
+    const [isAdmin, setIsAdmin] = useState(false);
+    const [pendingTournaments, setPendingTournaments] = useState<Tournament[]>([]);
+    const [viewingAdmin, setViewingAdmin] = useState(false);
 
 
 
@@ -228,20 +232,38 @@ const TournamentManager: React.FC = () => {
         if (!user) return;
 
         try {
-            // Check Premium Status
+            // Check Premium Status and Admin
             const { data: profile } = await supabase
                 .from('profiles')
-                .select('is_premium')
+                .select('is_premium, is_admin')
                 .eq('id', user.id)
                 .single();
 
-            if (!profile?.is_premium) {
+            setIsAdmin(!!profile?.is_admin);
+
+            if (!profile?.is_premium && !profile?.is_admin) {
                 setIsPremium(false);
                 setLoading(false);
                 return;
             }
 
             setIsPremium(true);
+
+            // If admin, fetch all pending tournaments
+            if (profile?.is_admin) {
+                const { data: pendingData } = await supabase
+                    .from('tournaments')
+                    .select('*, registrations: tournament_registrations(count)')
+                    .eq('approval_status', 'pending')
+                    .order('created_at', { ascending: false });
+
+                if (pendingData) {
+                    setPendingTournaments(pendingData.map((t: any) => ({
+                        ...t,
+                        current_participants: t.registrations?.[0]?.count || 0
+                    })));
+                }
+            }
 
             // Fetch User Tournaments with participant count
             const { data: userTourneys, error } = await supabase
@@ -321,8 +343,9 @@ const TournamentManager: React.FC = () => {
                         game_mode: formData.game_mode,
                         address: formData.address,
                         budget_items: formData.budget_items as any,
-                        creator_id: user.id
-                    }])
+                        creator_id: user.id,
+                        approval_status: 'pending'
+                    } as any])
                     .select()
                     .single();
             }
@@ -426,6 +449,27 @@ const TournamentManager: React.FC = () => {
         navigate(`/my-events/${tournament.id}/participants`);
     };
 
+    const handleApprove = async (id: string, status: 'approved' | 'rejected') => {
+        try {
+            const { error } = await supabase
+                .from('tournaments')
+                .update({ approval_status: status } as any)
+                .eq('id', id);
+
+            if (error) throw error;
+
+            // Update lists
+            setPendingTournaments(pendingTournaments.filter(t => t.id !== id));
+            if (status === 'approved') {
+                // If the current user is the creator, update their list
+                setTournaments(tournaments.map(t => t.id === id ? { ...t, approval_status: status } : t));
+            }
+        } catch (err) {
+            console.error('Error updating tournament status:', err);
+            alert('Error al actualizar el estado del torneo');
+        }
+    };
+
     if (loading) {
         return (
             <div className="flex-center" style={{ height: '50vh' }}>
@@ -500,14 +544,105 @@ const TournamentManager: React.FC = () => {
                 WebkitOverflowScrolling: 'touch',
                 gap: '20px'
             }}>
-                {!showForm && (
-                    <button
-                        onClick={() => setShowForm(true)}
-                        className="btn-primary"
-                    >
-                        <Plus size={18} />
-                        <span>Organizar Nuevo Torneo</span>
-                    </button>
+                {isAdmin && (
+                    <div className="glass" style={{ padding: '8px', borderRadius: '15px', display: 'flex', gap: '8px' }}>
+                        <button
+                            onClick={() => setViewingAdmin(false)}
+                            style={{
+                                flex: 1,
+                                padding: '10px',
+                                borderRadius: '10px',
+                                background: !viewingAdmin ? 'var(--secondary)' : 'transparent',
+                                color: !viewingAdmin ? 'var(--primary)' : 'white',
+                                border: 'none',
+                                fontWeight: '800',
+                                fontSize: '13px',
+                                transition: 'all 0.3s'
+                            }}
+                        >
+                            MIS EVENTOS
+                        </button>
+                        <button
+                            onClick={() => setViewingAdmin(true)}
+                            style={{
+                                flex: 1,
+                                padding: '10px',
+                                borderRadius: '10px',
+                                background: viewingAdmin ? 'var(--secondary)' : 'transparent',
+                                color: viewingAdmin ? 'var(--primary)' : 'white',
+                                border: 'none',
+                                fontWeight: '800',
+                                fontSize: '13px',
+                                transition: 'all 0.3s',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '5px'
+                            }}
+                        >
+                            SOLICITUDES {pendingTournaments.length > 0 && (
+                                <span style={{ background: '#f87171', color: 'white', padding: '2px 6px', borderRadius: '10px', fontSize: '10px' }}>
+                                    {pendingTournaments.length}
+                                </span>
+                            )}
+                        </button>
+                    </div>
+                )}
+
+                {viewingAdmin ? (
+                    // Admin View: Pending Tournaments
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                        <h2 style={{ fontSize: '16px', fontWeight: '800', color: 'white', opacity: 0.7, marginBottom: '5px' }}>Solicitudes Pendientes</h2>
+                        {pendingTournaments.length === 0 ? (
+                            <div className="glass" style={{ padding: '40px 20px', textAlign: 'center', borderRadius: '30px' }}>
+                                <CheckCircle2 size={32} color="var(--secondary)" style={{ marginBottom: '15px', opacity: 0.5 }} />
+                                <p style={{ color: 'var(--text-dim)', fontSize: '14px' }}>No hay solicitudes pendientes por el momento.</p>
+                            </div>
+                        ) : (
+                            pendingTournaments.map(tourney => (
+                                <Card key={tourney.id} style={{ padding: '20px', borderRadius: '25px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                                    <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+                                        <div style={{ width: '50px', height: '50px', borderRadius: '15px', background: 'rgba(255,b255,b255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                            <Trophy size={24} color="var(--secondary)" />
+                                        </div>
+                                        <div>
+                                            <h3 style={{ fontSize: '16px', fontWeight: '800' }}>{tourney.name}</h3>
+                                            <p style={{ fontSize: '12px', color: 'var(--text-dim)' }}>{tourney.club} | {new Date(tourney.date).toLocaleDateString()}</p>
+                                        </div>
+                                    </div>
+                                    <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.6)', lineHeight: '1.4' }}>{tourney.description}</p>
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                                        <button
+                                            onClick={() => handleApprove(tourney.id, 'approved')}
+                                            className="btn-primary"
+                                            style={{ padding: '10px', fontSize: '12px', background: '#4ade80', color: '#064e3b' }}
+                                        >
+                                            APROBAR
+                                        </button>
+                                        <button
+                                            onClick={() => handleApprove(tourney.id, 'rejected')}
+                                            style={{ padding: '10px', fontSize: '12px', borderRadius: '12px', border: '1px solid #f87171', color: '#f87171', background: 'transparent', fontWeight: '800' }}
+                                        >
+                                            RECHAZAR
+                                        </button>
+                                    </div>
+                                </Card>
+                            ))
+                        )}
+                    </div>
+                ) : (
+                    // Regular Creator View
+                    <>
+                        {!showForm && (
+                            <button
+                                onClick={() => setShowForm(true)}
+                                className="btn-primary"
+                            >
+                                <Plus size={18} />
+                                <span>Organizar Nuevo Torneo</span>
+                            </button>
+                        )}
+                    </>
                 )}
 
                 {showForm ? (
@@ -799,6 +934,39 @@ const TournamentManager: React.FC = () => {
                                                 textOverflow: 'ellipsis',
                                                 whiteSpace: 'nowrap'
                                             }}>{tourney.name}</h3>
+
+                                            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '8px' }}>
+                                                {/* Approval status badge */}
+                                                <div style={{
+                                                    fontSize: '9px',
+                                                    fontWeight: '900',
+                                                    padding: '2px 8px',
+                                                    borderRadius: '6px',
+                                                    background: tourney.approval_status === 'approved' ? 'rgba(74, 222, 128, 0.1)' :
+                                                        tourney.approval_status === 'rejected' ? 'rgba(248, 113, 113, 0.1)' : 'rgba(251, 191, 36, 0.1)',
+                                                    color: tourney.approval_status === 'approved' ? '#4ade80' :
+                                                        tourney.approval_status === 'rejected' ? '#f87171' : '#fbbf24',
+                                                    border: `1px solid ${tourney.approval_status === 'approved' ? 'rgba(74, 222, 128, 0.2)' :
+                                                        tourney.approval_status === 'rejected' ? 'rgba(248, 113, 113, 0.2)' : 'rgba(251, 191, 36, 0.2)'}`,
+                                                    textTransform: 'uppercase'
+                                                }}>
+                                                    {tourney.approval_status === 'approved' ? 'Aprobado' :
+                                                        tourney.approval_status === 'rejected' ? 'Rechazado' : 'Pendiente Admin'}
+                                                </div>
+
+                                                <div style={{
+                                                    fontSize: '9px',
+                                                    fontWeight: '900',
+                                                    padding: '2px 8px',
+                                                    borderRadius: '6px',
+                                                    background: 'rgba(255,255,255,0.05)',
+                                                    color: 'var(--text-dim)',
+                                                    border: '1px solid rgba(255,255,255,0.1)',
+                                                    textTransform: 'uppercase'
+                                                }}>
+                                                    {tourney.status}
+                                                </div>
+                                            </div>
                                             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', fontSize: '13px' }}>
                                                 <span style={{ display: 'flex', alignItems: 'center', gap: '5px', color: 'var(--text-dim)', fontWeight: '600' }}>
                                                     <Calendar size={14} color="var(--secondary)" />

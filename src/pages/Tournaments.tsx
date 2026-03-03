@@ -42,6 +42,7 @@ const Tournaments: React.FC = () => {
             const { data: allTourneys, error: tError } = await supabase
                 .from('tournaments')
                 .select('id, name, description, date, address, price, participants_limit, current_participants, status, image_url, budget_prizes')
+                .eq('approval_status', 'approved')
                 .order('date', { ascending: true });
 
             if (tError) throw tError;
