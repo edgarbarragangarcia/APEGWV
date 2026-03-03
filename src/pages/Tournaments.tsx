@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Calendar, Users, MapPin, Search, UserPlus, Trophy, X, Gift } from 'lucide-react';
+import { Calendar, Users, MapPin, Search, UserPlus, Trophy, X, Gift, CheckCircle2 } from 'lucide-react';
 import Card from '../components/Card';
 import PageHeader from '../components/PageHeader';
 import PageHero from '../components/PageHero';
@@ -13,8 +13,8 @@ interface Tournament {
     id: string;
     name: string;
     description: string | null;
-    date: string;
-    address: string;
+    date: string | null;
+    address: string | null;
     price: number;
     participants_limit: number | null;
     current_participants: number | null;
@@ -31,6 +31,8 @@ const Tournaments: React.FC = () => {
     const [tournaments, setTournaments] = useState<Tournament[]>([]);
     const [registrations, setRegistrations] = useState<{ id: string, status: string }[]>([]);
     const [loading, setLoading] = useState(true);
+    const [registering, setRegistering] = useState(false);
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
 
     useEffect(() => {
         fetchData();
@@ -67,7 +69,7 @@ const Tournaments: React.FC = () => {
         }
     };
 
-    const handleRegister = (tournament: Tournament) => {
+    const handleRegister = async (tournament: Tournament) => {
         if (!user) {
             navigate('/auth');
             return;
@@ -75,16 +77,30 @@ const Tournaments: React.FC = () => {
 
         if (registrations.some(r => r.id === tournament.id)) return;
 
-        // Redirect to checkout with tournament info
-        navigate('/checkout', {
-            state: {
-                tournament: {
-                    id: tournament.id,
-                    name: tournament.name,
-                    price: tournament.price
-                }
-            }
-        });
+        setRegistering(true);
+        try {
+            const { error } = await supabase
+                .from('tournament_registrations')
+                .insert([{
+                    tournament_id: tournament.id,
+                    user_id: user.id,
+                    registration_status: 'Confirmado'
+                }]);
+
+            if (error) throw error;
+
+            // Update registration state
+            setRegistrations(prev => [...prev, { id: tournament.id, status: 'Confirmado' }]);
+
+            // Show success modal
+            setShowSuccessModal(true);
+            if (navigator.vibrate) navigator.vibrate([50, 30, 50]);
+
+        } catch (err) {
+            console.error('Error registering for tournament:', err);
+        } finally {
+            setRegistering(false);
+        }
     };
 
     const [confirmModal, setConfirmModal] = useState<{ isOpen: boolean; tournamentId: string | null }>({
@@ -133,8 +149,8 @@ const Tournaments: React.FC = () => {
 
 
     const filteredTournaments = tournaments.filter(t => {
-        const matchesSearch = t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            t.address.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesSearch = (t.name?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+            (t.address?.toLowerCase() || '').includes(searchQuery.toLowerCase());
 
         if (activeTab === 'my') {
             return matchesSearch && registrations.some(r => r.id === t.id);
@@ -357,7 +373,7 @@ const Tournaments: React.FC = () => {
                                         </div>
                                         <div style={{ position: 'absolute', bottom: '15px', left: '20px', right: '20px' }}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--secondary)', fontSize: '11px', fontWeight: '900', textTransform: 'uppercase', marginBottom: '4px' }}>
-                                                <Calendar size={13} strokeWidth={3} /> {new Date(tourney.date).toLocaleDateString('es-CO', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                                                <Calendar size={13} strokeWidth={3} /> {tourney.date ? new Date(tourney.date).toLocaleDateString('es-CO', { day: '2-digit', month: '2-digit', year: 'numeric' }) : 'Fecha TBD'}
                                             </div>
                                             <h3 style={{ fontSize: '22px', fontWeight: '900', color: 'white', lineHeight: '1.1' }}>{tourney.name}</h3>
                                         </div>
@@ -399,7 +415,7 @@ const Tournaments: React.FC = () => {
                                                     handleRegister(tourney);
                                                 }
                                             }}
-                                            disabled={!isRegistered && tourney.status !== 'Abierto (Inscripciones)'}
+                                            disabled={registering || (!isRegistered && tourney.status !== 'Abierto (Inscripciones)')}
                                             className={isRegistered ? '' : (tourney.status !== 'Abierto (Inscripciones)' ? 'btn-disabled' : 'btn-primary')}
                                             style={isRegistered ? {
                                                 width: '100%',
@@ -420,7 +436,7 @@ const Tournaments: React.FC = () => {
                                             {isRegistered ? (
                                                 <><X size={18} /> CANCELAR INSCRIPCIÓN</>
                                             ) : tourney.status === 'Abierto (Inscripciones)' ? (
-                                                <><UserPlus size={18} /> INSCRIBIRME AHORA</>
+                                                <><UserPlus size={18} /> {registering ? 'INSCRIBIENDO...' : 'INSCRIBIRME AHORA'}</>
                                             ) : (
                                                 <><X size={18} /> INSCRIPCIONES CERRADAS</>
                                             )}
@@ -433,41 +449,83 @@ const Tournaments: React.FC = () => {
                 )}
             </div>
 
-
             {/* Unregister Confirmation Modal */}
-            {
-                confirmModal.isOpen && (
-                    <div style={{
-                        position: 'fixed',
-                        top: 0, left: 0, right: 0, bottom: 0,
-                        background: 'rgba(0,0,0,0.85)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        zIndex: 1000, padding: '20px', backdropFilter: 'blur(8px)'
-                    }}>
-                        <div className="glass" style={{ width: '100%', maxWidth: '320px', padding: '25px', borderRadius: '24px', textAlign: 'center', background: 'var(--primary)' }}>
-                            <h2 style={{ fontSize: '20px', marginBottom: '10px', color: 'white', fontWeight: '900' }}>¿Cancelar Inscripción?</h2>
-                            <p style={{ color: 'var(--text-dim)', fontSize: '14px', marginBottom: '25px', lineHeight: '1.5' }}>
-                                Perderás tu cupo en este torneo. ¿Estás seguro de continuar?
-                            </p>
-                            <div style={{ display: 'flex', gap: '12px' }}>
-                                <button
-                                    onClick={() => setConfirmModal({ isOpen: false, tournamentId: null })}
-                                    style={{ flex: 1, padding: '12px', borderRadius: '15px', background: 'rgba(255,255,255,0.05)', color: 'white', fontWeight: '700', border: 'none' }}
-                                >
-                                    Volver
-                                </button>
-                                <button
-                                    onClick={confirmUnregister}
-                                    style={{ flex: 1, padding: '12px', borderRadius: '15px', background: '#ef4444', color: 'white', fontWeight: '700', border: 'none' }}
-                                >
-                                    Cancelar Cupo
-                                </button>
-                            </div>
+            {confirmModal.isOpen && (
+                <div style={{
+                    position: 'fixed',
+                    top: 0, left: 0, right: 0, bottom: 0,
+                    background: 'rgba(0,0,0,0.85)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    zIndex: 1000, padding: '20px', backdropFilter: 'blur(8px)'
+                }}>
+                    <div className="glass" style={{ width: '100%', maxWidth: '320px', padding: '25px', borderRadius: '24px', textAlign: 'center', background: 'var(--primary)' }}>
+                        <h2 style={{ fontSize: '20px', marginBottom: '10px', color: 'white', fontWeight: '900' }}>¿Cancelar Inscripción?</h2>
+                        <p style={{ color: 'var(--text-dim)', fontSize: '14px', marginBottom: '25px', lineHeight: '1.5' }}>
+                            Perderás tu cupo en este torneo. ¿Estás seguro de continuar?
+                        </p>
+                        <div style={{ display: 'flex', gap: '12px' }}>
+                            <button
+                                onClick={() => setConfirmModal({ isOpen: false, tournamentId: null })}
+                                style={{ flex: 1, padding: '12px', borderRadius: '15px', background: 'rgba(255,255,255,0.05)', color: 'white', fontWeight: '700', border: 'none' }}
+                            >
+                                Volver
+                            </button>
+                            <button
+                                onClick={confirmUnregister}
+                                style={{ flex: 1, padding: '12px', borderRadius: '15px', background: '#ef4444', color: 'white', fontWeight: '700', border: 'none' }}
+                            >
+                                Cancelar Cupo
+                            </button>
                         </div>
                     </div>
-                )
-            }
-        </div >
+                </div>
+            )}
+
+            {/* Success Registration Modal */}
+            {showSuccessModal && (
+                <div style={{
+                    position: 'fixed',
+                    top: 0, left: 0, right: 0, bottom: 0,
+                    background: 'rgba(0,0,0,0.9)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    zIndex: 2000, padding: '20px', backdropFilter: 'blur(15px)'
+                }}>
+                    <div className="glass" style={{
+                        width: '100%',
+                        maxWidth: '340px',
+                        padding: '40px 25px',
+                        borderRadius: '32px',
+                        textAlign: 'center',
+                        background: 'var(--primary)',
+                        border: '1px solid var(--secondary)'
+                    }}>
+                        <div style={{
+                            width: '70px',
+                            height: '70px',
+                            background: 'rgba(163, 230, 53, 0.1)',
+                            borderRadius: '50%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            margin: '0 auto 25px'
+                        }}>
+                            <CheckCircle2 size={40} color="var(--secondary)" />
+                        </div>
+                        <h2 style={{ fontSize: '24px', marginBottom: '12px', color: 'white', fontWeight: '950' }}>¡Inscripción Exitosa!</h2>
+                        <p style={{ color: 'var(--text-dim)', fontSize: '15px', marginBottom: '30px', lineHeight: '1.6' }}>
+                            Gracias por inscribirte. Nos vemos en el campo para vivir la mejor experiencia de golf.
+                        </p>
+                        <button
+                            onClick={() => setShowSuccessModal(false)}
+                            className="btn-primary"
+                            style={{ width: '100%' }}
+                        >
+                            ENTENDIDO
+                        </button>
+                    </div>
+                </div>
+            )}
+        </div>
     );
 };
 
