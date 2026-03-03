@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, useAnimation, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../services/SupabaseManager';
-import { Plus, Trophy, Trash2, Calendar, Loader2, Pencil, Users, ChevronLeft, MapPin, X, Settings } from 'lucide-react';
-import Card from '../components/Card';
+import { Plus, Trophy, Trash2, Calendar, Loader2, Users, ChevronLeft, MapPin, X, Settings } from 'lucide-react';
 import Skeleton from '../components/Skeleton';
 import PageHero from '../components/PageHero';
 import PageHeader from '../components/PageHeader';
@@ -42,7 +41,7 @@ interface BudgetItem {
 
 
 // --- Sub-component for individual tournament cards ---
-const TournamentCard = ({ tourney, onEdit, onDelete, onViewParticipants }: { tourney: Tournament, onEdit: () => void, onDelete: () => void, onViewParticipants: () => void }) => {
+const TournamentCard = ({ tourney, onEdit }: { tourney: Tournament, onEdit: () => void }) => {
     const controls = useAnimation();
     const [isOpen, setIsOpen] = useState(false);
     const dragDistance = -80; // Space for a single "Gestión" button
@@ -107,7 +106,7 @@ const TournamentCard = ({ tourney, onEdit, onDelete, onViewParticipants }: { tou
                 <ActionBtn
                     hexColor="var(--secondary)"
                     icon={<Settings size={20} />}
-                    onClick={() => { onViewParticipants(); closeActions(); }}
+                    onClick={() => { onEdit(); closeActions(); }}
                     label="GESTIÓN"
                 />
             </div>
@@ -482,9 +481,6 @@ const TournamentManager: React.FC = () => {
             setIsDeleting(false);
         }
     };
-    const handleViewParticipants = (tournament: Tournament) => {
-        navigate(`/my-events/${tournament.id}/participants`);
-    };
 
 
 
@@ -501,6 +497,47 @@ const TournamentManager: React.FC = () => {
 
     return (
         <div className="animate-fade" style={styles.pageContainer}>
+            <style>{`
+                .form-input {
+                    width: 100%;
+                    background: rgba(255,255,255,0.04) !important;
+                    border: 1px solid rgba(255,255,255,0.08) !important;
+                    border-radius: 16px !important;
+                    padding: 14px 16px !important;
+                    color: white !important;
+                    font-size: 15px !important;
+                    font-family: var(--font-main);
+                    transition: all 0.3s ease;
+                    outline: none;
+                }
+                .form-input:focus {
+                    background: rgba(255,255,255,0.07) !important;
+                    border-color: var(--secondary) !important;
+                    box-shadow: 0 0 0 4px rgba(163, 230, 53, 0.1);
+                }
+                .input-group {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 6px;
+                    margin-bottom: 4px;
+                }
+                .form-label {
+                    font-size: 11px;
+                    font-weight: 800;
+                    color: var(--text-dim);
+                    text-transform: uppercase;
+                    letter-spacing: 0.05em;
+                    padding-left: 4px;
+                }
+                select.form-input {
+                    appearance: none;
+                    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23A3E635' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+                    background-repeat: no-repeat;
+                    background-position: right 12px center;
+                    background-size: 18px;
+                    padding-right: 40px;
+                }
+            `}</style>
             <PageHero />
             <div style={styles.headerArea}>
                 <PageHeader
@@ -511,159 +548,300 @@ const TournamentManager: React.FC = () => {
             </div>
 
             <div style={styles.contentContainer}>
-                <div style={{ textAlign: 'center', marginBottom: '15px' }}>
-                    <span style={{
-                        fontSize: '11px',
-                        fontWeight: '900',
-                        color: 'var(--secondary)',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.1em',
-                        opacity: 0.8
-                    }}>
-                        Panel de Organización
-                    </span>
-                </div>
 
-                <>
-                    {/* Regular Creator View */}
-                    {showPremiumInvitation && !showForm && (
-                        <div className="glass" style={{ padding: '20px', borderRadius: '25px', textAlign: 'center', background: 'rgba(212, 175, 55, 0.05)', border: '1px solid rgba(212, 175, 55, 0.1)' }}>
-                            <Trophy size={24} color="var(--accent)" style={{ marginBottom: '10px', marginInline: 'auto' }} />
-                            <h3 style={{ fontSize: '16px', fontWeight: '800', color: 'white', marginBottom: '5px' }}>¿Quieres organizar un torneo?</h3>
-                            <p style={{ fontSize: '13px', color: 'var(--text-dim)', marginBottom: '15px' }}>Envía tu propuesta básica para que el administrador la valide.</p>
-                            <button
-                                onClick={() => setShowForm(true)}
-                                className="btn-primary"
-                                style={{ background: 'var(--secondary)', color: 'var(--primary)', padding: '12px', fontSize: '13px' }}
-                            >
-                                Enviar Propuesta de Torneo
-                            </button>
-                        </div>
-                    )}
+                <AnimatePresence mode="wait">
+                    {showForm ? (
 
-                    {isPremium && !showForm && (
-                        <button
-                            onClick={() => setShowForm(true)}
-                            className="btn-primary"
+                        <motion.form
+                            key="tournament-form"
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.95 }}
+                            onSubmit={handleSubmit}
+                            className="glass"
+                            style={{ padding: '24px', maxHeight: '80vh', overflowY: 'auto', borderRadius: '32px', border: '1px solid rgba(255,255,255,0.1)' }}
                         >
-                            <Plus size={18} />
-                            <span>Enviar Nueva Solicitud</span>
-                        </button>
-                    )}
-                </>
-
-                {showForm ? (
-                    <form onSubmit={handleSubmit} className="glass" style={{ padding: '25px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
-                            <div>
-                                <h2 style={{ fontSize: '18px', fontWeight: '800' }}>{editingId ? 'Editar Solicitud' : 'Nueva Solicitud'}</h2>
-                                {!isPremium && <p style={{ fontSize: '11px', color: 'var(--secondary)', fontWeight: '950' }}>PREFORMATO BÁSICO</p>}
-                            </div>
-                            <button
-                                type="button"
-                                onClick={resetForm}
-                                style={{ background: 'rgba(255,255,255,0.05)', border: 'none', color: 'white', padding: '8px', borderRadius: '12px', cursor: 'pointer' }}
-                            >
-                                <X size={20} />
-                            </button>
-                        </div>
-
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                            <div className="input-group">
-                                <label style={{ fontSize: '12px', fontWeight: '800', marginBottom: '5px', display: 'block', color: 'var(--text-dim)' }}>Nombre del Torneo*</label>
-                                <input
-                                    type="text"
-                                    value={formData.name}
-                                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                    className="form-input"
-                                    placeholder="Ej: Copa Diamante 2024"
-                                    required
-                                />
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px', position: 'sticky', top: -24, background: 'rgba(14,47,31,0.98)', backdropFilter: 'blur(10px)', zIndex: 10, padding: '12px 0', margin: '-24px -24px 20px -24px', paddingLeft: '24px', paddingRight: '24px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                                <div>
+                                    <h2 style={{ fontSize: '20px', fontWeight: '900', color: 'white', letterSpacing: '-0.5px' }}>{editingId ? 'Gestionar Evento' : 'Nueva Propuesta'}</h2>
+                                    {!editingId && !isPremium && <p style={{ fontSize: '10px', color: 'var(--secondary)', fontWeight: '900', letterSpacing: '0.05em' }}>BÁSICO</p>}
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => { setShowForm(false); resetForm(); }}
+                                    style={{ background: 'rgba(255,255,255,0.08)', border: 'none', color: 'white', width: '36px', height: '36px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                                >
+                                    <X size={20} />
+                                </button>
                             </div>
 
-                            <div className="input-group">
-                                <label style={{ fontSize: '12px', fontWeight: '800', marginBottom: '5px', display: 'block', color: 'var(--text-dim)' }}>Club o Lugar*</label>
-                                <div style={{ position: 'relative' }}>
-                                    <MapPin size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--secondary)' }} />
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                                <div className="input-group">
+                                    <label style={{ fontSize: '12px', fontWeight: '800', marginBottom: '5px', display: 'block', color: 'var(--text-dim)' }}>Nombre del Torneo*</label>
                                     <input
                                         type="text"
-                                        value={formData.club}
-                                        onChange={(e) => setFormData({ ...formData, club: e.target.value })}
+                                        value={formData.name}
+                                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                         className="form-input"
-                                        style={{ paddingLeft: '40px' }}
-                                        placeholder="Ej: Club Campestre"
+                                        placeholder="Ej: Copa Diamante 2024"
                                         required
                                     />
                                 </div>
-                            </div>
 
-                            <div className="input-group">
-                                <label style={{ fontSize: '12px', fontWeight: '800', marginBottom: '5px', display: 'block', color: 'var(--text-dim)' }}>Fecha del Torneo*</label>
-                                <div style={{ position: 'relative' }}>
-                                    <Calendar size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--secondary)' }} />
-                                    <input
-                                        type="date"
-                                        value={formData.date}
-                                        onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                                        className="form-input"
-                                        style={{ paddingLeft: '40px' }}
-                                        required
-                                    />
-                                </div>
-                            </div>
-
-                            <button
-                                type="submit"
-                                disabled={saving}
-                                className="btn-primary"
-                                style={{ marginTop: '10px' }}
-                            >
-                                {saving ? <Loader2 className="animate-spin" size={20} /> : (editingId ? 'GUARDAR CAMBIOS' : 'ENVIAR SOLICITUD')}
-                            </button>
-                        </div>
-                    </form>
-                ) : (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginTop: '20px' }}>
-                        {loading ? (
-                            [1, 2].map(i => (
-                                <div key={i} className="glass" style={{ padding: '20px', borderRadius: '32px' }}>
-                                    <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-                                        <Skeleton width="64px" height="64px" borderRadius="16px" />
-                                        <div style={{ flex: 1 }}>
-                                            <Skeleton width="70%" height="20px" style={{ marginBottom: '8px' }} />
-                                            <Skeleton width="40%" height="15px" />
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                                    <div className="input-group">
+                                        <label style={{ fontSize: '12px', fontWeight: '800', marginBottom: '5px', display: 'block', color: 'var(--text-dim)' }}>Club o Lugar*</label>
+                                        <div style={{ position: 'relative' }}>
+                                            <MapPin size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--secondary)' }} />
+                                            <input
+                                                type="text"
+                                                value={formData.club}
+                                                onChange={(e) => setFormData({ ...formData, club: e.target.value })}
+                                                className="form-input"
+                                                style={{ paddingLeft: '40px' }}
+                                                placeholder="Ej: Club Campestre"
+                                                required
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="input-group">
+                                        <label style={{ fontSize: '12px', fontWeight: '800', marginBottom: '5px', display: 'block', color: 'var(--text-dim)' }}>Fecha*</label>
+                                        <div style={{ position: 'relative' }}>
+                                            <Calendar size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--secondary)' }} />
+                                            <input
+                                                type="date"
+                                                value={formData.date}
+                                                onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                                                className="form-input"
+                                                style={{ paddingLeft: '40px' }}
+                                                required
+                                            />
                                         </div>
                                     </div>
                                 </div>
-                            ))
-                        ) : tournaments.length === 0 ? (
-                            <div className="glass" style={{ padding: '60px 20px', textAlign: 'center', borderRadius: '30px', opacity: 0.6 }}>
-                                <div style={{
-                                    width: '80px', height: '80px',
-                                    background: 'rgba(255,255,255,0.03)',
-                                    borderRadius: '50%',
-                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                    margin: '0 auto 20px',
-                                    border: '1px solid rgba(255,255,255,0.05)'
-                                }}>
-                                    <Trophy size={32} color="var(--text-dim)" style={{ opacity: 0.5 }} />
-                                </div>
-                                <h3 style={{ fontSize: '18px', fontWeight: '800', color: 'white', marginBottom: '8px' }}>Sin eventos organizados</h3>
-                                <p style={{ color: 'var(--text-dim)', fontSize: '14px' }}>Crea tu primer torneo y empieza a gestionar participantes.</p>
+
+                                {/* Advanced Fields - Only for Management/Edit Mode */}
+                                {editingId && (
+                                    <>
+                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                                            <div className="input-group">
+                                                <label style={{ fontSize: '12px', fontWeight: '800', marginBottom: '5px', display: 'block', color: 'var(--text-dim)' }}>Precio Inscripción</label>
+                                                <input
+                                                    type="text"
+                                                    value={formData.displayPrice}
+                                                    onChange={(e) => {
+                                                        const raw = e.target.value.replace(/\D/g, '');
+                                                        setFormData({ ...formData, price: raw, displayPrice: formatPrice(raw) });
+                                                    }}
+                                                    className="form-input"
+                                                    placeholder="$ 0"
+                                                />
+                                            </div>
+                                            <div className="input-group">
+                                                <label style={{ fontSize: '12px', fontWeight: '800', marginBottom: '5px', display: 'block', color: 'var(--text-dim)' }}>Límite Participantes</label>
+                                                <div style={{ position: 'relative' }}>
+                                                    <Users size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--secondary)' }} />
+                                                    <input
+                                                        type="number"
+                                                        value={formData.participants_limit}
+                                                        onChange={(e) => setFormData({ ...formData, participants_limit: e.target.value })}
+                                                        className="form-input"
+                                                        style={{ paddingLeft: '40px' }}
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                                            <div className="input-group">
+                                                <label style={{ fontSize: '12px', fontWeight: '800', marginBottom: '5px', display: 'block', color: 'var(--text-dim)' }}>Modo de Juego</label>
+                                                <select
+                                                    value={formData.game_mode}
+                                                    onChange={(e) => setFormData({ ...formData, game_mode: e.target.value })}
+                                                    className="form-input"
+                                                    style={{ background: 'rgba(255,b255,b255,0.05)', color: 'white' }}
+                                                >
+                                                    <option value="Juego por Golpes">Juego por Golpes</option>
+                                                    <option value="Stableford">Stableford</option>
+                                                    <option value="Match Play">Match Play</option>
+                                                    <option value="Scramble">Scramble</option>
+                                                </select>
+                                            </div>
+                                            <div className="input-group">
+                                                <label style={{ fontSize: '12px', fontWeight: '800', marginBottom: '5px', display: 'block', color: 'var(--text-dim)' }}>Estado del Evento</label>
+                                                <select
+                                                    value={formData.status}
+                                                    onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                                                    className="form-input"
+                                                    style={{ background: 'rgba(255,b255,b255,0.05)', color: 'white' }}
+                                                >
+                                                    <option value="Abierto">Abierto</option>
+                                                    <option value="Cerrado">Cerrado</option>
+                                                    <option value="Finalizado">Finalizado</option>
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        <div className="input-group">
+                                            <label style={{ fontSize: '12px', fontWeight: '800', marginBottom: '5px', display: 'block', color: 'var(--text-dim)' }}>Descripción / Notas</label>
+                                            <textarea
+                                                value={formData.description}
+                                                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                                className="form-input"
+                                                rows={3}
+                                                placeholder="Detalles adicionales del torneo..."
+                                            />
+                                        </div>
+
+                                        {/* Budget Section */}
+                                        <div style={{ marginTop: '10px', padding: '15px', background: 'rgba(255,255,255,0.03)', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                            <h3 style={{ fontSize: '14px', fontWeight: '900', color: 'var(--secondary)', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                <div style={{ width: '20px', height: '20px', borderRadius: '6px', background: 'var(--secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                    <span style={{ fontSize: '10px', color: 'var(--primary)' }}>$</span>
+                                                </div>
+                                                Presupuesto Estimado
+                                            </h3>
+
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                                {formData.budget_items.map((item, idx) => (
+                                                    <div key={item.id} style={{ display: 'flex', gap: '10px', alignItems: 'flex-end' }}>
+                                                        <div style={{ flex: 1 }}>
+                                                            <label style={{ fontSize: '10px', color: 'var(--text-dim)', marginBottom: '4px', display: 'block' }}>{item.label}</label>
+                                                            <input
+                                                                type="text"
+                                                                value={item.amount}
+                                                                onChange={(e) => {
+                                                                    const newItems = [...formData.budget_items];
+                                                                    newItems[idx].amount = e.target.value.replace(/\D/g, '');
+                                                                    setFormData({ ...formData, budget_items: newItems });
+                                                                }}
+                                                                className="form-input"
+                                                                placeholder="0"
+                                                                style={{ padding: '8px 12px', fontSize: '13px' }}
+                                                            />
+                                                        </div>
+                                                        <div style={{ width: '80px', fontSize: '10px', color: 'var(--secondary)', fontWeight: '800', paddingBottom: '12px' }}>
+                                                            {item.type === 'per_player' ? '/ Jugador' : 'Fijo'}
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+
+                                            <div style={{ marginTop: '15px', paddingTop: '10px', borderTop: '1px dotted rgba(255,255,255,0.1)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                <span style={{ fontSize: '12px', color: 'var(--text-dim)', fontWeight: '700' }}>Balance Estimado:</span>
+                                                <span style={{ fontSize: '16px', fontWeight: '950', color: 'white' }}>
+                                                    {(() => {
+                                                        const limit = parseInt(formData.participants_limit || '0');
+                                                        const income = limit * parseFloat(formData.price || '0');
+                                                        const costs = formData.budget_items.reduce((acc, item) => {
+                                                            const val = parseFloat(item.amount || '0');
+                                                            return acc + (item.type === 'per_player' ? val * limit : val);
+                                                        }, 0);
+                                                        return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(income - costs);
+                                                    })()}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        {/* Action buttons for admin/manage */}
+                                        <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+                                            <button
+                                                type="button"
+                                                onClick={() => navigate(`/my-events/${editingId}/participants`)}
+                                                style={{ flex: 1, padding: '12px', borderRadius: '15px', background: 'rgba(163, 230, 53, 0.1)', color: 'var(--secondary)', border: '1px solid rgba(163, 230, 53, 0.2)', fontSize: '12px', fontWeight: '800', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                                            >
+                                                <Users size={16} /> Ver Participantes
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    const tourney = tournaments.find(t => t.id === editingId);
+                                                    if (tourney) handleDeleteClick(tourney);
+                                                }}
+                                                style={{ padding: '12px', borderRadius: '15px', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.2)', cursor: 'pointer' }}
+                                            >
+                                                <Trash2 size={18} />
+                                            </button>
+                                        </div>
+                                    </>
+                                )}
+
+                                <button
+                                    type="submit"
+                                    disabled={saving}
+                                    className="btn-primary"
+                                    style={{ marginTop: '10px', padding: '15px', fontSize: '14px', boxSizing: 'border-box' }}
+                                >
+                                    {saving ? <Loader2 className="animate-spin" size={20} /> : (editingId ? 'GUARDAR TODOS LOS CAMBIOS' : 'ENVIAR SOLICITUD')}
+                                </button>
                             </div>
-                        ) : (
-                            tournaments.map(tourney => (
-                                <TournamentCard
-                                    key={tourney.id}
-                                    tourney={tourney}
-                                    onEdit={() => handleEditClick(tourney)}
-                                    onDelete={() => handleDeleteClick(tourney)}
-                                    onViewParticipants={() => handleViewParticipants(tourney)}
-                                />
-                            ))
-                        )}
-                    </div>
-                )}
+                        </motion.form>
+                    ) : (
+                        <div key="tournament-list" style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginTop: '10px' }}>
+                            {/* Regular Creator View */}
+                            {showPremiumInvitation && (
+                                <div className="glass" style={{ padding: '20px', borderRadius: '25px', textAlign: 'center', background: 'rgba(212, 175, 55, 0.05)', border: '1px solid rgba(212, 175, 55, 0.1)' }}>
+                                    <Trophy size={24} color="var(--accent)" style={{ marginBottom: '10px', marginInline: 'auto' }} />
+                                    <h3 style={{ fontSize: '16px', fontWeight: '800', color: 'white', marginBottom: '5px' }}>¿Quieres organizar un torneo?</h3>
+                                    <p style={{ fontSize: '13px', color: 'var(--text-dim)', marginBottom: '15px' }}>Envía tu propuesta básica para que el administrador la valide.</p>
+                                    <button
+                                        onClick={() => setShowForm(true)}
+                                        className="btn-primary"
+                                        style={{ background: 'var(--secondary)', color: 'var(--primary)', padding: '12px', fontSize: '13px' }}
+                                    >
+                                        Enviar Propuesta de Torneo
+                                    </button>
+                                </div>
+                            )}
+
+                            {isPremium && (
+                                <button
+                                    onClick={() => setShowForm(true)}
+                                    className="btn-primary"
+                                >
+                                    <Plus size={18} />
+                                    <span>Enviar Nueva Solicitud</span>
+                                </button>
+                            )}
+                            {loading ? (
+                                [1, 2].map(i => (
+                                    <div key={i} className="glass" style={{ padding: '20px', borderRadius: '32px' }}>
+                                        <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+                                            <Skeleton width="64px" height="64px" borderRadius="16px" />
+                                            <div style={{ flex: 1 }}>
+                                                <Skeleton width="70%" height="20px" style={{ marginBottom: '8px' }} />
+                                                <Skeleton width="40%" height="15px" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))
+                            ) : tournaments.length === 0 ? (
+                                <div className="glass" style={{ padding: '60px 20px', textAlign: 'center', borderRadius: '30px', opacity: 0.6 }}>
+                                    <div style={{
+                                        width: '80px', height: '80px',
+                                        background: 'rgba(255,255,255,0.03)',
+                                        borderRadius: '50%',
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                        margin: '0 auto 20px',
+                                        border: '1px solid rgba(255,255,255,0.05)'
+                                    }}>
+                                        <Trophy size={32} color="var(--text-dim)" style={{ opacity: 0.5 }} />
+                                    </div>
+                                    <h3 style={{ fontSize: '18px', fontWeight: '800', color: 'white', marginBottom: '8px' }}>Sin eventos organizados</h3>
+                                    <p style={{ color: 'var(--text-dim)', fontSize: '14px' }}>Crea tu primer torneo y empieza a gestionar participantes.</p>
+                                </div>
+                            ) : (
+                                tournaments.map(tourney => (
+                                    <TournamentCard
+                                        key={tourney.id}
+                                        tourney={tourney}
+                                        onEdit={() => handleEditClick(tourney)}
+                                    />
+                                ))
+                            )}
+                        </div>
+                    )}
+                </AnimatePresence>
             </div>
             <AnimatePresence>
                 <ConfirmationModal
