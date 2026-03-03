@@ -468,8 +468,8 @@ const TournamentManager: React.FC = () => {
             status: tournament.status || 'Abierto',
             game_mode: tournament.game_mode || 'Juego por Golpes',
             address: tournament.address || '',
-            budget_items: tournament.budget_items && Array.isArray(tournament.budget_items) && tournament.budget_items.length > 0
-                ? (tournament.budget_items as BudgetItem[]).map(item => ({ ...item, amount: item.amount.toString() }))
+            budget_items: Array.isArray(tournament.budget_items)
+                ? (tournament.budget_items as BudgetItem[]).map(item => ({ ...item, amount: item.amount?.toString() || '' }))
                 : [
                     { id: '1', label: 'Costo Op. por Jugador', amount: (tournament.budget_per_player || '').toString(), type: 'per_player', category: 'expense' },
                     { id: '2', label: 'Bolsa de Premios', amount: (tournament.budget_prizes || '').toString(), type: 'fixed', category: 'expense' },
@@ -600,6 +600,19 @@ const TournamentManager: React.FC = () => {
                     background-position: right 8px center;
                     background-size: 14px;
                     padding-right: 30px !important;
+                }
+                input[type="date"].form-input {
+                    appearance: none;
+                    -webkit-appearance: none;
+                    min-height: 50px;
+                }
+                input[type="date"].form-input::-webkit-date-and-time-value {
+                    text-align: left;
+                    margin: 0;
+                }
+                input[type="date"].form-input::-webkit-calendar-picker-indicator {
+                    display: none;
+                    -webkit-appearance: none;
                 }
             `}</style>
             <PageHero />
@@ -800,85 +813,92 @@ const TournamentManager: React.FC = () => {
                                                         </div>
 
                                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                                                            {formData.budget_items.map((item, idx) => (
-                                                                <div key={item.id} style={{ display: 'flex', flexDirection: 'column', gap: '10px', background: 'rgba(255,255,255,0.02)', padding: '16px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                                                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                                        {idx < 3 ? (
-                                                                            <label style={{ fontSize: '13px', color: 'var(--text-dim)', fontWeight: '800' }}>{item.label}</label>
-                                                                        ) : (
-                                                                            <input
-                                                                                type="text"
-                                                                                value={item.label}
-                                                                                onChange={(e) => {
-                                                                                    const newItems = [...formData.budget_items];
-                                                                                    newItems[idx].label = e.target.value;
+                                                            {formData.budget_items.map((item, idx) => {
+                                                                const isDefaultItem = ['1', '2', '3'].includes(item.id);
+                                                                return (
+                                                                    <div key={item.id} style={{ display: 'flex', flexDirection: 'column', gap: '10px', background: 'rgba(255,255,255,0.02)', padding: '16px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                                            {isDefaultItem ? (
+                                                                                <label style={{ fontSize: '13px', color: 'var(--text-dim)', fontWeight: '800' }}>{item.label}</label>
+                                                                            ) : (
+                                                                                <input
+                                                                                    type="text"
+                                                                                    value={item.label}
+                                                                                    onChange={(e) => {
+                                                                                        const newItems = [...formData.budget_items];
+                                                                                        newItems[idx].label = e.target.value;
+                                                                                        setFormData({ ...formData, budget_items: newItems });
+                                                                                    }}
+                                                                                    placeholder="Nombre del rubro"
+                                                                                    className="form-input-sm"
+                                                                                    style={{ width: 'calc(100% - 30px)' }}
+                                                                                />
+                                                                            )}
+                                                                            <button
+                                                                                type="button"
+                                                                                onClick={() => {
+                                                                                    const newItems = formData.budget_items.filter((_, i) => i !== idx);
                                                                                     setFormData({ ...formData, budget_items: newItems });
                                                                                 }}
-                                                                                placeholder="Nombre del rubro"
-                                                                                className="form-input-sm"
-                                                                                style={{ width: 'calc(100% - 30px)' }}
-                                                                            />
-                                                                        )}
-                                                                        <button
-                                                                            type="button"
-                                                                            onClick={() => {
-                                                                                const newItems = formData.budget_items.filter((_, i) => i !== idx);
-                                                                                setFormData({ ...formData, budget_items: newItems });
-                                                                            }}
-                                                                            style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.3)', cursor: 'pointer', padding: '4px', display: 'flex' }}
-                                                                        >
-                                                                            <Trash2 size={16} />
-                                                                        </button>
-                                                                    </div>
-                                                                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                                                                        <div style={{ flex: 1, position: 'relative' }}>
-                                                                            <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-dim)', fontSize: '13px', fontWeight: '800' }}>$</span>
-                                                                            <input
-                                                                                type="text"
-                                                                                value={item.amount ? new Intl.NumberFormat('es-CO').format(parseInt(item.amount)) : ''}
-                                                                                onChange={(e) => {
-                                                                                    const newItems = [...formData.budget_items];
-                                                                                    newItems[idx].amount = e.target.value.replace(/\D/g, '');
-                                                                                    setFormData({ ...formData, budget_items: newItems });
-                                                                                }}
-                                                                                className="form-input-sm with-icon"
-                                                                                placeholder="0"
-                                                                                style={{ fontSize: '13px', fontWeight: '700' }}
-                                                                            />
+                                                                                style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.3)', cursor: 'pointer', padding: '4px', display: 'flex' }}
+                                                                            >
+                                                                                <Trash2 size={16} />
+                                                                            </button>
                                                                         </div>
-                                                                        <select
-                                                                            value={item.type}
-                                                                            onChange={(e) => {
-                                                                                const newItems = [...formData.budget_items];
-                                                                                newItems[idx].type = e.target.value as any;
-                                                                                setFormData({ ...formData, budget_items: newItems });
-                                                                            }}
-                                                                            className="form-input-sm"
-                                                                            style={{ width: '135px', background: 'rgba(255,255,255,0.05)', color: 'white', fontWeight: '700' }}
-                                                                        >
-                                                                            <option value="per_player">Por Jugador</option>
-                                                                            <option value="fixed">Fijo</option>
-                                                                        </select>
-                                                                        <button
-                                                                            type="button"
-                                                                            onClick={() => {
-                                                                                const newItems = [...formData.budget_items];
-                                                                                newItems[idx].category = (item.category || 'expense') === 'income' ? 'expense' : 'income';
-                                                                                setFormData({ ...formData, budget_items: newItems });
-                                                                            }}
-                                                                            style={{
-                                                                                width: '38px', height: '38px', borderRadius: '12px', flexShrink: 0,
-                                                                                display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
-                                                                                background: (item.category || 'expense') === 'income' ? 'rgba(163, 230, 53, 0.1)' : 'rgba(239, 68, 68, 0.1)',
-                                                                                color: (item.category || 'expense') === 'income' ? 'var(--secondary)' : '#ef4444',
-                                                                                border: '1px solid ' + ((item.category || 'expense') === 'income' ? 'rgba(163, 230, 53, 0.2)' : 'rgba(239, 68, 68, 0.2)')
-                                                                            }}
-                                                                        >
-                                                                            {(item.category || 'expense') === 'income' ? <Plus size={18} /> : <Minus size={18} />}
-                                                                        </button>
+                                                                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                                                            <div style={{ flex: 1, position: 'relative' }}>
+                                                                                <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-dim)', fontSize: '13px', fontWeight: '800' }}>$</span>
+                                                                                <input
+                                                                                    type="text"
+                                                                                    value={item.amount ? new Intl.NumberFormat('es-CO').format(parseInt(item.amount)) : ''}
+                                                                                    onChange={(e) => {
+                                                                                        const newItems = [...formData.budget_items];
+                                                                                        newItems[idx].amount = e.target.value.replace(/\D/g, '');
+                                                                                        setFormData({ ...formData, budget_items: newItems });
+                                                                                    }}
+                                                                                    className="form-input-sm with-icon"
+                                                                                    placeholder="0"
+                                                                                    style={{ fontSize: '13px', fontWeight: '700' }}
+                                                                                />
+                                                                            </div>
+                                                                            <select
+                                                                                value={item.type}
+                                                                                onChange={(e) => {
+                                                                                    const newItems = [...formData.budget_items];
+                                                                                    newItems[idx].type = e.target.value as any;
+                                                                                    setFormData({ ...formData, budget_items: newItems });
+                                                                                }}
+                                                                                className="form-input-sm"
+                                                                                style={{ width: '135px', background: 'rgba(255,255,255,0.05)', color: 'white', fontWeight: '700' }}
+                                                                            >
+                                                                                <option value="per_player">Por Jugador</option>
+                                                                                <option value="fixed">Fijo</option>
+                                                                            </select>
+                                                                            {isDefaultItem ? (
+                                                                                <div style={{ width: '38px', height: '38px', borderRadius: '12px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ef4444', fontSize: '10px', fontWeight: '800' }}>GASTO</div>
+                                                                            ) : (
+                                                                                <button
+                                                                                    type="button"
+                                                                                    onClick={() => {
+                                                                                        const newItems = [...formData.budget_items];
+                                                                                        newItems[idx].category = (item.category || 'expense') === 'income' ? 'expense' : 'income';
+                                                                                        setFormData({ ...formData, budget_items: newItems });
+                                                                                    }}
+                                                                                    style={{
+                                                                                        width: '38px', height: '38px', borderRadius: '12px', flexShrink: 0,
+                                                                                        display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+                                                                                        background: (item.category || 'expense') === 'income' ? 'rgba(163, 230, 53, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                                                                                        color: (item.category || 'expense') === 'income' ? 'var(--secondary)' : '#ef4444',
+                                                                                        border: '1px solid ' + ((item.category || 'expense') === 'income' ? 'rgba(163, 230, 53, 0.2)' : 'rgba(239, 68, 68, 0.2)')
+                                                                                    }}
+                                                                                >
+                                                                                    {(item.category || 'expense') === 'income' ? <Plus size={18} /> : <Minus size={18} />}
+                                                                                </button>
+                                                                            )}
+                                                                        </div>
                                                                     </div>
-                                                                </div>
-                                                            ))}
+                                                                )
+                                                            })}
                                                         </div>
 
                                                         <div style={{ marginTop: '20px', paddingTop: '15px', borderTop: '1px dotted rgba(255,255,255,0.1)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
