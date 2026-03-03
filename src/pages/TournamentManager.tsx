@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, useAnimation, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../services/SupabaseManager';
-import { Plus, Trophy, Trash2, Calendar, Loader2, Users, ChevronLeft, MapPin, X, Settings } from 'lucide-react';
+import { Plus, Trophy, Trash2, Calendar, Loader2, Users, ChevronLeft, MapPin, Settings } from 'lucide-react';
 import Skeleton from '../components/Skeleton';
 import PageHero from '../components/PageHero';
 import PageHeader from '../components/PageHeader';
@@ -515,6 +515,9 @@ const TournamentManager: React.FC = () => {
                     border-color: var(--secondary) !important;
                     box-shadow: 0 0 0 4px rgba(163, 230, 53, 0.1);
                 }
+                .form-input.with-icon {
+                    padding-left: 40px !important;
+                }
                 .input-group {
                     display: flex;
                     flex-direction: column;
@@ -553,27 +556,14 @@ const TournamentManager: React.FC = () => {
                     {showForm ? (
 
                         <motion.form
+                            id="main-tournament-form"
                             key="tournament-form"
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.95 }}
                             onSubmit={handleSubmit}
-                            className="glass"
-                            style={{ padding: '24px', maxHeight: '80vh', overflowY: 'auto', borderRadius: '32px', border: '1px solid rgba(255,255,255,0.1)' }}
+                            style={{ width: '100%', paddingBottom: '30px', paddingTop: '20px' }}
                         >
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px', position: 'sticky', top: -24, background: 'rgba(14,47,31,0.98)', backdropFilter: 'blur(10px)', zIndex: 10, padding: '12px 0', margin: '-24px -24px 20px -24px', paddingLeft: '24px', paddingRight: '24px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                                <div>
-                                    <h2 style={{ fontSize: '20px', fontWeight: '900', color: 'white', letterSpacing: '-0.5px' }}>{editingId ? 'Gestionar Evento' : 'Nueva Propuesta'}</h2>
-                                    {!editingId && !isPremium && <p style={{ fontSize: '10px', color: 'var(--secondary)', fontWeight: '900', letterSpacing: '0.05em' }}>BÁSICO</p>}
-                                </div>
-                                <button
-                                    type="button"
-                                    onClick={() => { setShowForm(false); resetForm(); }}
-                                    style={{ background: 'rgba(255,255,255,0.08)', border: 'none', color: 'white', width: '36px', height: '36px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
-                                >
-                                    <X size={20} />
-                                </button>
-                            </div>
 
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                                 <div className="input-group">
@@ -592,13 +582,12 @@ const TournamentManager: React.FC = () => {
                                     <div className="input-group">
                                         <label style={{ fontSize: '12px', fontWeight: '800', marginBottom: '5px', display: 'block', color: 'var(--text-dim)' }}>Club o Lugar*</label>
                                         <div style={{ position: 'relative' }}>
-                                            <MapPin size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--secondary)' }} />
+                                            <MapPin size={16} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--secondary)' }} />
                                             <input
                                                 type="text"
                                                 value={formData.club}
                                                 onChange={(e) => setFormData({ ...formData, club: e.target.value })}
-                                                className="form-input"
-                                                style={{ paddingLeft: '40px' }}
+                                                className="form-input with-icon"
                                                 placeholder="Ej: Club Campestre"
                                                 required
                                             />
@@ -607,13 +596,12 @@ const TournamentManager: React.FC = () => {
                                     <div className="input-group">
                                         <label style={{ fontSize: '12px', fontWeight: '800', marginBottom: '5px', display: 'block', color: 'var(--text-dim)' }}>Fecha*</label>
                                         <div style={{ position: 'relative' }}>
-                                            <Calendar size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--secondary)' }} />
+                                            <Calendar size={16} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--secondary)' }} />
                                             <input
                                                 type="date"
                                                 value={formData.date}
                                                 onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                                                className="form-input"
-                                                style={{ paddingLeft: '40px' }}
+                                                className="form-input with-icon"
                                                 required
                                             />
                                         </div>
@@ -640,13 +628,12 @@ const TournamentManager: React.FC = () => {
                                             <div className="input-group">
                                                 <label style={{ fontSize: '12px', fontWeight: '800', marginBottom: '5px', display: 'block', color: 'var(--text-dim)' }}>Límite Participantes</label>
                                                 <div style={{ position: 'relative' }}>
-                                                    <Users size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--secondary)' }} />
+                                                    <Users size={16} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--secondary)' }} />
                                                     <input
                                                         type="number"
                                                         value={formData.participants_limit}
                                                         onChange={(e) => setFormData({ ...formData, participants_limit: e.target.value })}
-                                                        className="form-input"
-                                                        style={{ paddingLeft: '40px' }}
+                                                        className="form-input with-icon"
                                                     />
                                                 </div>
                                             </div>
@@ -675,8 +662,10 @@ const TournamentManager: React.FC = () => {
                                                     className="form-input"
                                                     style={{ background: 'rgba(255,b255,b255,0.05)', color: 'white' }}
                                                 >
-                                                    <option value="Abierto">Abierto</option>
-                                                    <option value="Cerrado">Cerrado</option>
+                                                    <option value="Borrador">Borrador</option>
+                                                    <option value="Publicado">Publicado</option>
+                                                    <option value="Abierto">Abierto (Inscripciones)</option>
+                                                    <option value="Cerrado">Cerrado (Inscripciones)</option>
                                                     <option value="Finalizado">Finalizado</option>
                                                 </select>
                                             </div>
@@ -766,14 +755,45 @@ const TournamentManager: React.FC = () => {
                                     </>
                                 )}
 
-                                <button
-                                    type="submit"
-                                    disabled={saving}
-                                    className="btn-primary"
-                                    style={{ marginTop: '10px', padding: '15px', fontSize: '14px', boxSizing: 'border-box' }}
-                                >
-                                    {saving ? <Loader2 className="animate-spin" size={20} /> : (editingId ? 'GUARDAR TODOS LOS CAMBIOS' : 'ENVIAR SOLICITUD')}
-                                </button>
+                                {editingId && formData.status === 'Borrador' ? (
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginTop: '10px' }}>
+                                        <button
+                                            type="submit"
+                                            disabled={saving}
+                                            className="glass"
+                                            style={{ padding: '15px', fontSize: '14px', boxSizing: 'border-box', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-dim)', fontWeight: '800', borderRadius: '16px' }}
+                                        >
+                                            {saving ? <Loader2 className="animate-spin" size={20} /> : 'GUARDAR BORRADOR'}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            disabled={saving}
+                                            onClick={() => {
+                                                setFormData({ ...formData, status: 'Publicado' });
+                                                // We need to trigger submit programmatically or setTimeout
+                                                setTimeout(() => {
+                                                    const form = document.getElementById('main-tournament-form') as HTMLFormElement;
+                                                    if (form) form.requestSubmit();
+                                                }, 100);
+                                            }}
+                                            className="btn-primary"
+                                            style={{ padding: '15px', fontSize: '14px', boxSizing: 'border-box' }}
+                                        >
+                                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                                                PUBLICAR <Trophy size={16} />
+                                            </div>
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <button
+                                        type="submit"
+                                        disabled={saving}
+                                        className="btn-primary"
+                                        style={{ marginTop: '10px', padding: '15px', fontSize: '14px', boxSizing: 'border-box' }}
+                                    >
+                                        {saving ? <Loader2 className="animate-spin" size={20} /> : (editingId ? 'GUARDAR TODOS LOS CAMBIOS' : 'ENVIAR SOLICITUD')}
+                                    </button>
+                                )}
                             </div>
                         </motion.form>
                     ) : (
