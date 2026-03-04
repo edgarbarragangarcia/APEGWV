@@ -132,10 +132,10 @@ const TournamentRegistration: React.FC = () => {
     return (
         <div className="animate-fade" style={{
             background: 'var(--primary)',
-            minHeight: '100dvh',
+            height: '100dvh',
             display: 'flex',
             flexDirection: 'column',
-            overflowX: 'hidden',
+            overflow: 'hidden',
             width: '100%',
             maxWidth: '600px',
             margin: '0 auto',
@@ -205,7 +205,7 @@ const TournamentRegistration: React.FC = () => {
                 )}
             </AnimatePresence>
 
-            <div style={{ position: 'relative', height: '300px', overflow: 'hidden' }}>
+            <div style={{ position: 'relative', height: '35vh', flexShrink: 0, overflow: 'hidden' }}>
                 <img
                     src={tournament.image_url || 'https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?q=80&w=1000'}
                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
@@ -218,84 +218,96 @@ const TournamentRegistration: React.FC = () => {
                 }} />
             </div>
 
-            <div style={{ padding: '0 25px 50px 25px', marginTop: '-40px', position: 'relative', zIndex: 10 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '15px' }}>
-                    <div style={{ flex: 1 }}>
-                        <h1 style={{ fontSize: '28px', fontWeight: '950', color: 'white', letterSpacing: '-0.5px', marginBottom: '8px' }}>
-                            {tournament.name}
-                        </h1>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--secondary)', fontWeight: '700', fontSize: '14px' }}>
-                            <MapPin size={16} />
-                            {tournament.club}
+            <div style={{
+                padding: '0 25px 20px 25px',
+                marginTop: '-40px',
+                position: 'relative',
+                zIndex: 10,
+                flex: 1,
+                display: 'flex',
+                flexDirection: 'column',
+                overflow: 'hidden'
+            }}>
+                <div style={{ flex: 1, overflowY: 'auto', marginBottom: '15px', paddingRight: '5px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '15px' }}>
+                        <div style={{ flex: 1 }}>
+                            <h1 style={{ fontSize: '28px', fontWeight: '950', color: 'white', letterSpacing: '-0.5px', marginBottom: '8px' }}>
+                                {tournament.name}
+                            </h1>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--secondary)', fontWeight: '700', fontSize: '14px' }}>
+                                <MapPin size={16} />
+                                {tournament.club}
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(2, 1fr)',
-                    gap: '12px',
-                    marginBottom: '25px'
-                }}>
-                    <div className="glass" style={{ padding: '15px', borderRadius: '20px', display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                        <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontWeight: '800' }}>FECHA</span>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'white', fontSize: '13px', fontWeight: '900' }}>
-                            <Calendar size={14} color="var(--secondary)" />
-                            {new Date(tournament.date).toLocaleDateString('es-ES', { day: '2-digit', month: 'long' })}
+                    <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(2, 1fr)',
+                        gap: '12px',
+                        marginBottom: '25px'
+                    }}>
+                        <div className="glass" style={{ padding: '15px', borderRadius: '20px', display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                            <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontWeight: '800' }}>FECHA</span>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'white', fontSize: '13px', fontWeight: '900' }}>
+                                <Calendar size={14} color="var(--secondary)" />
+                                {new Date(tournament.date).toLocaleDateString('es-ES', { day: '2-digit', month: 'long' })}
+                            </div>
+                        </div>
+                        <div className="glass" style={{ padding: '15px', borderRadius: '20px', display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                            <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontWeight: '800' }}>VALOR</span>
+                            <div style={{ color: 'var(--secondary)', fontSize: '13px', fontWeight: '950' }}>
+                                {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(tournament.price)}
+                            </div>
+                        </div>
+                        <div className="glass" style={{ padding: '15px', borderRadius: '20px', display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                            <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontWeight: '800' }}>MODO</span>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'white', fontSize: '13px', fontWeight: '900' }}>
+                                <Trophy size={14} color="var(--secondary)" />
+                                {tournament.game_mode}
+                            </div>
+                        </div>
+                        <div className="glass" style={{ padding: '15px', borderRadius: '20px', display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                            <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontWeight: '800' }}>CUPOS</span>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'white', fontSize: '13px', fontWeight: '900' }}>
+                                <Users size={14} color="var(--secondary)" />
+                                {participantsCount} / {tournament.participants_limit || '--'}
+                            </div>
                         </div>
                     </div>
-                    <div className="glass" style={{ padding: '15px', borderRadius: '20px', display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                        <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontWeight: '800' }}>VALOR</span>
-                        <div style={{ color: 'var(--secondary)', fontSize: '13px', fontWeight: '950' }}>
-                            {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(tournament.price)}
-                        </div>
-                    </div>
-                    <div className="glass" style={{ padding: '15px', borderRadius: '20px', display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                        <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontWeight: '800' }}>MODO</span>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'white', fontSize: '13px', fontWeight: '900' }}>
-                            <Trophy size={14} color="var(--secondary)" />
-                            {tournament.game_mode}
-                        </div>
-                    </div>
-                    <div className="glass" style={{ padding: '15px', borderRadius: '20px', display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                        <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontWeight: '800' }}>CUPOS</span>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'white', fontSize: '13px', fontWeight: '900' }}>
-                            <Users size={14} color="var(--secondary)" />
-                            {participantsCount} / {tournament.participants_limit || '--'}
-                        </div>
-                    </div>
-                </div>
 
-                <div style={{ marginBottom: '30px' }}>
-                    <h3 style={{ fontSize: '16px', fontWeight: '900', color: 'white', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <div style={{ width: '28px', height: '28px', background: 'rgba(163, 230, 53, 0.1)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            <ShieldCheck size={16} color="var(--secondary)" />
-                        </div>
-                        Información del Evento
-                    </h3>
-                    <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '14px', lineHeight: '1.6' }}>
-                        {tournament.description || 'Sin descripción disponible.'}
-                    </p>
-                </div>
-
-                {tournament.custom_rules && (
                     <div style={{ marginBottom: '30px' }}>
                         <h3 style={{ fontSize: '16px', fontWeight: '900', color: 'white', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '10px' }}>
                             <div style={{ width: '28px', height: '28px', background: 'rgba(163, 230, 53, 0.1)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                <HeartHandshake size={16} color="var(--secondary)" />
+                                <ShieldCheck size={16} color="var(--secondary)" />
                             </div>
-                            Reglamento
+                            Información del Evento
                         </h3>
-                        <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '14px', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>
-                            {tournament.custom_rules}
+                        <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '14px', lineHeight: '1.6' }}>
+                            {tournament.description || 'Sin descripción disponible.'}
                         </p>
                     </div>
-                )}
+
+                    {tournament.custom_rules && (
+                        <div style={{ marginBottom: '30px' }}>
+                            <h3 style={{ fontSize: '16px', fontWeight: '900', color: 'white', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <div style={{ width: '28px', height: '28px', background: 'rgba(163, 230, 53, 0.1)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    <HeartHandshake size={16} color="var(--secondary)" />
+                                </div>
+                                Reglamento
+                            </h3>
+                            <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '14px', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>
+                                {tournament.custom_rules}
+                            </p>
+                        </div>
+                    )}
+                </div>
 
                 <div style={{
-                    position: 'sticky',
-                    bottom: '20px',
-                    marginTop: '40px'
+                    paddingBottom: '20px',
+                    paddingTop: '10px',
+                    backgroundColor: 'var(--primary)',
+                    flexShrink: 0
                 }}>
                     <button
                         onClick={handleRegister}
