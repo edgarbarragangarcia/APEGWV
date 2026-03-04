@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, useAnimation, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../services/SupabaseManager';
-import { Plus, Trophy, Trash2, Calendar, Loader2, Users, ChevronLeft, MapPin, Settings, ChevronDown, ChevronUp, Minus, ShieldCheck, HeartHandshake, Copy } from 'lucide-react';
+import { Plus, Trophy, Trash2, Calendar, Loader2, Users, ChevronLeft, MapPin, Settings, ChevronDown, ChevronUp, Minus, ShieldCheck, HeartHandshake, Copy, CheckCircle2 } from 'lucide-react';
 import Skeleton from '../components/Skeleton';
 import PageHero from '../components/PageHero';
 import PageHeader from '../components/PageHeader';
@@ -266,6 +266,7 @@ const TournamentManager: React.FC = () => {
     const [guestSearchQuery, setGuestSearchQuery] = useState('');
     const [profileResults, setProfileResults] = useState<{ id: string, full_name: string, avatar_url: string | null }[]>([]);
     const [searchingProfiles, setSearchingProfiles] = useState(false);
+    const [copied, setCopied] = useState(false);
 
 
 
@@ -832,7 +833,8 @@ const TournamentManager: React.FC = () => {
                                                         onClick={() => {
                                                             const url = `https://apegwv.vercel.app/tournament-register/${editingId}`;
                                                             navigator.clipboard.writeText(url);
-                                                            // Optional: show a toast or feedback
+                                                            setCopied(true);
+                                                            setTimeout(() => setCopied(false), 2000);
                                                             if (navigator.vibrate) navigator.vibrate(50);
                                                         }}
                                                         style={{
@@ -845,10 +847,44 @@ const TournamentManager: React.FC = () => {
                                                             alignItems: 'center',
                                                             justifyContent: 'center',
                                                             border: 'none',
-                                                            cursor: 'pointer'
+                                                            cursor: 'pointer',
+                                                            position: 'relative'
                                                         }}
                                                     >
-                                                        <Copy size={18} />
+                                                        <AnimatePresence>
+                                                            {copied ? (
+                                                                <motion.div
+                                                                    key="check"
+                                                                    initial={{ scale: 0, opacity: 0 }}
+                                                                    animate={{ scale: 1, opacity: 1 }}
+                                                                    exit={{ scale: 0, opacity: 0 }}
+                                                                    style={{
+                                                                        position: 'absolute',
+                                                                        top: '-35px',
+                                                                        background: 'var(--secondary)',
+                                                                        color: 'var(--primary)',
+                                                                        padding: '4px 8px',
+                                                                        borderRadius: '8px',
+                                                                        fontSize: '10px',
+                                                                        fontWeight: '900',
+                                                                        whiteSpace: 'nowrap',
+                                                                        boxShadow: '0 4px 10px rgba(0,0,0,0.3)'
+                                                                    }}
+                                                                >
+                                                                    ¡COPIADO!
+                                                                    <div style={{
+                                                                        position: 'absolute',
+                                                                        bottom: '-4px',
+                                                                        left: '50%',
+                                                                        transform: 'translateX(-50%) rotate(45deg)',
+                                                                        width: '8px',
+                                                                        height: '8px',
+                                                                        background: 'var(--secondary)'
+                                                                    }} />
+                                                                </motion.div>
+                                                            ) : null}
+                                                        </AnimatePresence>
+                                                        {copied ? <CheckCircle2 size={18} /> : <Copy size={18} />}
                                                     </button>
                                                 </div>
                                                 <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', marginTop: '8px', fontWeight: '600' }}>
