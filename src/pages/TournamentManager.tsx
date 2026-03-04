@@ -1088,48 +1088,103 @@ const TournamentManager: React.FC = () => {
                                                             })}
                                                         </div>
 
-                                                        <div style={{ marginTop: '20px', paddingTop: '15px', borderTop: '1px dotted rgba(255,255,255,0.1)', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                                <span style={{ fontSize: '12px', color: 'var(--text-dim)', fontWeight: '800', letterSpacing: '0.3px' }}>Balance Real (Recaudado):</span>
-                                                                <span style={{ fontSize: '18px', fontWeight: '950', color: 'var(--secondary)' }}>
-                                                                    {(() => {
-                                                                        const paidCount = formData.paid_participants || 0;
-                                                                        let income = paidCount * parseFloat(formData.price || '0');
-                                                                        let costs = 0;
-                                                                        formData.budget_items.forEach((item) => {
-                                                                            const val = parseFloat(item.amount || '0');
-                                                                            // Costs are usually based on current active participants or fixed
-                                                                            const calculatedVal = item.type === 'per_player' ? val * (formData.current_participants || 0) : val;
-                                                                            if ((item.category || 'expense') === 'income') {
-                                                                                income += (item.type === 'per_player' ? val * paidCount : val);
-                                                                            } else {
-                                                                                costs += calculatedVal;
-                                                                            }
-                                                                        });
-                                                                        return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(income - costs);
-                                                                    })()}
-                                                                </span>
-                                                            </div>
-                                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', opacity: 0.6 }}>
-                                                                <span style={{ fontSize: '11px', color: 'var(--text-dim)', fontWeight: '800' }}>Balance Estimado (Proyectado):</span>
-                                                                <span style={{ fontSize: '15px', fontWeight: '900', color: 'white' }}>
-                                                                    {(() => {
-                                                                        const limit = parseInt(formData.participants_limit || '0');
-                                                                        let income = limit * parseFloat(formData.price || '0');
-                                                                        let costs = 0;
-                                                                        formData.budget_items.forEach((item) => {
-                                                                            const val = parseFloat(item.amount || '0');
-                                                                            const calculatedVal = item.type === 'per_player' ? val * limit : val;
-                                                                            if ((item.category || 'expense') === 'income') {
-                                                                                income += calculatedVal;
-                                                                            } else {
-                                                                                costs += calculatedVal;
-                                                                            }
-                                                                        });
-                                                                        return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(income - costs);
-                                                                    })()}
-                                                                </span>
-                                                            </div>
+                                                        <div style={{ marginTop: '20px', paddingTop: '15px', borderTop: '1px dotted rgba(255,255,255,0.1)', display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                                                            {(() => {
+                                                                const price = parseFloat(formData.price || '0');
+                                                                const paidCount = formData.paid_participants || 0;
+                                                                const totalCount = formData.current_participants || 0;
+                                                                const limit = parseInt(formData.participants_limit || '0');
+
+                                                                let realIncome = paidCount * price;
+                                                                let realCosts = 0;
+                                                                let otherIncome = 0;
+
+                                                                formData.budget_items.forEach((item) => {
+                                                                    const val = parseFloat(item.amount || '0');
+                                                                    if ((item.category || 'expense') === 'income') {
+                                                                        const calc = item.type === 'per_player' ? val * paidCount : val;
+                                                                        realIncome += calc;
+                                                                        otherIncome += calc;
+                                                                    } else {
+                                                                        const calc = item.type === 'per_player' ? val * totalCount : val;
+                                                                        realCosts += calc;
+                                                                    }
+                                                                });
+
+                                                                const realBalance = realIncome - realCosts;
+                                                                const isProfit = realBalance >= 0;
+
+                                                                // Break-even calculation
+                                                                let fixedCosts = 0;
+                                                                let perPlayerCost = 0;
+                                                                formData.budget_items.forEach(item => {
+                                                                    const val = parseFloat(item.amount || '0');
+                                                                    if ((item.category || 'expense') === 'expense') {
+                                                                        if (item.type === 'fixed') fixedCosts += val;
+                                                                        else perPlayerCost += val;
+                                                                    }
+                                                                });
+
+                                                                // Breakeven: X * Price + OtherIncomes = FixedCosts + (X + NonPaying) * PerPlayerCost
+                                                                // X * (Price - PerPlayerCost) = FixedCosts + (NonPaying * PerPlayerCost) - OtherIncomes
+                                                                const nonPaying = totalCount - paidCount;
+                                                                const breakEvenNumerator = fixedCosts + (nonPaying * perPlayerCost) - otherIncome;
+                                                                const marginPerPlayer = price - perPlayerCost;
+                                                                const playersNeeded = marginPerPlayer > 0 ? Math.ceil(breakEvenNumerator / marginPerPlayer) : 0;
+                                                                const remainingPlayers = Math.max(0, playersNeeded - paidCount);
+
+                                                                return (
+                                                                    <>
+                                                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                                            <span style={{ fontSize: '12px', color: 'var(--text-dim)', fontWeight: '800', letterSpacing: '0.3px' }}>Balance Real (Recaudado):</span>
+                                                                            <div style={{ textAlign: 'right' }}>
+                                                                                <span style={{ fontSize: '18px', fontWeight: '950', color: isProfit ? 'var(--secondary)' : '#ef4444' }}>
+                                                                                    {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(realBalance)}
+                                                                                </span>
+                                                                                <div style={{ fontSize: '10px', color: isProfit ? 'var(--secondary)' : '#ef4444', fontWeight: '800', opacity: 0.8, marginTop: '2px' }}>
+                                                                                    {isProfit ? 'PROVECHO / GANANCIA' : 'DÉFICIT / PENDIENTE'}
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+
+                                                                        <div style={{ padding: '12px', background: 'rgba(255,255,255,0.03)', borderRadius: '15px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                                                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                                                                                <span style={{ fontSize: '11px', color: 'var(--text-dim)', fontWeight: '700' }}>Punto de Equilibrio:</span>
+                                                                                <span style={{ fontSize: '11px', color: 'white', fontWeight: '800' }}>{paidCount} / {playersNeeded} Jugadores</span>
+                                                                            </div>
+                                                                            <div style={{ width: '100%', height: '6px', background: 'rgba(255,255,255,0.05)', borderRadius: '3px', overflow: 'hidden' }}>
+                                                                                <motion.div
+                                                                                    initial={{ width: 0 }}
+                                                                                    animate={{ width: `${Math.min(100, (paidCount / (playersNeeded || 1)) * 100)}%` }}
+                                                                                    style={{ height: '100%', background: isProfit ? 'var(--secondary)' : '#60a5fa', borderRadius: '3px' }}
+                                                                                />
+                                                                            </div>
+                                                                            <p style={{ fontSize: '10px', color: isProfit ? 'var(--secondary)' : 'var(--text-dim)', marginTop: '8px', fontWeight: '700' }}>
+                                                                                {isProfit
+                                                                                    ? '¡Evento cubierto! Cada nuevo pago es ganancia neta.'
+                                                                                    : `Faltan ${remainingPlayers} pagos para cubrir los gastos de los ${totalCount} inscritos.`}
+                                                                            </p>
+                                                                        </div>
+
+                                                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', opacity: 0.5 }}>
+                                                                            <span style={{ fontSize: '11px', color: 'var(--text-dim)', fontWeight: '800' }}>Meta Proyectada ({limit} jug.):</span>
+                                                                            <span style={{ fontSize: '14px', fontWeight: '900', color: 'white' }}>
+                                                                                {(() => {
+                                                                                    let income = limit * price;
+                                                                                    let costs = 0;
+                                                                                    formData.budget_items.forEach((item) => {
+                                                                                        const val = parseFloat(item.amount || '0');
+                                                                                        const calc = item.type === 'per_player' ? val * limit : val;
+                                                                                        if ((item.category || 'expense') === 'income') income += calc;
+                                                                                        else costs += calc;
+                                                                                    });
+                                                                                    return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(income - costs);
+                                                                                })()}
+                                                                            </span>
+                                                                        </div>
+                                                                    </>
+                                                                );
+                                                            })()}
                                                         </div>
                                                     </motion.div>
                                                 )}
