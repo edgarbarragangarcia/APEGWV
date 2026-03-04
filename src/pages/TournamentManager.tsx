@@ -695,7 +695,14 @@ const TournamentManager: React.FC = () => {
                 <PageHeader
                     noMargin
                     title="Gestión de Eventos"
-                    onBack={() => navigate('/profile')}
+                    onBack={() => {
+                        if (showForm || editingId) {
+                            setShowForm(false);
+                            resetForm();
+                        } else {
+                            navigate('/profile');
+                        }
+                    }}
                 />
             </div>
 
