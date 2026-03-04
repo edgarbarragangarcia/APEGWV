@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Calendar, Users, MapPin, Trophy, ShieldCheck, HeartHandshake, CheckCircle2, Loader2, ChevronLeft } from 'lucide-react';
+import { Calendar, Users, MapPin, Trophy, ShieldCheck, HeartHandshake, CheckCircle2, Loader2 } from 'lucide-react';
 import { supabase } from '../services/SupabaseManager';
 import { useAuth } from '../context/AuthContext';
 import Skeleton from '../components/Skeleton';
@@ -135,7 +135,14 @@ const TournamentRegistration: React.FC = () => {
             minHeight: '100dvh',
             display: 'flex',
             flexDirection: 'column',
-            overflowX: 'hidden'
+            overflowX: 'hidden',
+            width: '100%',
+            maxWidth: '600px',
+            margin: '0 auto',
+            position: 'relative',
+            borderLeft: '1px solid rgba(255,255,255,0.05)',
+            borderRight: '1px solid rgba(255,255,255,0.05)',
+            boxShadow: '0 0 50px rgba(0,0,0,0.3)'
         }}>
             {/* Success Modal */}
             <AnimatePresence>
@@ -209,19 +216,6 @@ const TournamentRegistration: React.FC = () => {
                     inset: 0,
                     background: 'linear-gradient(to bottom, transparent 40%, var(--primary) 100%)'
                 }} />
-
-                <button
-                    onClick={() => navigate(-1)}
-                    style={{
-                        position: 'absolute', top: '50px', left: '20px',
-                        width: '45px', height: '45px',
-                        borderRadius: '50%', background: 'rgba(0,0,0,0.5)',
-                        backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.1)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white'
-                    }}
-                >
-                    <ChevronLeft size={24} />
-                </button>
             </div>
 
             <div style={{ padding: '0 25px 50px 25px', marginTop: '-40px', position: 'relative', zIndex: 10 }}>

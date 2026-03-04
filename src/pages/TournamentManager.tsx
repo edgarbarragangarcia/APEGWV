@@ -822,15 +822,15 @@ const TournamentManager: React.FC = () => {
                                                         overflow: 'hidden',
                                                         textOverflow: 'ellipsis',
                                                         whiteSpace: 'nowrap',
-                                                        border: '1px solid rgba(255,b255,b255,0.05)',
+                                                        border: '1px solid rgba(255,255,255,0.05)',
                                                         fontFamily: 'monospace'
                                                     }}>
-                                                        {`${window.location.origin}/tournament-register/${editingId}`}
+                                                        {`https://apegwv.vercel.app/tournament-register/${editingId}`}
                                                     </div>
                                                     <button
                                                         type="button"
                                                         onClick={() => {
-                                                            const url = `${window.location.origin}/tournament-register/${editingId}`;
+                                                            const url = `https://apegwv.vercel.app/tournament-register/${editingId}`;
                                                             navigator.clipboard.writeText(url);
                                                             // Optional: show a toast or feedback
                                                             if (navigator.vibrate) navigator.vibrate(50);
