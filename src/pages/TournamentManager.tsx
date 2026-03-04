@@ -33,6 +33,7 @@ interface Tournament {
     sponsors?: string | null;
     prizes?: string | null;
     guests?: string | null;
+    finances?: BudgetItem[];
 }
 
 
@@ -368,12 +369,13 @@ const TournamentManager: React.FC = () => {
 
 
 
-            // Fetch User Tournaments with participant count
-            const { data: userTourneys, error } = await supabase
-                .from('tournaments')
+            // Fetch User Tournaments with participant count and finances
+            const { data: userTourneys, error } = await (supabase
+                .from('tournaments') as any)
                 .select(`
                     *,
-                    registrations: tournament_registrations(count)
+                    registrations: tournament_registrations(count),
+                    finances: tournament_finances(*)
                 `)
                 .eq('creator_id', user.id)
                 .order('created_at', { ascending: false });
@@ -397,7 +399,14 @@ const TournamentManager: React.FC = () => {
             const transformedTourneys = userTourneys?.map((t: any) => ({
                 ...t,
                 current_participants: statsMap[t.id]?.total || 0,
-                paid_participants: statsMap[t.id]?.paid || 0
+                paid_participants: statsMap[t.id]?.paid || 0,
+                finances: t.finances?.map((f: any) => ({
+                    id: f.id,
+                    label: f.label,
+                    amount: f.amount?.toString() || '',
+                    type: f.amount_type,
+                    category: f.category
+                }))
             })) || [];
 
             setTournaments(transformedTourneys);
@@ -494,10 +503,36 @@ const TournamentManager: React.FC = () => {
             const { data, error } = result;
             if (error) throw error;
 
+            const savedTourneyId = editingId || (data as any).id;
+
+            // Sync finances with tournament_finances table
+            if (savedTourneyId) {
+                // Delete existing finances
+                await (supabase
+                    .from('tournament_finances' as any) as any)
+                    .delete()
+                    .eq('tournament_id', savedTourneyId);
+
+                // Insert new finances
+                if (formData.budget_items.length > 0) {
+                    const financesToInsert = formData.budget_items.map(item => ({
+                        tournament_id: savedTourneyId,
+                        label: item.label,
+                        amount: parseFloat(item.amount || '0'),
+                        category: item.category || 'expense',
+                        amount_type: item.type
+                    }));
+
+                    await (supabase
+                        .from('tournament_finances' as any) as any)
+                        .insert(financesToInsert);
+                }
+            }
+
             if (editingId) {
-                setTournaments(tournaments.map(t => t.id === editingId ? data as unknown as Tournament : t));
+                setTournaments(tournaments.map(t => t.id === editingId ? { ...data as unknown as Tournament, finances: formData.budget_items } : t));
             } else {
-                setTournaments([data as unknown as Tournament, ...tournaments]);
+                setTournaments([{ ...data as unknown as Tournament, finances: formData.budget_items }, ...tournaments]);
             }
 
             setShowForm(false);
@@ -553,13 +588,15 @@ const TournamentManager: React.FC = () => {
             status: tournament.status || 'Abierto',
             game_mode: tournament.game_mode || 'Juego por Golpes',
             address: tournament.address || '',
-            budget_items: Array.isArray(tournament.budget_items)
-                ? (tournament.budget_items as BudgetItem[]).map(item => ({ ...item, amount: item.amount?.toString() || '' }))
-                : [
-                    { id: '1', label: 'Costo Op. por Jugador', amount: (tournament.budget_per_player || '').toString(), type: 'per_player', category: 'expense' },
-                    { id: '2', label: 'Bolsa de Premios', amount: (tournament.budget_prizes || '').toString(), type: 'fixed', category: 'expense' },
-                    { id: '3', label: 'Otros Gastos', amount: (tournament.budget_operational || '').toString(), type: 'fixed', category: 'expense' }
-                ],
+            budget_items: tournament.finances && tournament.finances.length > 0
+                ? tournament.finances.map(item => ({ ...item, amount: item.amount?.toString() || '' }))
+                : Array.isArray(tournament.budget_items)
+                    ? (tournament.budget_items as BudgetItem[]).map(item => ({ ...item, amount: item.amount?.toString() || '' }))
+                    : [
+                        { id: '1', label: 'Costo Op. por Jugador', amount: (tournament.budget_per_player || '').toString(), type: 'per_player', category: 'expense' },
+                        { id: '2', label: 'Bolsa de Premios', amount: (tournament.budget_prizes || '').toString(), type: 'fixed', category: 'expense' },
+                        { id: '3', label: 'Otros Gastos', amount: (tournament.budget_operational || '').toString(), type: 'fixed', category: 'expense' }
+                    ],
             rules: tournament.rules || [],
             custom_rules: tournament.custom_rules || '',
             sponsors: tournament.sponsors ? tournament.sponsors.split('\n').filter(Boolean).map((name, i) => ({ id: i.toString(), name })) : [],
