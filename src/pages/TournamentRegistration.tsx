@@ -130,11 +130,6 @@ const TournamentRegistration: React.FC = () => {
         }
 
         const totalToRegister = addGuest ? 2 : 1;
-        if (tournament.participants_limit && (participantsCount + totalToRegister) > tournament.participants_limit) {
-            alert('Lo sentimos, no hay suficientes cupos disponibles.');
-            return;
-        }
-
         setRegistering(true);
         try {
             const registrations = [
@@ -277,22 +272,24 @@ const TournamentRegistration: React.FC = () => {
                 )}
             </AnimatePresence>
 
-            <div style={{ position: 'relative', height: '35vh', flexShrink: 0, overflow: 'hidden' }}>
-                <img
-                    src={tournament.image_url || 'https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?q=80&w=1000'}
-                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                    alt={tournament.name}
-                />
-                <div style={{
-                    position: 'absolute',
-                    inset: 0,
-                    background: 'linear-gradient(to bottom, transparent 40%, var(--primary) 100%)'
-                }} />
-            </div>
+            {!showRegisterForm && (
+                <div style={{ position: 'relative', height: '30vh', flexShrink: 0, overflow: 'hidden' }}>
+                    <img
+                        src={tournament.image_url || 'https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?q=80&w=1000'}
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        alt={tournament.name}
+                    />
+                    <div style={{
+                        position: 'absolute',
+                        inset: 0,
+                        background: 'linear-gradient(to bottom, transparent 40%, var(--primary) 100%)'
+                    }} />
+                </div>
+            )}
 
             <div style={{
-                padding: '0 25px 20px 25px',
-                marginTop: '-40px',
+                padding: showRegisterForm ? '30px 25px 20px 25px' : '0 25px 20px 25px',
+                marginTop: showRegisterForm ? '0' : '-40px',
                 position: 'relative',
                 zIndex: 10,
                 flex: 1,
@@ -470,35 +467,28 @@ const TournamentRegistration: React.FC = () => {
 
                             <div style={{
                                 display: 'grid',
-                                gridTemplateColumns: 'repeat(2, 1fr)',
-                                gap: '12px',
+                                gridTemplateColumns: 'repeat(3, 1fr)',
+                                gap: '10px',
                                 marginBottom: '25px'
                             }}>
-                                <div className="glass" style={{ padding: '15px', borderRadius: '20px', display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                                    <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontWeight: '800' }}>FECHA</span>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'white', fontSize: '13px', fontWeight: '900' }}>
-                                        <Calendar size={14} color="var(--secondary)" />
-                                        {new Date(tournament.date).toLocaleDateString('es-ES', { day: '2-digit', month: 'long' })}
+                                <div className="glass" style={{ padding: '12px', borderRadius: '15px', display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                                    <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', fontWeight: '800' }}>FECHA</span>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'white', fontSize: '12px', fontWeight: '900' }}>
+                                        <Calendar size={12} color="var(--secondary)" />
+                                        {new Date(tournament.date).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' })}
                                     </div>
                                 </div>
-                                <div className="glass" style={{ padding: '15px', borderRadius: '20px', display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                                    <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontWeight: '800' }}>VALOR</span>
-                                    <div style={{ color: 'var(--secondary)', fontSize: '13px', fontWeight: '950' }}>
+                                <div className="glass" style={{ padding: '12px', borderRadius: '15px', display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                                    <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', fontWeight: '800' }}>VALOR</span>
+                                    <div style={{ color: 'var(--secondary)', fontSize: '12px', fontWeight: '950' }}>
                                         {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(tournament.price)}
                                     </div>
                                 </div>
-                                <div className="glass" style={{ padding: '15px', borderRadius: '20px', display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                                    <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontWeight: '800' }}>MODO</span>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'white', fontSize: '13px', fontWeight: '900' }}>
-                                        <Trophy size={14} color="var(--secondary)" />
+                                <div className="glass" style={{ padding: '12px', borderRadius: '15px', display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                                    <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', fontWeight: '800' }}>MODO</span>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'white', fontSize: '12px', fontWeight: '900' }}>
+                                        <Trophy size={12} color="var(--secondary)" />
                                         {tournament.game_mode}
-                                    </div>
-                                </div>
-                                <div className="glass" style={{ padding: '15px', borderRadius: '20px', display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                                    <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontWeight: '800' }}>CUPOS</span>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'white', fontSize: '13px', fontWeight: '900' }}>
-                                        <Users size={14} color="var(--secondary)" />
-                                        {participantsCount} / {tournament.participants_limit || '--'}
                                     </div>
                                 </div>
                             </div>
