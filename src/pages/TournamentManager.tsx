@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion, useAnimation, AnimatePresence } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../services/SupabaseManager';
-import { Plus, Trophy, Trash2, Calendar, Loader2, Users, ChevronLeft, MapPin, Settings, ChevronDown, ChevronUp, Minus, ShieldCheck, HeartHandshake, Copy, CheckCircle2 } from 'lucide-react';
+import { Plus, Trophy, Trash2, Calendar, Loader2, Users, ChevronLeft, MapPin, Settings, ChevronDown, ChevronUp, Minus, ShieldCheck, HeartHandshake, Copy, CheckCircle2, Mail } from 'lucide-react';
 import Skeleton from '../components/Skeleton';
 import PageHero from '../components/PageHero';
 import PageHeader from '../components/PageHeader';
@@ -243,6 +243,7 @@ const TournamentCard = ({ tourney, onEdit }: { tourney: Tournament, onEdit: () =
 
 const TournamentManager: React.FC = () => {
     const navigate = useNavigate();
+    const location = useLocation();
     const { user } = useAuth();
     const [loading, setLoading] = useState(true);
     const [tournaments, setTournaments] = useState<Tournament[]>([]);
@@ -414,6 +415,18 @@ const TournamentManager: React.FC = () => {
             setLoading(false);
         }
     }, [user]);
+
+    // Handle restoration of form state when coming back from participants list
+    useEffect(() => {
+        if (!loading && tournaments.length > 0 && location.state?.restoreTournamentId) {
+            const tourneyToRestore = tournaments.find(t => t.id === location.state.restoreTournamentId);
+            if (tourneyToRestore) {
+                handleEditClick(tourneyToRestore);
+                // Clear the state so it doesn't reopen if the user navigates away and comes back
+                navigate(location.pathname, { replace: true, state: {} });
+            }
+        }
+    }, [loading, tournaments, location.state]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -1702,26 +1715,30 @@ const TournamentManager: React.FC = () => {
 
                                                             {formData.guests.map((guest, idx) => (
                                                                 <div key={guest.id} style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                                                                    <input
-                                                                        type="text"
-                                                                        value={guest.name}
-                                                                        onChange={(e) => {
-                                                                            const newGuests = [...formData.guests];
-                                                                            newGuests[idx].name = e.target.value;
-                                                                            setFormData({ ...formData, guests: newGuests });
-                                                                        }}
-                                                                        className="form-input-sm"
-                                                                        placeholder="Nombre del invitado"
-                                                                    />
+                                                                    <div style={{ position: 'relative', flex: 1 }}>
+                                                                        <Mail size={16} color="rgba(255,255,255,0.2)" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
+                                                                        <input
+                                                                            type="text"
+                                                                            value={guest.name}
+                                                                            onChange={(e) => {
+                                                                                const newGuests = [...formData.guests];
+                                                                                newGuests[idx].name = e.target.value;
+                                                                                setFormData({ ...formData, guests: newGuests });
+                                                                            }}
+                                                                            className="form-input-sm with-icon"
+                                                                            style={{ paddingLeft: '38px', borderRadius: '15px' }}
+                                                                            placeholder="Nombre del invitado"
+                                                                        />
+                                                                    </div>
                                                                     <button
                                                                         type="button"
                                                                         onClick={() => {
                                                                             const newGuests = formData.guests.filter((_, i) => i !== idx);
                                                                             setFormData({ ...formData, guests: newGuests });
                                                                         }}
-                                                                        style={{ width: '38px', height: '38px', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.2)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, cursor: 'pointer' }}
+                                                                        style={{ width: '42px', height: '42px', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.2)', borderRadius: '15px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, cursor: 'pointer' }}
                                                                     >
-                                                                        <Trash2 size={16} />
+                                                                        <Trash2 size={18} />
                                                                     </button>
                                                                 </div>
                                                             ))}
@@ -1756,13 +1773,45 @@ const TournamentManager: React.FC = () => {
 
                                         {/* Action buttons for admin/manage */}
                                         <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
-                                            <button
+                                            <motion.button
                                                 type="button"
-                                                onClick={() => navigate(`/my-events/${editingId}/participants`)}
-                                                style={{ flex: 1, padding: '12px', borderRadius: '15px', background: 'rgba(163, 230, 53, 0.1)', color: 'var(--secondary)', border: '1px solid rgba(163, 230, 53, 0.2)', fontSize: '12px', fontWeight: '800', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                                                whileTap={{ scale: 0.98 }}
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    navigate(`/my-events/${editingId}/participants`);
+                                                }}
+                                                style={{
+                                                    flex: 1,
+                                                    padding: '16px',
+                                                    borderRadius: '24px',
+                                                    background: 'linear-gradient(135deg, rgba(163, 230, 53, 0.15) 0%, rgba(163, 230, 53, 0.05) 100%)',
+                                                    color: 'var(--secondary)',
+                                                    border: '1px solid rgba(163, 230, 53, 0.3)',
+                                                    fontSize: '14px',
+                                                    fontWeight: '950',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    gap: '12px',
+                                                    cursor: 'pointer',
+                                                    boxShadow: '0 8px 25px rgba(0,0,0,0.2)',
+                                                    letterSpacing: '-0.3px'
+                                                }}
                                             >
-                                                <Users size={16} /> Ver Participantes
-                                            </button>
+                                                <Users size={20} strokeWidth={2.5} />
+                                                <span>Ver Participantes</span>
+                                                <div style={{
+                                                    background: 'var(--secondary)',
+                                                    color: 'var(--primary)',
+                                                    padding: '2px 8px',
+                                                    borderRadius: '10px',
+                                                    fontSize: '11px',
+                                                    fontWeight: '950'
+                                                }}>
+                                                    {formData.current_participants || 0}
+                                                </div>
+                                            </motion.button>
                                             <button
                                                 type="button"
                                                 onClick={() => {

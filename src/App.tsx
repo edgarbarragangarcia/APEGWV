@@ -130,7 +130,8 @@ const AppContent: React.FC = () => {
   const isPlayFlow = ['/play-mode', '/friend-selection', '/create-group', '/select-course', '/live-betting'].includes(location.pathname);
   const isRoundDetail = location.pathname.startsWith('/rounds/');
   const isRegistrationPage = location.pathname.startsWith('/tournament-register/');
-  const isFixedPage = isRoundPage || isNotificationsPage || isPlayFlow || isRoundDetail || isRegistrationPage;
+  const isEventsPage = location.pathname === '/my-events' || location.pathname.includes('/my-events/');
+  const isFixedPage = isRoundPage || isNotificationsPage || isPlayFlow || isRoundDetail || isRegistrationPage || isEventsPage;
 
   return (
     <div

@@ -203,7 +203,7 @@ const TournamentParticipants: React.FC = () => {
                     noMargin
                     title="Participantes"
                     subtitle={tournamentName || 'Cargando...'}
-                    onBack={() => navigate(-1)}
+                    onBack={() => navigate('/my-events', { state: { restoreTournamentId: id } })}
                 />
 
                 <div style={{ marginTop: '15px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
