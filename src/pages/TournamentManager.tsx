@@ -690,7 +690,7 @@ const TournamentManager: React.FC = () => {
                     -webkit-appearance: none;
                 }
             `}</style>
-            <PageHero />
+            {!showForm && <PageHero />}
             <div style={styles.headerArea}>
                 <PageHeader
                     noMargin
@@ -723,12 +723,18 @@ const TournamentManager: React.FC = () => {
 
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                                 <div className="input-group">
-                                    <label style={{ fontSize: '12px', fontWeight: '800', marginBottom: '5px', display: 'block', color: 'var(--text-dim)' }}>Nombre del Torneo*</label>
+                                    <label style={{ fontSize: '11px', fontWeight: '800', marginBottom: '8px', display: 'block', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Nombre del Torneo*</label>
                                     <input
                                         type="text"
                                         value={formData.name}
                                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                         className="form-input"
+                                        style={{
+                                            background: 'rgba(255,255,255,0.03)',
+                                            border: '1px solid rgba(255,255,255,0.1)',
+                                            padding: '16px',
+                                            fontSize: '15px'
+                                        }}
                                         placeholder="Ej: Copa Diamante 2024"
                                         required
                                     />
@@ -736,28 +742,40 @@ const TournamentManager: React.FC = () => {
 
                                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
                                     <div className="input-group">
-                                        <label style={{ fontSize: '12px', fontWeight: '800', marginBottom: '5px', display: 'block', color: 'var(--text-dim)' }}>Club o Lugar*</label>
+                                        <label style={{ fontSize: '11px', fontWeight: '800', marginBottom: '8px', display: 'block', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Club o Lugar*</label>
                                         <div style={{ position: 'relative' }}>
-                                            <MapPin size={16} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--secondary)' }} />
+                                            <MapPin size={16} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--secondary)' }} />
                                             <input
                                                 type="text"
                                                 value={formData.club}
                                                 onChange={(e) => setFormData({ ...formData, club: e.target.value })}
                                                 className="form-input with-icon"
+                                                style={{
+                                                    background: 'rgba(255,255,255,0.03)',
+                                                    border: '1px solid rgba(255,255,255,0.1)',
+                                                    padding: '16px 16px 16px 45px',
+                                                    fontSize: '15px'
+                                                }}
                                                 placeholder="Ej: Club Campestre"
                                                 required
                                             />
                                         </div>
                                     </div>
                                     <div className="input-group">
-                                        <label style={{ fontSize: '12px', fontWeight: '800', marginBottom: '5px', display: 'block', color: 'var(--text-dim)' }}>Fecha*</label>
+                                        <label style={{ fontSize: '11px', fontWeight: '800', marginBottom: '8px', display: 'block', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Fecha*</label>
                                         <div style={{ position: 'relative' }}>
-                                            <Calendar size={16} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--secondary)' }} />
+                                            <Calendar size={16} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--secondary)' }} />
                                             <input
                                                 type="date"
                                                 value={formData.date}
                                                 onChange={(e) => setFormData({ ...formData, date: e.target.value })}
                                                 className="form-input with-icon"
+                                                style={{
+                                                    background: 'rgba(255,255,255,0.03)',
+                                                    border: '1px solid rgba(255,255,255,0.1)',
+                                                    padding: '16px 16px 16px 45px',
+                                                    fontSize: '15px'
+                                                }}
                                                 required
                                             />
                                         </div>
@@ -769,27 +787,42 @@ const TournamentManager: React.FC = () => {
                                     <>
                                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
                                             <div className="input-group">
-                                                <label style={{ fontSize: '12px', fontWeight: '800', marginBottom: '5px', display: 'block', color: 'var(--text-dim)' }}>Precio Inscripción</label>
-                                                <input
-                                                    type="text"
-                                                    value={formData.displayPrice}
-                                                    onChange={(e) => {
-                                                        const raw = e.target.value.replace(/\D/g, '');
-                                                        setFormData({ ...formData, price: raw, displayPrice: formatPrice(raw) });
-                                                    }}
-                                                    className="form-input"
-                                                    placeholder="$ 0"
-                                                />
+                                                <label style={{ fontSize: '11px', fontWeight: '800', marginBottom: '8px', display: 'block', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Precio Inscripción</label>
+                                                <div style={{ position: 'relative' }}>
+                                                    <span style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--secondary)', fontWeight: '900', fontSize: '14px' }}>$</span>
+                                                    <input
+                                                        type="text"
+                                                        value={formData.displayPrice}
+                                                        onChange={(e) => {
+                                                            const raw = e.target.value.replace(/\D/g, '');
+                                                            setFormData({ ...formData, price: raw, displayPrice: formatPrice(raw) });
+                                                        }}
+                                                        className="form-input with-icon"
+                                                        style={{
+                                                            background: 'rgba(255,255,255,0.03)',
+                                                            border: '1px solid rgba(255,255,255,0.1)',
+                                                            padding: '16px 16px 16px 35px',
+                                                            fontSize: '15px'
+                                                        }}
+                                                        placeholder="0"
+                                                    />
+                                                </div>
                                             </div>
                                             <div className="input-group">
-                                                <label style={{ fontSize: '12px', fontWeight: '800', marginBottom: '5px', display: 'block', color: 'var(--text-dim)' }}>Límite Participantes</label>
+                                                <label style={{ fontSize: '11px', fontWeight: '800', marginBottom: '8px', display: 'block', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Límite Participantes</label>
                                                 <div style={{ position: 'relative' }}>
-                                                    <Users size={16} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--secondary)' }} />
+                                                    <Users size={16} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--secondary)' }} />
                                                     <input
                                                         type="number"
                                                         value={formData.participants_limit}
                                                         onChange={(e) => setFormData({ ...formData, participants_limit: e.target.value })}
                                                         className="form-input with-icon"
+                                                        style={{
+                                                            background: 'rgba(255,255,255,0.03)',
+                                                            border: '1px solid rgba(255,255,255,0.1)',
+                                                            padding: '16px 16px 16px 45px',
+                                                            fontSize: '15px'
+                                                        }}
                                                     />
                                                 </div>
                                             </div>
