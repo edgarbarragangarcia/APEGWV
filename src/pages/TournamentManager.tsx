@@ -716,7 +716,7 @@ const TournamentManager: React.FC = () => {
                     box-shadow: 0 0 0 4px rgba(163, 230, 53, 0.1);
                 }
                 .form-input-sm.with-icon {
-                    padding-left: 26px !important;
+                    padding-left: 40px !important;
                 }
                 select.form-input-sm {
                     appearance: none;
@@ -1763,7 +1763,7 @@ const TournamentManager: React.FC = () => {
                                                                                 setFormData({ ...formData, guests: newGuests });
                                                                             }}
                                                                             className="form-input-sm with-icon"
-                                                                            style={{ paddingLeft: '38px', borderRadius: '15px' }}
+                                                                            style={{ borderRadius: '15px' }}
                                                                             placeholder="Nombre del invitado"
                                                                         />
                                                                     </div>
@@ -1846,7 +1846,7 @@ const TournamentManager: React.FC = () => {
                                                     fontSize: '11px',
                                                     fontWeight: '950'
                                                 }}>
-                                                    {formData.current_participants || 0}
+                                                    {(formData.current_participants || 0) + (formData.guests?.length || 0)}
                                                 </div>
                                             </motion.button>
                                             <button

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { supabase } from '../services/SupabaseManager';
-import { User, Trophy, Calendar, Users, ChevronLeft, Search, CheckCircle2, Clock, Mail, CheckSquare, Square } from 'lucide-react';
+import { User, Trophy, Users, ChevronLeft, Search, CheckCircle2, Clock, Mail, CheckSquare, Square } from 'lucide-react';
 import Skeleton from '../components/Skeleton';
 import PageHero from '../components/PageHero';
 import PageHeader from '../components/PageHeader';
@@ -258,12 +258,36 @@ const TournamentParticipants: React.FC = () => {
                             </button>
                         ))}
                     </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
+                        <button
+                            onClick={() => handleSelectAll(isAllFilteredSelected)}
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                                padding: '8px 16px',
+                                borderRadius: '12px',
+                                fontSize: '13px',
+                                fontWeight: '700',
+                                whiteSpace: 'nowrap',
+                                border: '1px solid rgba(255,255,255,0.1)',
+                                background: isAllFilteredSelected ? 'rgba(163, 230, 53, 0.1)' : 'rgba(255,255,255,0.05)',
+                                color: isAllFilteredSelected ? 'var(--secondary)' : 'white',
+                                transition: 'all 0.2s'
+                            }}
+                        >
+                            {isAllFilteredSelected ? <CheckSquare size={14} /> : <Square size={14} />}
+                            <span>Seleccionar Todo</span>
+                            <span style={{ opacity: 0.5, fontSize: '11px' }}>({filteredParticipants.length})</span>
+                        </button>
+                    </div>
                 </div>
             </div>
 
             <div style={{
                 position: 'absolute',
-                top: 'calc(var(--header-offset-top) + 215px)',
+                top: 'calc(var(--header-offset-top) + 225px)',
                 left: '0',
                 right: '0',
                 bottom: 'calc(var(--nav-height))',
@@ -284,20 +308,20 @@ const TournamentParticipants: React.FC = () => {
                     }}>
                         <button
                             onClick={() => setSelectedParticipant(null)}
-                            style={{ marginBottom: '20px', width: 'fit-content', color: 'var(--secondary)', background: 'none', border: 'none', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '5px', fontWeight: '600' }}
+                            style={{ marginBottom: '12px', width: 'fit-content', color: 'var(--secondary)', background: 'none', border: 'none', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '5px', fontWeight: '600' }}
                         >
-                            <ChevronLeft size={16} /> Volver a la lista
+                            <ChevronLeft size={14} /> Volver a la lista
                         </button>
 
-                        <div style={{ textAlign: 'center', marginBottom: '30px' }}>
+                        <div style={{ textAlign: 'center', marginBottom: '20px' }}>
                             <div style={{
-                                width: '120px',
-                                height: '120px',
-                                borderRadius: '40px',
-                                margin: '0 auto 20px',
+                                width: '90px',
+                                height: '90px',
+                                borderRadius: '30px',
+                                margin: '0 auto 12px',
                                 overflow: 'hidden',
-                                border: '4px solid var(--secondary)',
-                                boxShadow: '0 20px 40px rgba(0,0,0,0.3)'
+                                border: '3px solid var(--secondary)',
+                                boxShadow: '0 15px 30px rgba(0,0,0,0.3)'
                             }}>
                                 <img
                                     src={selectedParticipant.id_photo_url || `https://ui-avatars.com/api/?name=${selectedParticipant.full_name || 'User'}&background=0E2F1F&color=A3E635`}
@@ -305,46 +329,33 @@ const TournamentParticipants: React.FC = () => {
                                     alt={selectedParticipant.full_name || 'User'}
                                 />
                             </div>
-                            <h3 style={{ fontSize: '24px', fontWeight: '900', color: 'white', marginBottom: '5px' }}>{selectedParticipant.full_name}</h3>
-                            <div style={{ display: 'inline-flex', alignItems: 'center', background: 'rgba(255,255,255,0.1)', padding: '5px 12px', borderRadius: '20px', marginTop: '5px' }}>
-                                <span style={{ color: 'var(--text-dim)', fontSize: '13px', marginRight: '5px' }}>Hándicap Index:</span>
-                                <span style={{ color: 'white', fontWeight: '800' }}>{selectedParticipant.handicap ?? '--'}</span>
+                            <h3 style={{ fontSize: '20px', fontWeight: '900', color: 'white', marginBottom: '2px' }}>{selectedParticipant.full_name}</h3>
+                            <div style={{ display: 'inline-flex', alignItems: 'center', background: 'rgba(255,255,255,0.1)', padding: '4px 10px', borderRadius: '20px', marginTop: '5px' }}>
+                                <span style={{ color: 'var(--text-dim)', fontSize: '11px', marginRight: '5px' }}>Hándicap Index:</span>
+                                <span style={{ color: 'white', fontWeight: '800', fontSize: '13px' }}>{selectedParticipant.handicap ?? '--'}</span>
                             </div>
                         </div>
 
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '25px' }}>
-                            <div className="glass" style={{ padding: '20px', borderRadius: '20px', textAlign: 'center', background: 'rgba(255,255,255,0.03)' }}>
-                                <Trophy size={24} color="var(--secondary)" style={{ marginBottom: '10px', opacity: 0.8 }} />
-                                <p style={{ fontSize: '12px', color: 'var(--text-dim)', marginBottom: '5px', fontWeight: '600', textTransform: 'uppercase' }}>Rondas</p>
-                                <p style={{ fontSize: '24px', fontWeight: '900', color: 'white', lineHeight: 1 }}>{selectedParticipant.total_rounds || 0}</p>
-                            </div>
-                            <div className="glass" style={{ padding: '20px', borderRadius: '20px', textAlign: 'center', background: 'rgba(255,255,255,0.03)' }}>
-                                <Calendar size={24} color="#60a5fa" style={{ marginBottom: '10px', opacity: 0.8 }} />
-                                <p style={{ fontSize: '12px', color: 'var(--text-dim)', marginBottom: '5px', fontWeight: '600', textTransform: 'uppercase' }}>Promedio</p>
-                                <p style={{ fontSize: '24px', fontWeight: '900', color: 'white', lineHeight: 1 }}>{selectedParticipant.average_score || '--'}</p>
-                            </div>
-                        </div>
-
-                        <div className="glass" style={{ padding: '25px', borderRadius: '25px', marginBottom: '20px' }}>
-                            <h4 style={{ fontSize: '13px', fontWeight: '800', color: 'var(--text-dim)', marginBottom: '20px', textTransform: 'uppercase', letterSpacing: '1px' }}>Información de Contacto</h4>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                                    <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                        <User size={20} color="white" />
+                        <div className="glass" style={{ padding: '18px', borderRadius: '20px', marginBottom: '15px' }}>
+                            <h4 style={{ fontSize: '11px', fontWeight: '800', color: 'var(--text-dim)', marginBottom: '14px', textTransform: 'uppercase', letterSpacing: '1px' }}>Información de Contacto</h4>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                    <div style={{ width: '32px', height: '32px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                        <User size={16} color="white" />
                                     </div>
                                     <div>
-                                        <p style={{ fontSize: '11px', color: 'var(--text-dim)', marginBottom: '2px', fontWeight: '600' }}>EMAIL</p>
-                                        <p style={{ color: 'white', fontSize: '15px', fontWeight: '500' }}>{selectedParticipant.email || 'No disponible'}</p>
+                                        <p style={{ fontSize: '9px', color: 'var(--text-dim)', marginBottom: '1px', fontWeight: '600' }}>EMAIL</p>
+                                        <p style={{ color: 'white', fontSize: '13px', fontWeight: '500' }}>{selectedParticipant.email || 'No disponible'}</p>
                                     </div>
                                 </div>
                                 <div style={{ height: '1px', background: 'rgba(255,255,255,0.05)' }} />
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                                    <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                        <Users size={20} color="white" />
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                    <div style={{ width: '32px', height: '32px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                        <Users size={16} color="white" />
                                     </div>
                                     <div>
-                                        <p style={{ fontSize: '11px', color: 'var(--text-dim)', marginBottom: '2px', fontWeight: '600' }}>TELÉFONO</p>
-                                        <p style={{ color: 'white', fontSize: '15px', fontWeight: '500' }}>{selectedParticipant.phone || 'No disponible'}</p>
+                                        <p style={{ fontSize: '9px', color: 'var(--text-dim)', marginBottom: '1px', fontWeight: '600' }}>TELÉFONO</p>
+                                        <p style={{ color: 'white', fontSize: '13px', fontWeight: '500' }}>{selectedParticipant.phone || 'No disponible'}</p>
                                     </div>
                                 </div>
                             </div>
@@ -361,30 +372,7 @@ const TournamentParticipants: React.FC = () => {
                 ) : (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <button
-                                    onClick={() => handleSelectAll(isAllFilteredSelected)}
-                                    style={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: '6px',
-                                        padding: '5px 10px',
-                                        borderRadius: '10px',
-                                        background: isAllFilteredSelected ? 'var(--secondary)' : 'rgba(255,255,255,0.05)',
-                                        color: isAllFilteredSelected ? 'var(--primary)' : 'white',
-                                        border: 'none',
-                                        fontSize: '12px',
-                                        fontWeight: '700',
-                                        cursor: 'pointer'
-                                    }}
-                                >
-                                    {isAllFilteredSelected ? <CheckSquare size={14} /> : <Square size={14} />}
-                                    {isAllFilteredSelected ? 'Deseleccionar' : 'Seleccionar Todo'}
-                                </button>
-                                <p style={{ color: 'var(--text-dim)', fontSize: '14px' }}>
-                                    ({filteredParticipants.length})
-                                </p>
-                            </div>
+                            <div />
                             {selectedIds.length > 0 && (
                                 <motion.button
                                     initial={{ scale: 0.8, opacity: 0 }}
