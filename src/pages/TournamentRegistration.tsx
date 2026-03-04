@@ -33,7 +33,6 @@ const TournamentRegistration: React.FC = () => {
     const [registering, setRegistering] = useState(false);
     const [showSuccess, setShowSuccess] = useState(false);
     const [isRegistered, setIsRegistered] = useState(false);
-    const [participantsCount, setParticipantsCount] = useState(0);
     const [showRegisterForm, setShowRegisterForm] = useState(false);
 
     // Registration form states
@@ -70,7 +69,6 @@ const TournamentRegistration: React.FC = () => {
             if (tError) throw tError;
 
             setTournament(tData);
-            setParticipantsCount(tData.registrations?.[0]?.count || 0);
 
             // Check if user is already registered
             if (user) {
@@ -129,7 +127,6 @@ const TournamentRegistration: React.FC = () => {
             return;
         }
 
-        const totalToRegister = addGuest ? 2 : 1;
         setRegistering(true);
         try {
             const registrations = [
