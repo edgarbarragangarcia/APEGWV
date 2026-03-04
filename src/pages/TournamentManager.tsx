@@ -260,6 +260,7 @@ const TournamentManager: React.FC = () => {
 
     // Collapsible sections state
     const [showBudgetSection, setShowBudgetSection] = useState(false);
+    const [showAccountingSection, setShowAccountingSection] = useState(false);
     const [showRulesSection, setShowRulesSection] = useState(false);
     const [showSponsorsSection, setShowSponsorsSection] = useState(false);
     const [showPrizesSection, setShowPrizesSection] = useState(false);
@@ -1121,187 +1122,217 @@ const TournamentManager: React.FC = () => {
                                                                 const realBalance = realIncome - realCosts;
                                                                 const isProfit = realBalance >= 0;
 
-                                                                // Break-even calculation
-                                                                let fixedCosts = 0;
+                                                                // Break-even: based on FULL projected tournament costs
+                                                                // Total projected costs = all expenses for (limit + guests) players
+                                                                let projectedTotalCosts = 0;
+                                                                let projectedOtherIncome = 0;
                                                                 let perPlayerCost = 0;
                                                                 formData.budget_items.forEach(item => {
                                                                     const val = parseFloat(item.amount || '0');
                                                                     if ((item.category || 'expense') === 'expense') {
-                                                                        if (item.type === 'fixed') fixedCosts += val;
-                                                                        else perPlayerCost += val;
+                                                                        // Expenses: per_player uses ALL projected players (limit + guests)
+                                                                        projectedTotalCosts += item.type === 'per_player' ? val * projectedTotal : val;
+                                                                        if (item.type === 'per_player') perPlayerCost += val;
+                                                                    } else {
+                                                                        // Other income items
+                                                                        projectedOtherIncome += item.type === 'per_player' ? val * limit : val;
                                                                     }
                                                                 });
 
-                                                                // Non-paying = (registered who haven't paid) + guests
-                                                                const nonPaying = (registeredCount - paidCount) + guestsCount;
-                                                                // Breakeven: X * Price = FixedCosts + (X + NonPaying) * PerPlayerCost - OtherIncomes
-                                                                // X * (Price - PerPlayerCost) = FixedCosts + (NonPaying * PerPlayerCost) - OtherIncomes
-                                                                const breakEvenNumerator = fixedCosts + (nonPaying * perPlayerCost) - otherIncome;
-                                                                const marginPerPlayer = price - perPlayerCost;
-                                                                const playersNeeded = marginPerPlayer > 0 ? Math.ceil(breakEvenNumerator / marginPerPlayer) : 0;
+                                                                // How many payments needed to cover ALL projected costs
+                                                                const netCostsToCover = Math.max(0, projectedTotalCosts - projectedOtherIncome);
+                                                                const playersNeeded = price > 0 ? Math.ceil(netCostsToCover / price) : 0;
                                                                 const remainingPlayers = Math.max(0, playersNeeded - paidCount);
+                                                                const marginPerPlayer = price - perPlayerCost;
 
                                                                 const fmt = (v: number) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(v);
 
                                                                 return (
                                                                     <>
-                                                                        {/* Accounting Summary Header */}
+                                                                        {/* Accounting Summary - Collapsible */}
                                                                         <div style={{ padding: '14px', background: 'rgba(163, 230, 53, 0.03)', borderRadius: '15px', border: '1px solid rgba(163, 230, 53, 0.08)' }}>
-                                                                            <div style={{ fontSize: '10px', fontWeight: '900', color: 'var(--secondary)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                                                                <span>📊</span> Resumen Contable
-                                                                            </div>
-                                                                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
-                                                                                <div style={{ textAlign: 'center', padding: '8px', background: 'rgba(255,255,255,0.03)', borderRadius: '10px' }}>
-                                                                                    <div style={{ fontSize: '16px', fontWeight: '950', color: 'white' }}>{totalPlayers}</div>
-                                                                                    <div style={{ fontSize: '9px', color: 'var(--text-dim)', fontWeight: '700', marginTop: '2px' }}>TOTAL JUG.</div>
-                                                                                    <div style={{ fontSize: '8px', color: 'rgba(255,255,255,0.3)', fontWeight: '600', marginTop: '1px' }}>{registeredCount} inscritos + {guestsCount} invitados</div>
+                                                                            <div
+                                                                                style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}
+                                                                                onClick={() => setShowAccountingSection(!showAccountingSection)}
+                                                                            >
+                                                                                <div style={{ fontSize: '10px', fontWeight: '900', color: 'var(--secondary)', textTransform: 'uppercase', letterSpacing: '0.1em', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                                                                    <span>📊</span> Resumen Contable
                                                                                 </div>
-                                                                                <div style={{ textAlign: 'center', padding: '8px', background: 'rgba(255,255,255,0.03)', borderRadius: '10px' }}>
-                                                                                    <div style={{ fontSize: '16px', fontWeight: '950', color: 'var(--secondary)' }}>{paidCount}</div>
-                                                                                    <div style={{ fontSize: '9px', color: 'var(--text-dim)', fontWeight: '700', marginTop: '2px' }}>PAGADOS</div>
-                                                                                    <div style={{ fontSize: '8px', color: 'rgba(255,255,255,0.3)', fontWeight: '600', marginTop: '1px' }}>de {limit} cupos</div>
-                                                                                </div>
-                                                                                <div style={{ textAlign: 'center', padding: '8px', background: 'rgba(255,255,255,0.03)', borderRadius: '10px' }}>
-                                                                                    <div style={{ fontSize: '16px', fontWeight: '950', color: '#fbbf24' }}>{guestsCount}</div>
-                                                                                    <div style={{ fontSize: '9px', color: 'var(--text-dim)', fontWeight: '700', marginTop: '2px' }}>INVITADOS</div>
-                                                                                    <div style={{ fontSize: '8px', color: 'rgba(255,255,255,0.3)', fontWeight: '600', marginTop: '1px' }}>sin costo</div>
+                                                                                <div style={{ display: 'flex', alignItems: 'center' }}>
+                                                                                    {showAccountingSection ? <ChevronUp size={18} color="var(--secondary)" /> : <ChevronDown size={18} color="var(--secondary)" />}
                                                                                 </div>
                                                                             </div>
-                                                                        </div>
 
-                                                                        {/* Pending Payments - simple count */}
-                                                                        <div style={{ padding: '12px', background: 'rgba(255,255,255,0.02)', borderRadius: '15px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                                                                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
-                                                                                <span style={{ fontSize: '11px', color: 'var(--text-dim)', fontWeight: '700' }}>Pagos Recibidos:</span>
-                                                                                <span style={{ fontSize: '11px', color: 'white', fontWeight: '800' }}>{paidCount} / {limit} jugadores</span>
-                                                                            </div>
-                                                                            <div style={{ width: '100%', height: '6px', background: 'rgba(255,255,255,0.05)', borderRadius: '3px', overflow: 'hidden', marginBottom: '6px' }}>
-                                                                                <div style={{
-                                                                                    width: `${Math.min(100, (paidCount / (limit || 1)) * 100)}%`,
-                                                                                    height: '100%',
-                                                                                    background: paidCount >= limit ? 'var(--secondary)' : '#fbbf24',
-                                                                                    borderRadius: '3px',
-                                                                                    transition: 'width 0.5s ease'
-                                                                                }} />
-                                                                            </div>
-                                                                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                                                                <span style={{ fontSize: '10px', color: '#fbbf24', fontWeight: '700' }}>
-                                                                                    ⏳ Faltan {Math.max(0, limit - paidCount)} pagos por recibir
-                                                                                </span>
-                                                                                <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.3)', fontWeight: '600' }}>
-                                                                                    {limit > 0 ? Math.round((paidCount / limit) * 100) : 0}%
-                                                                                </span>
-                                                                            </div>
-                                                                        </div>
+                                                                            <AnimatePresence>
+                                                                                {showAccountingSection && (
+                                                                                    <motion.div
+                                                                                        initial={{ height: 0, opacity: 0 }}
+                                                                                        animate={{ height: 'auto', opacity: 1 }}
+                                                                                        exit={{ height: 0, opacity: 0 }}
+                                                                                        style={{ overflow: 'hidden' }}
+                                                                                    >
+                                                                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '12px' }}>
+                                                                                            {/* Player counts grid */}
+                                                                                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
+                                                                                                <div style={{ textAlign: 'center', padding: '8px', background: 'rgba(255,255,255,0.03)', borderRadius: '10px' }}>
+                                                                                                    <div style={{ fontSize: '16px', fontWeight: '950', color: 'white' }}>{totalPlayers}</div>
+                                                                                                    <div style={{ fontSize: '9px', color: 'var(--text-dim)', fontWeight: '700', marginTop: '2px' }}>TOTAL JUG.</div>
+                                                                                                    <div style={{ fontSize: '8px', color: 'rgba(255,255,255,0.3)', fontWeight: '600', marginTop: '1px' }}>{registeredCount} inscritos + {guestsCount} inv.</div>
+                                                                                                </div>
+                                                                                                <div style={{ textAlign: 'center', padding: '8px', background: 'rgba(255,255,255,0.03)', borderRadius: '10px' }}>
+                                                                                                    <div style={{ fontSize: '16px', fontWeight: '950', color: 'var(--secondary)' }}>{paidCount}</div>
+                                                                                                    <div style={{ fontSize: '9px', color: 'var(--text-dim)', fontWeight: '700', marginTop: '2px' }}>PAGADOS</div>
+                                                                                                    <div style={{ fontSize: '8px', color: 'rgba(255,255,255,0.3)', fontWeight: '600', marginTop: '1px' }}>de {limit} cupos</div>
+                                                                                                </div>
+                                                                                                <div style={{ textAlign: 'center', padding: '8px', background: 'rgba(255,255,255,0.03)', borderRadius: '10px' }}>
+                                                                                                    <div style={{ fontSize: '16px', fontWeight: '950', color: '#fbbf24' }}>{guestsCount}</div>
+                                                                                                    <div style={{ fontSize: '9px', color: 'var(--text-dim)', fontWeight: '700', marginTop: '2px' }}>INVITADOS</div>
+                                                                                                    <div style={{ fontSize: '8px', color: 'rgba(255,255,255,0.3)', fontWeight: '600', marginTop: '1px' }}>sin costo</div>
+                                                                                                </div>
+                                                                                            </div>
 
-                                                                        {/* Income vs Costs Breakdown */}
-                                                                        <div style={{ padding: '14px', background: 'rgba(255,255,255,0.02)', borderRadius: '15px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                                                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                                                                                <span style={{ fontSize: '11px', color: 'var(--secondary)', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                                                                                    <span style={{ fontSize: '10px' }}>▲</span> Recaudado ({paidCount} pagos × {fmt(price)}):
-                                                                                </span>
-                                                                                <span style={{ fontSize: '13px', fontWeight: '900', color: 'var(--secondary)' }}>{fmt(realIncome)}</span>
-                                                                            </div>
-                                                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                                                                                <span style={{ fontSize: '11px', color: '#ef4444', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                                                                                    <span style={{ fontSize: '10px' }}>▼</span> Gastos ({totalPlayers} jugadores):
-                                                                                </span>
-                                                                                <span style={{ fontSize: '13px', fontWeight: '900', color: '#ef4444' }}>-{fmt(realCosts)}</span>
-                                                                            </div>
-                                                                            <div style={{ height: '1px', background: 'rgba(255,255,255,0.1)', margin: '8px 0' }} />
-                                                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                                                <span style={{ fontSize: '12px', color: 'var(--text-dim)', fontWeight: '900', letterSpacing: '0.3px' }}>Balance Real:</span>
-                                                                                <div style={{ textAlign: 'right' }}>
-                                                                                    <span style={{ fontSize: '20px', fontWeight: '950', color: isProfit ? 'var(--secondary)' : '#ef4444' }}>
-                                                                                        {fmt(realBalance)}
-                                                                                    </span>
-                                                                                    <div style={{ fontSize: '9px', color: isProfit ? 'var(--secondary)' : '#ef4444', fontWeight: '800', opacity: 0.8, marginTop: '2px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                                                                                        {isProfit ? '✓ GANANCIA NETA' : '✗ DÉFICIT / PENDIENTE'}
-                                                                                    </div>
-                                                                                </div>
-                                                                            </div>
-                                                                        </div>
+                                                                                            {/* Pending Payments */}
+                                                                                            <div style={{ padding: '12px', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                                                                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                                                                                                    <span style={{ fontSize: '11px', color: 'var(--text-dim)', fontWeight: '700' }}>Pagos Recibidos:</span>
+                                                                                                    <span style={{ fontSize: '11px', color: 'white', fontWeight: '800' }}>{paidCount} / {limit} jugadores</span>
+                                                                                                </div>
+                                                                                                <div style={{ width: '100%', height: '6px', background: 'rgba(255,255,255,0.05)', borderRadius: '3px', overflow: 'hidden', marginBottom: '6px' }}>
+                                                                                                    <div style={{
+                                                                                                        width: `${Math.min(100, (paidCount / (limit || 1)) * 100)}%`,
+                                                                                                        height: '100%',
+                                                                                                        background: paidCount >= limit ? 'var(--secondary)' : '#fbbf24',
+                                                                                                        borderRadius: '3px',
+                                                                                                        transition: 'width 0.5s ease'
+                                                                                                    }} />
+                                                                                                </div>
+                                                                                                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                                                                                    <span style={{ fontSize: '10px', color: '#fbbf24', fontWeight: '700' }}>
+                                                                                                        ⏳ Faltan {Math.max(0, limit - paidCount)} pagos por recibir
+                                                                                                    </span>
+                                                                                                    <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.3)', fontWeight: '600' }}>
+                                                                                                        {limit > 0 ? Math.round((paidCount / limit) * 100) : 0}%
+                                                                                                    </span>
+                                                                                                </div>
+                                                                                            </div>
 
-                                                                        {/* Break-even Progress */}
-                                                                        <div style={{ padding: '12px', background: isProfit ? 'rgba(163, 230, 53, 0.05)' : 'rgba(255,255,255,0.03)', borderRadius: '15px', border: `1px solid ${isProfit ? 'rgba(163, 230, 53, 0.15)' : 'rgba(255,255,255,0.05)'}` }}>
-                                                                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                                                                                <span style={{ fontSize: '11px', color: 'var(--text-dim)', fontWeight: '700' }}>Punto de Equilibrio:</span>
-                                                                                <span style={{ fontSize: '11px', color: 'white', fontWeight: '800' }}>{paidCount} / {playersNeeded} Pagos</span>
-                                                                            </div>
-                                                                            <div style={{ width: '100%', height: '8px', background: 'rgba(255,255,255,0.05)', borderRadius: '4px', overflow: 'hidden' }}>
-                                                                                <motion.div
-                                                                                    initial={{ width: 0 }}
-                                                                                    animate={{ width: `${Math.min(100, (paidCount / (playersNeeded || 1)) * 100)}%` }}
-                                                                                    transition={{ duration: 0.8, ease: 'easeOut' }}
-                                                                                    style={{
-                                                                                        height: '100%',
-                                                                                        background: isProfit
-                                                                                            ? 'linear-gradient(90deg, var(--secondary), #d4fc79)'
-                                                                                            : paidCount > 0
-                                                                                                ? 'linear-gradient(90deg, #60a5fa, #3b82f6)'
-                                                                                                : '#60a5fa',
-                                                                                        borderRadius: '4px',
-                                                                                        boxShadow: isProfit ? '0 0 8px rgba(163, 230, 53, 0.3)' : 'none'
-                                                                                    }}
-                                                                                />
-                                                                            </div>
-                                                                            <p style={{ fontSize: '10px', color: isProfit ? 'var(--secondary)' : 'var(--text-dim)', marginTop: '8px', fontWeight: '700' }}>
-                                                                                {isProfit
-                                                                                    ? `¡Evento cubierto! Cada nuevo pago es ganancia neta. Ya llevas ${fmt(realBalance)} de ganancia.`
-                                                                                    : `Necesitas ${remainingPlayers} pago${remainingPlayers !== 1 ? 's' : ''} más para cubrir los gastos de los ${totalPlayers} jugadores (${registeredCount} inscritos + ${guestsCount} invitados).`}
-                                                                            </p>
-                                                                            {!isProfit && marginPerPlayer > 0 && (
-                                                                                <p style={{ fontSize: '10px', color: '#fbbf24', marginTop: '4px', fontWeight: '700' }}>
-                                                                                    💡 Cada pago aporta {fmt(marginPerPlayer)} netos después del costo por jugador.
-                                                                                </p>
-                                                                            )}
-                                                                        </div>
+                                                                                            {/* Break-even Progress - right after Pagos Recibidos */}
+                                                                                            <div style={{ padding: '12px', background: isProfit ? 'rgba(163, 230, 53, 0.05)' : 'rgba(255,255,255,0.03)', borderRadius: '12px', border: `1px solid ${isProfit ? 'rgba(163, 230, 53, 0.15)' : 'rgba(255,255,255,0.05)'}` }}>
+                                                                                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                                                                                                    <span style={{ fontSize: '11px', color: 'var(--text-dim)', fontWeight: '700' }}>Punto de Equilibrio:</span>
+                                                                                                    <span style={{ fontSize: '11px', color: 'white', fontWeight: '800' }}>{paidCount} / {playersNeeded} Pagos</span>
+                                                                                                </div>
+                                                                                                <div style={{ width: '100%', height: '8px', background: 'rgba(255,255,255,0.05)', borderRadius: '4px', overflow: 'hidden' }}>
+                                                                                                    <motion.div
+                                                                                                        initial={{ width: 0 }}
+                                                                                                        animate={{ width: `${Math.min(100, (paidCount / (playersNeeded || 1)) * 100)}%` }}
+                                                                                                        transition={{ duration: 0.8, ease: 'easeOut' }}
+                                                                                                        style={{
+                                                                                                            height: '100%',
+                                                                                                            background: isProfit
+                                                                                                                ? 'linear-gradient(90deg, var(--secondary), #d4fc79)'
+                                                                                                                : paidCount > 0
+                                                                                                                    ? 'linear-gradient(90deg, #60a5fa, #3b82f6)'
+                                                                                                                    : '#60a5fa',
+                                                                                                            borderRadius: '4px',
+                                                                                                            boxShadow: isProfit ? '0 0 8px rgba(163, 230, 53, 0.3)' : 'none'
+                                                                                                        }}
+                                                                                                    />
+                                                                                                </div>
+                                                                                                <p style={{ fontSize: '10px', color: isProfit ? 'var(--secondary)' : 'var(--text-dim)', marginTop: '8px', fontWeight: '700' }}>
+                                                                                                    {isProfit
+                                                                                                        ? `¡Evento cubierto! Cada nuevo pago es ganancia neta. Ya llevas ${fmt(realBalance)} de ganancia.`
+                                                                                                        : `Faltan ${remainingPlayers} pago${remainingPlayers !== 1 ? 's' : ''} para cubrir los gastos del torneo completo (${limit} cupos + ${guestsCount} invitados = ${projectedTotal} jugadores). Costo total: ${fmt(netCostsToCover)}.`}
+                                                                                                </p>
+                                                                                                {!isProfit && marginPerPlayer > 0 && (
+                                                                                                    <p style={{ fontSize: '10px', color: '#fbbf24', marginTop: '4px', fontWeight: '700' }}>
+                                                                                                        💡 Cada pago aporta {fmt(marginPerPlayer)} netos después del costo por jugador.
+                                                                                                    </p>
+                                                                                                )}
+                                                                                            </div>
 
-                                                                        {/* Projected Goal */}
-                                                                        <div style={{ padding: '12px', background: 'rgba(255,255,255,0.02)', borderRadius: '15px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                                                                            <div style={{ fontSize: '10px', fontWeight: '800', color: 'var(--text-dim)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Meta Proyectada</div>
-                                                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                                                                                <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', fontWeight: '600' }}>Recaudo meta ({limit} pagos):</span>
-                                                                                <span style={{ fontSize: '12px', fontWeight: '800', color: 'rgba(255,255,255,0.6)' }}>{fmt(limit * price)}</span>
-                                                                            </div>
-                                                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                                                                                <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', fontWeight: '600' }}>Gastos meta ({projectedTotal} jug.):</span>
-                                                                                <span style={{ fontSize: '12px', fontWeight: '800', color: 'rgba(255,255,255,0.6)' }}>
-                                                                                    {fmt((() => {
-                                                                                        let c = 0;
-                                                                                        formData.budget_items.forEach(item => {
-                                                                                            const val = parseFloat(item.amount || '0');
-                                                                                            if ((item.category || 'expense') === 'expense') {
-                                                                                                c += item.type === 'per_player' ? val * projectedTotal : val;
-                                                                                            }
-                                                                                        });
-                                                                                        return c;
-                                                                                    })())}
-                                                                                </span>
-                                                                            </div>
-                                                                            <div style={{ height: '1px', background: 'rgba(255,255,255,0.06)', margin: '6px 0' }} />
-                                                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                                                <span style={{ fontSize: '11px', color: 'var(--text-dim)', fontWeight: '800' }}>Ganancia Proyectada:</span>
-                                                                                <span style={{ fontSize: '16px', fontWeight: '950', color: 'white' }}>
-                                                                                    {(() => {
-                                                                                        let income = limit * price;
-                                                                                        let costs = 0;
-                                                                                        formData.budget_items.forEach((item) => {
-                                                                                            const val = parseFloat(item.amount || '0');
-                                                                                            if ((item.category || 'expense') === 'income') {
-                                                                                                income += item.type === 'per_player' ? val * limit : val;
-                                                                                            } else {
-                                                                                                // projected costs use limit + guests
-                                                                                                costs += item.type === 'per_player' ? val * projectedTotal : val;
-                                                                                            }
-                                                                                        });
-                                                                                        return fmt(income - costs);
-                                                                                    })()}
-                                                                                </span>
-                                                                            </div>
-                                                                            <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.3)', fontWeight: '600', marginTop: '4px', textAlign: 'right' }}>
-                                                                                Si se inscriben {limit} jugadores pagando + {guestsCount} invitados
-                                                                            </div>
+                                                                                            {/* Income vs Costs Breakdown */}
+                                                                                            <div style={{ padding: '14px', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                                                                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                                                                                                    <span style={{ fontSize: '11px', color: 'var(--secondary)', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                                                                                        <span style={{ fontSize: '10px' }}>▲</span> Recaudado ({paidCount} pagos × {fmt(price)}):
+                                                                                                    </span>
+                                                                                                    <span style={{ fontSize: '13px', fontWeight: '900', color: 'var(--secondary)' }}>{fmt(realIncome)}</span>
+                                                                                                </div>
+                                                                                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                                                                                                    <span style={{ fontSize: '11px', color: '#ef4444', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                                                                                        <span style={{ fontSize: '10px' }}>▼</span> Gastos ({totalPlayers} jugadores):
+                                                                                                    </span>
+                                                                                                    <span style={{ fontSize: '13px', fontWeight: '900', color: '#ef4444' }}>-{fmt(realCosts)}</span>
+                                                                                                </div>
+                                                                                                <div style={{ height: '1px', background: 'rgba(255,255,255,0.1)', margin: '8px 0' }} />
+                                                                                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                                                                    <span style={{ fontSize: '12px', color: 'var(--text-dim)', fontWeight: '900', letterSpacing: '0.3px' }}>Balance Real:</span>
+                                                                                                    <div style={{ textAlign: 'right' }}>
+                                                                                                        <span style={{ fontSize: '20px', fontWeight: '950', color: isProfit ? 'var(--secondary)' : '#ef4444' }}>
+                                                                                                            {fmt(realBalance)}
+                                                                                                        </span>
+                                                                                                        <div style={{ fontSize: '9px', color: isProfit ? 'var(--secondary)' : '#ef4444', fontWeight: '800', opacity: 0.8, marginTop: '2px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                                                                                            {isProfit ? '✓ GANANCIA NETA' : '✗ DÉFICIT / PENDIENTE'}
+                                                                                                        </div>
+                                                                                                    </div>
+                                                                                                </div>
+                                                                                                <div style={{ marginTop: '8px', padding: '8px', background: 'rgba(255,255,255,0.03)', borderRadius: '8px' }}>
+                                                                                                    <p style={{ fontSize: '9px', color: 'rgba(255,255,255,0.45)', fontWeight: '600', lineHeight: '1.5', margin: 0 }}>
+                                                                                                        ℹ️ Este balance se calcula: Ingresos recibidos ({fmt(realIncome)}) − Gastos actuales ({fmt(realCosts)}) de los {totalPlayers} jugadores actuales ({registeredCount} inscritos + {guestsCount} invitados). {!isProfit ? 'El déficit se reduce con cada nuevo pago recibido.' : ''}
+                                                                                                    </p>
+                                                                                                </div>
+                                                                                            </div>
+
+                                                                                            {/* Projected Goal */}
+                                                                                            <div style={{ padding: '12px', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                                                                                <div style={{ fontSize: '10px', fontWeight: '800', color: 'var(--text-dim)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Meta Proyectada</div>
+                                                                                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                                                                                                    <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', fontWeight: '600' }}>Recaudo meta ({limit} pagos):</span>
+                                                                                                    <span style={{ fontSize: '12px', fontWeight: '800', color: 'rgba(255,255,255,0.6)' }}>{fmt(limit * price)}</span>
+                                                                                                </div>
+                                                                                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                                                                                                    <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', fontWeight: '600' }}>Gastos meta ({projectedTotal} jug.):</span>
+                                                                                                    <span style={{ fontSize: '12px', fontWeight: '800', color: 'rgba(255,255,255,0.6)' }}>
+                                                                                                        {fmt((() => {
+                                                                                                            let c = 0;
+                                                                                                            formData.budget_items.forEach(item => {
+                                                                                                                const val = parseFloat(item.amount || '0');
+                                                                                                                if ((item.category || 'expense') === 'expense') {
+                                                                                                                    c += item.type === 'per_player' ? val * projectedTotal : val;
+                                                                                                                }
+                                                                                                            });
+                                                                                                            return c;
+                                                                                                        })())}
+                                                                                                    </span>
+                                                                                                </div>
+                                                                                                <div style={{ height: '1px', background: 'rgba(255,255,255,0.06)', margin: '6px 0' }} />
+                                                                                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                                                                    <span style={{ fontSize: '11px', color: 'var(--text-dim)', fontWeight: '800' }}>Ganancia Proyectada:</span>
+                                                                                                    <span style={{ fontSize: '16px', fontWeight: '950', color: 'white' }}>
+                                                                                                        {(() => {
+                                                                                                            let income = limit * price;
+                                                                                                            let costs = 0;
+                                                                                                            formData.budget_items.forEach((item) => {
+                                                                                                                const val = parseFloat(item.amount || '0');
+                                                                                                                if ((item.category || 'expense') === 'income') {
+                                                                                                                    income += item.type === 'per_player' ? val * limit : val;
+                                                                                                                } else {
+                                                                                                                    costs += item.type === 'per_player' ? val * projectedTotal : val;
+                                                                                                                }
+                                                                                                            });
+                                                                                                            return fmt(income - costs);
+                                                                                                        })()}
+                                                                                                    </span>
+                                                                                                </div>
+                                                                                                <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.3)', fontWeight: '600', marginTop: '4px', textAlign: 'right' }}>
+                                                                                                    Si se inscriben {limit} jugadores pagando + {guestsCount} invitados
+                                                                                                </div>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </motion.div>
+                                                                                )}
+                                                                            </AnimatePresence>
                                                                         </div>
                                                                     </>
                                                                 );
