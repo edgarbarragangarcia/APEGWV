@@ -199,7 +199,7 @@ const AppContent: React.FC = () => {
 
       {session && !isRegistrationPage && <BottomNav />}
 
-      {showOnboarding && session && (
+      {showOnboarding && session && !isRegistrationPage && (
         <OnboardingTour
           userId={session.user.id}
           onComplete={() => setShowOnboarding(false)}
@@ -208,7 +208,7 @@ const AppContent: React.FC = () => {
 
       <OfflineOverlay isOnline={isOnline} />
 
-      {showPermissionsOnboarding && session && (
+      {showPermissionsOnboarding && session && !isRegistrationPage && (
         <PermissionsOnboarding
           onComplete={() => setShowPermissionsOnboarding(false)}
         />
