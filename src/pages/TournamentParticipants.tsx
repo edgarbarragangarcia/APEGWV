@@ -30,6 +30,7 @@ const TournamentParticipants: React.FC = () => {
     const [participants, setParticipants] = useState<Participant[]>([]);
     const [selectedParticipant, setSelectedParticipant] = useState<Participant | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
+    const [copiedEmails, setCopiedEmails] = useState(false);
     const [statusFilter, setStatusFilter] = useState<'all' | 'paid' | 'registered'>('all');
     const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
@@ -151,9 +152,25 @@ const TournamentParticipants: React.FC = () => {
             return;
         }
 
-        // Use bcc for privacy in case they use a client that supports it well, or just recipients
+        // Fallback: Copy to clipboard automatically since we are in a Webview
+        try {
+            navigator.clipboard.writeText(emails);
+            setCopiedEmails(true);
+            setTimeout(() => setCopiedEmails(false), 3000);
+        } catch (err) {
+            console.error('Error copying to clipboard:', err);
+        }
+
+        // Try to open mail app
         const mailtoUrl = `mailto:?bcc=${emails}&subject=Información Torneo: ${tournamentName}`;
-        window.location.href = mailtoUrl;
+
+        // Create a temporary link and click it (more compatible with some webviews)
+        const link = document.createElement('a');
+        link.href = mailtoUrl;
+        link.target = '_self'; // Using self or blank depending on webview behavior
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     };
 
     const isAllFilteredSelected = filteredParticipants.length > 0 && filteredParticipants.every(p => selectedIds.includes(p.id));
@@ -388,10 +405,28 @@ const TournamentParticipants: React.FC = () => {
                                         boxShadow: '0 10px 20px rgba(163, 230, 53, 0.2)'
                                     }}
                                 >
-                                    <Mail size={16} /> Enviar ({selectedIds.length})
+                                    <Mail size={16} /> {copiedEmails ? '¡COPIADOS!' : `Enviar (${selectedIds.length})`}
                                 </motion.button>
                             )}
                         </div>
+                        {copiedEmails && (
+                            <motion.div
+                                initial={{ opacity: 0, y: -10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                style={{
+                                    background: 'rgba(163, 230, 53, 0.1)',
+                                    color: 'var(--secondary)',
+                                    padding: '8px 12px',
+                                    borderRadius: '12px',
+                                    fontSize: '11px',
+                                    fontWeight: '700',
+                                    textAlign: 'center',
+                                    border: '1px solid rgba(163, 230, 53, 0.2)'
+                                }}
+                            >
+                                Los correos se han copiado al portapapeles por si el correo no abre automáticamente.
+                            </motion.div>
+                        )}
                         {filteredParticipants.map(p => (
                             <div
                                 key={p.id}
