@@ -1485,6 +1485,12 @@ export type Database = {
           registration_status: string | null
           tournament_id: string | null
           user_id: string | null
+          player_name: string | null
+          player_email: string | null
+          player_phone: string | null
+          player_handicap: number | null
+          player_federation_code: string | null
+          payment_date: string | null
         }
         Insert: {
           created_at?: string | null
@@ -1492,6 +1498,12 @@ export type Database = {
           registration_status?: string | null
           tournament_id?: string | null
           user_id?: string | null
+          player_name?: string | null
+          player_email?: string | null
+          player_phone?: string | null
+          player_handicap?: number | null
+          player_federation_code?: string | null
+          payment_date?: string | null
         }
         Update: {
           created_at?: string | null
@@ -1499,6 +1511,12 @@ export type Database = {
           registration_status?: string | null
           tournament_id?: string | null
           user_id?: string | null
+          player_name?: string | null
+          player_email?: string | null
+          player_phone?: string | null
+          player_handicap?: number | null
+          player_federation_code?: string | null
+          payment_date?: string | null
         }
         Relationships: [
           {
@@ -1538,6 +1556,12 @@ export type Database = {
           price: number
           status: string | null
           updated_at: string | null
+          guests: string | null
+          rules: string[] | null
+          custom_rules: string | null
+          sponsors: string | null
+          prizes: string | null
+          approval_status: string | null
         }
         Insert: {
           address?: string | null
@@ -1559,6 +1583,12 @@ export type Database = {
           price: number
           status?: string | null
           updated_at?: string | null
+          guests?: string | null
+          rules?: string[] | null
+          custom_rules?: string | null
+          sponsors?: string | null
+          prizes?: string | null
+          approval_status?: string | null
         }
         Update: {
           address?: string | null
@@ -1580,6 +1610,12 @@ export type Database = {
           price?: number
           status?: string | null
           updated_at?: string | null
+          guests?: string | null
+          rules?: string[] | null
+          custom_rules?: string | null
+          sponsors?: string | null
+          prizes?: string | null
+          approval_status?: string | null
         }
         Relationships: [
           {

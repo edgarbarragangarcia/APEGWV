@@ -2,11 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { supabase } from '../services/SupabaseManager';
-import { User, Trophy, Users, ChevronLeft, Search, CheckCircle2, Clock, Mail, CheckSquare, Square } from 'lucide-react';
+import { User, Trophy, Users, Search, CheckCircle2, Clock, Mail, CheckSquare, Square } from 'lucide-react';
 import Skeleton from '../components/Skeleton';
 import PageHero from '../components/PageHero';
 import PageHeader from '../components/PageHeader';
-
 
 interface Participant {
     id: string; // registration_id
@@ -20,6 +19,8 @@ interface Participant {
     average_score: number | null;
     registration_status: string | null;
     federation_code: string | null;
+    payment_date: string | null;
+    is_guest?: boolean;
 }
 
 const TournamentParticipants: React.FC = () => {
@@ -44,22 +45,21 @@ const TournamentParticipants: React.FC = () => {
     const fetchData = async () => {
         setLoading(true);
         try {
-            // Fetch tournament details
             const { data: tournament, error: tournamentError } = await supabase
                 .from('tournaments')
-                .select('name')
+                .select('name, guests')
                 .eq('id', id || '')
                 .single();
 
             if (tournamentError) throw tournamentError;
             setTournamentName(tournament.name);
 
-            // Fetch participants registrations with profiles joined
             const { data: registrations, error: regError } = await supabase
                 .from('tournament_registrations')
                 .select(`
                     id,
                     registration_status,
+                    payment_date,
                     user_id,
                     player_name,
                     player_email,
@@ -74,49 +74,92 @@ const TournamentParticipants: React.FC = () => {
 
             if (regError) throw regError;
 
-            const flattenedParticipants = registrations?.map((reg: any) => {
+            const manualGuestEntries = tournament.guests ? tournament.guests.split('\n').filter(Boolean).map(g => {
+                const [name, code] = g.split('|');
+                return { name: name?.trim() || '', code: code?.trim() || '' };
+            }) : [];
+
+            const registeredParticipants = registrations?.map((reg: any) => {
                 const profile = reg.profiles;
+                const nameMatch = reg.player_name || profile?.full_name || 'Invitado';
+
+                const matchingGuest = manualGuestEntries.find(g =>
+                    g.name.toLowerCase() === nameMatch.trim().toLowerCase()
+                );
+                const isSpecialGuest = !!matchingGuest;
+
+                // Solo consideramos "Invitado" a quien esté en la lista de Invitados Especiales (Imagen 3)
+                const finalIsGuest = isSpecialGuest;
+
                 return {
                     id: reg.id,
                     user_id: reg.user_id,
                     registration_status: reg.registration_status,
-                    full_name: profile?.full_name || reg.player_name || 'Invitado',
-                    email: profile?.email || reg.player_email,
-                    phone: profile?.phone || reg.player_phone,
-                    handicap: profile?.handicap || reg.player_handicap,
+                    full_name: nameMatch,
+                    email: reg.player_email || profile?.email,
+                    phone: reg.player_phone || profile?.phone,
+                    handicap: reg.player_handicap ?? profile?.handicap,
                     id_photo_url: profile?.id_photo_url,
                     total_rounds: profile?.total_rounds,
                     average_score: profile?.average_score,
-                    federation_code: profile?.federation_code || reg.player_federation_code
+                    federation_code: reg.player_federation_code || profile?.federation_code || matchingGuest?.code,
+                    payment_date: reg.payment_date,
+                    is_guest: finalIsGuest
                 };
             }) || [];
 
-            setParticipants(flattenedParticipants);
+            const manualGuestParticipants = manualGuestEntries
+                .filter(g => !registeredParticipants.some(p => p.full_name?.trim().toLowerCase() === g.name.toLowerCase()))
+                .map((g, index: number) => ({
+                    id: `manual-guest-${index}`,
+                    user_id: null,
+                    registration_status: 'Confirmado',
+                    full_name: g.name,
+                    email: null,
+                    phone: null,
+                    handicap: null,
+                    id_photo_url: null,
+                    total_rounds: null,
+                    average_score: null,
+                    federation_code: g.code,
+                    payment_date: null,
+                    is_guest: true
+                }));
+
+            setParticipants([...registeredParticipants, ...manualGuestParticipants]);
         } catch (err) {
             console.error('Error fetching data:', err);
         } finally {
             setLoading(false);
         }
     };
+
     const togglePaymentStatus = async (participantId: string, currentStatus: string | null) => {
+        if (participantId.startsWith('manual-guest-')) return;
+
         const newStatus = currentStatus === 'paid' ? 'registered' : 'paid';
+        const now = new Date().toISOString();
 
         try {
             const { error } = await supabase
                 .from('tournament_registrations')
-                .update({ registration_status: newStatus })
+                .update({
+                    registration_status: newStatus,
+                    payment_date: newStatus === 'paid' ? now : null
+                })
                 .eq('id', participantId);
 
             if (error) throw error;
 
             setParticipants(prev => prev.map(p =>
-                p.id === participantId ? { ...p, registration_status: newStatus } : p
+                p.id === participantId ? { ...p, registration_status: newStatus, payment_date: newStatus === 'paid' ? now : null } : p
             ));
         } catch (err) {
             console.error('Error updating status:', err);
             alert('Error al actualizar el estado de pago');
         }
     };
+
     const filteredParticipants = participants.filter(p => {
         const matchesSearch =
             (p.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) || false) ||
@@ -126,7 +169,7 @@ const TournamentParticipants: React.FC = () => {
             statusFilter === 'all' ||
             (statusFilter === 'paid' && (p.registration_status === 'paid' || p.registration_status === 'Confirmado')) ||
             (statusFilter === 'registered' && p.registration_status !== 'paid' && p.registration_status !== 'Confirmado') ||
-            (statusFilter === 'guests' && !p.user_id);
+            (statusFilter === 'guests' && p.is_guest);
 
         return matchesSearch && matchesStatus;
     });
@@ -142,7 +185,7 @@ const TournamentParticipants: React.FC = () => {
         if (deselect) {
             setSelectedIds(prev => prev.filter(id => !filteredParticipants.some(p => p.id === id)));
         } else {
-            const newSelected = [...new Set([...selectedIds, ...filteredParticipants.map(p => p.id)])];
+            const newSelected = Array.from(new Set([...selectedIds, ...filteredParticipants.map(p => p.id)]));
             setSelectedIds(newSelected);
         }
     };
@@ -156,7 +199,6 @@ const TournamentParticipants: React.FC = () => {
             return;
         }
 
-        // Fallback: Copy to clipboard automatically since we are in a Webview
         try {
             navigator.clipboard.writeText(emails);
             setCopiedEmails(true);
@@ -165,13 +207,10 @@ const TournamentParticipants: React.FC = () => {
             console.error('Error copying to clipboard:', err);
         }
 
-        // Try to open mail app
         const mailtoUrl = `mailto:?bcc=${emails}&subject=Información Torneo: ${tournamentName}`;
-
-        // Create a temporary link and click it (more compatible with some webviews)
         const link = document.createElement('a');
         link.href = mailtoUrl;
-        link.target = '_self'; // Using self or blank depending on webview behavior
+        link.target = '_self';
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -180,375 +219,323 @@ const TournamentParticipants: React.FC = () => {
     const isAllFilteredSelected = filteredParticipants.length > 0 && filteredParticipants.every(p => selectedIds.includes(p.id));
 
     return (
-        <div className="animate-fade" style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'var(--primary)',
-            display: 'flex',
-            flexDirection: 'column',
-            overflow: 'hidden',
-            zIndex: 900
-        }}>
-            <PageHero />
-            {/* Header */}
-            <div style={{
-                position: 'absolute',
-                top: 'var(--header-offset-top)',
-                left: '0',
-                right: '0',
-                width: '100%',
-                zIndex: 900,
-                background: 'transparent',
-                paddingLeft: '20px',
-                paddingRight: '20px',
-                pointerEvents: 'auto'
-            }}>
+        <div className="animate-fade" style={styles.pageContainer}>
+            {!selectedParticipant && <PageHero opacity={0.75} />}
+
+            <div style={styles.headerArea}>
                 <PageHeader
                     noMargin
-                    title="Participantes"
-                    subtitle={tournamentName || 'Cargando...'}
-                    onBack={() => navigate('/my-events', { state: { restoreTournamentId: id } })}
+                    title={tournamentName || 'Participantes'}
+                    onBack={() => {
+                        if (selectedParticipant) {
+                            setSelectedParticipant(null);
+                        } else {
+                            navigate(-1);
+                        }
+                    }}
                 />
+            </div>
 
-                <div style={{ marginTop: '15px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    {/* Search Bar */}
-                    <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                        <Search size={18} color="rgba(255,255,255,0.4)" style={{ position: 'absolute', left: '15px' }} />
-                        <input
-                            type="text"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            placeholder="Nombre o correo..."
-                            style={{
-                                width: '100%',
-                                background: 'rgba(255,255,255,0.05)',
-                                border: '1px solid rgba(255,255,255,0.1)',
-                                borderRadius: '15px',
-                                padding: '12px 12px 12px 45px',
-                                color: 'white',
-                                fontSize: '14px',
-                                outline: 'none'
-                            }}
-                        />
-                    </div>
-
-                    {/* Filter Chips */}
-                    <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '5px', scrollbarWidth: 'none' }}>
-                        {[
-                            { id: 'all', label: 'Todos', icon: <Users size={14} /> },
-                            { id: 'paid', label: 'Pagos', icon: <CheckCircle2 size={14} /> },
-                            { id: 'registered', label: 'Pendientes', icon: <Clock size={14} /> },
-                            { id: 'guests', label: 'Invitados', icon: <User size={14} /> }
-                        ].map(filter => (
-                            <button
-                                key={filter.id}
-                                onClick={() => setStatusFilter(filter.id as any)}
+            <div style={styles.contentContainer}>
+                {!selectedParticipant && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginBottom: '20px' }}>
+                        <div style={{ position: 'relative' }}>
+                            <Search
+                                style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--secondary)', opacity: 0.8 }}
+                                size={18}
+                                strokeWidth={2.5}
+                            />
+                            <input
+                                type="text"
+                                placeholder="Buscar jugador..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
                                 style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '6px',
-                                    padding: '8px 16px',
-                                    borderRadius: '12px',
-                                    fontSize: '13px',
-                                    fontWeight: '700',
-                                    whiteSpace: 'nowrap',
-                                    border: 'none',
-                                    background: statusFilter === filter.id ? 'var(--secondary)' : 'rgba(255,255,255,0.05)',
-                                    color: statusFilter === filter.id ? 'var(--primary)' : 'var(--text-dim)',
-                                    transition: 'all 0.2s'
+                                    width: '100%',
+                                    paddingLeft: '48px',
+                                    background: 'rgba(255,255,255,0.03)',
+                                    border: '1px solid rgba(255,255,255,0.1)',
+                                    borderRadius: '16px',
+                                    height: '50px',
+                                    color: 'white',
+                                    fontSize: '15px',
+                                    fontWeight: '600',
+                                    boxSizing: 'border-box',
+                                    outline: 'none',
+                                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
                                 }}
-                            >
-                                {filter.icon}
-                                {filter.label}
-                            </button>
-                        ))}
-                    </div>
+                            />
+                        </div>
 
-                    <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
+                        <div style={{
+                            display: 'flex',
+                            gap: '8px',
+                            overflowX: 'auto',
+                            paddingBottom: '5px',
+                            msOverflowStyle: 'none',
+                            scrollbarWidth: 'none'
+                        }}>
+                            {[
+                                { id: 'all', label: 'Todos', icon: <Users size={14} /> },
+                                { id: 'paid', label: 'Pagos', icon: <CheckCircle2 size={14} /> },
+                                { id: 'registered', label: 'Pendientes', icon: <Clock size={14} /> },
+                                { id: 'guests', label: 'Invitados', icon: <User size={14} /> }
+                            ].map(filter => (
+                                <button
+                                    key={filter.id}
+                                    onClick={() => setStatusFilter(filter.id as any)}
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '8px',
+                                        padding: '10px 18px',
+                                        borderRadius: '16px',
+                                        background: statusFilter === filter.id ? 'var(--secondary)' : 'rgba(255,255,255,0.04)',
+                                        color: statusFilter === filter.id ? 'var(--primary)' : 'rgba(255,255,255,0.6)',
+                                        border: '1px solid ' + (statusFilter === filter.id ? 'var(--secondary)' : 'rgba(255,255,255,0.08)'),
+                                        fontSize: '12px',
+                                        fontWeight: '800',
+                                        whiteSpace: 'nowrap',
+                                        transition: 'all 0.3s ease',
+                                        cursor: 'pointer',
+                                        boxShadow: statusFilter === filter.id ? '0 4px 12px rgba(163, 230, 53, 0.2)' : 'none'
+                                    }}
+                                >
+                                    {filter.icon} {filter.label}
+                                </button>
+                            ))}
+                        </div>
+
                         <button
                             onClick={() => handleSelectAll(isAllFilteredSelected)}
                             style={{
+                                width: '100%',
                                 display: 'flex',
                                 alignItems: 'center',
-                                gap: '8px',
-                                padding: '8px 16px',
-                                borderRadius: '12px',
-                                fontSize: '13px',
-                                fontWeight: '700',
-                                whiteSpace: 'nowrap',
-                                border: '1px solid rgba(255,255,255,0.1)',
-                                background: isAllFilteredSelected ? 'rgba(163, 230, 53, 0.1)' : 'rgba(255,255,255,0.05)',
-                                color: isAllFilteredSelected ? 'var(--secondary)' : 'white',
+                                justifyContent: 'center',
+                                gap: '10px',
+                                padding: '12px',
+                                borderRadius: '16px',
+                                background: isAllFilteredSelected ? 'rgba(163, 230, 53, 0.08)' : 'rgba(255,255,255,0.02)',
+                                color: isAllFilteredSelected ? 'var(--secondary)' : 'rgba(255,255,255,0.4)',
+                                border: '1px solid ' + (isAllFilteredSelected ? 'rgba(163, 230, 53, 0.2)' : 'rgba(255,255,255,0.06)'),
+                                fontSize: '12px',
+                                fontWeight: '900',
+                                cursor: 'pointer',
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.05em',
                                 transition: 'all 0.2s'
                             }}
                         >
-                            {isAllFilteredSelected ? <CheckSquare size={14} /> : <Square size={14} />}
-                            <span>Seleccionar Todo</span>
-                            <span style={{ opacity: 0.5, fontSize: '11px' }}>({filteredParticipants.length})</span>
+                            {isAllFilteredSelected ? <CheckSquare size={16} /> : <Square size={16} />}
+                            {isAllFilteredSelected ? 'Deseleccionar Todos' : 'Seleccionar Todos'}
                         </button>
                     </div>
-                </div>
-            </div>
+                )}
 
-            <div style={{
-                position: 'absolute',
-                top: 'calc(var(--header-offset-top) + 225px)',
-                left: '0',
-                right: '0',
-                bottom: 'calc(var(--nav-height))',
-                overflowY: 'auto',
-                padding: '0 20px 40px 20px',
-                overflowX: 'hidden'
-            }}>
-
-                {loading ? (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                        {[1, 2, 3, 4].map(i => <Skeleton key={i} height="70px" borderRadius="18px" />)}
-                    </div>
-                ) : selectedParticipant ? (
-                    <div className="animate-fade-in" style={{
-                        flex: 1,
-                        display: 'flex',
-                        flexDirection: 'column'
-                    }}>
-                        <button
-                            onClick={() => setSelectedParticipant(null)}
-                            style={{ marginBottom: '12px', width: 'fit-content', color: 'var(--secondary)', background: 'none', border: 'none', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '5px', fontWeight: '600' }}
-                        >
-                            <ChevronLeft size={14} /> Volver a la lista
-                        </button>
-
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '25px', textAlign: 'left' }}>
-                            <div style={{
-                                width: '85px',
-                                height: '85px',
-                                borderRadius: '25px',
-                                overflow: 'hidden',
-                                border: '3px solid var(--secondary)',
-                                boxShadow: '0 10px 20px rgba(0,0,0,0.2)',
-                                flexShrink: 0
-                            }}>
-                                <img
-                                    src={selectedParticipant.id_photo_url || `https://ui-avatars.com/api/?name=${selectedParticipant.full_name || 'User'}&background=0E2F1F&color=A3E635`}
-                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                    alt={selectedParticipant.full_name || 'User'}
-                                />
-                            </div>
-                            <div style={{ flex: 1 }}>
-                                <h3 style={{ fontSize: '22px', fontWeight: '950', color: 'white', marginBottom: '6px', lineHeight: 1.1 }}>{selectedParticipant.full_name}</h3>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div style={{ flex: 1, overflowY: 'auto' }}>
+                    {loading ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                            {[1, 2, 3, 4].map(i => <Skeleton key={i} height="80px" borderRadius="24px" />)}
+                        </div>
+                    ) : selectedParticipant ? (
+                        <div className="animate-fade-in" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                            {/* Detail View remains similar but we ensure it matches premium style */}
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '25px', textAlign: 'left' }}>
+                                <div style={{ width: '85px', height: '85px', borderRadius: '25px', overflow: 'hidden', border: '3px solid var(--secondary)', boxShadow: '0 10px 20px rgba(0,0,0,0.2)', flexShrink: 0 }}>
+                                    <img
+                                        src={selectedParticipant.id_photo_url || `https://ui-avatars.com/api/?name=${selectedParticipant.full_name || 'User'}&background=0E2F1F&color=A3E635`}
+                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                        alt={selectedParticipant.full_name || 'User'}
+                                    />
+                                </div>
+                                <div style={{ flex: 1 }}>
+                                    <h3 style={{ fontSize: '22px', fontWeight: '950', color: 'white', marginBottom: '6px', lineHeight: 1.1 }}>{selectedParticipant.full_name}</h3>
+                                    <div style={{ display: 'flex', gap: '8px' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', background: 'rgba(163, 230, 53, 0.1)', padding: '4px 10px', borderRadius: '10px', border: '1px solid rgba(163, 230, 53, 0.2)' }}>
-                                            <span style={{ color: 'var(--text-dim)', fontSize: '10px', marginRight: '5px', fontWeight: '700' }}>HCP:</span>
+                                            <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '10px', marginRight: '5px', fontWeight: '700' }}>HCP:</span>
                                             <span style={{ color: 'var(--secondary)', fontWeight: '900', fontSize: '12px' }}>{selectedParticipant.handicap ?? '--'}</span>
                                         </div>
                                         <div style={{ display: 'flex', alignItems: 'center', background: 'rgba(255, 255, 255, 0.05)', padding: '4px 10px', borderRadius: '10px', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
-                                            <span style={{ color: 'var(--text-dim)', fontSize: '10px', marginRight: '5px', fontWeight: '700' }}>FED:</span>
+                                            <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '10px', marginRight: '5px', fontWeight: '700' }}>FED:</span>
                                             <span style={{ color: 'white', fontWeight: '900', fontSize: '12px' }}>{selectedParticipant.federation_code ?? '--'}</span>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <div className="glass" style={{ padding: '18px', borderRadius: '20px', marginBottom: '15px' }}>
-                            <h4 style={{ fontSize: '11px', fontWeight: '800', color: 'var(--text-dim)', marginBottom: '14px', textTransform: 'uppercase', letterSpacing: '1px' }}>Información de Contacto</h4>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                    <div style={{ width: '32px', height: '32px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                        <User size={16} color="white" />
+                            <div className="glass" style={{ padding: '20px', borderRadius: '24px', marginBottom: '15px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                <h4 style={{ fontSize: '11px', fontWeight: '900', color: 'rgba(255,255,255,0.3)', marginBottom: '18px', textTransform: 'uppercase', letterSpacing: '1px' }}>Información de Contacto</h4>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                        <div style={{ width: '36px', height: '36px', borderRadius: '12px', background: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                            <Mail size={16} color="var(--secondary)" />
+                                        </div>
+                                        <div>
+                                            <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.3)', marginBottom: '1px', fontWeight: '700' }}>EMAIL</p>
+                                            <p style={{ color: 'white', fontSize: '14px', fontWeight: '600' }}>{selectedParticipant.email || 'No disponible'}</p>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <p style={{ fontSize: '9px', color: 'var(--text-dim)', marginBottom: '1px', fontWeight: '600' }}>EMAIL</p>
-                                        <p style={{ color: 'white', fontSize: '13px', fontWeight: '500' }}>{selectedParticipant.email || 'No disponible'}</p>
-                                    </div>
-                                </div>
-                                <div style={{ height: '1px', background: 'rgba(255,255,255,0.05)' }} />
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                    <div style={{ width: '32px', height: '32px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                        <Users size={16} color="white" />
-                                    </div>
-                                    <div>
-                                        <p style={{ fontSize: '9px', color: 'var(--text-dim)', marginBottom: '1px', fontWeight: '600' }}>TELÉFONO</p>
-                                        <p style={{ color: 'white', fontSize: '13px', fontWeight: '500' }}>{selectedParticipant.phone || 'No disponible'}</p>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                        <div style={{ width: '36px', height: '36px', borderRadius: '12px', background: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                            <User size={16} color="var(--secondary)" />
+                                        </div>
+                                        <div>
+                                            <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.3)', marginBottom: '1px', fontWeight: '700' }}>TELÉFONO</p>
+                                            <p style={{ color: 'white', fontSize: '14px', fontWeight: '600' }}>{selectedParticipant.phone || 'No disponible'}</p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                ) : participants.length === 0 ? (
-                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--text-dim)', paddingBottom: '100px' }}>
-                        <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(255,255,255,0.03)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}>
-                            <Users size={32} style={{ opacity: 0.5 }} />
+                    ) : participants.length === 0 ? (
+                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.2)', minHeight: '300px' }}>
+                            <div style={{ width: '80px', height: '80px', borderRadius: '30px', background: 'rgba(255,255,255,0.02)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                <Users size={32} strokeWidth={1} style={{ opacity: 0.3 }} />
+                            </div>
+                            <h3 style={{ fontSize: '18px', fontWeight: '950', color: 'white', marginBottom: '8px', letterSpacing: '-0.3px' }}>Sin participantes</h3>
+                            <p style={{ fontSize: '13px', textAlign: 'center', maxWidth: '250px', fontWeight: '500' }}>Aún no hay jugadores inscritos en este torneo.</p>
                         </div>
-                        <h3 style={{ fontSize: '18px', fontWeight: '700', color: 'white', marginBottom: '8px' }}>Sin participantes</h3>
-                        <p style={{ fontSize: '14px', textAlign: 'center', maxWidth: '250px' }}>Aún no hay jugadores inscritos en este torneo.</p>
-                    </div>
-                ) : (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                            <div />
+                    ) : (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                             {selectedIds.length > 0 && (
                                 <motion.button
-                                    initial={{ scale: 0.8, opacity: 0 }}
+                                    initial={{ scale: 0.9, opacity: 0 }}
                                     animate={{ scale: 1, opacity: 1 }}
                                     onClick={sendBulkEmail}
                                     style={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: '6px',
-                                        padding: '10px 18px',
-                                        borderRadius: '14px',
-                                        background: 'var(--secondary)',
-                                        color: 'var(--primary)',
-                                        border: 'none',
-                                        fontSize: '13px',
-                                        fontWeight: '900',
-                                        cursor: 'pointer',
-                                        boxShadow: '0 10px 20px rgba(163, 230, 53, 0.2)'
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
+                                        padding: '14px', borderRadius: '18px', background: 'var(--secondary)', color: 'var(--primary)',
+                                        border: 'none', fontSize: '14px', fontWeight: '900', cursor: 'pointer',
+                                        boxShadow: '0 10px 25px rgba(163, 230, 53, 0.3)', marginBottom: '10px'
                                     }}
                                 >
-                                    <Mail size={16} /> {copiedEmails ? '¡COPIADOS!' : `Copiar correos (${selectedIds.length})`}
+                                    <Mail size={18} /> {copiedEmails ? '¡LISTO!' : `Copiar ${selectedIds.length} correos`}
                                 </motion.button>
                             )}
-                        </div>
-                        {copiedEmails && (
-                            <motion.div
-                                initial={{ opacity: 0, y: -10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                style={{
-                                    background: 'rgba(163, 230, 53, 0.1)',
-                                    color: 'var(--secondary)',
-                                    padding: '8px 12px',
-                                    borderRadius: '12px',
-                                    fontSize: '11px',
-                                    fontWeight: '700',
-                                    textAlign: 'center',
-                                    border: '1px solid rgba(163, 230, 53, 0.2)'
-                                }}
-                            >
-                                Los correos se han copiado al portapapeles por si el correo no abre automáticamente.
-                            </motion.div>
-                        )}
-                        {filteredParticipants.map(p => (
-                            <div
-                                key={p.id}
-                                onClick={() => setSelectedParticipant(p)}
-                                style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '15px',
-                                    padding: '12px',
-                                    background: (p.registration_status === 'paid' || p.registration_status === 'Confirmado')
-                                        ? 'rgba(163, 230, 53, 0.15)'
-                                        : 'rgba(255,255,255,0.03)',
-                                    borderRadius: '18px',
-                                    border: (p.registration_status === 'paid' || p.registration_status === 'Confirmado')
-                                        ? '1px solid rgba(163, 230, 53, 0.3)'
-                                        : '1px solid rgba(255,255,255,0.05)',
-                                    cursor: 'pointer',
-                                    transition: 'all 0.2s',
-                                }}
-                                className="item-hover"
-                            >
-                                <div
-                                    onClick={(e) => handleSelectParticipant(p.id, e)}
+
+                            {filteredParticipants.map(p => (
+                                <motion.div
+                                    key={p.id}
+                                    layout
+                                    onClick={() => setSelectedParticipant(p)}
                                     style={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        width: '24px',
-                                        height: '24px',
-                                        borderRadius: '7px',
-                                        background: selectedIds.includes(p.id) ? 'var(--secondary)' : 'rgba(255,255,255,0.05)',
-                                        color: selectedIds.includes(p.id) ? 'var(--primary)' : 'transparent',
-                                        border: '1px solid ' + (selectedIds.includes(p.id) ? 'var(--secondary)' : 'rgba(255,255,255,0.1)'),
-                                        transition: 'all 0.2s',
-                                        flexShrink: 0
+                                        display: 'flex', alignItems: 'center', gap: '14px',
+                                        padding: '16px', background: 'rgba(10, 31, 25, 0.8)',
+                                        borderRadius: '26px', border: '1px solid rgba(255,255,255,0.04)',
+                                        cursor: 'pointer', position: 'relative', backdropFilter: 'blur(20px)',
+                                        boxShadow: '0 8px 30px rgba(0,0,0,0.2)'
                                     }}
                                 >
-                                    <CheckCircle2 size={14} />
-                                </div>
-                                <div style={{ width: '50px', height: '50px', borderRadius: '15px', overflow: 'hidden', background: 'var(--primary-light)', border: '1px solid rgba(255,255,255,0.1)', flexShrink: 0 }}>
-                                    <img
-                                        src={p.id_photo_url || `https://ui-avatars.com/api/?name=${p.full_name || 'User'}&background=0E2F1F&color=A3E635`}
-                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                        alt={p.full_name || 'User'}
-                                    />
-                                </div>
-                                <div style={{ flex: 1 }}>
-                                    <h4 style={{ fontSize: '16px', fontWeight: '700', color: 'white', marginBottom: '2px' }}>{p.full_name || 'Golfista APEG'}</h4>
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                            <span style={{ fontSize: '11px', color: 'var(--text-dim)' }}>Hándicap: <span style={{ color: 'white', fontWeight: '600' }}>{p.handicap ?? '--'}</span></span>
-                                            <span style={{ fontSize: '11px', color: 'var(--text-dim)' }}>ID: <span style={{ color: 'white', fontWeight: '600' }}>{p.federation_code ?? '--'}</span></span>
+                                    <div
+                                        onClick={(e) => handleSelectParticipant(p.id, e)}
+                                        style={{
+                                            width: '24px', height: '24px', borderRadius: '8px',
+                                            border: '2px solid ' + (selectedIds.includes(p.id) ? 'var(--secondary)' : 'rgba(255,255,255,0.1)'),
+                                            background: selectedIds.includes(p.id) ? 'var(--secondary)' : 'rgba(255,255,255,0.02)',
+                                            color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                            transition: 'all 0.3s ease', flexShrink: 0
+                                        }}
+                                    >
+                                        <CheckCircle2 size={14} strokeWidth={3} style={{ opacity: selectedIds.includes(p.id) ? 1 : 0 }} />
+                                    </div>
+
+                                    <div style={{ width: '50px', height: '50px', borderRadius: '16px', overflow: 'hidden', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', flexShrink: 0 }}>
+                                        <img
+                                            src={p.id_photo_url || `https://ui-avatars.com/api/?name=${p.full_name || 'User'}&background=0E2F1F&color=A3E635`}
+                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                            alt=""
+                                        />
+                                    </div>
+
+                                    <div style={{ flex: 1, minWidth: 0 }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
+                                            <h4 style={{ fontSize: '15px', fontWeight: '900', color: 'white', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                                {p.full_name}
+                                            </h4>
+                                            {p.is_guest && (
+                                                <span style={{ fontSize: '8px', background: 'rgba(163, 230, 53, 0.15)', color: 'var(--secondary)', padding: '2px 6px', borderRadius: '6px', fontWeight: '900', textTransform: 'uppercase' }}>
+                                                    INVITADO
+                                                </span>
+                                            )}
                                         </div>
-                                        {(p.registration_status === 'paid' || p.registration_status === 'Confirmado') && (
-                                            <div style={{ display: 'flex' }}>
-                                                <span style={{
-                                                    fontSize: '9px',
-                                                    background: 'var(--secondary)',
-                                                    color: 'var(--primary)',
-                                                    padding: '1px 5px',
-                                                    borderRadius: '4px',
-                                                    fontWeight: '900',
-                                                    textTransform: 'uppercase'
-                                                }}>{p.registration_status === 'Confirmado' ? 'CONFIRMADO' : 'PAGO'}</span>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontWeight: '700' }}>HCP: <span style={{ color: 'var(--secondary)' }}>{p.handicap ?? '--'}</span></span>
+                                            <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontWeight: '700' }}>ID: <span style={{ color: 'white' }}>{p.federation_code ?? '--'}</span></span>
+                                        </div>
+                                        {(p.registration_status === 'paid' || p.registration_status === 'Confirmado' || p.is_guest) && (
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '4px' }}>
+                                                <div style={{ background: 'var(--secondary)', color: 'var(--primary)', fontSize: '8px', fontWeight: '950', padding: '1px 6px', borderRadius: '5px', textTransform: 'uppercase' }}>PAGADO</div>
+                                                {p.payment_date && (
+                                                    <span style={{ fontSize: '9px', color: 'rgba(255,255,255,0.3)', fontWeight: '800' }}>
+                                                        {new Date(p.payment_date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })}
+                                                    </span>
+                                                )}
                                             </div>
                                         )}
                                     </div>
-                                </div>
-                                <motion.div
-                                    whileHover={{ scale: 1.1 }}
-                                    whileTap={{ scale: 0.9 }}
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        togglePaymentStatus(p.id, p.registration_status);
-                                    }}
-                                    style={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        width: '40px',
-                                        height: '40px',
-                                        borderRadius: '14px',
-                                        background: (p.registration_status === 'paid' || p.registration_status === 'Confirmado') ? 'var(--secondary)' : 'rgba(163, 230, 53, 0.1)',
-                                        color: (p.registration_status === 'paid' || p.registration_status === 'Confirmado') ? 'var(--primary)' : 'var(--secondary)',
-                                        border: '1px solid rgba(163, 230, 53, 0.2)',
-                                        transition: 'all 0.2s',
-                                        position: 'relative',
-                                        cursor: 'pointer'
-                                    }}
-                                >
-                                    {(p.registration_status !== 'paid' && p.registration_status !== 'Confirmado') && (
-                                        <motion.div
-                                            animate={{
-                                                scale: [1, 1.25, 1],
-                                                opacity: [0.4, 0, 0.4]
-                                            }}
-                                            transition={{
-                                                duration: 2,
-                                                repeat: Infinity,
-                                                ease: "easeInOut"
-                                            }}
-                                            style={{
-                                                position: 'absolute',
-                                                inset: -4,
-                                                borderRadius: '18px',
-                                                border: '2px solid var(--secondary)',
-                                                pointerEvents: 'none'
-                                            }}
-                                        />
-                                    )}
-                                    <Trophy size={18} />
+
+                                    <motion.div
+                                        whileTap={{ scale: 0.9 }}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            togglePaymentStatus(p.id, p.registration_status);
+                                        }}
+                                        style={{
+                                            width: '46px', height: '46px', borderRadius: '16px',
+                                            background: (p.registration_status === 'paid' || p.registration_status === 'Confirmado' || p.is_guest) ? 'var(--secondary)' : 'rgba(255,255,255,0.03)',
+                                            color: (p.registration_status === 'paid' || p.registration_status === 'Confirmado' || p.is_guest) ? 'var(--primary)' : 'rgba(255,255,255,0.2)',
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                            border: (p.registration_status === 'paid' || p.registration_status === 'Confirmado' || p.is_guest) ? 'none' : '1px solid rgba(255,255,255,0.05)',
+                                            cursor: 'pointer'
+                                        }}
+                                    >
+                                        <Trophy size={20} strokeWidth={2.5} />
+                                    </motion.div>
                                 </motion.div>
+                            ))}
+
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 10px 40px', opacity: 0.5 }}>
+                                <p style={{ fontSize: '11px', fontWeight: '800', color: 'white' }}>
+                                    {filteredParticipants.length} en esta lista
+                                </p>
+                                {participants.filter(pt => pt.is_guest).length > 0 && (
+                                    <p style={{ fontSize: '11px', fontWeight: '800', color: 'var(--secondary)' }}>
+                                        {participants.filter(pt => pt.is_guest).length} Invitados
+                                    </p>
+                                )}
                             </div>
-                        ))}
-                    </div>
-                )}
+                        </div>
+                    )}
+                </div>
             </div>
-        </div >
+        </div>
     );
+};
+
+const styles = {
+    pageContainer: {
+        position: 'fixed' as 'fixed', inset: 0,
+        background: 'var(--primary)',
+        display: 'flex', flexDirection: 'column' as 'column',
+        overflow: 'hidden', zIndex: 900
+    },
+    headerArea: {
+        flexShrink: 0,
+        position: 'relative' as 'relative',
+        zIndex: 10,
+        background: 'transparent',
+        padding: '0 20px',
+        paddingTop: 'var(--header-offset-top)'
+    },
+    contentContainer: {
+        flex: 1,
+        position: 'relative' as 'relative',
+        zIndex: 10,
+        display: 'flex', flexDirection: 'column' as 'column',
+        padding: '0 20px',
+        overflow: 'hidden'
+    }
 };
 
 export default TournamentParticipants;

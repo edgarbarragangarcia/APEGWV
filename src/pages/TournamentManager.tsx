@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, useAnimation, AnimatePresence } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../services/SupabaseManager';
-import { Plus, Trophy, Trash2, Calendar, Loader2, Users, ChevronLeft, MapPin, Settings, ChevronDown, ChevronUp, Minus, ShieldCheck, HeartHandshake, Copy, CheckCircle2, Mail } from 'lucide-react';
+import { Plus, Trophy, Trash2, Calendar, Loader2, Users, User, ChevronLeft, MapPin, Settings, ChevronDown, ChevronUp, Minus, ShieldCheck, HeartHandshake, Copy, CheckCircle2 } from 'lucide-react';
 import Skeleton from '../components/Skeleton';
 import PageHero from '../components/PageHero';
 import PageHeader from '../components/PageHeader';
@@ -121,10 +121,11 @@ const TournamentCard = ({ tourney, onEdit }: { tourney: Tournament, onEdit: () =
 
             <div style={{
                 position: 'relative',
-                background: 'rgba(255,255,255,0.02)',
-                borderRadius: '32px',
+                background: 'rgba(255,b255,b255,0.01)',
+                borderRadius: '28px',
                 overflow: 'hidden',
-                boxShadow: '0 15px 35px rgba(0,0,0,0.2)',
+                boxShadow: '0 20px 40px rgba(0,0,0,0.3)',
+                border: '1px solid rgba(255,255,255,0.05)'
             }}>
                 {/* Content Layer (Draggable) */}
                 <motion.div
@@ -141,99 +142,99 @@ const TournamentCard = ({ tourney, onEdit }: { tourney: Tournament, onEdit: () =
                     style={{
                         position: 'relative',
                         zIndex: 2,
-                        padding: '16px 20px',
-                        background: 'rgba(6, 46, 36, 1)',
-                        border: '1px solid rgba(255,255,255,0.06)',
-                        borderRadius: '32px',
+                        padding: '20px',
+                        background: 'rgba(10, 31, 25, 0.8)',
+                        backdropFilter: 'blur(25px)',
                         cursor: 'grab',
                         touchAction: 'pan-y'
                     }}
                 >
-                    {/* Swipe Hint */}
-                    {!isOpen && (
-                        <motion.div
-                            animate={{ opacity: [0.4, 1, 0.4], x: [0, -3, 0] }}
-                            transition={{ duration: 2, repeat: Infinity }}
-                            style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,0.2)' }}
-                        >
-                            <ChevronLeft size={16} />
-                        </motion.div>
-                    )}
-
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'flex-start', marginBottom: '16px' }}>
+                    {/* Status Badges Row */}
+                    <div style={{ display: 'flex', gap: '8px', marginBottom: '14px' }}>
                         <span style={{
-                            padding: '4px 10px',
-                            borderRadius: '10px',
+                            padding: '3px 10px',
+                            borderRadius: '8px',
                             fontSize: '9px',
-                            fontWeight: '950',
-                            background: tourney.approval_status === 'approved' ? 'rgba(16, 185, 129, 0.1)' :
-                                tourney.approval_status === 'rejected' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(245, 158, 11, 0.1)',
-                            color: tourney.approval_status === 'approved' ? '#10b981' :
-                                tourney.approval_status === 'rejected' ? '#ef4444' : '#f59e0b',
-                            border: `1px solid ${tourney.approval_status === 'approved' ? 'rgba(16, 185, 129, 0.2)' :
-                                tourney.approval_status === 'rejected' ? 'rgba(239, 68, 68, 0.2)' : 'rgba(245, 158, 11, 0.2)'}`,
-                            letterSpacing: '0.05em',
-                            textTransform: 'uppercase'
+                            fontWeight: '900',
+                            background: tourney.approval_status === 'approved' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(245, 158, 11, 0.2)',
+                            color: tourney.approval_status === 'approved' ? '#10b981' : '#f59e0b',
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.03em'
                         }}>
-                            {tourney.approval_status === 'approved' ? 'APROBADO' :
-                                tourney.approval_status === 'rejected' ? 'RECHAZADA' : 'PENDIENTE ADMIN'}
+                            {tourney.approval_status === 'approved' ? 'APROBADO' : 'PENDIENTE'}
                         </span>
                         <span style={{
+                            padding: '3px 10px',
+                            borderRadius: '8px',
                             fontSize: '9px',
                             fontWeight: '800',
-                            padding: '4px 10px',
-                            borderRadius: '10px',
                             background: 'rgba(255,255,255,0.05)',
-                            color: 'var(--text-dim)',
+                            color: 'rgba(255,255,255,0.5)',
                             textTransform: 'uppercase',
-                            border: '1px solid rgba(255,255,255,0.1)',
-                            letterSpacing: '0.02em'
+                            letterSpacing: '0.03em',
+                            border: '1px solid rgba(255,255,255,0.05)'
                         }}>
-                            {tourney.status || 'ABIERTO'}
+                            {tourney.status === 'open' ? 'ABIERTO (INSCRIPCIONES)' : tourney.status === 'finished' ? 'TERMINADO' : 'EN PREPARACIÓN'}
                         </span>
                     </div>
 
-                    <div style={{ display: 'flex', gap: '14px', alignItems: 'center' }}>
-                        <div style={{ position: 'relative' }}>
+                    <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+                        {/* Image Column */}
+                        <div style={{ position: 'relative', flexShrink: 0 }}>
                             <div style={{
-                                width: '64px', height: '64px',
-                                borderRadius: '16px',
+                                width: '65px', height: '65px',
+                                borderRadius: '18px',
                                 overflow: 'hidden',
-                                background: 'rgba(255,255,255,0.03)',
-                                border: '1px solid rgba(255,255,255,0.1)',
-                                boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
+                                background: 'rgba(255,255,255,0.05)',
+                                border: '1px solid rgba(255,255,255,0.1)'
                             }}>
                                 <img
-                                    src={tourney.image_url || 'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?auto=format&fit=crop&q=80&w=200'}
+                                    src={tourney.image_url || 'https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?auto=format&fit=crop&q=80&w=200'}
                                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                     alt=""
                                 />
                             </div>
-                            <div style={{ position: 'absolute', bottom: '-4px', right: '-4px', background: 'var(--secondary)', width: '20px', height: '20px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #062e24', boxShadow: '0 4px 10px rgba(0,0,0,0.3)' }}>
-                                <Trophy size={10} color="var(--primary)" strokeWidth={3} />
+                            <div style={{
+                                position: 'absolute',
+                                bottom: '-3px',
+                                right: '-3px',
+                                background: 'var(--secondary)',
+                                width: '18px', height: '18px',
+                                borderRadius: '50%',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                border: '2px solid rgba(10, 31, 25, 1)',
+                                boxShadow: '0 2px 5px rgba(0,0,0,0.5)'
+                            }}>
+                                <Trophy size={9} color="var(--primary)" strokeWidth={3} />
                             </div>
                         </div>
-                        <div style={{ flex: 1, minWidth: 0, paddingRight: '20px' }}>
-                            <h4 style={{ fontSize: '14px', fontWeight: '900', marginBottom: '2px', color: 'white', letterSpacing: '-0.3px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{tourney.name}</h4>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
-                                <p style={{ fontSize: '16px', color: 'var(--secondary)', fontWeight: '950', letterSpacing: '-0.5px' }}>
-                                    {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(tourney.price || 0)}
-                                </p>
-                            </div>
 
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                <MapPin size={10} color="var(--secondary)" strokeWidth={3} />
-                                <div style={{ display: 'flex', flexDirection: 'row', gap: '6px', alignItems: 'center' }}>
-                                    <span style={{ fontWeight: '800', fontSize: '11px', color: 'rgba(255,255,255,0.7)' }}>
-                                        {tourney.club}
-                                    </span>
-                                    <div style={{ height: '10px', width: '1px', background: 'rgba(255,255,255,0.1)' }} />
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '3px', color: 'rgba(255,255,255,0.3)', fontSize: '9px', fontWeight: '800' }}>
-                                        <Calendar size={8} strokeWidth={3} />
-                                        {new Date(tourney.date).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' })}
-                                    </div>
+                        {/* Info Column */}
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                            <h4 style={{ fontSize: '15px', fontWeight: '950', color: 'white', marginBottom: '4px', letterSpacing: '-0.3px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                {tourney.name}
+                            </h4>
+                            <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', marginBottom: '8px' }}>
+                                <span style={{ fontSize: '18px', fontWeight: '950', color: 'var(--secondary)', letterSpacing: '-0.5px' }}>
+                                    {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(tourney.price || 0)}
+                                </span>
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'rgba(255,255,255,0.6)', fontSize: '11px', fontWeight: '800' }}>
+                                    <MapPin size={10} color="var(--secondary)" strokeWidth={2.5} />
+                                    {tourney.club}
+                                </div>
+                                <div style={{ width: '1px', height: '8px', background: 'rgba(255,255,255,0.1)' }} />
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'rgba(255,255,255,0.3)', fontSize: '10px', fontWeight: '800' }}>
+                                    <Calendar size={10} strokeWidth={2} />
+                                    {new Date(tourney.date).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' })}
                                 </div>
                             </div>
+                        </div>
+
+                        {/* Swipe indicator */}
+                        <div style={{ opacity: 0.15, paddingLeft: '5px' }}>
+                            <ChevronLeft size={18} color="white" strokeWidth={3} />
                         </div>
                     </div>
                 </motion.div>
@@ -299,7 +300,7 @@ const TournamentManager: React.FC = () => {
         custom_rules: '',
         sponsors: [] as { id: string, name: string }[],
         prizes: [] as { id: string, name: string }[],
-        guests: [] as { id: string, name: string }[],
+        guests: [] as { id: string, name: string, federation_code: string }[],
         current_participants: 0,
         paid_participants: 0
     });
@@ -466,7 +467,7 @@ const TournamentManager: React.FC = () => {
                         custom_rules: formData.custom_rules,
                         sponsors: formData.sponsors.map(s => s.name).filter(Boolean).join('\n'),
                         prizes: formData.prizes.map(p => p.name).filter(Boolean).join('\n'),
-                        guests: formData.guests.map(g => g.name).filter(Boolean).join('\n'),
+                        guests: formData.guests.map(g => `${g.name}|${g.federation_code || ''}`).filter(Boolean).join('\n'),
                         approval_status: 'pending',
                         updated_at: new Date().toISOString()
                     })
@@ -492,7 +493,7 @@ const TournamentManager: React.FC = () => {
                         custom_rules: formData.custom_rules,
                         sponsors: formData.sponsors.map(s => s.name).filter(Boolean).join('\n'),
                         prizes: formData.prizes.map(p => p.name).filter(Boolean).join('\n'),
-                        guests: formData.guests.map(g => g.name).filter(Boolean).join('\n'),
+                        guests: formData.guests.map(g => `${g.name}|${g.federation_code || ''}`).filter(Boolean).join('\n'),
                         creator_id: user.id,
                         approval_status: 'pending'
                     } as any])
@@ -599,9 +600,14 @@ const TournamentManager: React.FC = () => {
                     ],
             rules: tournament.rules || [],
             custom_rules: tournament.custom_rules || '',
-            sponsors: tournament.sponsors ? tournament.sponsors.split('\n').filter(Boolean).map((name, i) => ({ id: i.toString(), name })) : [],
-            prizes: tournament.prizes ? tournament.prizes.split('\n').filter(Boolean).map((name, i) => ({ id: i.toString(), name })) : [],
-            guests: tournament.guests ? tournament.guests.split('\n').filter(Boolean).map((name, i) => ({ id: i.toString(), name })) : [],
+            sponsors: typeof tournament.sponsors === 'string' ? tournament.sponsors.split('\n').filter(Boolean).map((s: string, i: number) => ({ id: i.toString(), name: s })) : [],
+            prizes: typeof tournament.prizes === 'string' ? tournament.prizes.split('\n').filter(Boolean).map((p: string, i: number) => ({ id: i.toString(), name: p })) : [],
+            guests: typeof tournament.guests === 'string'
+                ? tournament.guests.split('\n').filter(Boolean).map((g: string, i: number) => {
+                    const [name, code] = g.split('|');
+                    return { id: i.toString(), name: name || '', federation_code: code || '' };
+                })
+                : [],
             current_participants: tournament.current_participants || 0,
             paid_participants: tournament.paid_participants || 0
         });
@@ -740,7 +746,7 @@ const TournamentManager: React.FC = () => {
                     -webkit-appearance: none;
                 }
             `}</style>
-            {!showForm && <PageHero />}
+            {!showForm && <PageHero opacity={0.75} />}
             <div style={styles.headerArea}>
                 <PageHeader
                     noMargin
@@ -756,7 +762,7 @@ const TournamentManager: React.FC = () => {
                 />
             </div>
 
-            <div style={styles.contentContainer}>
+            <div style={{ ...styles.contentContainer, paddingTop: showForm ? '10px' : '20px' }}>
 
                 <AnimatePresence mode="wait">
                     {showForm ? (
@@ -1717,7 +1723,7 @@ const TournamentManager: React.FC = () => {
                                                                                         if (!formData.guests.some(g => g.name === profile.full_name)) {
                                                                                             setFormData({
                                                                                                 ...formData,
-                                                                                                guests: [...formData.guests, { id: profile.id, name: profile.full_name }]
+                                                                                                guests: [...formData.guests, { id: profile.id, name: profile.full_name, federation_code: '' }]
                                                                                             });
                                                                                         }
                                                                                         setGuestSearchQuery('');
@@ -1752,8 +1758,8 @@ const TournamentManager: React.FC = () => {
 
                                                             {formData.guests.map((guest, idx) => (
                                                                 <div key={guest.id} style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                                                                    <div style={{ position: 'relative', flex: 1 }}>
-                                                                        <Mail size={16} color="rgba(255,255,255,0.2)" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
+                                                                    <div style={{ position: 'relative', flex: 2 }}>
+                                                                        <User size={14} color="rgba(255,255,255,0.2)" style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)' }} />
                                                                         <input
                                                                             type="text"
                                                                             value={guest.name}
@@ -1763,8 +1769,23 @@ const TournamentManager: React.FC = () => {
                                                                                 setFormData({ ...formData, guests: newGuests });
                                                                             }}
                                                                             className="form-input-sm with-icon"
-                                                                            style={{ borderRadius: '15px' }}
-                                                                            placeholder="Nombre del invitado"
+                                                                            style={{ height: '38px', fontSize: '12px', paddingLeft: '32px' }}
+                                                                            placeholder="Nombre"
+                                                                        />
+                                                                    </div>
+                                                                    <div style={{ position: 'relative', flex: 1 }}>
+                                                                        <ShieldCheck size={14} color="rgba(255,255,255,0.2)" style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)' }} />
+                                                                        <input
+                                                                            type="text"
+                                                                            value={guest.federation_code}
+                                                                            onChange={(e) => {
+                                                                                const newGuests = [...formData.guests];
+                                                                                newGuests[idx].federation_code = e.target.value;
+                                                                                setFormData({ ...formData, guests: newGuests });
+                                                                            }}
+                                                                            className="form-input-sm with-icon"
+                                                                            style={{ height: '38px', fontSize: '11px', paddingLeft: '32px' }}
+                                                                            placeholder="ID FED"
                                                                         />
                                                                     </div>
                                                                     <button
@@ -1773,9 +1794,9 @@ const TournamentManager: React.FC = () => {
                                                                             const newGuests = formData.guests.filter((_, i) => i !== idx);
                                                                             setFormData({ ...formData, guests: newGuests });
                                                                         }}
-                                                                        style={{ width: '42px', height: '42px', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.2)', borderRadius: '15px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, cursor: 'pointer' }}
+                                                                        style={{ width: '38px', height: '38px', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.2)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, cursor: 'pointer' }}
                                                                     >
-                                                                        <Trash2 size={18} />
+                                                                        <Trash2 size={16} />
                                                                     </button>
                                                                 </div>
                                                             ))}
@@ -1783,7 +1804,7 @@ const TournamentManager: React.FC = () => {
                                                                 type="button"
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
-                                                                    setFormData({ ...formData, guests: [...formData.guests, { id: Date.now().toString(), name: '' }] });
+                                                                    setFormData({ ...formData, guests: [...formData.guests, { id: Date.now().toString(), name: '', federation_code: '' }] });
                                                                 }}
                                                                 style={{
                                                                     background: 'rgba(255,255,255,0.05)',
@@ -1877,14 +1898,46 @@ const TournamentManager: React.FC = () => {
                         <div key="tournament-list" style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginTop: '10px' }}>
                             {/* Regular Creator View */}
                             {showPremiumInvitation && (
-                                <div className="glass" style={{ padding: '20px', borderRadius: '25px', textAlign: 'center', background: 'rgba(212, 175, 55, 0.05)', border: '1px solid rgba(212, 175, 55, 0.1)' }}>
-                                    <Trophy size={24} color="var(--accent)" style={{ marginBottom: '10px', marginInline: 'auto' }} />
-                                    <h3 style={{ fontSize: '16px', fontWeight: '800', color: 'white', marginBottom: '5px' }}>¿Quieres organizar un torneo?</h3>
-                                    <p style={{ fontSize: '13px', color: 'var(--text-dim)', marginBottom: '15px' }}>Envía tu propuesta básica para que el administrador la valide.</p>
+                                <div className="glass" style={{
+                                    padding: '30px 20px',
+                                    borderRadius: '30px',
+                                    textAlign: 'center',
+                                    background: 'linear-gradient(135deg, rgba(163, 230, 53, 0.03) 0%, rgba(163, 230, 53, 0.08) 100%)',
+                                    border: '1px solid rgba(163, 230, 53, 0.15)',
+                                    marginBottom: '10px',
+                                    position: 'relative',
+                                    overflow: 'hidden'
+                                }}>
+                                    <div style={{
+                                        width: '50px',
+                                        height: '50px',
+                                        background: 'rgba(163, 230, 53, 0.1)',
+                                        borderRadius: '16px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        margin: '0 auto 15px',
+                                        border: '1px solid rgba(163, 230, 53, 0.2)'
+                                    }}>
+                                        <Trophy size={26} color="var(--secondary)" strokeWidth={2.5} />
+                                    </div>
+                                    <h3 style={{ fontSize: '18px', fontWeight: '950', color: 'white', marginBottom: '8px', letterSpacing: '-0.3px' }}>¿Quieres organizar un torneo?</h3>
+                                    <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)', marginBottom: '22px', lineHeight: '1.5', maxWidth: '280px', marginInline: 'auto', fontWeight: '500' }}>
+                                        Envía tu propuesta básica para que el administrador la valide.
+                                    </p>
                                     <button
                                         onClick={() => setShowForm(true)}
                                         className="btn-primary"
-                                        style={{ background: 'var(--secondary)', color: 'var(--primary)', padding: '12px', fontSize: '13px' }}
+                                        style={{
+                                            background: 'var(--secondary)',
+                                            color: 'var(--primary)',
+                                            padding: '14px 24px',
+                                            fontSize: '13px',
+                                            fontWeight: '900',
+                                            borderRadius: '16px',
+                                            width: '100%',
+                                            boxShadow: '0 8px 25px rgba(163, 230, 53, 0.2)'
+                                        }}
                                     >
                                         Enviar Propuesta de Torneo
                                     </button>
