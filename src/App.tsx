@@ -148,7 +148,7 @@ const AppContent: React.FC = () => {
       {session && !isRegistrationPage && <Navbar />}
 
       <main
-        className={`${session && !isFixedPage ? "page-content container" : ""} ${isRoundPage || isNotificationsPage || isRoundDetail || isRegistrationPage ? 'round-page-content' : ''} `}
+        className={`${session && !isFixedPage ? "page-content container" : ""} ${isRoundPage || isNotificationsPage || isRoundDetail ? 'round-page-content' : ''} `}
         style={(!session && !isRegistrationPage) ? { flex: 1, overflowX: 'hidden', overflowY: 'auto', display: 'flex', flexDirection: 'column', width: '100%', padding: 0, margin: 0, position: 'relative' } : { flex: 1, overflow: (isFixedPage || isRegistrationPage) ? 'hidden' : 'auto', position: 'relative' }}
       >
         <Routes>

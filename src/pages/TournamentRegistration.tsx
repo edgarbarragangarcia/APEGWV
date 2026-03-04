@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Calendar, MapPin, Trophy, ShieldCheck, HeartHandshake, CheckCircle2, Loader2, Plus, X, Mail, ChevronLeft, Users } from 'lucide-react';
+import { Calendar, MapPin, Trophy, ShieldCheck, HeartHandshake, CheckCircle2, Loader2, Plus, X, Mail, Users } from 'lucide-react';
 import { supabase } from '../services/SupabaseManager';
 import { useAuth } from '../context/AuthContext';
 import Skeleton from '../components/Skeleton';
@@ -259,38 +259,6 @@ const TournamentRegistration: React.FC = () => {
 
             {/* Header Content AREA - Reduced size and more modern */}
             <div style={{ position: 'relative', height: '22vh', flexShrink: 0, overflow: 'hidden' }}>
-                {/* Floating Back Button */}
-                <button
-                    onClick={() => navigate(-1)}
-                    style={{
-                        position: 'absolute',
-                        top: '20px',
-                        left: '20px',
-                        zIndex: 100,
-                        width: '45px',
-                        height: '45px',
-                        borderRadius: '15px',
-                        background: 'rgba(255,255,255,0.1)',
-                        backdropFilter: 'blur(10px)',
-                        border: '1px solid rgba(255,255,255,0.1)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: 'white',
-                        transition: 'all 0.3s ease',
-                        boxShadow: '0 4px 15px rgba(0,0,0,0.2)'
-                    }}
-                    onMouseEnter={(e) => {
-                        e.currentTarget.style.background = 'rgba(255,255,255,0.2)';
-                        e.currentTarget.style.transform = 'translateX(-2px)';
-                    }}
-                    onMouseLeave={(e) => {
-                        e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
-                        e.currentTarget.style.transform = 'translateX(0)';
-                    }}
-                >
-                    <ChevronLeft size={24} />
-                </button>
                 <img
                     src={tournament.image_url || 'https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?q=80&w=1000'}
                     style={{
@@ -335,7 +303,7 @@ const TournamentRegistration: React.FC = () => {
             </div>
 
             <div style={{
-                padding: '20px 25px',
+                padding: '5px 25px 20px',
                 position: 'relative',
                 zIndex: 10,
                 flex: 1,
