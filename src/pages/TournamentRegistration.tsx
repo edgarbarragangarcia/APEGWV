@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Calendar, Users, MapPin, Trophy, ShieldCheck, HeartHandshake, CheckCircle2, Loader2 } from 'lucide-react';
+import { Calendar, Users, MapPin, Trophy, ShieldCheck, HeartHandshake, CheckCircle2, Loader2, Phone, Mail, User, Hash, Target, Plus, X } from 'lucide-react';
 import { supabase } from '../services/SupabaseManager';
 import { useAuth } from '../context/AuthContext';
 import Skeleton from '../components/Skeleton';
@@ -34,6 +34,24 @@ const TournamentRegistration: React.FC = () => {
     const [showSuccess, setShowSuccess] = useState(false);
     const [isRegistered, setIsRegistered] = useState(false);
     const [participantsCount, setParticipantsCount] = useState(0);
+    const [showRegisterForm, setShowRegisterForm] = useState(false);
+
+    // Registration form states
+    const [player1, setPlayer1] = useState({
+        name: '',
+        email: '',
+        phone: '',
+        federationCode: '',
+        handicap: ''
+    });
+    const [player2, setPlayer2] = useState({
+        name: '',
+        email: '',
+        phone: '',
+        federationCode: '',
+        handicap: ''
+    });
+    const [addGuest, setAddGuest] = useState(false);
 
     const fetchData = async () => {
         if (!id) return;
@@ -56,6 +74,22 @@ const TournamentRegistration: React.FC = () => {
 
             // Check if user is already registered
             if (user) {
+                const { data: profile } = await supabase
+                    .from('profiles')
+                    .select('*')
+                    .eq('id', user.id)
+                    .single();
+
+                if (profile) {
+                    setPlayer1({
+                        name: profile.full_name || '',
+                        email: profile.email || '',
+                        phone: profile.phone || '',
+                        federationCode: profile.federation_code || '',
+                        handicap: profile.handicap?.toString() || ''
+                    });
+                }
+
                 const { data: regData } = await supabase
                     .from('tournament_registrations')
                     .select('id')
@@ -78,28 +112,66 @@ const TournamentRegistration: React.FC = () => {
 
     const handleRegister = async () => {
         if (!user) {
-            // Store redirect intended for after login
             sessionStorage.setItem('redirectAfterLogin', window.location.pathname);
             navigate('/auth');
             return;
         }
 
         if (isRegistered || !tournament) return;
+        if (!showRegisterForm) {
+            setShowRegisterForm(true);
+            return;
+        }
+
+        // Validation
+        if (!player1.name || !player1.email) {
+            alert('Por favor completa los campos del jugador principal.');
+            return;
+        }
+
+        const totalToRegister = addGuest ? 2 : 1;
+        if (tournament.participants_limit && (participantsCount + totalToRegister) > tournament.participants_limit) {
+            alert('Lo sentimos, no hay suficientes cupos disponibles.');
+            return;
+        }
 
         setRegistering(true);
         try {
-            const { error } = await supabase
-                .from('tournament_registrations')
-                .insert([{
+            const registrations = [
+                {
                     tournament_id: tournament.id,
                     user_id: user.id,
-                    registration_status: 'registered'
-                }]);
+                    registration_status: 'registered',
+                    player_name: player1.name,
+                    player_email: player1.email,
+                    player_phone: player1.phone,
+                    player_federation_code: player1.federationCode,
+                    player_handicap: player1.handicap ? parseFloat(player1.handicap) : null
+                }
+            ];
+
+            if (addGuest && player2.name) {
+                registrations.push({
+                    tournament_id: tournament.id,
+                    user_id: user.id,
+                    registration_status: 'registered',
+                    player_name: player2.name,
+                    player_email: player2.email,
+                    player_phone: player2.phone,
+                    player_federation_code: player2.federationCode,
+                    player_handicap: player2.handicap ? parseFloat(player2.handicap) : null
+                });
+            }
+
+            const { error } = await supabase
+                .from('tournament_registrations')
+                .insert(registrations);
 
             if (error) throw error;
 
             setIsRegistered(true);
             setShowSuccess(true);
+            setShowRegisterForm(false);
             if (navigator.vibrate) navigator.vibrate([50, 30, 50]);
         } catch (err) {
             console.error('Error registering:', err);
@@ -229,77 +301,234 @@ const TournamentRegistration: React.FC = () => {
                 overflow: 'hidden'
             }}>
                 <div style={{ flex: 1, overflowY: 'auto', marginBottom: '15px', paddingRight: '5px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '15px' }}>
-                        <div style={{ flex: 1 }}>
-                            <h1 style={{ fontSize: '28px', fontWeight: '950', color: 'white', letterSpacing: '-0.5px', marginBottom: '8px' }}>
-                                {tournament.name}
-                            </h1>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--secondary)', fontWeight: '700', fontSize: '14px' }}>
-                                <MapPin size={16} />
-                                {tournament.club}
-                            </div>
-                        </div>
-                    </div>
+                    {showRegisterForm ? (
+                        <div className="animate-fade-up">
+                            <h2 style={{ fontSize: '20px', fontWeight: '900', color: 'white', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <User size={20} color="var(--secondary)" />
+                                Datos del Jugador
+                            </h2>
 
-                    <div style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(2, 1fr)',
-                        gap: '12px',
-                        marginBottom: '25px'
-                    }}>
-                        <div className="glass" style={{ padding: '15px', borderRadius: '20px', display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                            <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontWeight: '800' }}>FECHA</span>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'white', fontSize: '13px', fontWeight: '900' }}>
-                                <Calendar size={14} color="var(--secondary)" />
-                                {new Date(tournament.date).toLocaleDateString('es-ES', { day: '2-digit', month: 'long' })}
-                            </div>
-                        </div>
-                        <div className="glass" style={{ padding: '15px', borderRadius: '20px', display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                            <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontWeight: '800' }}>VALOR</span>
-                            <div style={{ color: 'var(--secondary)', fontSize: '13px', fontWeight: '950' }}>
-                                {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(tournament.price)}
-                            </div>
-                        </div>
-                        <div className="glass" style={{ padding: '15px', borderRadius: '20px', display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                            <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontWeight: '800' }}>MODO</span>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'white', fontSize: '13px', fontWeight: '900' }}>
-                                <Trophy size={14} color="var(--secondary)" />
-                                {tournament.game_mode}
-                            </div>
-                        </div>
-                        <div className="glass" style={{ padding: '15px', borderRadius: '20px', display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                            <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontWeight: '800' }}>CUPOS</span>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'white', fontSize: '13px', fontWeight: '900' }}>
-                                <Users size={14} color="var(--secondary)" />
-                                {participantsCount} / {tournament.participants_limit || '--'}
-                            </div>
-                        </div>
-                    </div>
-
-                    <div style={{ marginBottom: '30px' }}>
-                        <h3 style={{ fontSize: '16px', fontWeight: '900', color: 'white', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                            <div style={{ width: '28px', height: '28px', background: 'rgba(163, 230, 53, 0.1)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                <ShieldCheck size={16} color="var(--secondary)" />
-                            </div>
-                            Información del Evento
-                        </h3>
-                        <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '14px', lineHeight: '1.6' }}>
-                            {tournament.description || 'Sin descripción disponible.'}
-                        </p>
-                    </div>
-
-                    {tournament.custom_rules && (
-                        <div style={{ marginBottom: '30px' }}>
-                            <h3 style={{ fontSize: '16px', fontWeight: '900', color: 'white', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                <div style={{ width: '28px', height: '28px', background: 'rgba(163, 230, 53, 0.1)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                    <HeartHandshake size={16} color="var(--secondary)" />
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                                <div className="glass" style={{ padding: '15px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                    <User size={18} color="rgba(255,255,255,0.4)" />
+                                    <input
+                                        type="text"
+                                        placeholder="Nombre y Apellidos"
+                                        value={player1.name}
+                                        onChange={(e) => setPlayer1({ ...player1, name: e.target.value })}
+                                        style={{ background: 'transparent', border: 'none', color: 'white', fontSize: '14px', width: '100%', outline: 'none' }}
+                                    />
                                 </div>
-                                Reglamento
-                            </h3>
-                            <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '14px', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>
-                                {tournament.custom_rules}
-                            </p>
+                                <div className="glass" style={{ padding: '15px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                    <Mail size={18} color="rgba(255,255,255,0.4)" />
+                                    <input
+                                        type="email"
+                                        placeholder="Correo Electrónico"
+                                        value={player1.email}
+                                        onChange={(e) => setPlayer1({ ...player1, email: e.target.value })}
+                                        style={{ background: 'transparent', border: 'none', color: 'white', fontSize: '14px', width: '100%', outline: 'none' }}
+                                    />
+                                </div>
+                                <div className="glass" style={{ padding: '15px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                    <Phone size={18} color="rgba(255,255,255,0.4)" />
+                                    <input
+                                        type="tel"
+                                        placeholder="Teléfono"
+                                        value={player1.phone}
+                                        onChange={(e) => setPlayer1({ ...player1, phone: e.target.value })}
+                                        style={{ background: 'transparent', border: 'none', color: 'white', fontSize: '14px', width: '100%', outline: 'none' }}
+                                    />
+                                </div>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                                    <div className="glass" style={{ padding: '15px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                        <Hash size={18} color="rgba(255,255,255,0.4)" />
+                                        <input
+                                            type="text"
+                                            placeholder="Cód. Fed"
+                                            value={player1.federationCode}
+                                            onChange={(e) => setPlayer1({ ...player1, federationCode: e.target.value })}
+                                            style={{ background: 'transparent', border: 'none', color: 'white', fontSize: '14px', width: '100%', outline: 'none' }}
+                                        />
+                                    </div>
+                                    <div className="glass" style={{ padding: '15px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                        <Target size={18} color="rgba(255,255,255,0.4)" />
+                                        <input
+                                            type="number"
+                                            placeholder="Handicap"
+                                            value={player1.handicap}
+                                            onChange={(e) => setPlayer1({ ...player1, handicap: e.target.value })}
+                                            style={{ background: 'transparent', border: 'none', color: 'white', fontSize: '14px', width: '100%', outline: 'none' }}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div
+                                onClick={() => setAddGuest(!addGuest)}
+                                style={{
+                                    marginTop: '25px',
+                                    padding: '15px',
+                                    borderRadius: '15px',
+                                    border: '1px dashed rgba(163, 230, 53, 0.4)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '10px',
+                                    color: 'var(--secondary)',
+                                    cursor: 'pointer',
+                                    background: addGuest ? 'rgba(163, 230, 53, 0.05)' : 'transparent'
+                                }}
+                            >
+                                {addGuest ? <X size={18} /> : <Plus size={18} />}
+                                <span style={{ fontSize: '14px', fontWeight: '700' }}>
+                                    {addGuest ? 'Quitar invitado' : 'Inscribir a otra persona'}
+                                </span>
+                            </div>
+
+                            <AnimatePresence>
+                                {addGuest && (
+                                    <motion.div
+                                        initial={{ opacity: 0, height: 0 }}
+                                        animate={{ opacity: 1, height: 'auto' }}
+                                        exit={{ opacity: 0, height: 0 }}
+                                        style={{ marginTop: '20px', display: 'flex', flexDirection: 'column', gap: '15px', overflow: 'hidden' }}
+                                    >
+                                        <h2 style={{ fontSize: '20px', fontWeight: '900', color: 'white', marginBottom: '5px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                            <Users size={20} color="var(--secondary)" />
+                                            Datos del Invitado
+                                        </h2>
+
+                                        <div className="glass" style={{ padding: '15px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                            <User size={18} color="rgba(255,255,255,0.4)" />
+                                            <input
+                                                type="text"
+                                                placeholder="Nombre y Apellidos"
+                                                value={player2.name}
+                                                onChange={(e) => setPlayer2({ ...player2, name: e.target.value })}
+                                                style={{ background: 'transparent', border: 'none', color: 'white', fontSize: '14px', width: '100%', outline: 'none' }}
+                                            />
+                                        </div>
+                                        <div className="glass" style={{ padding: '15px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                            <Mail size={18} color="rgba(255,255,255,0.4)" />
+                                            <input
+                                                type="email"
+                                                placeholder="Correo Electrónico"
+                                                value={player2.email}
+                                                onChange={(e) => setPlayer2({ ...player2, email: e.target.value })}
+                                                style={{ background: 'transparent', border: 'none', color: 'white', fontSize: '14px', width: '100%', outline: 'none' }}
+                                            />
+                                        </div>
+                                        <div className="glass" style={{ padding: '15px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                            <Phone size={18} color="rgba(255,255,255,0.4)" />
+                                            <input
+                                                type="tel"
+                                                placeholder="Teléfono"
+                                                value={player2.phone}
+                                                onChange={(e) => setPlayer2({ ...player2, phone: e.target.value })}
+                                                style={{ background: 'transparent', border: 'none', color: 'white', fontSize: '14px', width: '100%', outline: 'none' }}
+                                            />
+                                        </div>
+                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                                            <div className="glass" style={{ padding: '15px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                                <Hash size={18} color="rgba(255,255,255,0.4)" />
+                                                <input
+                                                    type="text"
+                                                    placeholder="Cód. Fed"
+                                                    value={player2.federationCode}
+                                                    onChange={(e) => setPlayer2({ ...player2, federationCode: e.target.value })}
+                                                    style={{ background: 'transparent', border: 'none', color: 'white', fontSize: '14px', width: '100%', outline: 'none' }}
+                                                />
+                                            </div>
+                                            <div className="glass" style={{ padding: '15px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                                <Target size={18} color="rgba(255,255,255,0.4)" />
+                                                <input
+                                                    type="number"
+                                                    placeholder="Handicap"
+                                                    value={player2.handicap}
+                                                    onChange={(e) => setPlayer2({ ...player2, handicap: e.target.value })}
+                                                    style={{ background: 'transparent', border: 'none', color: 'white', fontSize: '14px', width: '100%', outline: 'none' }}
+                                                />
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
                         </div>
+                    ) : (
+                        <>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '15px' }}>
+                                <div style={{ flex: 1 }}>
+                                    <h1 style={{ fontSize: '28px', fontWeight: '950', color: 'white', letterSpacing: '-0.5px', marginBottom: '8px' }}>
+                                        {tournament.name}
+                                    </h1>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--secondary)', fontWeight: '700', fontSize: '14px' }}>
+                                        <MapPin size={16} />
+                                        {tournament.club}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div style={{
+                                display: 'grid',
+                                gridTemplateColumns: 'repeat(2, 1fr)',
+                                gap: '12px',
+                                marginBottom: '25px'
+                            }}>
+                                <div className="glass" style={{ padding: '15px', borderRadius: '20px', display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                                    <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontWeight: '800' }}>FECHA</span>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'white', fontSize: '13px', fontWeight: '900' }}>
+                                        <Calendar size={14} color="var(--secondary)" />
+                                        {new Date(tournament.date).toLocaleDateString('es-ES', { day: '2-digit', month: 'long' })}
+                                    </div>
+                                </div>
+                                <div className="glass" style={{ padding: '15px', borderRadius: '20px', display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                                    <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontWeight: '800' }}>VALOR</span>
+                                    <div style={{ color: 'var(--secondary)', fontSize: '13px', fontWeight: '950' }}>
+                                        {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(tournament.price)}
+                                    </div>
+                                </div>
+                                <div className="glass" style={{ padding: '15px', borderRadius: '20px', display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                                    <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontWeight: '800' }}>MODO</span>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'white', fontSize: '13px', fontWeight: '900' }}>
+                                        <Trophy size={14} color="var(--secondary)" />
+                                        {tournament.game_mode}
+                                    </div>
+                                </div>
+                                <div className="glass" style={{ padding: '15px', borderRadius: '20px', display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                                    <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontWeight: '800' }}>CUPOS</span>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'white', fontSize: '13px', fontWeight: '900' }}>
+                                        <Users size={14} color="var(--secondary)" />
+                                        {participantsCount} / {tournament.participants_limit || '--'}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div style={{ marginBottom: '30px' }}>
+                                <h3 style={{ fontSize: '16px', fontWeight: '900', color: 'white', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                    <div style={{ width: '28px', height: '28px', background: 'rgba(163, 230, 53, 0.1)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                        <ShieldCheck size={16} color="var(--secondary)" />
+                                    </div>
+                                    Información del Evento
+                                </h3>
+                                <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '14px', lineHeight: '1.6' }}>
+                                    {tournament.description || 'Sin descripción disponible.'}
+                                </p>
+                            </div>
+
+                            {tournament.custom_rules && (
+                                <div style={{ marginBottom: '30px' }}>
+                                    <h3 style={{ fontSize: '16px', fontWeight: '900', color: 'white', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                        <div style={{ width: '28px', height: '28px', background: 'rgba(163, 230, 53, 0.1)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                            <HeartHandshake size={16} color="var(--secondary)" />
+                                        </div>
+                                        Reglamento
+                                    </h3>
+                                    <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '14px', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>
+                                        {tournament.custom_rules}
+                                    </p>
+                                </div>
+                            )}
+                        </>
                     )}
                 </div>
 
@@ -325,8 +554,24 @@ const TournamentRegistration: React.FC = () => {
                         }}
                     >
                         {registering ? <Loader2 className="animate-spin" size={24} /> :
-                            isRegistered ? 'YA ESTÁS INSCRITO' : 'INSCRIBIRME AHORA'}
+                            isRegistered ? 'YA ESTÁS INSCRITO' :
+                                showRegisterForm ? 'CONFIRMAR INSCRIPCIÓN' : 'INSCRIBIRME AHORA'}
                     </button>
+                    {showRegisterForm && (
+                        <button
+                            onClick={() => setShowRegisterForm(false)}
+                            style={{
+                                width: '100%',
+                                marginTop: '10px',
+                                color: 'rgba(255,255,255,0.4)',
+                                fontSize: '12px',
+                                fontWeight: '600',
+                                textDecoration: 'underline'
+                            }}
+                        >
+                            VOLVER A INFORMACIÓN
+                        </button>
+                    )}
                     {!user && (
                         <p style={{ textAlign: 'center', color: 'rgba(255,255,255,0.4)', fontSize: '11px', marginTop: '10px', fontWeight: '600' }}>
                             Requiere inicio de sesión para completar la inscripción
