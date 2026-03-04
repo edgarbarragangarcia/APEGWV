@@ -456,7 +456,7 @@ const TournamentRegistration: React.FC = () => {
 
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                                    <label style={{ fontSize: '10px', fontWeight: '900', color: 'rgba(255,255,255,0.4)', marginLeft: '16px', letterSpacing: '2px' }}>HÁNDICAP</label>
+                                    <label style={{ fontSize: '10px', fontWeight: '900', color: 'var(--secondary)', marginLeft: '16px', letterSpacing: '2px' }}>HÁNDICAP</label>
                                     <div className="glass" style={{ padding: '18px 22px', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', gap: '15px', background: 'rgba(255,255,255,0.02)' }}>
                                         <ShieldCheck size={20} color="rgba(255,255,255,0.3)" />
                                         <input
@@ -469,7 +469,7 @@ const TournamentRegistration: React.FC = () => {
                                     </div>
                                 </div>
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                                    <label style={{ fontSize: '10px', fontWeight: '900', color: 'rgba(255,255,255,0.4)', marginLeft: '16px', letterSpacing: '2px' }}>FEDERACIÓN</label>
+                                    <label style={{ fontSize: '10px', fontWeight: '900', color: 'var(--secondary)', marginLeft: '16px', letterSpacing: '2px' }}>FEDERACIÓN</label>
                                     <div className="glass" style={{ padding: '18px 22px', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', gap: '15px', background: 'rgba(255,255,255,0.02)' }}>
                                         <Calendar size={20} color="rgba(255,255,255,0.3)" />
                                         <input
@@ -484,7 +484,7 @@ const TournamentRegistration: React.FC = () => {
                             </div>
 
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                                <label style={{ fontSize: '10px', fontWeight: '900', color: 'rgba(255,255,255,0.4)', marginLeft: '16px', letterSpacing: '2px' }}>CORREO ELECTRÓNICO</label>
+                                <label style={{ fontSize: '10px', fontWeight: '900', color: 'var(--secondary)', marginLeft: '16px', letterSpacing: '2px' }}>CORREO ELECTRÓNICO</label>
                                 <div className="glass" style={{ padding: '18px 22px', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', gap: '15px', background: 'rgba(255,255,255,0.02)' }}>
                                     <Mail size={20} color="rgba(255,255,255,0.3)" />
                                     <input
@@ -498,7 +498,7 @@ const TournamentRegistration: React.FC = () => {
                             </div>
 
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                                <label style={{ fontSize: '10px', fontWeight: '900', color: 'rgba(255,255,255,0.4)', marginLeft: '16px', letterSpacing: '2px' }}>CELULAR</label>
+                                <label style={{ fontSize: '10px', fontWeight: '900', color: 'var(--secondary)', marginLeft: '16px', letterSpacing: '2px' }}>CELULAR</label>
                                 <div className="glass" style={{ padding: '18px 22px', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', gap: '15px', background: 'rgba(255,255,255,0.02)' }}>
                                     <HeartHandshake size={20} color="rgba(255,255,255,0.3)" />
                                     <input
@@ -544,7 +544,7 @@ const TournamentRegistration: React.FC = () => {
                                     exit={{ opacity: 0, height: 0 }}
                                     style={{ marginTop: '25px', display: 'flex', flexDirection: 'column', gap: '20px', overflow: 'hidden' }}
                                 >
-                                    <h2 style={{ fontSize: '16px', fontWeight: '900', color: 'white', marginBottom: '5px' }}>DATOS DEL INVITADO</h2>
+                                    <h2 style={{ fontSize: '16px', fontWeight: '900', color: 'var(--secondary)', marginBottom: '5px' }}>DATOS DEL INVITADO</h2>
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                                         <div className="glass" style={{ padding: '16px 20px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(255,255,255,0.02)' }}>
                                             <Trophy size={18} color="rgba(255,255,255,0.3)" />
