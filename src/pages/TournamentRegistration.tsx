@@ -182,8 +182,7 @@ const TournamentRegistration: React.FC = () => {
     }
 
     return (
-        <div className="animate-fade" style={{
-            background: 'var(--primary)',
+        <div className="animate-fade golf-premium-bg" style={{
             height: '100dvh',
             display: 'flex',
             flexDirection: 'column',
@@ -310,11 +309,120 @@ const TournamentRegistration: React.FC = () => {
                 display: 'flex',
                 flexDirection: 'column',
                 overflowY: 'auto',
-                background: 'var(--primary)'
+                background: 'transparent'
             }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '30px', paddingBottom: '30px' }}>
 
-                    {/* INSCRIPCIÓN SECTION - AT THE TOP */}
+                    {/* TOURNAMENT INFORMATION SECTION - NOW AT THE TOP */}
+                    <div className="animate-fade-up">
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
+                            <div style={{ width: '4px', height: '20px', background: 'var(--secondary)', borderRadius: '10px' }} />
+                            <h3 style={{ fontSize: '14px', fontWeight: '900', color: 'white', letterSpacing: '1px', margin: 0 }}>INFORMACIÓN DEL TORNEO</h3>
+                        </div>
+                        <div style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(2, 1fr)',
+                            gap: '12px',
+                            marginBottom: '25px'
+                        }}>
+                            <div className="glass" style={{
+                                padding: '15px 10px',
+                                borderRadius: '20px',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                gap: '6px',
+                                background: 'rgba(255,255,255,0.03)',
+                                border: '1px solid rgba(255,255,255,0.05)'
+                            }}>
+                                <Calendar size={14} color="var(--secondary)" />
+                                <div style={{ textAlign: 'center' }}>
+                                    <span style={{ fontSize: '8px', color: 'rgba(255,255,255,0.4)', fontWeight: '900', letterSpacing: '1px', display: 'block' }}>FECHA</span>
+                                    <div style={{ color: 'white', fontSize: '12px', fontWeight: '950' }}>
+                                        {new Date(tournament.date).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' })}
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="glass" style={{
+                                padding: '15px 10px',
+                                borderRadius: '20px',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                gap: '6px',
+                                background: 'rgba(163, 230, 53, 0.05)',
+                                border: '1px solid rgba(163, 230, 53, 0.1)'
+                            }}>
+                                <span style={{ color: 'var(--secondary)', fontWeight: '950', fontSize: '14px' }}>$</span>
+                                <div style={{ textAlign: 'center' }}>
+                                    <span style={{ fontSize: '8px', color: 'rgba(255,255,255,0.4)', fontWeight: '900', letterSpacing: '1px', display: 'block' }}>VALOR</span>
+                                    <div style={{ color: 'var(--secondary)', fontSize: '12px', fontWeight: '950' }}>
+                                        {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(tournament.price)}
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="glass" style={{
+                                padding: '15px 10px',
+                                borderRadius: '20px',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                gap: '6px',
+                                background: 'rgba(255,255,255,0.03)',
+                                border: '1px solid rgba(255,255,255,0.05)'
+                            }}>
+                                <Trophy size={14} color="var(--secondary)" />
+                                <div style={{ textAlign: 'center' }}>
+                                    <span style={{ fontSize: '8px', color: 'rgba(255,255,255,0.4)', fontWeight: '900', letterSpacing: '1px', display: 'block' }}>MODO</span>
+                                    <div style={{ color: 'white', fontSize: '11px', fontWeight: '950', textTransform: 'uppercase' }}>
+                                        {tournament.game_mode?.split(' ')[0]}
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="glass" style={{
+                                padding: '15px 10px',
+                                borderRadius: '20px',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                gap: '6px',
+                                background: 'rgba(255,255,255,0.03)',
+                                border: '1px solid rgba(255,255,255,0.05)'
+                            }}>
+                                <Users size={14} color="var(--secondary)" />
+                                <div style={{ textAlign: 'center' }}>
+                                    <span style={{ fontSize: '8px', color: 'rgba(255,255,255,0.4)', fontWeight: '900', letterSpacing: '1px', display: 'block' }}>INSCRITOS</span>
+                                    <div style={{ color: 'white', fontSize: '12px', fontWeight: '950' }}>
+                                        {((tournament as any).registrations?.[0]?.count || 0)} PERSONAS
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="glass" style={{ padding: '20px', borderRadius: '24px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', marginBottom: '25px' }}>
+                            <h4 style={{ fontSize: '13px', fontWeight: '900', color: 'white', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <ShieldCheck size={16} color="var(--secondary)" /> DETALLES DEL EVENTO
+                            </h4>
+                            <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px', lineHeight: '1.6', fontWeight: '500' }}>
+                                {tournament.description || 'Disfruta de una jornada única de golf diseñada para los amantes del deporte y la comunidad APEG.'}
+                            </p>
+                        </div>
+
+                        {tournament.custom_rules && (
+                            <div style={{ padding: '0 5px' }}>
+                                <h4 style={{ fontSize: '14px', fontWeight: '900', color: 'white', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <HeartHandshake size={16} color="var(--secondary)" /> REGLAMENTO
+                                </h4>
+                                <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '13px', lineHeight: '1.5', whiteSpace: 'pre-wrap' }}>
+                                    {tournament.custom_rules}
+                                </p>
+                            </div>
+                        )}
+                    </div>
+
+                    <div style={{ height: '1px', background: 'rgba(255,255,255,0.05)', margin: '10px 0' }} />
+
+                    {/* INSCRIPCIÓN SECTION - NOW BELOW INFO */}
                     <div className="animate-fade-up">
                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
                             <div style={{ width: '4px', height: '20px', background: 'var(--secondary)', borderRadius: '10px' }} />
@@ -437,7 +545,6 @@ const TournamentRegistration: React.FC = () => {
                                     style={{ marginTop: '25px', display: 'flex', flexDirection: 'column', gap: '20px', overflow: 'hidden' }}
                                 >
                                     <h2 style={{ fontSize: '16px', fontWeight: '900', color: 'white', marginBottom: '5px' }}>DATOS DEL INVITADO</h2>
-                                    {/* Simplified guest inputs for brevity in this view */}
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                                         <div className="glass" style={{ padding: '16px 20px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(255,255,255,0.04)' }}>
                                             <Trophy size={18} color="rgba(255,255,255,0.3)" />
@@ -464,117 +571,12 @@ const TournamentRegistration: React.FC = () => {
                             )}
                         </AnimatePresence>
                     </div>
-
-                    <div style={{ height: '1px', background: 'rgba(255,255,255,0.05)', margin: '10px 0' }} />
-
-                    {/* TOURNAMENT INFORMATION SECTION - BELOW FORM */}
-                    <div className="animate-fade-up">
-                        <div style={{
-                            display: 'grid',
-                            gridTemplateColumns: 'repeat(2, 1fr)',
-                            gap: '12px',
-                            marginBottom: '25px'
-                        }}>
-                            <div className="glass" style={{
-                                padding: '15px 10px',
-                                borderRadius: '20px',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'center',
-                                gap: '6px',
-                                background: 'rgba(255,255,255,0.03)',
-                                border: '1px solid rgba(255,255,255,0.05)'
-                            }}>
-                                <Calendar size={14} color="var(--secondary)" />
-                                <div style={{ textAlign: 'center' }}>
-                                    <span style={{ fontSize: '8px', color: 'rgba(255,255,255,0.4)', fontWeight: '900', letterSpacing: '1px', display: 'block' }}>FECHA</span>
-                                    <div style={{ color: 'white', fontSize: '12px', fontWeight: '950' }}>
-                                        {new Date(tournament.date).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' })}
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="glass" style={{
-                                padding: '15px 10px',
-                                borderRadius: '20px',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'center',
-                                gap: '6px',
-                                background: 'rgba(163, 230, 53, 0.05)',
-                                border: '1px solid rgba(163, 230, 53, 0.1)'
-                            }}>
-                                <span style={{ color: 'var(--secondary)', fontWeight: '950', fontSize: '14px' }}>$</span>
-                                <div style={{ textAlign: 'center' }}>
-                                    <span style={{ fontSize: '8px', color: 'rgba(255,255,255,0.4)', fontWeight: '900', letterSpacing: '1px', display: 'block' }}>VALOR</span>
-                                    <div style={{ color: 'var(--secondary)', fontSize: '12px', fontWeight: '950' }}>
-                                        {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(tournament.price)}
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="glass" style={{
-                                padding: '15px 10px',
-                                borderRadius: '20px',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'center',
-                                gap: '6px',
-                                background: 'rgba(255,255,255,0.03)',
-                                border: '1px solid rgba(255,255,255,0.05)'
-                            }}>
-                                <Trophy size={14} color="var(--secondary)" />
-                                <div style={{ textAlign: 'center' }}>
-                                    <span style={{ fontSize: '8px', color: 'rgba(255,255,255,0.4)', fontWeight: '900', letterSpacing: '1px', display: 'block' }}>MODO</span>
-                                    <div style={{ color: 'white', fontSize: '11px', fontWeight: '950', textTransform: 'uppercase' }}>
-                                        {tournament.game_mode?.split(' ')[0]}
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="glass" style={{
-                                padding: '15px 10px',
-                                borderRadius: '20px',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'center',
-                                gap: '6px',
-                                background: 'rgba(255,255,255,0.03)',
-                                border: '1px solid rgba(255,255,255,0.05)'
-                            }}>
-                                <Users size={14} color="var(--secondary)" />
-                                <div style={{ textAlign: 'center' }}>
-                                    <span style={{ fontSize: '8px', color: 'rgba(255,255,255,0.4)', fontWeight: '900', letterSpacing: '1px', display: 'block' }}>INSCRITOS</span>
-                                    <div style={{ color: 'white', fontSize: '12px', fontWeight: '950' }}>
-                                        {((tournament as any).registrations?.[0]?.count || 0)} PERSONAS
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="glass" style={{ padding: '20px', borderRadius: '24px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', marginBottom: '25px' }}>
-                            <h4 style={{ fontSize: '13px', fontWeight: '900', color: 'white', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <ShieldCheck size={16} color="var(--secondary)" /> DETALLES DEL EVENTO
-                            </h4>
-                            <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px', lineHeight: '1.6', fontWeight: '500' }}>
-                                {tournament.description || 'Disfruta de una jornada única de golf diseñada para los amantes del deporte y la comunidad APEG.'}
-                            </p>
-                        </div>
-
-                        {tournament.custom_rules && (
-                            <div style={{ padding: '0 5px' }}>
-                                <h4 style={{ fontSize: '14px', fontWeight: '900', color: 'white', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                    <HeartHandshake size={16} color="var(--secondary)" /> REGLAMENTO
-                                </h4>
-                                <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '13px', lineHeight: '1.5', whiteSpace: 'pre-wrap' }}>
-                                    {tournament.custom_rules}
-                                </p>
-                            </div>
-                        )}
-                    </div>
                 </div>
             </div>
 
             <div style={{
                 paddingTop: '10px',
-                backgroundColor: 'var(--primary)',
+                backgroundColor: 'transparent',
                 flexShrink: 0
             }}>
                 <button
