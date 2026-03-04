@@ -113,7 +113,7 @@ const TournamentParticipants: React.FC = () => {
                 .map((g, index: number) => ({
                     id: `manual-guest-${index}`,
                     user_id: null,
-                    registration_status: 'Confirmado',
+                    registration_status: 'Invitado',
                     full_name: g.name,
                     email: null,
                     phone: null,
@@ -167,8 +167,8 @@ const TournamentParticipants: React.FC = () => {
 
         const matchesStatus =
             statusFilter === 'all' ||
-            (statusFilter === 'paid' && (p.registration_status === 'paid' || p.registration_status === 'Confirmado')) ||
-            (statusFilter === 'registered' && p.registration_status !== 'paid' && p.registration_status !== 'Confirmado') ||
+            (statusFilter === 'paid' && (p.registration_status === 'paid' || p.registration_status === 'Confirmado') && !p.is_guest) ||
+            (statusFilter === 'registered' && p.registration_status !== 'paid' && p.registration_status !== 'Confirmado' && !p.is_guest) ||
             (statusFilter === 'guests' && p.is_guest);
 
         return matchesSearch && matchesStatus;
@@ -463,7 +463,7 @@ const TournamentParticipants: React.FC = () => {
                                             <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontWeight: '700' }}>HCP: <span style={{ color: 'var(--secondary)' }}>{p.handicap ?? '--'}</span></span>
                                             <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontWeight: '700' }}>ID: <span style={{ color: 'white' }}>{p.federation_code ?? '--'}</span></span>
                                         </div>
-                                        {(p.registration_status === 'paid' || p.registration_status === 'Confirmado' || p.is_guest) && (
+                                        {(p.registration_status === 'paid' || p.registration_status === 'Confirmado') && !p.is_guest && (
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '4px' }}>
                                                 <div style={{ background: 'var(--secondary)', color: 'var(--primary)', fontSize: '8px', fontWeight: '950', padding: '1px 6px', borderRadius: '5px', textTransform: 'uppercase' }}>PAGADO</div>
                                                 {p.payment_date && (
@@ -475,23 +475,25 @@ const TournamentParticipants: React.FC = () => {
                                         )}
                                     </div>
 
-                                    <motion.div
-                                        whileTap={{ scale: 0.9 }}
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            togglePaymentStatus(p.id, p.registration_status);
-                                        }}
-                                        style={{
-                                            width: '46px', height: '46px', borderRadius: '16px',
-                                            background: (p.registration_status === 'paid' || p.registration_status === 'Confirmado' || p.is_guest) ? 'var(--secondary)' : 'rgba(255,255,255,0.03)',
-                                            color: (p.registration_status === 'paid' || p.registration_status === 'Confirmado' || p.is_guest) ? 'var(--primary)' : 'rgba(255,255,255,0.2)',
-                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                            border: (p.registration_status === 'paid' || p.registration_status === 'Confirmado' || p.is_guest) ? 'none' : '1px solid rgba(255,255,255,0.05)',
-                                            cursor: 'pointer'
-                                        }}
-                                    >
-                                        <Trophy size={20} strokeWidth={2.5} />
-                                    </motion.div>
+                                    {!p.is_guest && (
+                                        <motion.div
+                                            whileTap={{ scale: 0.9 }}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                togglePaymentStatus(p.id, p.registration_status);
+                                            }}
+                                            style={{
+                                                width: '46px', height: '46px', borderRadius: '16px',
+                                                background: (p.registration_status === 'paid' || p.registration_status === 'Confirmado') ? 'var(--secondary)' : 'rgba(255,255,255,0.03)',
+                                                color: (p.registration_status === 'paid' || p.registration_status === 'Confirmado') ? 'var(--primary)' : 'rgba(255,255,255,0.2)',
+                                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                border: (p.registration_status === 'paid' || p.registration_status === 'Confirmado') ? 'none' : '1px solid rgba(255,255,255,0.05)',
+                                                cursor: 'pointer'
+                                            }}
+                                        >
+                                            <Trophy size={20} strokeWidth={2.5} />
+                                        </motion.div>
+                                    )}
                                 </motion.div>
                             ))}
 

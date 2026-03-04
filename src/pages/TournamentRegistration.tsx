@@ -19,8 +19,10 @@ interface Tournament {
     image_url: string | null;
     game_mode: string | null;
     address: string | null;
-    rules?: string[];
+    rules: string[] | null;
     custom_rules?: string | null;
+    registrations?: { count: number }[];
+    [key: string]: any;
 }
 
 const TournamentRegistration: React.FC = () => {
@@ -393,7 +395,7 @@ const TournamentRegistration: React.FC = () => {
                                 <div style={{ textAlign: 'center' }}>
                                     <span style={{ fontSize: '8px', color: 'rgba(255,255,255,0.4)', fontWeight: '900', letterSpacing: '1px', display: 'block' }}>INSCRITOS</span>
                                     <div style={{ color: 'white', fontSize: '12px', fontWeight: '950' }}>
-                                        {((tournament as any).registrations?.[0]?.count || 0)} PERSONAS
+                                        {(tournament.registrations?.[0]?.count || 0)} PERSONAS
                                     </div>
                                 </div>
                             </div>
