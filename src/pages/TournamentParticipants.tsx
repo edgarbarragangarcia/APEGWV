@@ -19,6 +19,7 @@ interface Participant {
     total_rounds: number | null;
     average_score: number | null;
     registration_status: string | null;
+    federation_code: string | null;
 }
 
 const TournamentParticipants: React.FC = () => {
@@ -31,7 +32,7 @@ const TournamentParticipants: React.FC = () => {
     const [selectedParticipant, setSelectedParticipant] = useState<Participant | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [copiedEmails, setCopiedEmails] = useState(false);
-    const [statusFilter, setStatusFilter] = useState<'all' | 'paid' | 'registered'>('all');
+    const [statusFilter, setStatusFilter] = useState<'all' | 'paid' | 'registered' | 'guests'>('all');
     const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
     useEffect(() => {
@@ -64,8 +65,9 @@ const TournamentParticipants: React.FC = () => {
                     player_email,
                     player_phone,
                     player_handicap,
+                    player_federation_code,
                     profiles (
-                        id, full_name, id_photo_url, handicap, email, phone, total_rounds, average_score
+                        id, full_name, id_photo_url, handicap, email, phone, total_rounds, average_score, federation_code
                     )
                 `)
                 .eq('tournament_id', id || '');
@@ -84,7 +86,8 @@ const TournamentParticipants: React.FC = () => {
                     handicap: profile?.handicap || reg.player_handicap,
                     id_photo_url: profile?.id_photo_url,
                     total_rounds: profile?.total_rounds,
-                    average_score: profile?.average_score
+                    average_score: profile?.average_score,
+                    federation_code: profile?.federation_code || reg.player_federation_code
                 };
             }) || [];
 
@@ -122,7 +125,8 @@ const TournamentParticipants: React.FC = () => {
         const matchesStatus =
             statusFilter === 'all' ||
             (statusFilter === 'paid' && (p.registration_status === 'paid' || p.registration_status === 'Confirmado')) ||
-            (statusFilter === 'registered' && p.registration_status !== 'paid' && p.registration_status !== 'Confirmado');
+            (statusFilter === 'registered' && p.registration_status !== 'paid' && p.registration_status !== 'Confirmado') ||
+            (statusFilter === 'guests' && !p.user_id);
 
         return matchesSearch && matchesStatus;
     });
@@ -233,7 +237,8 @@ const TournamentParticipants: React.FC = () => {
                         {[
                             { id: 'all', label: 'Todos', icon: <Users size={14} /> },
                             { id: 'paid', label: 'Pagos', icon: <CheckCircle2 size={14} /> },
-                            { id: 'registered', label: 'Pendientes', icon: <Clock size={14} /> }
+                            { id: 'registered', label: 'Pendientes', icon: <Clock size={14} /> },
+                            { id: 'guests', label: 'Invitados', icon: <User size={14} /> }
                         ].map(filter => (
                             <button
                                 key={filter.id}
@@ -333,6 +338,10 @@ const TournamentParticipants: React.FC = () => {
                             <div style={{ display: 'inline-flex', alignItems: 'center', background: 'rgba(255,255,255,0.1)', padding: '4px 10px', borderRadius: '20px', marginTop: '5px' }}>
                                 <span style={{ color: 'var(--text-dim)', fontSize: '11px', marginRight: '5px' }}>Hándicap Index:</span>
                                 <span style={{ color: 'white', fontWeight: '800', fontSize: '13px' }}>{selectedParticipant.handicap ?? '--'}</span>
+                            </div>
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', background: 'rgba(255,255,255,0.03)', padding: '6px 15px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                <span style={{ fontSize: '9px', fontWeight: '800', color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>FEDERACIÓN</span>
+                                <span style={{ color: 'white', fontWeight: '800', fontSize: '13px' }}>{selectedParticipant.federation_code ?? '--'}</span>
                             </div>
                         </div>
 
