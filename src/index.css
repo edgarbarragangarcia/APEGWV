@@ -424,28 +424,29 @@ button:active {
   100% {
     transform: rotate(360deg);
   }
+}
 
-  /* --- PREMIUM GOLF BACKGROUND --- */
-  .golf-premium-bg {
-    position: relative;
-    background-image: url('https://images.unsplash.com/photo-1535131749006-b7f58c99034b?q=80&w=2000');
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
-    background-blend-mode: multiply;
-    animation: golf-pulse 15s ease-in-out infinite;
+/* --- PREMIUM GOLF BACKGROUND --- */
+.golf-premium-bg {
+  position: relative;
+  background-image: url('https://images.unsplash.com/photo-1535131749006-b7f58c99034b?q=80&w=2000');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  background-blend-mode: multiply;
+  animation: golf-pulse 15s ease-in-out infinite;
+}
+
+@keyframes golf-pulse {
+  0% {
+    background-color: rgba(14, 47, 31, 0.9);
   }
 
-  @keyframes golf-pulse {
-    0% {
-      background-color: rgba(14, 47, 31, 0.9);
-    }
-
-    50% {
-      background-color: rgba(30, 80, 50, 0.7);
-    }
-
-    100% {
-      background-color: rgba(14, 47, 31, 0.9);
-    }
+  50% {
+    background-color: rgba(30, 80, 50, 0.7);
   }
+
+  100% {
+    background-color: rgba(14, 47, 31, 0.9);
+  }
+}
