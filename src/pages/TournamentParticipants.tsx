@@ -339,7 +339,7 @@ const TournamentParticipants: React.FC = () => {
                             {[1, 2, 3, 4].map(i => <Skeleton key={i} height="80px" borderRadius="24px" />)}
                         </div>
                     ) : selectedParticipant ? (
-                        <div className="animate-fade-in" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                        <div className="animate-fade-in" style={{ flex: 1, display: 'flex', flexDirection: 'column', paddingTop: '20px' }}>
                             {/* Detail View remains similar but we ensure it matches premium style */}
                             <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '25px', textAlign: 'left' }}>
                                 <div style={{ width: '85px', height: '85px', borderRadius: '25px', overflow: 'hidden', border: '3px solid var(--secondary)', boxShadow: '0 10px 20px rgba(0,0,0,0.2)', flexShrink: 0 }}>
@@ -387,6 +387,29 @@ const TournamentParticipants: React.FC = () => {
                                     </div>
                                 </div>
                             </div>
+
+                            {(selectedParticipant.registration_status === 'paid' || selectedParticipant.registration_status === 'Confirmado') && selectedParticipant.payment_date && (
+                                <div className="glass" style={{ padding: '20px', borderRadius: '24px', marginBottom: '15px', background: 'rgba(163, 230, 53, 0.03)', border: '1px solid rgba(163, 230, 53, 0.1)' }}>
+                                    <h4 style={{ fontSize: '11px', fontWeight: '900', color: 'var(--secondary)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '1px' }}>Información de Pago</h4>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                        <div style={{ width: '36px', height: '36px', borderRadius: '12px', background: 'rgba(163, 230, 53, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                            <Clock size={16} color="var(--secondary)" />
+                                        </div>
+                                        <div>
+                                            <p style={{ fontSize: '10px', color: 'rgba(163, 230, 53, 0.5)', marginBottom: '1px', fontWeight: '700' }}>FECHA DE CONFIRMACIÓN</p>
+                                            <p style={{ color: 'white', fontSize: '14px', fontWeight: '600' }}>
+                                                {new Date(selectedParticipant.payment_date).toLocaleDateString('es-ES', {
+                                                    day: '2-digit',
+                                                    month: 'long',
+                                                    year: 'numeric',
+                                                    hour: '2-digit',
+                                                    minute: '2-digit'
+                                                })}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     ) : participants.length === 0 ? (
                         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.2)', minHeight: '300px' }}>
