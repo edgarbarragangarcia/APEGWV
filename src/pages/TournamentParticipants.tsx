@@ -405,7 +405,7 @@ const TournamentParticipants: React.FC = () => {
                                         boxShadow: '0 10px 20px rgba(163, 230, 53, 0.2)'
                                     }}
                                 >
-                                    <Mail size={16} /> {copiedEmails ? '¡COPIADOS!' : `Enviar (${selectedIds.length})`}
+                                    <Mail size={16} /> {copiedEmails ? '¡COPIADOS!' : `Copiar correos (${selectedIds.length})`}
                                 </motion.button>
                             )}
                         </div>
