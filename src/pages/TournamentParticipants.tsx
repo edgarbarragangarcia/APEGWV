@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { supabase } from '../services/SupabaseManager';
-import { User, Trophy, Calendar, Users, ChevronLeft, Search, CheckCircle2, Clock } from 'lucide-react';
+import { User, Trophy, Calendar, Users, ChevronLeft, Search, CheckCircle2, Clock, Mail, CheckSquare, Square } from 'lucide-react';
 import Skeleton from '../components/Skeleton';
 import PageHero from '../components/PageHero';
 import PageHeader from '../components/PageHeader';
@@ -31,6 +31,7 @@ const TournamentParticipants: React.FC = () => {
     const [selectedParticipant, setSelectedParticipant] = useState<Participant | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState<'all' | 'paid' | 'registered'>('all');
+    const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
     useEffect(() => {
         if (id) {
@@ -124,6 +125,38 @@ const TournamentParticipants: React.FC = () => {
 
         return matchesSearch && matchesStatus;
     });
+
+    const handleSelectParticipant = (id: string, e?: React.MouseEvent) => {
+        if (e) e.stopPropagation();
+        setSelectedIds(prev =>
+            prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+        );
+    };
+
+    const handleSelectAll = (deselect: boolean) => {
+        if (deselect) {
+            setSelectedIds(prev => prev.filter(id => !filteredParticipants.some(p => p.id === id)));
+        } else {
+            const newSelected = [...new Set([...selectedIds, ...filteredParticipants.map(p => p.id)])];
+            setSelectedIds(newSelected);
+        }
+    };
+
+    const sendBulkEmail = () => {
+        const selectedParticipants = participants.filter(p => selectedIds.includes(p.id));
+        const emails = selectedParticipants.map(p => p.email).filter(Boolean).join(',');
+
+        if (!emails) {
+            alert('No hay correos electrónicos disponibles para los participantes seleccionados.');
+            return;
+        }
+
+        // Use bcc for privacy in case they use a client that supports it well, or just recipients
+        const mailtoUrl = `mailto:?bcc=${emails}&subject=Información Torneo: ${tournamentName}`;
+        window.location.href = mailtoUrl;
+    };
+
+    const isAllFilteredSelected = filteredParticipants.length > 0 && filteredParticipants.every(p => selectedIds.includes(p.id));
 
     return (
         <div className="animate-fade" style={{
@@ -311,10 +344,53 @@ const TournamentParticipants: React.FC = () => {
                 ) : (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                            <p style={{ color: 'var(--text-dim)', fontSize: '14px' }}>
-                                {statusFilter === 'all' ? 'Total de inscritos' : statusFilter === 'paid' ? 'Total pagos' : 'Total pendientes'}
-                            </p>
-                            <span style={{ background: 'var(--secondary)', color: 'var(--primary)', padding: '4px 10px', borderRadius: '12px', fontSize: '13px', fontWeight: '800' }}>{filteredParticipants.length}</span>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <button
+                                    onClick={() => handleSelectAll(isAllFilteredSelected)}
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '6px',
+                                        padding: '5px 10px',
+                                        borderRadius: '10px',
+                                        background: isAllFilteredSelected ? 'var(--secondary)' : 'rgba(255,255,255,0.05)',
+                                        color: isAllFilteredSelected ? 'var(--primary)' : 'white',
+                                        border: 'none',
+                                        fontSize: '12px',
+                                        fontWeight: '700',
+                                        cursor: 'pointer'
+                                    }}
+                                >
+                                    {isAllFilteredSelected ? <CheckSquare size={14} /> : <Square size={14} />}
+                                    {isAllFilteredSelected ? 'Deseleccionar' : 'Seleccionar Todo'}
+                                </button>
+                                <p style={{ color: 'var(--text-dim)', fontSize: '14px' }}>
+                                    ({filteredParticipants.length})
+                                </p>
+                            </div>
+                            {selectedIds.length > 0 && (
+                                <motion.button
+                                    initial={{ scale: 0.8, opacity: 0 }}
+                                    animate={{ scale: 1, opacity: 1 }}
+                                    onClick={sendBulkEmail}
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '6px',
+                                        padding: '10px 18px',
+                                        borderRadius: '14px',
+                                        background: 'var(--secondary)',
+                                        color: 'var(--primary)',
+                                        border: 'none',
+                                        fontSize: '13px',
+                                        fontWeight: '900',
+                                        cursor: 'pointer',
+                                        boxShadow: '0 10px 20px rgba(163, 230, 53, 0.2)'
+                                    }}
+                                >
+                                    <Mail size={16} /> Enviar ({selectedIds.length})
+                                </motion.button>
+                            )}
                         </div>
                         {filteredParticipants.map(p => (
                             <div
@@ -337,7 +413,25 @@ const TournamentParticipants: React.FC = () => {
                                 }}
                                 className="item-hover"
                             >
-                                <div style={{ width: '50px', height: '50px', borderRadius: '15px', overflow: 'hidden', background: 'var(--primary-light)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                <div
+                                    onClick={(e) => handleSelectParticipant(p.id, e)}
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        width: '24px',
+                                        height: '24px',
+                                        borderRadius: '7px',
+                                        background: selectedIds.includes(p.id) ? 'var(--secondary)' : 'rgba(255,255,255,0.05)',
+                                        color: selectedIds.includes(p.id) ? 'var(--primary)' : 'transparent',
+                                        border: '1px solid ' + (selectedIds.includes(p.id) ? 'var(--secondary)' : 'rgba(255,255,255,0.1)'),
+                                        transition: 'all 0.2s',
+                                        flexShrink: 0
+                                    }}
+                                >
+                                    <CheckCircle2 size={14} />
+                                </div>
+                                <div style={{ width: '50px', height: '50px', borderRadius: '15px', overflow: 'hidden', background: 'var(--primary-light)', border: '1px solid rgba(255,255,255,0.1)', flexShrink: 0 }}>
                                     <img
                                         src={p.id_photo_url || `https://ui-avatars.com/api/?name=${p.full_name || 'User'}&background=0E2F1F&color=A3E635`}
                                         style={{ width: '100%', height: '100%', objectFit: 'cover' }}
