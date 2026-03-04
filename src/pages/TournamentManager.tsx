@@ -17,7 +17,8 @@ interface Tournament {
     club: string;
     price: number;
     participants_limit: number | null;
-    current_participants: number | null;
+    current_participants?: number;
+    paid_participants?: number;
     status: string | null;
     image_url: string | null;
     game_mode: string | null;
@@ -295,7 +296,9 @@ const TournamentManager: React.FC = () => {
         custom_rules: '',
         sponsors: [] as { id: string, name: string }[],
         prizes: [] as { id: string, name: string }[],
-        guests: [] as { id: string, name: string }[]
+        guests: [] as { id: string, name: string }[],
+        current_participants: 0,
+        paid_participants: 0
     });
 
     const formatPrice = (val: string) => {
@@ -375,9 +378,24 @@ const TournamentManager: React.FC = () => {
 
             if (error) throw error;
 
+            // Fetch all registrations to count statuses (grouped by tournament)
+            const { data: regStats } = await supabase
+                .from('tournament_registrations')
+                .select('tournament_id, registration_status');
+
+            const statsMap = (regStats || []).reduce((acc: any, curr: any) => {
+                if (!acc[curr.tournament_id]) acc[curr.tournament_id] = { total: 0, paid: 0 };
+                acc[curr.tournament_id].total++;
+                if (curr.registration_status === 'paid' || curr.registration_status === 'Confirmado') {
+                    acc[curr.tournament_id].paid++;
+                }
+                return acc;
+            }, {});
+
             const transformedTourneys = userTourneys?.map((t: any) => ({
                 ...t,
-                current_participants: t.registrations?.[0]?.count || 0
+                current_participants: statsMap[t.id]?.total || 0,
+                paid_participants: statsMap[t.id]?.paid || 0
             })) || [];
 
             setTournaments(transformedTourneys);
@@ -488,19 +506,21 @@ const TournamentManager: React.FC = () => {
             displayPrice: '',
             participants_limit: '100',
             image_url: 'https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?q=80&w=1000&auto=format&fit=crop',
-            status: 'Borrador',
+            status: 'Abierto',
             game_mode: 'Juego por Golpes',
             address: '',
             budget_items: [
-                { id: '1', label: 'Costo Op. por Jugador', amount: '', type: 'per_player', category: 'expense' },
-                { id: '2', label: 'Bolsa de Premios', amount: '', type: 'fixed', category: 'expense' },
-                { id: '3', label: 'Otros Gastos', amount: '', type: 'fixed', category: 'expense' }
+                { id: '1', label: 'Costo Op. por Jugador', amount: '', type: 'per_player' as const, category: 'expense' },
+                { id: '2', label: 'Bolsa de Premios', amount: '', type: 'fixed' as const, category: 'expense' },
+                { id: '3', label: 'Otros Gastos', amount: '', type: 'fixed' as const, category: 'expense' }
             ],
             rules: [],
             custom_rules: '',
             sponsors: [],
             prizes: [],
-            guests: []
+            guests: [],
+            current_participants: 0,
+            paid_participants: 0
         });
         setEditingId(null);
     };
@@ -530,7 +550,9 @@ const TournamentManager: React.FC = () => {
             custom_rules: tournament.custom_rules || '',
             sponsors: tournament.sponsors ? tournament.sponsors.split('\n').filter(Boolean).map((name, i) => ({ id: i.toString(), name })) : [],
             prizes: tournament.prizes ? tournament.prizes.split('\n').filter(Boolean).map((name, i) => ({ id: i.toString(), name })) : [],
-            guests: tournament.guests ? tournament.guests.split('\n').filter(Boolean).map((name, i) => ({ id: i.toString(), name })) : []
+            guests: tournament.guests ? tournament.guests.split('\n').filter(Boolean).map((name, i) => ({ id: i.toString(), name })) : [],
+            current_participants: tournament.current_participants || 0,
+            paid_participants: tournament.paid_participants || 0
         });
         setEditingId(tournament.id);
         setShowForm(true);
@@ -1066,25 +1088,48 @@ const TournamentManager: React.FC = () => {
                                                             })}
                                                         </div>
 
-                                                        <div style={{ marginTop: '20px', paddingTop: '15px', borderTop: '1px dotted rgba(255,255,255,0.1)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                            <span style={{ fontSize: '13px', color: 'var(--text-dim)', fontWeight: '800' }}>Balance Estimado:</span>
-                                                            <span style={{ fontSize: '20px', fontWeight: '950', color: 'white' }}>
-                                                                {(() => {
-                                                                    const limit = parseInt(formData.participants_limit || '0');
-                                                                    let income = limit * parseFloat(formData.price || '0');
-                                                                    let costs = 0;
-                                                                    formData.budget_items.forEach((item) => {
-                                                                        const val = parseFloat(item.amount || '0');
-                                                                        const calculatedVal = item.type === 'per_player' ? val * limit : val;
-                                                                        if ((item.category || 'expense') === 'income') {
-                                                                            income += calculatedVal;
-                                                                        } else {
-                                                                            costs += calculatedVal;
-                                                                        }
-                                                                    });
-                                                                    return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(income - costs);
-                                                                })()}
-                                                            </span>
+                                                        <div style={{ marginTop: '20px', paddingTop: '15px', borderTop: '1px dotted rgba(255,255,255,0.1)', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                                <span style={{ fontSize: '12px', color: 'var(--text-dim)', fontWeight: '800', letterSpacing: '0.3px' }}>Balance Real (Recaudado):</span>
+                                                                <span style={{ fontSize: '18px', fontWeight: '950', color: 'var(--secondary)' }}>
+                                                                    {(() => {
+                                                                        const paidCount = formData.paid_participants || 0;
+                                                                        let income = paidCount * parseFloat(formData.price || '0');
+                                                                        let costs = 0;
+                                                                        formData.budget_items.forEach((item) => {
+                                                                            const val = parseFloat(item.amount || '0');
+                                                                            // Costs are usually based on current active participants or fixed
+                                                                            const calculatedVal = item.type === 'per_player' ? val * (formData.current_participants || 0) : val;
+                                                                            if ((item.category || 'expense') === 'income') {
+                                                                                income += (item.type === 'per_player' ? val * paidCount : val);
+                                                                            } else {
+                                                                                costs += calculatedVal;
+                                                                            }
+                                                                        });
+                                                                        return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(income - costs);
+                                                                    })()}
+                                                                </span>
+                                                            </div>
+                                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', opacity: 0.6 }}>
+                                                                <span style={{ fontSize: '11px', color: 'var(--text-dim)', fontWeight: '800' }}>Balance Estimado (Proyectado):</span>
+                                                                <span style={{ fontSize: '15px', fontWeight: '900', color: 'white' }}>
+                                                                    {(() => {
+                                                                        const limit = parseInt(formData.participants_limit || '0');
+                                                                        let income = limit * parseFloat(formData.price || '0');
+                                                                        let costs = 0;
+                                                                        formData.budget_items.forEach((item) => {
+                                                                            const val = parseFloat(item.amount || '0');
+                                                                            const calculatedVal = item.type === 'per_player' ? val * limit : val;
+                                                                            if ((item.category || 'expense') === 'income') {
+                                                                                income += calculatedVal;
+                                                                            } else {
+                                                                                costs += calculatedVal;
+                                                                            }
+                                                                        });
+                                                                        return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(income - costs);
+                                                                    })()}
+                                                                </span>
+                                                            </div>
                                                         </div>
                                                     </motion.div>
                                                 )}

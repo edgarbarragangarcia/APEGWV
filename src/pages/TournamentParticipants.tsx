@@ -10,7 +10,7 @@ import PageHeader from '../components/PageHeader';
 
 interface Participant {
     id: string; // registration_id
-    user_id: string;
+    user_id: string | null;
     full_name: string | null;
     id_photo_url: string | null;
     handicap: number | null;
@@ -58,6 +58,10 @@ const TournamentParticipants: React.FC = () => {
                     id,
                     registration_status,
                     user_id,
+                    player_name,
+                    player_email,
+                    player_phone,
+                    player_handicap,
                     profiles (
                         id, full_name, id_photo_url, handicap, email, phone, total_rounds, average_score
                     )
@@ -66,12 +70,21 @@ const TournamentParticipants: React.FC = () => {
 
             if (regError) throw regError;
 
-            const flattenedParticipants = registrations?.map((reg: any) => ({
-                ...reg.profiles,
-                id: reg.id, // Ensure registration_id is the final 'id'
-                user_id: reg.user_id,
-                registration_status: reg.registration_status
-            })) || [];
+            const flattenedParticipants = registrations?.map((reg: any) => {
+                const profile = reg.profiles;
+                return {
+                    id: reg.id,
+                    user_id: reg.user_id,
+                    registration_status: reg.registration_status,
+                    full_name: profile?.full_name || reg.player_name || 'Invitado',
+                    email: profile?.email || reg.player_email,
+                    phone: profile?.phone || reg.player_phone,
+                    handicap: profile?.handicap || reg.player_handicap,
+                    id_photo_url: profile?.id_photo_url,
+                    total_rounds: profile?.total_rounds,
+                    average_score: profile?.average_score
+                };
+            }) || [];
 
             setParticipants(flattenedParticipants);
         } catch (err) {
@@ -106,8 +119,8 @@ const TournamentParticipants: React.FC = () => {
 
         const matchesStatus =
             statusFilter === 'all' ||
-            (statusFilter === 'paid' && p.registration_status === 'paid') ||
-            (statusFilter === 'registered' && p.registration_status !== 'paid');
+            (statusFilter === 'paid' && (p.registration_status === 'paid' || p.registration_status === 'Confirmado')) ||
+            (statusFilter === 'registered' && p.registration_status !== 'paid' && p.registration_status !== 'Confirmado');
 
         return matchesSearch && matchesStatus;
     });
@@ -312,11 +325,11 @@ const TournamentParticipants: React.FC = () => {
                                     alignItems: 'center',
                                     gap: '15px',
                                     padding: '12px',
-                                    background: p.registration_status === 'paid'
+                                    background: (p.registration_status === 'paid' || p.registration_status === 'Confirmado')
                                         ? 'rgba(163, 230, 53, 0.15)'
                                         : 'rgba(255,255,255,0.03)',
                                     borderRadius: '18px',
-                                    border: p.registration_status === 'paid'
+                                    border: (p.registration_status === 'paid' || p.registration_status === 'Confirmado')
                                         ? '1px solid rgba(163, 230, 53, 0.3)'
                                         : '1px solid rgba(255,255,255,0.05)',
                                     cursor: 'pointer',
@@ -335,7 +348,7 @@ const TournamentParticipants: React.FC = () => {
                                     <h4 style={{ fontSize: '16px', fontWeight: '700', color: 'white', marginBottom: '2px' }}>{p.full_name || 'Golfista APEG'}</h4>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                         <span style={{ fontSize: '12px', color: 'var(--text-dim)' }}>Hándicap: <span style={{ color: 'white', fontWeight: '600' }}>{p.handicap ?? '--'}</span></span>
-                                        {p.registration_status === 'paid' && (
+                                        {(p.registration_status === 'paid' || p.registration_status === 'Confirmado') && (
                                             <span style={{
                                                 fontSize: '10px',
                                                 background: 'var(--secondary)',
@@ -344,7 +357,7 @@ const TournamentParticipants: React.FC = () => {
                                                 borderRadius: '6px',
                                                 fontWeight: '900',
                                                 textTransform: 'uppercase'
-                                            }}>PAGO</span>
+                                            }}>{p.registration_status === 'Confirmado' ? 'CONFIRMADO' : 'PAGO'}</span>
                                         )}
                                     </div>
                                 </div>
@@ -362,15 +375,15 @@ const TournamentParticipants: React.FC = () => {
                                         width: '40px',
                                         height: '40px',
                                         borderRadius: '14px',
-                                        background: p.registration_status === 'paid' ? 'var(--secondary)' : 'rgba(163, 230, 53, 0.1)',
-                                        color: p.registration_status === 'paid' ? 'var(--primary)' : 'var(--secondary)',
+                                        background: (p.registration_status === 'paid' || p.registration_status === 'Confirmado') ? 'var(--secondary)' : 'rgba(163, 230, 53, 0.1)',
+                                        color: (p.registration_status === 'paid' || p.registration_status === 'Confirmado') ? 'var(--primary)' : 'var(--secondary)',
                                         border: '1px solid rgba(163, 230, 53, 0.2)',
                                         transition: 'all 0.2s',
                                         position: 'relative',
                                         cursor: 'pointer'
                                     }}
                                 >
-                                    {p.registration_status !== 'paid' && (
+                                    {(p.registration_status !== 'paid' && p.registration_status !== 'Confirmado') && (
                                         <motion.div
                                             animate={{
                                                 scale: [1, 1.25, 1],
