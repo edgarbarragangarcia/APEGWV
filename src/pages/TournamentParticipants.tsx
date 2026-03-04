@@ -318,15 +318,15 @@ const TournamentParticipants: React.FC = () => {
                             <ChevronLeft size={14} /> Volver a la lista
                         </button>
 
-                        <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '25px', textAlign: 'left' }}>
                             <div style={{
-                                width: '90px',
-                                height: '90px',
-                                borderRadius: '30px',
-                                margin: '0 auto 12px',
+                                width: '85px',
+                                height: '85px',
+                                borderRadius: '25px',
                                 overflow: 'hidden',
                                 border: '3px solid var(--secondary)',
-                                boxShadow: '0 15px 30px rgba(0,0,0,0.3)'
+                                boxShadow: '0 10px 20px rgba(0,0,0,0.2)',
+                                flexShrink: 0
                             }}>
                                 <img
                                     src={selectedParticipant.id_photo_url || `https://ui-avatars.com/api/?name=${selectedParticipant.full_name || 'User'}&background=0E2F1F&color=A3E635`}
@@ -334,14 +334,20 @@ const TournamentParticipants: React.FC = () => {
                                     alt={selectedParticipant.full_name || 'User'}
                                 />
                             </div>
-                            <h3 style={{ fontSize: '20px', fontWeight: '900', color: 'white', marginBottom: '2px' }}>{selectedParticipant.full_name}</h3>
-                            <div style={{ display: 'inline-flex', alignItems: 'center', background: 'rgba(255,255,255,0.1)', padding: '4px 10px', borderRadius: '20px', marginTop: '5px' }}>
-                                <span style={{ color: 'var(--text-dim)', fontSize: '11px', marginRight: '5px' }}>Hándicap Index:</span>
-                                <span style={{ color: 'white', fontWeight: '800', fontSize: '13px' }}>{selectedParticipant.handicap ?? '--'}</span>
-                            </div>
-                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', background: 'rgba(255,255,255,0.03)', padding: '6px 15px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                                <span style={{ fontSize: '9px', fontWeight: '800', color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>FEDERACIÓN</span>
-                                <span style={{ color: 'white', fontWeight: '800', fontSize: '13px' }}>{selectedParticipant.federation_code ?? '--'}</span>
+                            <div style={{ flex: 1 }}>
+                                <h3 style={{ fontSize: '22px', fontWeight: '950', color: 'white', marginBottom: '6px', lineHeight: 1.1 }}>{selectedParticipant.full_name}</h3>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', background: 'rgba(163, 230, 53, 0.1)', padding: '4px 10px', borderRadius: '10px', border: '1px solid rgba(163, 230, 53, 0.2)' }}>
+                                            <span style={{ color: 'var(--text-dim)', fontSize: '10px', marginRight: '5px', fontWeight: '700' }}>HCP:</span>
+                                            <span style={{ color: 'var(--secondary)', fontWeight: '900', fontSize: '12px' }}>{selectedParticipant.handicap ?? '--'}</span>
+                                        </div>
+                                        <div style={{ display: 'flex', alignItems: 'center', background: 'rgba(255, 255, 255, 0.05)', padding: '4px 10px', borderRadius: '10px', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
+                                            <span style={{ color: 'var(--text-dim)', fontSize: '10px', marginRight: '5px', fontWeight: '700' }}>FED:</span>
+                                            <span style={{ color: 'white', fontWeight: '900', fontSize: '12px' }}>{selectedParticipant.federation_code ?? '--'}</span>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -472,18 +478,23 @@ const TournamentParticipants: React.FC = () => {
                                 </div>
                                 <div style={{ flex: 1 }}>
                                     <h4 style={{ fontSize: '16px', fontWeight: '700', color: 'white', marginBottom: '2px' }}>{p.full_name || 'Golfista APEG'}</h4>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                        <span style={{ fontSize: '12px', color: 'var(--text-dim)' }}>Hándicap: <span style={{ color: 'white', fontWeight: '600' }}>{p.handicap ?? '--'}</span></span>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            <span style={{ fontSize: '11px', color: 'var(--text-dim)' }}>Hándicap: <span style={{ color: 'white', fontWeight: '600' }}>{p.handicap ?? '--'}</span></span>
+                                            <span style={{ fontSize: '11px', color: 'var(--text-dim)' }}>ID: <span style={{ color: 'white', fontWeight: '600' }}>{p.federation_code ?? '--'}</span></span>
+                                        </div>
                                         {(p.registration_status === 'paid' || p.registration_status === 'Confirmado') && (
-                                            <span style={{
-                                                fontSize: '10px',
-                                                background: 'var(--secondary)',
-                                                color: 'var(--primary)',
-                                                padding: '2px 6px',
-                                                borderRadius: '6px',
-                                                fontWeight: '900',
-                                                textTransform: 'uppercase'
-                                            }}>{p.registration_status === 'Confirmado' ? 'CONFIRMADO' : 'PAGO'}</span>
+                                            <div style={{ display: 'flex' }}>
+                                                <span style={{
+                                                    fontSize: '9px',
+                                                    background: 'var(--secondary)',
+                                                    color: 'var(--primary)',
+                                                    padding: '1px 5px',
+                                                    borderRadius: '4px',
+                                                    fontWeight: '900',
+                                                    textTransform: 'uppercase'
+                                                }}>{p.registration_status === 'Confirmado' ? 'CONFIRMADO' : 'PAGO'}</span>
+                                            </div>
                                         )}
                                     </div>
                                 </div>
