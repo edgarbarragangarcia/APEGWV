@@ -1,12 +1,12 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, History } from 'lucide-react';
+import { ChevronLeft, ChevronRight, History, BarChart2, X } from 'lucide-react';
 import type { GolfCourse } from '../data/courses';
 import { supabase } from '../services/SupabaseManager';
 import { useGeoLocation } from '../hooks/useGeoLocation';
 import { fetchWeather, type WeatherData } from '../services/WeatherService';
 import { Wind, Navigation, Trophy, Thermometer, Droplets, Sun, CloudRain } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { COLOMBIAN_COURSES } from '../data/courses';
 const getWindDirection = (degrees?: number) => {
     if (degrees === undefined) return 'Variable';
@@ -631,6 +631,7 @@ const Round: React.FC = () => {
 
     const [showFinishModal, setShowFinishModal] = React.useState(false);
     const [showCancelModal, setShowCancelModal] = React.useState(false);
+    const [showStatsModal, setShowStatsModal] = React.useState(false);
     const [gameEndedMessage, setGameEndedMessage] = React.useState<{ userName: string, action: string } | null>(null);
 
     return (
@@ -685,6 +686,20 @@ const Round: React.FC = () => {
                             APUESTAS
                         </button>
                     )}
+                    <button onClick={() => setShowStatsModal(true)} style={{
+                        background: 'rgba(255,255,255,0.05)',
+                        border: '1px solid rgba(255,255,255,0.1)',
+                        width: '32px',
+                        height: '32px',
+                        borderRadius: '8px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: 'white',
+                        cursor: 'pointer'
+                    }}>
+                        <BarChart2 size={16} />
+                    </button>
                     <button onClick={() => setShowFinishModal(true)} style={{ color: 'var(--secondary)', fontSize: '13px' }}>Finalizar</button>
                 </div>
             </header>
@@ -1123,6 +1138,108 @@ const Round: React.FC = () => {
                     </motion.div>
                 </div>
             )}
+
+            {/* Modal de Estadísticas */}
+            <AnimatePresence>
+                {showStatsModal && (
+                    <div style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'flex-start', background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(8px)' }} onClick={() => setShowStatsModal(false)}>
+                        <motion.div initial={{ y: '-100%' }} animate={{ y: 0 }} exit={{ y: '-100%' }} transition={{ type: 'spring', damping: 25, stiffness: 200 }} onClick={(e: React.MouseEvent) => e.stopPropagation()} style={{ width: '100%', background: 'rgba(20, 25, 30, 0.98)', borderBottomLeftRadius: '30px', borderBottomRightRadius: '30px', padding: 'calc(20px + env(safe-area-inset-top)) 25px 30px', position: 'relative' }}>
+                            <button onClick={() => setShowStatsModal(false)} style={{ position: 'absolute', top: 'calc(15px + env(safe-area-inset-top))', right: '20px', background: 'rgba(255, 255, 255, 0.05)', border: 'none', color: 'rgba(255, 255, 255, 0.6)', width: '32px', height: '32px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                                <X size={18} />
+                            </button>
+
+                            <h2 style={{ fontSize: '20px', fontWeight: '900', color: 'white', marginBottom: '8px', textAlign: 'center' }}>
+                                Estadísticas de <span style={{ color: 'var(--secondary)' }}>Tu Juego</span>
+                            </h2>
+                            <p style={{ fontSize: '12px', color: 'rgba(255, 255, 255, 0.7)', textAlign: 'center', marginBottom: '25px' }}>
+                                Golpes por hoyo vs Par del campo
+                            </p>
+
+                            <div style={{ background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '20px', padding: '20px', marginBottom: '15px' }}>
+                                <div style={{ display: 'flex', alignItems: 'flex-end', gap: '8px', overflowX: 'auto', paddingBottom: '10px', height: '160px' }}>
+                                    {(() => {
+                                        const playedHoles = Object.keys(strokes).map(Number).sort((a,b) => a - b);
+                                        if (playedHoles.length === 0) return <div style={{width: '100%', textAlign: 'center', color: 'var(--text-dim)', alignSelf: 'center', fontSize:'13px'}}>Aún no hay tiros registrados.</div>;
+                                        
+                                        const maxScore = Math.max(...playedHoles.map(h => strokes[h]), 5);
+                                        
+                                        return holeData.filter(hd => strokes[hd.hole_number] !== undefined).map(hd => {
+                                            const score = strokes[hd.hole_number];
+                                            const par = hd.par;
+                                            const diff = score - par;
+                                            
+                                            let color = '#60a5fa'; // Par
+                                            if (diff < 0) color = 'var(--secondary)'; // Birdie+
+                                            if (diff > 0) color = '#f87171'; // Bogey+
+
+                                            const heightPercentage = Math.max((score / maxScore) * 100, 5);
+
+                                            return (
+                                                <div key={hd.hole_number} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px', flex: '1 0 35px' }}>
+                                                    <span style={{ fontSize: '10px', fontWeight: '800', color: color }}>
+                                                        {score}
+                                                    </span>
+                                                    <div style={{ 
+                                                        width: '12px', 
+                                                        height: `${heightPercentage * 0.8}%`, 
+                                                        background: color, 
+                                                        borderRadius: '6px',
+                                                        position: 'relative'
+                                                    }}>
+                                                        {/* Referencia de Par (una rayita) */}
+                                                        {score > 0 && par > 0 && (
+                                                            <div style={{
+                                                                position: 'absolute',
+                                                                bottom: `${((par / score) * 100)}%`,
+                                                                left: '-4px',
+                                                                right: '-4px',
+                                                                height: '2px',
+                                                                background: 'rgba(255,255,255,0.7)',
+                                                                zIndex: 1
+                                                            }} />
+                                                        )}
+                                                    </div>
+                                                    <span style={{ fontSize: '9px', color: 'var(--text-dim)', fontWeight: 'bold' }}>H{hd.hole_number}</span>
+                                                </div>
+                                            );
+                                        });
+                                    })()}
+                                </div>
+                                <div style={{ display: 'flex', justifyContent: 'center', gap: '15px', marginTop: '10px' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                        <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--secondary)' }}/>
+                                        <span style={{ fontSize: '10px', color: 'var(--text-dim)' }}>Birdie+</span>
+                                    </div>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                        <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#60a5fa' }}/>
+                                        <span style={{ fontSize: '10px', color: 'var(--text-dim)' }}>Par</span>
+                                    </div>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                        <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#f87171' }}/>
+                                        <span style={{ fontSize: '10px', color: 'var(--text-dim)' }}>Bogey+</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                                <div style={{ background: 'rgba(255, 255, 255, 0.05)', borderRadius: '15px', padding: '15px', textAlign: 'center' }}>
+                                    <div style={{ fontSize: '10px', color: 'var(--text-dim)', textTransform: 'uppercase', marginBottom: '5px' }}>Total Golpes</div>
+                                    <div style={{ fontSize: '24px', fontWeight: '900', color: 'white' }}>
+                                        {Object.values(strokes).reduce((a, b) => a + b, 0)}
+                                    </div>
+                                </div>
+                                <div style={{ background: 'rgba(255, 255, 255, 0.05)', borderRadius: '15px', padding: '15px', textAlign: 'center' }}>
+                                    <div style={{ fontSize: '10px', color: 'var(--text-dim)', textTransform: 'uppercase', marginBottom: '5px' }}>Puntaje a Par</div>
+                                    <div style={{ fontSize: '24px', fontWeight: '900', color: relativeScore > 0 ? '#f87171' : relativeScore < 0 ? 'var(--secondary)' : '#60a5fa' }}>
+                                        {relativeScore > 0 ? `+${relativeScore}` : relativeScore === 0 ? 'E' : relativeScore}
+                                    </div>
+                                </div>
+                            </div>
+
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
         </div>
     );
 };
