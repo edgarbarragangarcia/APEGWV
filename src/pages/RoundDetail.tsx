@@ -8,6 +8,7 @@ import {
 import Card from '../components/Card';
 import PageHeader from '../components/PageHeader';
 import PageHero from '../components/PageHero';
+import { motion } from 'framer-motion';
 
 interface Round extends Omit<RoundData, 'course_location' | 'status'> {
     id: string;
@@ -226,6 +227,164 @@ const RoundDetail: React.FC = () => {
                                     <div style={{ fontSize: '11px', color: 'var(--text-dim)' }}>GIR</div>
                                 </div>
                             )}
+                        </div>
+                    </Card>
+                )}
+
+                {/* Gráfica de Golpes vs Par */}
+                {holes.length > 0 && (
+                    <Card style={{ marginBottom: '20px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+                            <h3 style={{ margin: 0, fontSize: '14px', color: 'white' }}>Golpes vs Par</h3>
+                            <div style={{ display: 'flex', gap: '10px' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--secondary)' }}/>
+                                    <span style={{ fontSize: '10px', color: 'var(--text-dim)' }}>GOLPES</span>
+                                </div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'rgba(255, 255, 255, 0.3)' }}/>
+                                    <span style={{ fontSize: '10px', color: 'var(--text-dim)' }}>PAR</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div style={{ height: '180px', width: '100%', position: 'relative' }}>
+                            {(() => {
+                                const playedHoles = holes.map((h: any) => h.hole_number).sort((a: number, b: number) => a - b);
+                                if (playedHoles.length === 0) return <div style={{width: '100%', textAlign: 'center', color: 'var(--text-dim)', position: 'absolute', top: '50%', transform: 'translateY(-50%)', fontSize:'13px'}}>Aún no hay tiros registrados.</div>;
+                                
+                                const width = 300;
+                                const height = 180;
+                                const padding = { top: 10, right: 10, bottom: 20, left: 20 };
+                                const maxScore = Math.max(...holes.map((h: any) => h.score || 0), ...holes.map((h: any) => h.par || 4), 5);
+                                const maxY = maxScore + 1;
+
+                                const getX = (index: number, total: number) => {
+                                    if (total <= 1) return width / 2;
+                                    return padding.left + (index / (total - 1)) * (width - padding.left - padding.right);
+                                };
+
+                                const getY = (val: number) => {
+                                    return height - padding.bottom - (val / maxY) * (height - padding.top - padding.bottom);
+                                };
+
+                                const strokePoints: [number, number][] = holes.map((h: any, i: number) => [getX(i, holes.length), getY(h.score || 0)]);
+                                const parPoints: [number, number][] = holes.map((h: any, i: number) => [getX(i, holes.length), getY(h.par || 4)]);
+
+                                const smoothLine = (points: [number, number][]) => {
+                                    if (points.length === 0) return '';
+                                    if (points.length === 1) return `M ${points[0][0]},${points[0][1]}`;
+                                    
+                                    let d = `M ${points[0][0]},${points[0][1]}`;
+                                    for (let i = 0; i < points.length - 1; i++) {
+                                        const x0 = i > 0 ? points[i - 1][0] : points[0][0];
+                                        const y0 = i > 0 ? points[i - 1][1] : points[0][1];
+                                        const x1 = points[i][0];
+                                        const y1 = points[i][1];
+                                        const x2 = points[i + 1][0];
+                                        const y2 = points[i + 1][1];
+                                        const x3 = i !== points.length - 2 ? points[i + 2][0] : x2;
+                                        const y3 = i !== points.length - 2 ? points[i + 2][1] : y2;
+
+                                        const cp1x = x1 + (x2 - x0) * 0.15;
+                                        const cp1y = y1 + (y2 - y0) * 0.15;
+                                        const cp2x = x2 - (x3 - x1) * 0.15;
+                                        const cp2y = y2 - (y3 - y1) * 0.15;
+
+                                        d += ` C ${cp1x},${cp1y} ${cp2x},${cp2y} ${x2},${y2}`;
+                                    }
+                                    return d;
+                                };
+
+                                const strokePath = smoothLine(strokePoints);
+                                const parPath = smoothLine(parPoints);
+                                const areaPath = strokePoints.length > 1 ? `${strokePath} L ${strokePoints[strokePoints.length-1][0]},${height - padding.bottom} L ${strokePoints[0][0]},${height - padding.bottom} Z` : '';
+
+                                return (
+                                    <svg width="100%" height="100%" viewBox={`0 0 ${width} ${height}`} style={{ overflow: 'visible', display: 'block' }}>
+                                        <defs>
+                                            <linearGradient id="gradientAreaRoundDetail" x1="0" y1="0" x2="0" y2="1">
+                                                <stop offset="0%" stopColor="var(--secondary)" stopOpacity="0.4" />
+                                                <stop offset="100%" stopColor="var(--secondary)" stopOpacity="0.0" />
+                                            </linearGradient>
+                                        </defs>
+                                        
+                                        {[0, Math.round(maxY/2), maxY].map(val => (
+                                            <g key={`grid-${val}`}>
+                                                <line x1={padding.left} y1={getY(val)} x2={width - padding.right} y2={getY(val)} stroke="rgba(255, 255, 255, 0.05)" strokeDasharray="4 4" />
+                                                <text x={padding.left - 5} y={getY(val) + 3} fill="var(--text-dim)" fontSize="10" textAnchor="end">{val}</text>
+                                            </g>
+                                        ))}
+
+                                        {strokePoints.length > 1 && (
+                                            <motion.path 
+                                                d={areaPath} 
+                                                fill="url(#gradientAreaRoundDetail)" 
+                                                initial={{ opacity: 0 }}
+                                                animate={{ opacity: 1 }}
+                                                transition={{ duration: 0.6, ease: "easeOut", delay: 0.4 }}
+                                            />
+                                        )}
+                                        {parPoints.length > 1 && (
+                                            <motion.path 
+                                                d={parPath} 
+                                                fill="none" 
+                                                stroke="rgba(255, 255, 255, 0.3)" 
+                                                strokeWidth="2" 
+                                                strokeDasharray="5 5" 
+                                                initial={{ pathLength: 0, opacity: 0 }}
+                                                animate={{ pathLength: 1, opacity: 1 }}
+                                                transition={{ duration: 1.2, ease: "easeInOut", delay: 0.1 }}
+                                            />
+                                        )}
+                                        
+                                        {strokePoints.length > 1 && (
+                                            <motion.path 
+                                                d={strokePath} 
+                                                fill="none" 
+                                                stroke="var(--secondary)" 
+                                                strokeWidth="3" 
+                                                initial={{ pathLength: 0 }}
+                                                animate={{ pathLength: 1 }}
+                                                transition={{ duration: 1, ease: "easeInOut", delay: 0.2 }}
+                                            />
+                                        )}
+                                        {strokePoints.length === 1 && (
+                                            <motion.circle 
+                                                cx={strokePoints[0][0]} 
+                                                cy={strokePoints[0][1]} 
+                                                r="4" 
+                                                fill="var(--secondary)" 
+                                                initial={{ scale: 0 }}
+                                                animate={{ scale: 1 }}
+                                                transition={{ type: 'spring' }}
+                                            />
+                                        )}
+
+                                        {strokePoints.map((p, i) => (
+                                            <motion.circle 
+                                                key={`dot-${i}`} 
+                                                cx={p[0]} 
+                                                cy={p[1]} 
+                                                r="3" 
+                                                fill="var(--secondary)" 
+                                                stroke="var(--primary)" 
+                                                strokeWidth="1.5"
+                                                initial={{ scale: 0, opacity: 0 }}
+                                                animate={{ scale: 1, opacity: 1 }}
+                                                transition={{ type: 'spring', delay: 0.5 + (i * 0.05) }}
+                                            />
+                                        ))}
+
+                                        {holes.map((h: any, i: number) => {
+                                            const step = Math.ceil(holes.length / 6);
+                                            if (i % step === 0 || i === holes.length - 1) {
+                                                return <text key={`x-${h.hole_number}`} x={getX(i, holes.length)} y={height - 2} fill="var(--text-dim)" fontSize="10" textAnchor="middle">H{h.hole_number}</text>
+                                            }
+                                            return null;
+                                        })}
+                                    </svg>
+                                );
+                            })()}
                         </div>
                     </Card>
                 )}
