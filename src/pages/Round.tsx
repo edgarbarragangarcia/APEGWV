@@ -1240,15 +1240,65 @@ const Round: React.FC = () => {
                                                 ))}
 
                                                 {/* Areas & Lines */}
-                                                {strokePoints.length > 1 && <path d={areaPath} fill="url(#gradientArea)" />}
-                                                {parPoints.length > 1 && <path d={parPath} fill="none" stroke="rgba(255, 255, 255, 0.3)" strokeWidth="2" strokeDasharray="5 5" />}
+                                                {strokePoints.length > 1 && (
+                                                    <motion.path 
+                                                        d={areaPath} 
+                                                        fill="url(#gradientArea)" 
+                                                        initial={{ opacity: 0 }}
+                                                        animate={{ opacity: 1 }}
+                                                        transition={{ duration: 0.6, ease: "easeOut", delay: 0.4 }}
+                                                    />
+                                                )}
+                                                {parPoints.length > 1 && (
+                                                    <motion.path 
+                                                        d={parPath} 
+                                                        fill="none" 
+                                                        stroke="rgba(255, 255, 255, 0.3)" 
+                                                        strokeWidth="2" 
+                                                        strokeDasharray="5 5" 
+                                                        initial={{ pathLength: 0, opacity: 0 }}
+                                                        animate={{ pathLength: 1, opacity: 1 }}
+                                                        transition={{ duration: 1.2, ease: "easeInOut", delay: 0.1 }}
+                                                    />
+                                                )}
                                                 
-                                                {strokePoints.length > 1 && <path d={strokePath} fill="none" stroke="var(--secondary)" strokeWidth="3" />}
-                                                {strokePoints.length === 1 && <circle cx={strokePoints[0][0]} cy={strokePoints[0][1]} r="4" fill="var(--secondary)" />}
+                                                {strokePoints.length > 1 && (
+                                                    <motion.path 
+                                                        d={strokePath} 
+                                                        fill="none" 
+                                                        stroke="var(--secondary)" 
+                                                        strokeWidth="3" 
+                                                        initial={{ pathLength: 0 }}
+                                                        animate={{ pathLength: 1 }}
+                                                        transition={{ duration: 1, ease: "easeInOut", delay: 0.2 }}
+                                                    />
+                                                )}
+                                                {strokePoints.length === 1 && (
+                                                    <motion.circle 
+                                                        cx={strokePoints[0][0]} 
+                                                        cy={strokePoints[0][1]} 
+                                                        r="4" 
+                                                        fill="var(--secondary)" 
+                                                        initial={{ scale: 0 }}
+                                                        animate={{ scale: 1 }}
+                                                        transition={{ type: 'spring' }}
+                                                    />
+                                                )}
 
                                                 {/* Points */}
                                                 {strokePoints.map((p, i) => (
-                                                    <circle key={`dot-${i}`} cx={p[0]} cy={p[1]} r="3" fill="var(--secondary)" stroke="var(--primary)" strokeWidth="1.5" />
+                                                    <motion.circle 
+                                                        key={`dot-${i}`} 
+                                                        cx={p[0]} 
+                                                        cy={p[1]} 
+                                                        r="3" 
+                                                        fill="var(--secondary)" 
+                                                        stroke="var(--primary)" 
+                                                        strokeWidth="1.5"
+                                                        initial={{ scale: 0, opacity: 0 }}
+                                                        animate={{ scale: 1, opacity: 1 }}
+                                                        transition={{ type: 'spring', delay: 0.5 + (i * 0.05) }}
+                                                    />
                                                 ))}
 
                                                 {/* X Axis Labels */}
