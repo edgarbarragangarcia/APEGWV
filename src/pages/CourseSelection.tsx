@@ -10,6 +10,7 @@ import { supabase } from '../services/SupabaseManager';
 import { useAuth } from '../context/AuthContext';
 import { useProfile } from '../hooks/useProfile';
 import PageHero from '../components/PageHero';
+import ConfirmationModal from '../components/ConfirmationModal';
 
 const CourseSelection: React.FC = () => {
     const navigate = useNavigate();
@@ -42,6 +43,19 @@ const CourseSelection: React.FC = () => {
             return () => clearTimeout(timer);
         }
     }, [permissionStatus, location]);
+
+    const [showPermissionModal, setShowPermissionModal] = useState(false);
+    const hasPromptedForLocation = React.useRef(false);
+
+    useEffect(() => {
+        if (!hasPromptedForLocation.current && (permissionStatus === 'prompt' || permissionStatus === 'denied')) {
+            const timer = setTimeout(() => {
+                setShowPermissionModal(true);
+                hasPromptedForLocation.current = true;
+            }, 800);
+            return () => clearTimeout(timer);
+        }
+    }, [permissionStatus]);
 
     const sortedCourses = [...COLOMBIAN_COURSES].map(course => ({
         ...course,
@@ -377,7 +391,22 @@ const CourseSelection: React.FC = () => {
                     )}
                 </div>
             </div>
-        </div >
+
+            {/* Modal para solicitud de permisos */}
+            <ConfirmationModal
+                isOpen={showPermissionModal}
+                onClose={() => setShowPermissionModal(false)}
+                onConfirm={() => {
+                    setShowPermissionModal(false);
+                    refreshLocation();
+                }}
+                title="Permisos de Ubicación"
+                message="Para calcular las distancias y brindarte una mejor experiencia, necesitamos interactuar con tu ubicación. ¿Deseas aprobar estos permisos ahora?"
+                confirmText="Aprobar"
+                cancelText="Ahora no"
+                type="info"
+            />
+        </div>
     );
 };
 
