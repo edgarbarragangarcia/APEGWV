@@ -1156,68 +1156,112 @@ const Round: React.FC = () => {
                             </p>
 
                             <div style={{ background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '20px', padding: '20px', marginBottom: '15px' }}>
-                                <div style={{ display: 'flex', alignItems: 'flex-end', gap: '8px', overflowX: 'auto', paddingBottom: '10px', height: '160px' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+                                    <h3 style={{ margin: 0, fontSize: '14px', color: 'white' }}>Golpes vs Par</h3>
+                                    <div style={{ display: 'flex', gap: '10px' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--secondary)' }}/>
+                                            <span style={{ fontSize: '10px', color: 'var(--text-dim)' }}>GOLPES</span>
+                                        </div>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'rgba(255, 255, 255, 0.3)' }}/>
+                                            <span style={{ fontSize: '10px', color: 'var(--text-dim)' }}>PAR</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div style={{ height: '180px', width: '100%', position: 'relative' }}>
                                     {(() => {
                                         const playedHoles = Object.keys(strokes).map(Number).sort((a,b) => a - b);
-                                        if (playedHoles.length === 0) return <div style={{width: '100%', textAlign: 'center', color: 'var(--text-dim)', alignSelf: 'center', fontSize:'13px'}}>Aún no hay tiros registrados.</div>;
+                                        if (playedHoles.length === 0) return <div style={{width: '100%', textAlign: 'center', color: 'var(--text-dim)', position: 'absolute', top: '50%', transform: 'translateY(-50%)', fontSize:'13px'}}>Aún no hay tiros registrados.</div>;
                                         
-                                        const maxScore = Math.max(...playedHoles.map(h => strokes[h]), 5);
-                                        
-                                        return holeData.filter(hd => strokes[hd.hole_number] !== undefined).map(hd => {
-                                            const score = strokes[hd.hole_number];
-                                            const par = hd.par;
-                                            const diff = score - par;
+                                        const width = 300;
+                                        const height = 180;
+                                        const padding = { top: 10, right: 10, bottom: 20, left: 20 };
+                                        const maxScore = Math.max(...playedHoles.map(h => strokes[h]), ...playedHoles.map(h => holeData.find(hd => hd.hole_number === h)?.par || 4), 5);
+                                        const maxY = maxScore + 1;
+
+                                        const getX = (index: number, total: number) => {
+                                            if (total <= 1) return width / 2;
+                                            return padding.left + (index / (total - 1)) * (width - padding.left - padding.right);
+                                        };
+
+                                        const getY = (val: number) => {
+                                            return height - padding.bottom - (val / maxY) * (height - padding.top - padding.bottom);
+                                        };
+
+                                        const strokePoints: [number, number][] = playedHoles.map((h, i) => [getX(i, playedHoles.length), getY(strokes[h])]);
+                                        const parPoints: [number, number][] = playedHoles.map((h, i) => [getX(i, playedHoles.length), getY(holeData.find(hd => hd.hole_number === h)?.par || 4)]);
+
+                                        // Smooth cubic bezier curve generator
+                                        const smoothLine = (points: [number, number][]) => {
+                                            if (points.length === 0) return '';
+                                            if (points.length === 1) return `M ${points[0][0]},${points[0][1]}`;
                                             
-                                            let color = '#60a5fa'; // Par
-                                            if (diff < 0) color = 'var(--secondary)'; // Birdie+
-                                            if (diff > 0) color = '#f87171'; // Bogey+
+                                            let d = `M ${points[0][0]},${points[0][1]}`;
+                                            for (let i = 0; i < points.length - 1; i++) {
+                                                const x0 = i > 0 ? points[i - 1][0] : points[0][0];
+                                                const y0 = i > 0 ? points[i - 1][1] : points[0][1];
+                                                const x1 = points[i][0];
+                                                const y1 = points[i][1];
+                                                const x2 = points[i + 1][0];
+                                                const y2 = points[i + 1][1];
+                                                const x3 = i !== points.length - 2 ? points[i + 2][0] : x2;
+                                                const y3 = i !== points.length - 2 ? points[i + 2][1] : y2;
 
-                                            const heightPercentage = Math.max((score / maxScore) * 100, 5);
+                                                const cp1x = x1 + (x2 - x0) * 0.15;
+                                                const cp1y = y1 + (y2 - y0) * 0.15;
+                                                const cp2x = x2 - (x3 - x1) * 0.15;
+                                                const cp2y = y2 - (y3 - y1) * 0.15;
 
-                                            return (
-                                                <div key={hd.hole_number} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px', flex: '1 0 35px' }}>
-                                                    <span style={{ fontSize: '10px', fontWeight: '800', color: color }}>
-                                                        {score}
-                                                    </span>
-                                                    <div style={{ 
-                                                        width: '12px', 
-                                                        height: `${heightPercentage * 0.8}%`, 
-                                                        background: color, 
-                                                        borderRadius: '6px',
-                                                        position: 'relative'
-                                                    }}>
-                                                        {/* Referencia de Par (una rayita) */}
-                                                        {score > 0 && par > 0 && (
-                                                            <div style={{
-                                                                position: 'absolute',
-                                                                bottom: `${((par / score) * 100)}%`,
-                                                                left: '-4px',
-                                                                right: '-4px',
-                                                                height: '2px',
-                                                                background: 'rgba(255,255,255,0.7)',
-                                                                zIndex: 1
-                                                            }} />
-                                                        )}
-                                                    </div>
-                                                    <span style={{ fontSize: '9px', color: 'var(--text-dim)', fontWeight: 'bold' }}>H{hd.hole_number}</span>
-                                                </div>
-                                            );
-                                        });
+                                                d += ` C ${cp1x},${cp1y} ${cp2x},${cp2y} ${x2},${y2}`;
+                                            }
+                                            return d;
+                                        };
+
+                                        const strokePath = smoothLine(strokePoints);
+                                        const parPath = smoothLine(parPoints);
+                                        const areaPath = strokePoints.length > 1 ? `${strokePath} L ${strokePoints[strokePoints.length-1][0]},${height - padding.bottom} L ${strokePoints[0][0]},${height - padding.bottom} Z` : '';
+
+                                        return (
+                                            <svg width="100%" height="100%" viewBox={`0 0 ${width} ${height}`} style={{ overflow: 'visible', display: 'block' }}>
+                                                <defs>
+                                                    <linearGradient id="gradientArea" x1="0" y1="0" x2="0" y2="1">
+                                                        <stop offset="0%" stopColor="var(--secondary)" stopOpacity="0.4" />
+                                                        <stop offset="100%" stopColor="var(--secondary)" stopOpacity="0.0" />
+                                                    </linearGradient>
+                                                </defs>
+                                                
+                                                {/* Grid lines */}
+                                                {[0, Math.round(maxY/2), maxY].map(val => (
+                                                    <g key={`grid-${val}`}>
+                                                        <line x1={padding.left} y1={getY(val)} x2={width - padding.right} y2={getY(val)} stroke="rgba(255, 255, 255, 0.05)" strokeDasharray="4 4" />
+                                                        <text x={padding.left - 5} y={getY(val) + 3} fill="var(--text-dim)" fontSize="10" textAnchor="end">{val}</text>
+                                                    </g>
+                                                ))}
+
+                                                {/* Areas & Lines */}
+                                                {strokePoints.length > 1 && <path d={areaPath} fill="url(#gradientArea)" />}
+                                                {parPoints.length > 1 && <path d={parPath} fill="none" stroke="rgba(255, 255, 255, 0.3)" strokeWidth="2" strokeDasharray="5 5" />}
+                                                
+                                                {strokePoints.length > 1 && <path d={strokePath} fill="none" stroke="var(--secondary)" strokeWidth="3" />}
+                                                {strokePoints.length === 1 && <circle cx={strokePoints[0][0]} cy={strokePoints[0][1]} r="4" fill="var(--secondary)" />}
+
+                                                {/* Points */}
+                                                {strokePoints.map((p, i) => (
+                                                    <circle key={`dot-${i}`} cx={p[0]} cy={p[1]} r="3" fill="var(--secondary)" stroke="var(--primary)" strokeWidth="1.5" />
+                                                ))}
+
+                                                {/* X Axis Labels */}
+                                                {playedHoles.map((h, i) => {
+                                                    const step = Math.ceil(playedHoles.length / 6);
+                                                    if (i % step === 0 || i === playedHoles.length - 1) {
+                                                        return <text key={`x-${h}`} x={getX(i, playedHoles.length)} y={height - 2} fill="var(--text-dim)" fontSize="10" textAnchor="middle">H{h}</text>
+                                                    }
+                                                    return null;
+                                                })}
+                                            </svg>
+                                        );
                                     })()}
-                                </div>
-                                <div style={{ display: 'flex', justifyContent: 'center', gap: '15px', marginTop: '10px' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                                        <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--secondary)' }}/>
-                                        <span style={{ fontSize: '10px', color: 'var(--text-dim)' }}>Birdie+</span>
-                                    </div>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                                        <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#60a5fa' }}/>
-                                        <span style={{ fontSize: '10px', color: 'var(--text-dim)' }}>Par</span>
-                                    </div>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                                        <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#f87171' }}/>
-                                        <span style={{ fontSize: '10px', color: 'var(--text-dim)' }}>Bogey+</span>
-                                    </div>
                                 </div>
                             </div>
                             
