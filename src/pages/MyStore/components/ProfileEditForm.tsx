@@ -67,15 +67,22 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({
     };
 
     return (
-        <motion.div
+        <motion.form
+            onSubmit={(e) => {
+                e.preventDefault();
+                onSubmit();
+            }}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}
         >
             <div style={{ ...sectionStyle, background: 'linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%)' }}>
-                <label style={labelStyle}>Nombre de tu Tienda</label>
+                <label htmlFor="store_name" style={labelStyle}>Nombre de tu Tienda</label>
                 <div style={{ position: 'relative' }}>
                     <input
+                        id="store_name"
+                        name="organization"
+                        autoComplete="organization"
                         value={formData.store_name || ''}
                         onChange={e => onChange({ ...formData, store_name: e.target.value })}
                         style={inputStyle}
@@ -100,16 +107,21 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({
                     {formData.entity_type === 'natural' ? (
                         <>
                             <div>
-                                <label style={{ ...labelStyle, color: 'white', opacity: 0.7, fontSize: '12px' }}>Nombre Completo</label>
+                                <label htmlFor="full_name" style={{ ...labelStyle, color: 'white', opacity: 0.7, fontSize: '12px' }}>Nombre Completo</label>
                                 <input
+                                    id="full_name"
+                                    name="name"
+                                    autoComplete="name"
                                     value={formData.full_name || ''}
                                     onChange={e => onChange({ ...formData, full_name: e.target.value })}
                                     style={{ ...inputStyle, paddingLeft: '20px' }}
                                 />
                             </div>
                             <div>
-                                <label style={{ ...labelStyle, color: 'white', opacity: 0.7, fontSize: '12px' }}>Número de Documento</label>
+                                <label htmlFor="document_number" style={{ ...labelStyle, color: 'white', opacity: 0.7, fontSize: '12px' }}>Número de Documento</label>
                                 <input
+                                    id="document_number"
+                                    name="id-number"
                                     value={formData.document_number || ''}
                                     onChange={e => onChange({ ...formData, document_number: e.target.value })}
                                     style={{ ...inputStyle, paddingLeft: '20px' }}
@@ -119,16 +131,21 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({
                     ) : (
                         <>
                             <div>
-                                <label style={{ ...labelStyle, color: 'white', opacity: 0.7, fontSize: '12px' }}>Razón Social</label>
+                                <label htmlFor="company_name" style={{ ...labelStyle, color: 'white', opacity: 0.7, fontSize: '12px' }}>Razón Social</label>
                                 <input
+                                    id="company_name"
+                                    name="organization"
+                                    autoComplete="organization"
                                     value={formData.company_name || ''}
                                     onChange={e => onChange({ ...formData, company_name: e.target.value })}
                                     style={{ ...inputStyle, paddingLeft: '20px' }}
                                 />
                             </div>
                             <div>
-                                <label style={{ ...labelStyle, color: 'white', opacity: 0.7, fontSize: '12px' }}>NIT</label>
+                                <label htmlFor="nit" style={{ ...labelStyle, color: 'white', opacity: 0.7, fontSize: '12px' }}>NIT</label>
                                 <input
+                                    id="nit"
+                                    name="tax-id"
                                     value={formData.nit || ''}
                                     onChange={e => onChange({ ...formData, nit: e.target.value })}
                                     style={{ ...inputStyle, paddingLeft: '20px' }}
@@ -151,9 +168,11 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({
                     Configuración de Pagos
                 </h4>
                 <div>
-                    <label style={{ ...labelStyle, color: 'white', opacity: 0.7, fontSize: '12px' }}>Número de Cuenta para Retiros</label>
+                    <label htmlFor="account_number" style={{ ...labelStyle, color: 'white', opacity: 0.7, fontSize: '12px' }}>Número de Cuenta para Retiros</label>
                     <div style={{ position: 'relative' }}>
                         <input
+                            id="account_number"
+                            name="account-number"
                             value={formData.account_number || ''}
                             onChange={e => onChange({ ...formData, account_number: e.target.value })}
                             style={inputStyle}
@@ -180,7 +199,7 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({
             </div>
 
             <button
-                onClick={onSubmit}
+                type="submit"
                 disabled={saving}
                 className="btn-primary"
                 style={{ height: '60px', marginTop: '10px' }}
@@ -197,7 +216,7 @@ const ProfileEditForm: React.FC<ProfileEditFormProps> = ({
                     </>
                 )}
             </button>
-        </motion.div>
+        </motion.form>
     );
 };
 

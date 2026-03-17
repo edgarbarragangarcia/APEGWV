@@ -357,7 +357,7 @@ const Auth: React.FC = () => {
                                 <input
                                     id="email"
                                     type="email"
-                                    name="username"
+                                    name="email"
                                     autoComplete="username"
                                     placeholder="Correo Electrónico"
                                     required

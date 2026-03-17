@@ -164,6 +164,8 @@ const EditProfile: React.FC = () => {
 
                     <FormInput
                         label="Nombre Completo"
+                        name="name"
+                        autoComplete="name"
                         value={formData.full_name}
                         onChange={v => setFormData(p => ({ ...p, full_name: v }))}
                         required
@@ -173,12 +175,14 @@ const EditProfile: React.FC = () => {
                         <FormInput
                             type="number"
                             label="Hándicap"
+                            name="handicap"
                             value={formData.handicap}
                             onChange={v => setFormData(p => ({ ...p, handicap: v }))}
                             step="0.1"
                         />
                         <FormInput
                             label="Cód. Federación"
+                            name="federation-code"
                             value={formData.federation_code}
                             onChange={v => setFormData(p => ({ ...p, federation_code: v }))}
                         />
@@ -187,6 +191,8 @@ const EditProfile: React.FC = () => {
                     <FormInput
                         type="email"
                         label="Correo Electrónico"
+                        name="email"
+                        autoComplete="email"
                         value={formData.email}
                         onChange={v => setFormData(p => ({ ...p, email: v }))}
                     />
@@ -194,6 +200,8 @@ const EditProfile: React.FC = () => {
                     <FormInput
                         type="tel"
                         label="Teléfono Celular"
+                        name="tel"
+                        autoComplete="tel"
                         value={formData.phone}
                         onChange={v => setFormData(p => ({ ...p, phone: v }))}
                     />
@@ -300,15 +308,19 @@ interface FormInputProps {
     value: string;
     onChange: (value: string) => void;
     type?: string;
+    name?: string;
+    autoComplete?: string;
     required?: boolean;
     step?: string;
 }
 
-const FormInput: React.FC<FormInputProps> = ({ label, value, onChange, type = 'text', required, step }) => (
+const FormInput: React.FC<FormInputProps> = ({ label, value, onChange, type = 'text', name, autoComplete, required, step }) => (
     <div className="form-group">
         <Label text={label} />
         <input
             type={type}
+            name={name}
+            autoComplete={autoComplete}
             step={step}
             className="glass"
             style={styles.input}

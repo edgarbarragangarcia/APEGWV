@@ -118,11 +118,19 @@ const AddressModal: React.FC<AddressModalProps> = ({ isOpen, onClose, currentAdd
             </div>
 
             <div style={pageStyles.scrollArea}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                <form
+                    onSubmit={(e) => {
+                        e.preventDefault();
+                        handleConfirm();
+                    }}
+                    style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}
+                >
 
                     {/* Street */}
                     <FormInput
                         label="Calle / Carrera / Apto"
+                        name="address-line1"
+                        autoComplete="address-line1"
                         value={details.street}
                         onChange={v => setDetails({ ...details, street: v })}
                         placeholder="Ej: Calle 100 #15-30 Apto 402"
@@ -237,6 +245,8 @@ const AddressModal: React.FC<AddressModalProps> = ({ isOpen, onClose, currentAdd
                     {/* Zip Code */}
                     <FormInput
                         label="Código Postal"
+                        name="postal-code"
+                        autoComplete="postal-code"
                         value={details.zip}
                         onChange={v => setDetails({ ...details, zip: v })}
                         placeholder="110111"
@@ -244,23 +254,25 @@ const AddressModal: React.FC<AddressModalProps> = ({ isOpen, onClose, currentAdd
 
                     {/* Confirm Button */}
                     <button
-                        onClick={handleConfirm}
+                        type="submit"
                         style={fieldStyles.confirmButton}
                     >
                         <MapPin size={18} />
                         CONFIRMAR DIRECCIÓN
                     </button>
-                </div>
+                </form>
             </div>
         </div>
     );
 };
 
-const FormInput = ({ label, value, onChange, placeholder }: { label: string; value: string; onChange: (v: string) => void; placeholder?: string }) => (
+const FormInput = ({ label, value, onChange, placeholder, name, autoComplete }: { label: string; value: string; onChange: (v: string) => void; placeholder?: string; name?: string; autoComplete?: string }) => (
     <div className="form-group">
         <Label text={label} />
         <input
             type="text"
+            name={name}
+            autoComplete={autoComplete}
             className="glass"
             style={fieldStyles.input}
             value={value}
