@@ -287,6 +287,9 @@ const Auth: React.FC = () => {
                                         <div style={{ position: 'relative' }}>
                                             <User size={16} color="rgba(255,255,255,0.6)" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
                                             <input
+                                                id="full-name"
+                                                name="name"
+                                                autoComplete="name"
                                                 type="text"
                                                 placeholder="Nombre Completo"
                                                 required={!isLogin}
@@ -302,6 +305,8 @@ const Auth: React.FC = () => {
                                             <div style={{ position: 'relative' }}>
                                                 <Award size={16} color="rgba(255,255,255,0.6)" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
                                                 <input
+                                                    id="handicap"
+                                                    name="handicap"
                                                     type="number"
                                                     placeholder="Hándicap"
                                                     required={!isLogin}
@@ -330,6 +335,9 @@ const Auth: React.FC = () => {
                                         <div style={{ position: 'relative' }}>
                                             <Phone size={16} color="rgba(255,255,255,0.6)" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
                                             <input
+                                                id="phone"
+                                                name="tel"
+                                                autoComplete="tel"
                                                 type="tel"
                                                 placeholder="Teléfono Celular"
                                                 required={!isLogin}
@@ -347,8 +355,9 @@ const Auth: React.FC = () => {
                             <div style={{ position: 'relative' }}>
                                 <Mail size={16} color="rgba(255,255,255,0.6)" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
                                 <input
+                                    id="email"
                                     type="email"
-                                    name="email"
+                                    name="username"
                                     autoComplete="username"
                                     placeholder="Correo Electrónico"
                                     required
@@ -363,6 +372,7 @@ const Auth: React.FC = () => {
                             <div style={{ position: 'relative' }}>
                                 <Lock size={16} color="rgba(255,255,255,0.6)" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
                                 <input
+                                    id="password"
                                     type={showPassword ? "text" : "password"}
                                     name="password"
                                     autoComplete={isLogin ? "current-password" : "new-password"}
@@ -416,6 +426,7 @@ const Auth: React.FC = () => {
                                 <motion.button
                                     whileHover={{ scale: 1.02 }}
                                     whileTap={{ scale: 0.98 }}
+                                    type="submit"
                                     disabled={loading}
                                     className="btn-primary"
                                     style={{
