@@ -116,8 +116,24 @@ const Profile: React.FC = () => {
                             })()}
                         </h1>
                         <p style={styles.subText}>
-                            ID: {profile?.federation_code || '--'} • Hcp {profile?.handicap ?? '--'}
+                            ID: {profile?.federation_code || '--'}
                         </p>
+                        <div style={{ display: 'flex', gap: '15px', justifyContent: 'center', marginTop: '12px' }}>
+                            <div style={{ textAlign: 'center' }}>
+                                <p style={{ fontSize: '18px', fontWeight: '900', color: 'var(--secondary)', lineHeight: 1 }}>{profile?.handicap ?? '--'}</p>
+                                <p style={{ fontSize: '8px', color: 'var(--text-dim)', fontWeight: '800', textTransform: 'uppercase', marginTop: '2px' }}>Hándicap</p>
+                            </div>
+                            <div style={{ width: '1px', background: 'rgba(255,255,255,0.1)', height: '24px', alignSelf: 'center' }}></div>
+                            <div style={{ textAlign: 'center' }}>
+                                <p style={{ fontSize: '18px', fontWeight: '900', color: 'white', lineHeight: 1 }}>{profile?.average_score ?? '--'}</p>
+                                <p style={{ fontSize: '8px', color: 'var(--text-dim)', fontWeight: '800', textTransform: 'uppercase', marginTop: '2px' }}>Avg Score</p>
+                            </div>
+                            <div style={{ width: '1px', background: 'rgba(255,255,255,0.1)', height: '24px', alignSelf: 'center' }}></div>
+                            <div style={{ textAlign: 'center' }}>
+                                <p style={{ fontSize: '18px', fontWeight: '900', color: 'white', lineHeight: 1 }}>{profile?.total_rounds ?? 0}</p>
+                                <p style={{ fontSize: '8px', color: 'var(--text-dim)', fontWeight: '800', textTransform: 'uppercase', marginTop: '2px' }}>Rondas</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
 

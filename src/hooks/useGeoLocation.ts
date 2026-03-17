@@ -16,6 +16,7 @@ export const useGeoLocation = () => {
     );
     const [isRequesting, setIsRequesting] = useState(false);
     const watcherRef = useRef<string | null>(null);
+    const watcherErrorCountRef = useRef(0);
     const locationRef = useRef<Coordinates | null>(null);
 
     const startWatching = async () => {
@@ -30,10 +31,26 @@ export const useGeoLocation = () => {
                 },
                 (position, err) => {
                     if (err) {
+                        // kCLErrorLocationUnknown (code 0) is a TRANSIENT iOS/macOS error.
+                        // It means GPS hasn't locked yet — NOT a fatal failure.
+                        // Silently ignore it and wait for the next position update.
+                        const isTransient =
+                            err.message?.includes('kCLErrorLocationUnknown') ||
+                            err.message?.includes('Unknown') ||
+                            (err as any).code === 0;
+
+                        if (isTransient) {
+                            watcherErrorCountRef.current += 1;
+                            // Only surface to UI after 5+ consecutive transient errors (no fix in ~50s)
+                            if (watcherErrorCountRef.current < 5) return;
+                        }
+
                         setError(err.message);
                         setIsRequesting(false);
                         return;
                     }
+                    // Got a fix — reset the transient error counter
+                    watcherErrorCountRef.current = 0;
 
                     if (position) {
                         const newLocation = {
@@ -76,13 +93,28 @@ export const useGeoLocation = () => {
             setError(null);
             await startWatching();
         } catch (err: any) {
+            // Explicit permission denial — stop immediately
             if (err.message?.toLowerCase().includes('denied') || err.code === 1) {
                 setPermissionStatus('denied');
                 setError('Permiso denegado por el usuario');
                 return;
             }
 
-            // Fallback strategy
+            // kCLErrorLocationUnknown (iOS/macOS transient error, code 0) —
+            // GPS signal is temporarily unavailable. Retry silently.
+            const isTransient =
+                err.message?.includes('kCLErrorLocationUnknown') ||
+                err.message?.includes('LocationUnknown') ||
+                (err.code === 0);
+
+            if (isTransient && retryCount < 4) {
+                // Exponential backoff: 2s, 4s, 8s, 16s
+                const delay = Math.pow(2, retryCount + 1) * 1000;
+                setTimeout(() => getInitialLocation(false, retryCount + 1), delay);
+                return;
+            }
+
+            // Generic fallback strategy for other errors
             if (useHighAccuracy && retryCount === 0) {
                 setTimeout(() => getInitialLocation(false, 0), 1000);
             } else if (retryCount < 2) {

@@ -11,6 +11,7 @@ import { useAuth } from '../context/AuthContext';
 import { useProfile } from '../hooks/useProfile';
 import PageHero from '../components/PageHero';
 import ConfirmationModal from '../components/ConfirmationModal';
+import { AlertCircle, RefreshCw } from 'lucide-react';
 
 const CourseSelection: React.FC = () => {
     const navigate = useNavigate();
@@ -18,8 +19,9 @@ const CourseSelection: React.FC = () => {
     const { user } = useAuth();
     const { data: profile } = useProfile();
 
-    // Friends passed from FriendSelection page
+    // Navigation State
     const selectedFriends = (locationState.state as any)?.selectedFriends || [];
+    const groupName = (locationState.state as any)?.groupName || 'Mi Partida';
 
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedZone, setSelectedZone] = useState<string>('Todas');
@@ -31,7 +33,7 @@ const CourseSelection: React.FC = () => {
 
     const zones = ['Todas', 'Bogotá', 'Antioquia', 'Valle', 'Costa', 'Santanderes', 'Eje Cafetero', 'Centro'];
 
-    const { calculateDistance, location, refreshLocation, permissionStatus } = useGeoLocation();
+    const { calculateDistance, location, refreshLocation, permissionStatus, error: locationError } = useGeoLocation();
     const [showLocationLoading, setShowLocationLoading] = useState(true);
 
     // Timeout para el mensaje de carga de ubicación
@@ -139,12 +141,11 @@ const CourseSelection: React.FC = () => {
 
                 // 5. Send game start notifications to all invited friends
                 if (validFriends.length > 0) {
-                    const userName = profile?.full_name || user?.email || 'Un amigo';
                     const startNotifications = validFriends.map((f: any) => ({
                         user_id: f.id,
                         type: 'game_started',
-                        title: '🏌️ ¡El juego ha comenzado!',
-                        message: `${userName} ha iniciado la partida en ${course.club}. ¡Es hora de jugar!`,
+                        title: 'Partida Iniciada',
+                        message: `${profile?.full_name || user?.email} ha iniciado una partida en ${course.club} y te ha invitado.`,
                         link: `/round?group_id=${groupData.id}`,
                         read: false
                     }));
@@ -276,7 +277,7 @@ const CourseSelection: React.FC = () => {
             {/* Main Content Scroll Area */}
             <div style={{
                 position: 'absolute',
-                top: 'calc(var(--header-offset-top) + 220px)',
+                top: 'calc(var(--header-offset-top) + 210px)',
                 left: '0',
                 right: '0',
                 bottom: 'calc(var(--nav-height) + 20px)',
@@ -286,12 +287,92 @@ const CourseSelection: React.FC = () => {
                 zIndex: 1,
                 pointerEvents: 'auto'
             }}>
+                {/* --- SECCIÓN DE JUGADORES SELECCIONADOS --- */}
+                <div style={{
+                    background: 'rgba(163, 230, 53, 0.08)',
+                    border: '1.5px solid rgba(163, 230, 53, 0.2)',
+                    borderRadius: '24px',
+                    padding: '16px',
+                    marginBottom: '20px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '12px'
+                }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--secondary)' }}></div>
+                            <span style={{ fontSize: '11px', fontWeight: '800', color: 'var(--secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                                Grupo: {groupName}
+                            </span>
+                        </div>
+                        <span style={{ fontSize: '10px', fontWeight: '700', color: 'rgba(255,255,255,0.5)' }}>
+                            {selectedFriends.length + 1} Jugadores
+                        </span>
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '4px' }}>
+                        {/* Current User */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.05)', padding: '6px 12px', borderRadius: '15px', border: '1px solid rgba(255,255,255,0.1)', flexShrink: 0 }}>
+                            <div style={{ position: 'relative' }}>
+                                {profile?.id_photo_url ? (
+                                    <img src={profile.id_photo_url} alt="Tú" style={{ width: '28px', height: '28px', borderRadius: '10px', objectFit: 'cover', border: '1.5px solid var(--secondary)' }} />
+                                ) : (
+                                    <div style={{ width: '28px', height: '28px', borderRadius: '10px', background: 'var(--secondary)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: '900' }}>
+                                        {profile?.full_name?.charAt(0) || 'U'}
+                                    </div>
+                                )}
+                            </div>
+                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                <span style={{ fontSize: '12px', fontWeight: '700', color: 'white' }}>Tú</span>
+                                <span style={{ fontSize: '9px', fontWeight: '800', color: 'var(--secondary)' }}>HCP {profile?.handicap || '--'}</span>
+                            </div>
+                        </div>
+
+                        {/* Invited Friends */}
+                        {selectedFriends.map((friend: any) => (
+                            <div key={friend.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.03)', padding: '6px 12px', borderRadius: '15px', border: '1px solid rgba(255,255,255,0.08)', flexShrink: 0 }}>
+                                {friend.id_photo_url ? (
+                                    <img src={friend.id_photo_url} alt="" style={{ width: '28px', height: '28px', borderRadius: '10px', objectFit: 'cover' }} />
+                                ) : (
+                                    <div style={{ width: '28px', height: '28px', borderRadius: '10px', background: 'rgba(255,255,255,0.1)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: '900' }}>
+                                        {friend.full_name?.charAt(0) || friend.email?.charAt(0)}
+                                    </div>
+                                )}
+                                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                    <span style={{ fontSize: '12px', fontWeight: '700', color: 'white' }}>{friend.full_name?.split(' ')[0]}</span>
+                                    <span style={{ fontSize: '9px', fontWeight: '800', color: 'rgba(255,255,255,0.4)' }}>HCP {friend.handicap || '--'}</span>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                    {permissionStatus === 'granted' && !location && showLocationLoading && (
+                    {permissionStatus === 'granted' && !location && showLocationLoading && !locationError && (
                         <div className="glass animate-pulse" style={{ padding: '15px', textAlign: 'center', background: 'rgba(163, 230, 53, 0.05)', border: '1px solid rgba(163, 230, 53, 0.2)' }}>
                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', color: 'var(--secondary)' }}>
                                 <div className="spinner-small"></div>
                                 <span style={{ fontSize: '12px', fontWeight: '700' }}>OBTENIENDO UBICACIÓN PRECISA...</span>
+                            </div>
+                        </div>
+                    )}
+
+                    {locationError && !location && (
+                        <div className="glass" style={{ padding: '15px', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                <AlertCircle size={20} color="#ef4444" />
+                                <div style={{ flex: 1 }}>
+                                    <p style={{ fontSize: '12px', color: '#ef4444', fontWeight: '700' }}>UBICACIÓN NO DISPONIBLE</p>
+                                    <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)', marginTop: '2px' }}>
+                                        {locationError?.includes('Unknown') ? 'iOS/macOS reportó un error de ubicación desconocido. Prueba a desactivar y activar el GPS.' : locationError}
+                                    </p>
+                                </div>
+                                <button 
+                                    onClick={() => refreshLocation()}
+                                    style={{ background: 'rgba(255,255,255,0.05)', padding: '8px', borderRadius: '10px', color: 'white' }}
+                                >
+                                    <RefreshCw size={16} />
+                                </button>
                             </div>
                         </div>
                     )}

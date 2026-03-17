@@ -188,7 +188,7 @@ const Round: React.FC = () => {
                 // 1. Fetch group members with their profiles
                 const { data: members, error: mErr } = await supabase
                     .from('group_members')
-                    .select('user_id, profiles(full_name, id_photo_url)')
+                    .select('user_id, profiles(full_name, id_photo_url, handicap, average_score)')
                     .eq('group_id', groupId);
 
                 if (mErr) throw mErr;
@@ -670,22 +670,7 @@ const Round: React.FC = () => {
                     </div>
                 </div>
                 <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-                    {groupId && (
-                        <button
-                            onClick={() => navigate('/live-betting')}
-                            style={{
-                                background: 'rgba(163, 230, 53, 0.1)',
-                                border: '1px solid var(--secondary)',
-                                color: 'var(--secondary)',
-                                fontSize: '11px',
-                                fontWeight: '900',
-                                padding: '4px 10px',
-                                borderRadius: '8px'
-                            }}
-                        >
-                            APUESTAS
-                        </button>
-                    )}
+
                     <button onClick={() => setShowStatsModal(true)} style={{
                         background: 'rgba(255,255,255,0.05)',
                         border: '1px solid rgba(255,255,255,0.1)',
@@ -797,6 +782,18 @@ const Round: React.FC = () => {
                                                         }}>
                                                             Hoyo {groupCurrentHoles[member.user_id] || 1}
                                                         </span>
+                                                        {member.profiles?.handicap !== undefined && (
+                                                            <span style={{
+                                                                fontSize: '8px',
+                                                                background: 'rgba(255, 255, 255, 0.08)',
+                                                                color: 'rgba(255, 255, 255, 0.7)',
+                                                                padding: '1px 6px',
+                                                                borderRadius: '6px',
+                                                                fontWeight: '800'
+                                                            }}>
+                                                                HCP {member.profiles.handicap}
+                                                            </span>
+                                                        )}
                                                     </div>
                                                 </div>
                                             </div>

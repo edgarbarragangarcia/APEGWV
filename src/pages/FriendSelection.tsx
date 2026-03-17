@@ -67,7 +67,7 @@ const FriendSelection: React.FC = () => {
                     owner_id,
                     members: saved_group_members(
                         member_id,
-                        profile: profiles(id, full_name, email, id_photo_url)
+                        profile: profiles(id, full_name, email, id_photo_url, handicap, average_score)
                     )
                 `);
 
@@ -78,7 +78,7 @@ const FriendSelection: React.FC = () => {
                 const ownerIds = [...new Set(data.map((g: any) => g.owner_id))];
                 const { data: owners } = await supabase
                     .from('profiles')
-                    .select('id, full_name, email, id_photo_url')
+                    .select('id, full_name, email, id_photo_url, handicap, average_score')
                     .in('id', ownerIds as any[]);
 
                 const groupsWithOwners = data.map((g: any) => ({
@@ -398,9 +398,21 @@ const FriendSelection: React.FC = () => {
                                             <h3 style={{ fontSize: '15px', fontWeight: '900', color: '#fff', marginBottom: '0px', letterSpacing: '-0.4px' }}>
                                                 {group.name}
                                             </h3>
-                                            <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)', fontWeight: '600' }}>
-                                                {group.members.length + 1} Jugadores
-                                            </p>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
+                                                <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                                    <Users size={10} /> {group.members.length + 1} Jugadores
+                                                </p>
+                                                {group.owner?.handicap !== undefined && (
+                                                    <span style={{ fontSize: '9px', background: 'rgba(163, 230, 53, 0.1)', color: 'var(--secondary)', padding: '1px 5px', borderRadius: '4px', fontWeight: '800' }}>
+                                                        Hcp {group.owner.handicap}
+                                                    </span>
+                                                )}
+                                                {group.members.slice(0, 2).map((m: any, i: number) => m.profile?.handicap !== undefined && (
+                                                    <span key={i} style={{ fontSize: '9px', background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.5)', padding: '1px 5px', borderRadius: '4px', fontWeight: '800' }}>
+                                                        {m.profile.handicap}
+                                                    </span>
+                                                ))}
+                                            </div>
                                         </div>
                                     </div>
 

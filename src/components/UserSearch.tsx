@@ -7,6 +7,8 @@ interface UserProfile {
     full_name: string | null;
     email: string | null;
     id_photo_url?: string | null;
+    handicap?: number | null;
+    average_score?: number | null;
 }
 
 interface UserSearchProps {
@@ -34,7 +36,7 @@ const UserSearch: React.FC<UserSearchProps> = ({ onUsersSelected, initialSelecte
             setSearching(true);
             const { data, error } = await supabase
                 .from('profiles')
-                .select('id, full_name, email, id_photo_url')
+                .select('id, full_name, email, id_photo_url, handicap, average_score')
                 .or(`full_name.ilike.%${query}%,email.ilike.%${query}%`)
                 .limit(5);
 
@@ -164,7 +166,21 @@ const UserSearch: React.FC<UserSearchProps> = ({ onUsersSelected, initialSelecte
                                 )}
                                 <div style={{ display: 'flex', flexDirection: 'column' }}>
                                     <span style={{ fontWeight: '600', fontSize: '14px' }}>{user.full_name}</span>
-                                    <span style={{ fontSize: '11px', color: 'var(--text-dim)' }}>{user.email}</span>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                        <span style={{ fontSize: '11px', color: 'var(--text-dim)' }}>{user.email}</span>
+                                        {user.handicap !== undefined && (
+                                            <span style={{ 
+                                                fontSize: '10px', 
+                                                background: 'rgba(163, 230, 53, 0.15)', 
+                                                color: 'var(--secondary)', 
+                                                padding: '1px 6px', 
+                                                borderRadius: '6px', 
+                                                fontWeight: '800' 
+                                            }}>
+                                                Hcp {user.handicap}
+                                            </span>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                             <UserPlus size={16} color="var(--secondary)" />

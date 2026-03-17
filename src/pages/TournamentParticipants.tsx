@@ -361,6 +361,16 @@ const TournamentParticipants: React.FC = () => {
                                             <span style={{ color: 'white', fontWeight: '900', fontSize: '12px' }}>{selectedParticipant.federation_code ?? '--'}</span>
                                         </div>
                                     </div>
+                                    <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', background: 'rgba(56, 189, 248, 0.1)', padding: '4px 10px', borderRadius: '10px', border: '1px solid rgba(56, 189, 248, 0.2)' }}>
+                                            <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '10px', marginRight: '5px', fontWeight: '700' }}>AVG:</span>
+                                            <span style={{ color: '#38bdf8', fontWeight: '900', fontSize: '12px' }}>{selectedParticipant.average_score ?? '--'}</span>
+                                        </div>
+                                        <div style={{ display: 'flex', alignItems: 'center', background: 'rgba(255, 255, 255, 0.05)', padding: '4px 10px', borderRadius: '10px', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
+                                            <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '10px', marginRight: '5px', fontWeight: '700' }}>RONDAS:</span>
+                                            <span style={{ color: 'white', fontWeight: '900', fontSize: '12px' }}>{selectedParticipant.total_rounds ?? 0}</span>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 

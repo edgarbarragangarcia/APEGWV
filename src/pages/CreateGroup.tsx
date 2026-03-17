@@ -13,6 +13,8 @@ interface UserProfile {
     full_name: string | null;
     email: string | null;
     id_photo_url?: string | null;
+    handicap?: number | null;
+    average_score?: number | null;
 }
 
 const CreateGroup: React.FC = () => {
@@ -95,6 +97,20 @@ const CreateGroup: React.FC = () => {
                     .insert(membersToInsert);
 
                 if (membersError) throw membersError;
+
+                // 3. Send notifications to added friends
+                const groupNotifications = selectedFriends.map(friend => ({
+                    user_id: friend.id,
+                    type: 'added_to_template_group',
+                    title: 'Nuevo Grupo',
+                    message: `${profile?.full_name || session.user.email} te ha agregado a su grupo "${groupName}"`,
+                    link: `/friend-selection`,
+                    read: false
+                }));
+
+                if (groupNotifications.length > 0) {
+                    await supabase.from('notifications').insert(groupNotifications);
+                }
             }
 
             // success(isEditing ? '¡Grupo actualizado con éxito!' : '¡Grupo guardado con éxito!');
