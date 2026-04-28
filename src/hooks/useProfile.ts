@@ -33,7 +33,7 @@ export const useProfile = () => {
             // users can only read their own profile.
             const { data, error } = await supabase
                 .from('profiles')
-                .select('*')
+                .select('id, full_name, handicap, federation_code, avatar_url, email, phone, address, department_id, city_id, updated_at, is_admin, is_premium, average_score, best_score, total_rounds')
                 .eq('id', user.id)
                 .maybeSingle();
 
