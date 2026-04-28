@@ -21,7 +21,7 @@ const EditProfile: React.FC = () => {
         full_name: '',
         handicap: '',
         federation_code: '',
-        id_photo_url: '',
+        avatar_url: '',
         email: '',
         phone: '',
         address: '',
@@ -39,7 +39,7 @@ const EditProfile: React.FC = () => {
                 full_name: profile.full_name || '',
                 handicap: profile.handicap?.toString() || '',
                 federation_code: profile.federation_code || '',
-                id_photo_url: profile.id_photo_url || '',
+                avatar_url: profile.avatar_url || '',
                 email: profile.email || '',
                 phone: profile.phone || '',
                 address: profile.address || '',
@@ -75,7 +75,7 @@ const EditProfile: React.FC = () => {
                 .from('avatars')
                 .getPublicUrl(fileName);
 
-            setFormData(prev => ({ ...prev, id_photo_url: publicUrl }));
+            setFormData(prev => ({ ...prev, avatar_url: publicUrl }));
 
         } catch (error) {
             console.error('Error uploading avatar:', error);
@@ -95,7 +95,7 @@ const EditProfile: React.FC = () => {
                 full_name: formData.full_name,
                 handicap: formData.handicap ? parseFloat(formData.handicap) : null,
                 federation_code: formData.federation_code,
-                id_photo_url: formData.id_photo_url,
+                avatar_url: formData.avatar_url,
                 email: formData.email,
                 phone: formData.phone,
                 address: formData.address,
@@ -134,9 +134,9 @@ const EditProfile: React.FC = () => {
                     <div style={{ textAlign: 'center', marginBottom: '5px' }}>
                         <div style={styles.photoContainer}>
                             <div style={styles.photoFrame}>
-                                {formData.id_photo_url ? (
+                                {formData.avatar_url ? (
                                     <img
-                                        src={optimizeImage(formData.id_photo_url, { width: 180, height: 180 })}
+                                        src={optimizeImage(formData.avatar_url, { width: 180, height: 180 })}
                                         alt="Profile"
                                         style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                     />
@@ -151,10 +151,10 @@ const EditProfile: React.FC = () => {
                             </label>
                         </div>
 
-                        {formData.id_photo_url && (
+                        {formData.avatar_url && (
                             <button
                                 type="button"
-                                onClick={() => setFormData(p => ({ ...p, id_photo_url: '' }))}
+                                onClick={() => setFormData(p => ({ ...p, avatar_url: '' }))}
                                 style={styles.deletePhotoButton}
                             >
                                 <Trash2 size={11} /> Eliminar foto

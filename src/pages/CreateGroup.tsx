@@ -12,7 +12,7 @@ interface UserProfile {
     id: string;
     full_name: string | null;
     email: string | null;
-    id_photo_url?: string | null;
+    avatar_url?: string | null;
     handicap?: number | null;
     average_score?: number | null;
 }
@@ -275,9 +275,9 @@ const CreateGroup: React.FC = () => {
                         paddingBottom: '24px'
                     }}>
                         <div style={{ position: 'relative' }}>
-                            {profile?.id_photo_url ? (
+                            {profile?.avatar_url ? (
                                 <img
-                                    src={profile.id_photo_url}
+                                    src={profile.avatar_url}
                                     alt="Tú"
                                     style={{
                                         width: '56px',

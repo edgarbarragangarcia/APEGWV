@@ -314,8 +314,8 @@ const CourseSelection: React.FC = () => {
                         {/* Current User */}
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.05)', padding: '6px 12px', borderRadius: '15px', border: '1px solid rgba(255,255,255,0.1)', flexShrink: 0 }}>
                             <div style={{ position: 'relative' }}>
-                                {profile?.id_photo_url ? (
-                                    <img src={profile.id_photo_url} alt="Tú" style={{ width: '28px', height: '28px', borderRadius: '10px', objectFit: 'cover', border: '1.5px solid var(--secondary)' }} />
+                                {profile?.avatar_url ? (
+                                    <img src={profile.avatar_url} alt="Tú" style={{ width: '28px', height: '28px', borderRadius: '10px', objectFit: 'cover', border: '1.5px solid var(--secondary)' }} />
                                 ) : (
                                     <div style={{ width: '28px', height: '28px', borderRadius: '10px', background: 'var(--secondary)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: '900' }}>
                                         {profile?.full_name?.charAt(0) || 'U'}
@@ -331,8 +331,8 @@ const CourseSelection: React.FC = () => {
                         {/* Invited Friends */}
                         {selectedFriends.map((friend: any) => (
                             <div key={friend.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.03)', padding: '6px 12px', borderRadius: '15px', border: '1px solid rgba(255,255,255,0.08)', flexShrink: 0 }}>
-                                {friend.id_photo_url ? (
-                                    <img src={friend.id_photo_url} alt="" style={{ width: '28px', height: '28px', borderRadius: '10px', objectFit: 'cover' }} />
+                                {friend.avatar_url ? (
+                                    <img src={friend.avatar_url} alt="" style={{ width: '28px', height: '28px', borderRadius: '10px', objectFit: 'cover' }} />
                                 ) : (
                                     <div style={{ width: '28px', height: '28px', borderRadius: '10px', background: 'rgba(255,255,255,0.1)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: '900' }}>
                                         {friend.full_name?.charAt(0) || friend.email?.charAt(0)}

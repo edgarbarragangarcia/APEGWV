@@ -9,7 +9,7 @@ export interface Profile {
     full_name: string | null;
     handicap: number | null;
     federation_code: string | null;
-    id_photo_url: string | null;
+    avatar_url: string | null;
     email: string | null;
     phone: string | null;
     address: string | null;

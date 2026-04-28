@@ -11,7 +11,7 @@ interface Participant {
     id: string; // registration_id
     user_id: string | null;
     full_name: string | null;
-    id_photo_url: string | null;
+    avatar_url: string | null;
     handicap: number | null;
     email: string | null;
     phone: string | null;
@@ -67,7 +67,7 @@ const TournamentParticipants: React.FC = () => {
                     player_handicap,
                     player_federation_code,
                     profiles (
-                        id, full_name, id_photo_url, handicap, email, phone, total_rounds, average_score, federation_code
+                        id, full_name, avatar_url, handicap, email, phone, total_rounds, average_score, federation_code
                     )
                 `)
                 .eq('tournament_id', id || '');
@@ -99,7 +99,7 @@ const TournamentParticipants: React.FC = () => {
                     email: reg.player_email || profile?.email,
                     phone: reg.player_phone || profile?.phone,
                     handicap: reg.player_handicap ?? profile?.handicap,
-                    id_photo_url: profile?.id_photo_url,
+                    avatar_url: profile?.avatar_url,
                     total_rounds: profile?.total_rounds,
                     average_score: profile?.average_score,
                     federation_code: reg.player_federation_code || profile?.federation_code || matchingGuest?.code,
@@ -118,7 +118,7 @@ const TournamentParticipants: React.FC = () => {
                     email: null,
                     phone: null,
                     handicap: null,
-                    id_photo_url: null,
+                    avatar_url: null,
                     total_rounds: null,
                     average_score: null,
                     federation_code: g.code,
@@ -344,7 +344,7 @@ const TournamentParticipants: React.FC = () => {
                             <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '25px', textAlign: 'left' }}>
                                 <div style={{ width: '85px', height: '85px', borderRadius: '25px', overflow: 'hidden', border: '3px solid var(--secondary)', boxShadow: '0 10px 20px rgba(0,0,0,0.2)', flexShrink: 0 }}>
                                     <img
-                                        src={selectedParticipant.id_photo_url || `https://ui-avatars.com/api/?name=${selectedParticipant.full_name || 'User'}&background=0E2F1F&color=A3E635`}
+                                        src={selectedParticipant.avatar_url || `https://ui-avatars.com/api/?name=${selectedParticipant.full_name || 'User'}&background=0E2F1F&color=A3E635`}
                                         style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                         alt={selectedParticipant.full_name || 'User'}
                                     />
@@ -475,7 +475,7 @@ const TournamentParticipants: React.FC = () => {
 
                                     <div style={{ width: '50px', height: '50px', borderRadius: '16px', overflow: 'hidden', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', flexShrink: 0 }}>
                                         <img
-                                            src={p.id_photo_url || `https://ui-avatars.com/api/?name=${p.full_name || 'User'}&background=0E2F1F&color=A3E635`}
+                                            src={p.avatar_url || `https://ui-avatars.com/api/?name=${p.full_name || 'User'}&background=0E2F1F&color=A3E635`}
                                             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                             alt=""
                                         />

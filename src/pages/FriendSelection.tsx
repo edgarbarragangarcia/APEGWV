@@ -66,33 +66,43 @@ const FriendSelection: React.FC = () => {
                     name,
                     owner_id,
                     members: saved_group_members(
-                        member_id,
-                        profile: profiles(id, full_name, email, id_photo_url, handicap, average_score)
+                        member_id
                     )
                 `);
 
             if (!error && data) {
                 console.log('Fetched saved groups RAW:', data);
 
-                // Manually fetch owner profiles to avoid complex join issues
+                // Manually fetch all member profiles to avoid complex join issues
+                const memberIds = [...new Set(data.flatMap((g: any) => g.members.map((m: any) => m.member_id)))];
+                const { data: memberProfiles } = await supabase
+                    .from('profiles')
+                    .select('id, full_name, email, avatar_url, handicap, average_score')
+                    .in('id', memberIds as any[]);
+
+                // Manually fetch owner profiles
                 const ownerIds = [...new Set(data.map((g: any) => g.owner_id))];
                 const { data: owners } = await supabase
                     .from('profiles')
-                    .select('id, full_name, email, id_photo_url, handicap, average_score')
+                    .select('id, full_name, email, avatar_url, handicap, average_score')
                     .in('id', ownerIds as any[]);
 
-                const groupsWithOwners = data.map((g: any) => ({
+                const groupsWithData = data.map((g: any) => ({
                     ...g,
-                    owner: owners?.find(o => o.id === g.owner_id) || null
+                    owner: owners?.find(o => o.id === g.owner_id) || null,
+                    members: g.members.map((m: any) => ({
+                        ...m,
+                        profile: memberProfiles?.find(p => p.id === m.member_id) || null
+                    }))
                 }));
 
-                groupsWithOwners.forEach((g: any) => {
+                groupsWithData.forEach((g: any) => {
                     console.log(`Group ${g.name} members:`, g.members);
                     console.log(`Group ${g.name} owner:`, g.owner);
                 });
 
-                setSavedGroups(groupsWithOwners);
-                localStorage.setItem('cache_saved_groups', JSON.stringify(groupsWithOwners));
+                setSavedGroups(groupsWithData);
+                localStorage.setItem('cache_saved_groups', JSON.stringify(groupsWithData));
             } else {
                 console.error('Error fetching saved groups:', error);
             }

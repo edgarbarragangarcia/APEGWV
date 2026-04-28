@@ -188,7 +188,7 @@ const Round: React.FC = () => {
                 // 1. Fetch group members with their profiles
                 const { data: members, error: mErr } = await supabase
                     .from('group_members')
-                    .select('user_id, profiles(full_name, id_photo_url, handicap, average_score)')
+                    .select('user_id, profiles(full_name, avatar_url, handicap, average_score)')
                     .eq('group_id', groupId);
 
                 if (mErr) throw mErr;
@@ -723,8 +723,8 @@ const Round: React.FC = () => {
                                         overflow: 'hidden',
                                         background: 'var(--secondary)'
                                     }}>
-                                        {m.profiles?.id_photo_url ? (
-                                            <img src={m.profiles.id_photo_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                        {m.profiles?.avatar_url ? (
+                                            <img src={m.profiles.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                         ) : (
                                             <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '8px', color: 'var(--primary)', fontWeight: 'bold' }}>
                                                 {m.profiles?.full_name?.charAt(0) || '?'}
@@ -758,8 +758,8 @@ const Round: React.FC = () => {
                                         <div key={member.user_id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                                 <div style={{ width: '24px', height: '24px', borderRadius: '8px', overflow: 'hidden', background: 'rgba(255,255,255,0.1)' }}>
-                                                    {member.profiles?.id_photo_url ? (
-                                                        <img src={member.profiles.id_photo_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                    {member.profiles?.avatar_url ? (
+                                                        <img src={member.profiles.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                                     ) : (
                                                         <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 'bold', fontSize: '10px' }}>
                                                             {member.profiles?.full_name?.charAt(0)}

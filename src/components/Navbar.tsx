@@ -236,7 +236,7 @@ const Navbar: React.FC = () => {
                         justifyContent: 'center'
                     }}>
                     <img
-                        src={profile?.id_photo_url || `https://ui-avatars.com/api/?name=${profile?.full_name || 'User'}&background=0E2F1F&color=A3E635`}
+                        src={profile?.avatar_url || `https://ui-avatars.com/api/?name=${profile?.full_name || 'User'}&background=0E2F1F&color=A3E635`}
                         alt="Profile"
                         style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                     />

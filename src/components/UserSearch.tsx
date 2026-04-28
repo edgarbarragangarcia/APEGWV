@@ -6,7 +6,7 @@ interface UserProfile {
     id: string;
     full_name: string | null;
     email: string | null;
-    id_photo_url?: string | null;
+    avatar_url?: string | null;
     handicap?: number | null;
     average_score?: number | null;
 }
@@ -36,7 +36,7 @@ const UserSearch: React.FC<UserSearchProps> = ({ onUsersSelected, initialSelecte
             setSearching(true);
             const { data, error } = await supabase
                 .from('profiles')
-                .select('id, full_name, email, id_photo_url, handicap, average_score')
+                .select('id, full_name, email, avatar_url, handicap, average_score')
                 .or(`full_name.ilike.%${query}%,email.ilike.%${query}%`)
                 .limit(5);
 
@@ -89,8 +89,8 @@ const UserSearch: React.FC<UserSearchProps> = ({ onUsersSelected, initialSelecte
                             gap: '8px',
                             animation: 'scaleIn 0.2s ease'
                         }}>
-                            {user.id_photo_url ? (
-                                <img src={user.id_photo_url} alt="" style={{ width: '20px', height: '20px', borderRadius: '50%', objectFit: 'cover' }} />
+                            {user.avatar_url ? (
+                                <img src={user.avatar_url} alt="" style={{ width: '20px', height: '20px', borderRadius: '50%', objectFit: 'cover' }} />
                             ) : (
                                 <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px' }}>
                                     {user.full_name?.charAt(0) || user.email?.charAt(0)}
@@ -157,8 +157,8 @@ const UserSearch: React.FC<UserSearchProps> = ({ onUsersSelected, initialSelecte
                             }}
                         >
                             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                {user.id_photo_url ? (
-                                    <img src={user.id_photo_url} alt="" style={{ width: '32px', height: '32px', borderRadius: '10px', objectFit: 'cover' }} />
+                                {user.avatar_url ? (
+                                    <img src={user.avatar_url} alt="" style={{ width: '32px', height: '32px', borderRadius: '10px', objectFit: 'cover' }} />
                                 ) : (
                                     <div style={{ width: '32px', height: '32px', borderRadius: '10px', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px' }}>
                                         {user.full_name?.charAt(0) || user.email?.charAt(0)}

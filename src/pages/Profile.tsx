@@ -87,7 +87,7 @@ const Profile: React.FC = () => {
                         <div style={styles.avatarRing}>
                             <div style={styles.avatarInner}>
                                 <img
-                                    src={profile?.id_photo_url || `https://ui-avatars.com/api/?name=${profile?.full_name || 'User'}&background=0E2F1F&color=A3E635&size=120`}
+                                    src={profile?.avatar_url || `https://ui-avatars.com/api/?name=${profile?.full_name || 'User'}&background=0E2F1F&color=A3E635&size=120`}
                                     alt="Profile"
                                     style={styles.avatarImg}
                                 />

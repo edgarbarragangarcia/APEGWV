@@ -66,7 +66,7 @@ const LiveBetting: React.FC = () => {
     const fetchScores = async (groupId: string) => {
         const { data: rounds } = await supabase
             .from('rounds')
-            .select('id, user_id, profiles(full_name, id_photo_url), round_holes(hole_number, score, par)')
+            .select('id, user_id, profiles(full_name, avatar_url), round_holes(hole_number, score, par)')
             .eq('group_id', groupId);
 
         if (rounds) {
@@ -192,7 +192,7 @@ const LiveBetting: React.FC = () => {
                         {groupScores.map((round) => (
                             <div key={round.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(255,255,255,0.03)', padding: '12px', borderRadius: '16px' }}>
                                 <div style={{ width: '40px', height: '40px', borderRadius: '12px', overflow: 'hidden', background: 'var(--secondary)' }}>
-                                    {round.profiles.id_photo_url ? <img src={round.profiles.id_photo_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', fontWeight: '900' }}>{round.profiles.full_name[0]}</div>}
+                                    {round.profiles.avatar_url ? <img src={round.profiles.avatar_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', fontWeight: '900' }}>{round.profiles.full_name[0]}</div>}
                                 </div>
                                 <div style={{ flex: 1 }}>
                                     <h4 style={{ fontSize: '14px', fontWeight: '800', color: 'white', margin: 0 }}>{round.profiles.full_name}</h4>

@@ -13,7 +13,7 @@ export type Order = Pick<Database['public']['Tables']['orders']['Row'], 'id' | '
     buyer_name?: string;
     buyer_phone?: string;
     product: { name: string; image_url: string | null } | null;
-    buyer: { full_name: string | null; id_photo_url: string | null; phone: string | null } | null;
+    buyer: { full_name: string | null; avatar_url: string | null; phone: string | null } | null;
 };
 export type Offer = Pick<Database['public']['Tables']['offers']['Row'], 'id' | 'created_at' | 'status' | 'offer_amount'> & {
     message?: string;
@@ -21,7 +21,7 @@ export type Offer = Pick<Database['public']['Tables']['offers']['Row'], 'id' | '
     counter_amount?: number;
     counter_message?: string;
     product: { id: string; name: string; image_url: string | null; price: number } | null;
-    buyer: { id: string; full_name: string | null; id_photo_url: string | null } | null;
+    buyer: { id: string; full_name: string | null; avatar_url: string | null } | null;
 };
 
 export type Coupon = Database['public']['Tables']['coupons']['Row'];
@@ -274,7 +274,7 @@ export const useStoreData = () => {
                     order_items(
                         product:products(name, image_url)
                     ), 
-                    buyer:profiles!orders_buyer_id_fkey(full_name, id_photo_url, phone)
+                    buyer:profiles!orders_buyer_id_fkey(full_name, avatar_url, phone)
                 `)
                 .eq('seller_id', userId)
                 .order('created_at', { ascending: false });
@@ -318,7 +318,7 @@ export const useStoreData = () => {
                 const buyerIds = [...new Set(userOffers.map((o: any) => o.buyer_id))];
                 const { data: buyers } = await supabase
                     .from('profiles')
-                    .select('id, full_name, id_photo_url')
+                    .select('id, full_name, avatar_url')
                     .in('id', buyerIds);
 
 
