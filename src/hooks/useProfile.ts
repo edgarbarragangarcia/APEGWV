@@ -7,16 +7,18 @@ import { useAuth } from '../context/AuthContext';
 export interface Profile {
     id: string;
     full_name: string | null;
+    email: string | null;
+    avatar_url: string | null;
     handicap: number | null;
     federation_code: string | null;
-    avatar_url: string | null;
-    email: string | null;
     phone: string | null;
     address: string | null;
-    department_id: number | null;
-    city_id: number | null;
-    updated_at: string;
-    // Add other fields as necessary
+    has_completed_onboarding: boolean | null;
+    is_admin: boolean | null;
+    is_premium: boolean | null;
+    average_score: number | null;
+    best_score: number | null;
+    total_rounds: number | null;
 }
 
 const PROFILE_CACHE_KEY = 'user-profile-persistence';
@@ -33,18 +35,17 @@ export const useProfile = () => {
             // users can only read their own profile.
             const { data, error } = await supabase
                 .from('profiles')
-                .select('id, full_name, handicap, federation_code, avatar_url, email, phone, address, department_id, city_id, updated_at, is_admin, is_premium, average_score, best_score, total_rounds')
+                .select('id, full_name, email, avatar_url, handicap, federation_code, phone, address, has_completed_onboarding, is_admin, is_premium, average_score, best_score, total_rounds')
                 .eq('id', user.id)
                 .maybeSingle();
 
             if (error) throw error;
 
-            // Sync to local storage for offline-first feeling / faster initial load on next boot
             if (data) {
                 localStorage.setItem(PROFILE_CACHE_KEY, JSON.stringify(data));
             }
 
-            return data as Profile;
+            return data as unknown as Profile;
         },
         enabled: !!user?.id,
         initialData: () => {
@@ -76,18 +77,15 @@ export const useUpdateProfile = () => {
             .from('profiles')
             .update(updates)
             .eq('id', user.id)
-            .select()
+            .select('id, full_name, email, avatar_url, handicap, federation_code, phone, address, has_completed_onboarding, is_admin, is_premium, average_score, best_score, total_rounds')
             .single();
 
         if (error) throw error;
 
-        // Update React Query cache immediately
         queryClient.setQueryData(['profile', user.id], data);
-
-        // Update local storage to keep in sync
         localStorage.setItem(PROFILE_CACHE_KEY, JSON.stringify(data));
 
-        return data as Profile;
+        return data as unknown as Profile;
     };
 };
 

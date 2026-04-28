@@ -24,9 +24,7 @@ const EditProfile: React.FC = () => {
         avatar_url: '',
         email: '',
         phone: '',
-        address: '',
-        department_id: null as number | null,
-        city_id: null as number | null
+        address: ''
     });
 
     const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
@@ -42,9 +40,7 @@ const EditProfile: React.FC = () => {
                 avatar_url: profile.avatar_url || '',
                 email: profile.email || '',
                 phone: profile.phone || '',
-                address: profile.address || '',
-                department_id: profile.department_id || null,
-                city_id: profile.city_id || null
+                address: profile.address || ''
             });
         }
     }, [profile]);
@@ -99,9 +95,6 @@ const EditProfile: React.FC = () => {
                 email: formData.email,
                 phone: formData.phone,
                 address: formData.address,
-                department_id: formData.department_id,
-                city_id: formData.city_id,
-                updated_at: new Date().toISOString(),
             };
 
             await updateProfile(updates);
