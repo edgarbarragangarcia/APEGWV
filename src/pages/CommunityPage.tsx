@@ -30,13 +30,36 @@ const CommunityPage: React.FC = () => {
     const fetchPosts = async () => {
         setLoading(true);
         try {
+            // Fetch posts without profile join (posts.user_id FK -> auth.users, not public.profiles)
             const { data, error } = await supabase
                 .from('posts')
-                .select('*, user:profiles(full_name, avatar_url)')
+                .select('id, content, media_url, media_type, created_at, likes_count, comments_count, user_id')
                 .order('created_at', { ascending: false });
 
             if (error) throw error;
-            setPosts((data as any) || []);
+
+            // Manually fetch user profiles
+            const userIds = [...new Set((data || []).map((p: any) => p.user_id).filter(Boolean))];
+            let profilesMap: Record<string, any> = {};
+
+            if (userIds.length > 0) {
+                const { data: profilesData } = await supabase
+                    .from('profiles')
+                    .select('id, full_name, avatar_url')
+                    .in('id', userIds);
+
+                profilesMap = (profilesData || []).reduce((acc: any, p: any) => {
+                    acc[p.id] = p;
+                    return acc;
+                }, {});
+            }
+
+            const enriched = (data || []).map((post: any) => ({
+                ...post,
+                user: profilesMap[post.user_id] || null
+            }));
+
+            setPosts(enriched as Post[]);
         } catch (err) {
             console.error('Error fetching posts:', err);
         } finally {

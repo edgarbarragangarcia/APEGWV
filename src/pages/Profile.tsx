@@ -25,7 +25,7 @@ const Profile: React.FC = () => {
                 // Fetch profile
                 const { data: profileData, error: profileError } = await supabase
                     .from('profiles')
-                    .select('*')
+                    .select('id, full_name, email, avatar_url, handicap, federation_code, phone, address, has_completed_onboarding, is_admin, is_premium, average_score, best_score, total_rounds')
                     .eq('id', user.id)
                     .maybeSingle();
 
