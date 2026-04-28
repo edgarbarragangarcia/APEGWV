@@ -33,14 +33,20 @@ const UserSearch: React.FC<UserSearchProps> = ({ onUsersSelected, initialSelecte
                 return;
             }
 
+            console.log('Searching for:', query);
             setSearching(true);
             const { data, error } = await supabase
                 .from('profiles')
                 .select('id, full_name, email, avatar_url, handicap, average_score')
-                .or(`full_name.ilike.%${query}%,email.ilike.%${query}%`)
-                .limit(5);
+                .or(`full_name.ilike.%${query}%,email.ilike.%${query}%,federation_code.ilike.%${query}%`)
+                .limit(10);
 
-            if (!error && data) {
+            if (error) {
+                console.error('Search error:', error);
+            }
+
+            if (data) {
+                console.log('Search results:', data);
                 // Filter out already selected users
                 const filtered = data.filter(u => !selectedUsers.find(selected => selected.id === u.id));
                 setResults(filtered);
@@ -186,6 +192,21 @@ const UserSearch: React.FC<UserSearchProps> = ({ onUsersSelected, initialSelecte
                             <UserPlus size={16} color="var(--secondary)" />
                         </button>
                     ))}
+                </div>
+            )}
+
+            {query.trim().length >= 3 && !searching && results.length === 0 && (
+                <div style={{
+                    marginTop: '8px',
+                    padding: '15px',
+                    textAlign: 'center',
+                    background: 'rgba(255,255,255,0.02)',
+                    borderRadius: '12px',
+                    border: '1px dashed rgba(255,255,255,0.1)',
+                    color: 'var(--text-dim)',
+                    fontSize: '13px'
+                }}>
+                    No se encontraron jugadores que coincidan con "{query}"
                 </div>
             )}
         </div>
