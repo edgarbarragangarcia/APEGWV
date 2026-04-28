@@ -3,12 +3,10 @@ import { supabase } from '../services/SupabaseManager';
 import { Settings, LogOut, Shield, ChevronRight, Edit2, Mail, Phone, MapPin, Store, Trophy, ShoppingCart } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import type { Database } from '../types/database.types';
+import type { Profile } from '../hooks/useProfile';
 import PageHeader from '../components/PageHeader';
 import PageHero from '../components/PageHero';
 import { useAuth } from '../context/AuthContext';
-
-type Profile = Database['public']['Tables']['profiles']['Row'];
 
 const Profile: React.FC = () => {
     const navigate = useNavigate();
