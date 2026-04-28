@@ -185,16 +185,39 @@ const Round: React.FC = () => {
 
         const fetchGroupData = async () => {
             try {
-                // 1. Fetch group members with their profiles
+                // 1. Fetch group members (only user_ids, no join - FK points to auth.users not profiles)
                 const { data: members, error: mErr } = await supabase
                     .from('group_members')
-                    .select('user_id, profiles(full_name, avatar_url, handicap, average_score)')
+                    .select('user_id')
                     .eq('group_id', groupId);
 
                 if (mErr) throw mErr;
-                setGroupMembers(members || []);
 
-                // 2. Initial fetch of scores for all members in this group
+                // 2. Manually fetch profiles for each member
+                const userIds = (members || []).map((m: any) => m.user_id);
+                let profilesMap: Record<string, any> = {};
+
+                if (userIds.length > 0) {
+                    const { data: profilesData } = await supabase
+                        .from('profiles')
+                        .select('id, full_name, avatar_url, handicap, average_score')
+                        .in('id', userIds);
+
+                    profilesMap = (profilesData || []).reduce((acc: any, p: any) => {
+                        acc[p.id] = p;
+                        return acc;
+                    }, {});
+                }
+
+                // 3. Merge members with their profiles
+                const enrichedMembers = (members || []).map((m: any) => ({
+                    ...m,
+                    profiles: profilesMap[m.user_id] || null
+                }));
+
+                setGroupMembers(enrichedMembers);
+
+                // 4. Initial fetch of scores for all members in this group
                 const { data: rounds, error: rErr } = await supabase
                     .from('rounds')
                     .select('id, user_id, round_holes(score, hole_number)')
@@ -206,16 +229,14 @@ const Round: React.FC = () => {
                 const currentHoles: Record<string, number> = {};
 
                 rounds?.forEach(r => {
-                    // Calculate total score
                     const total = r.round_holes?.reduce((acc: number, h: any) => acc + (h.score || 0), 0) || 0;
                     scores[r.user_id] = total;
 
-                    // Calculate max hole played
                     if (r.round_holes && r.round_holes.length > 0) {
                         const playedHoles = r.round_holes.map((h: any) => h.hole_number);
                         currentHoles[r.user_id] = Math.max(...playedHoles);
                     } else {
-                        currentHoles[r.user_id] = 1; // Default to hole 1
+                        currentHoles[r.user_id] = 1;
                     }
                 });
                 setGroupScores(scores);

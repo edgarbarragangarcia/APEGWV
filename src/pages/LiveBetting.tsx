@@ -66,11 +66,27 @@ const LiveBetting: React.FC = () => {
     const fetchScores = async (groupId: string) => {
         const { data: rounds } = await supabase
             .from('rounds')
-            .select('id, user_id, profiles(full_name, avatar_url), round_holes(hole_number, score, par)')
+            .select('id, user_id, round_holes(hole_number, score, par)')
             .eq('group_id', groupId);
 
-        if (rounds) {
-            setGroupScores(rounds);
+        if (rounds && rounds.length > 0) {
+            const userIds = [...new Set(rounds.map((r: any) => r.user_id))];
+            const { data: profilesData } = await supabase
+                .from('profiles')
+                .select('id, full_name, avatar_url')
+                .in('id', userIds);
+
+            const profilesMap = (profilesData || []).reduce((acc: any, p: any) => {
+                acc[p.id] = p;
+                return acc;
+            }, {});
+
+            const enriched = rounds.map((r: any) => ({
+                ...r,
+                profiles: profilesMap[r.user_id] || null
+            }));
+
+            setGroupScores(enriched);
         }
     };
 
