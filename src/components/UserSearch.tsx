@@ -35,6 +35,11 @@ const UserSearch: React.FC<UserSearchProps> = ({ onUsersSelected, initialSelecte
 
             console.log('Searching for:', query);
             setSearching(true);
+
+            // Test query to check if we can see ANY profile
+            const { data: testData, error: testError } = await supabase.from('profiles').select('id').limit(1);
+            console.log('Can see ANY profile?', !!testData, testData, testError);
+
             const { data, error } = await supabase
                 .from('profiles')
                 .select('id, full_name, email, avatar_url, handicap, average_score')
