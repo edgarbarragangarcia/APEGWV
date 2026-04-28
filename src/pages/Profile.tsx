@@ -3,7 +3,7 @@ import { supabase } from '../services/SupabaseManager';
 import { Settings, LogOut, Shield, ChevronRight, Edit2, Mail, Phone, MapPin, Store, Trophy, ShoppingCart } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import type { Profile } from '../hooks/useProfile';
+import type { Profile as UserProfile } from '../hooks/useProfile';
 import PageHeader from '../components/PageHeader';
 import PageHero from '../components/PageHero';
 import { useAuth } from '../context/AuthContext';
@@ -11,7 +11,7 @@ import { useAuth } from '../context/AuthContext';
 const Profile: React.FC = () => {
     const navigate = useNavigate();
     const { user } = useAuth();
-    const [profile, setProfile] = useState<Profile | null>(null);
+    const [profile, setProfile] = useState<UserProfile | null>(null);
     const [storeName, setStoreName] = useState<string | null>(null);
     const [loggingOut, setLoggingOut] = useState(false);
     const [showInfo, setShowInfo] = useState(false);
