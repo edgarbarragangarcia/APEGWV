@@ -102,9 +102,9 @@ const CartPage: React.FC = () => {
                 <PageHeader noMargin title="Mi Carrito" />
             </div>
 
-            <div style={styles.scrollContainer}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                    {/* Items List */}
+            <div style={styles.mainContentContainer}>
+                {/* Fixed Items List */}
+                <div style={styles.itemsContainer}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                         {cartItems.map((item) => (
                             <CartItem
@@ -115,7 +115,10 @@ const CartPage: React.FC = () => {
                             />
                         ))}
                     </div>
+                </div>
 
+                {/* Scrollable Summary */}
+                <div style={styles.summaryContainer}>
                     {/* Summary Card */}
                     <OrderSummary
                         totalItems={totalItems}
@@ -384,6 +387,24 @@ const styles = {
         overflowY: 'auto' as 'auto',
         padding: '0 20px 20px 20px',
         overflowX: 'hidden' as 'hidden'
+    },
+    mainContentContainer: {
+        position: 'absolute' as 'absolute',
+        top: 'calc(var(--header-offset-top) + 78px)',
+        left: '0', right: '0', bottom: 'calc(var(--nav-height) + 20px)',
+        display: 'flex', flexDirection: 'column' as 'column',
+        overflow: 'hidden'
+    },
+    itemsContainer: {
+        padding: '0 20px 10px 20px',
+        flexShrink: 0,
+        maxHeight: '45vh',
+        overflowY: 'auto' as 'auto'
+    },
+    summaryContainer: {
+        flex: 1,
+        overflowY: 'auto' as 'auto',
+        padding: '0 20px 20px 20px'
     },
     emptyContainer: {
         display: 'flex', flexDirection: 'column' as 'column',
