@@ -123,7 +123,7 @@ const AddressModal: React.FC<AddressModalProps> = ({ isOpen, onClose, currentAdd
                         e.preventDefault();
                         handleConfirm();
                     }}
-                    style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}
+                    style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}
                 >
 
                     {/* Street */}
@@ -283,7 +283,7 @@ const FormInput = ({ label, value, onChange, placeholder, name, autoComplete }: 
 );
 
 const Label = ({ text }: { text: string }) => (
-    <label style={{ display: 'block', marginBottom: '4px', fontSize: '11px', color: 'var(--text-dim)', fontWeight: '700', textTransform: 'uppercase' as 'uppercase', letterSpacing: '0.5px' }}>{text}</label>
+    <label style={{ display: 'block', marginBottom: '2px', fontSize: '11px', color: 'var(--text-dim)', fontWeight: '700', textTransform: 'uppercase' as 'uppercase', letterSpacing: '0.5px' }}>{text}</label>
 );
 
 const pageStyles = {
@@ -324,7 +324,7 @@ const pageStyles = {
 const fieldStyles = {
     input: {
         width: '100%',
-        padding: '8px 12px',
+        padding: '6px 12px',
         borderRadius: '12px',
         border: '1px solid rgba(255,255,255,0.05)',
         color: 'white',
@@ -334,7 +334,7 @@ const fieldStyles = {
     },
     dropdownTrigger: {
         width: '100%',
-        padding: '8px 12px',
+        padding: '6px 12px',
         borderRadius: '12px',
         border: '1px solid rgba(255,255,255,0.05)',
         color: 'white',

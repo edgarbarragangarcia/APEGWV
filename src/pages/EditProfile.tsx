@@ -122,7 +122,7 @@ const EditProfile: React.FC = () => {
             </div>
 
             <div style={styles.scrollArea}>
-                <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                     {/* Photo Section */}
                     <div style={{ textAlign: 'center', marginBottom: '5px' }}>
                         <div style={styles.photoContainer}>
@@ -164,7 +164,7 @@ const EditProfile: React.FC = () => {
                         required
                     />
 
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                         <FormInput
                             type="number"
                             label="Hándicap"
@@ -291,7 +291,7 @@ const EditProfile: React.FC = () => {
 // --- Helpers & Styles ---
 
 const Label = ({ text }: { text: string }) => (
-    <label style={{ display: 'block', marginBottom: '4px', fontSize: '11px', color: 'var(--text-dim)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+    <label style={{ display: 'block', marginBottom: '2px', fontSize: '11px', color: 'var(--text-dim)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
         {text}
     </label>
 );
@@ -350,7 +350,7 @@ const styles = {
         gap: '12px', WebkitOverflowScrolling: 'touch' as 'touch'
     },
     photoContainer: {
-        position: 'relative' as 'relative', width: '90px', height: '90px', margin: '0 auto 10px'
+        position: 'relative' as 'relative', width: '75px', height: '75px', margin: '0 auto 5px'
     },
     photoFrame: {
         width: '100%', height: '100%', borderRadius: '25px',
@@ -372,21 +372,21 @@ const styles = {
         background: 'none', border: 'none', fontWeight: '600', cursor: 'pointer'
     },
     input: {
-        width: '100%', padding: '8px 12px', borderRadius: '12px',
+        width: '100%', padding: '6px 12px', borderRadius: '12px',
         border: '1px solid rgba(255,255,255,0.05)',
         color: 'white', background: 'rgba(255,255,255,0.03)',
         fontSize: '14px'
     },
     addressSelector: {
-        width: '100%', padding: '8px 12px', borderRadius: '12px',
+        width: '100%', padding: '6px 12px', borderRadius: '12px',
         border: '1px solid rgba(255,255,255,0.05)',
         color: 'white', display: 'flex', alignItems: 'center',
         justifyContent: 'space-between', cursor: 'pointer',
         background: 'rgba(255,255,255,0.03)'
     },
     saveButton: {
-        marginTop: '15px', display: 'flex', alignItems: 'center',
-        justifyContent: 'center', gap: '10px', padding: '16px',
+        marginTop: '5px', display: 'flex', alignItems: 'center',
+        justifyContent: 'center', gap: '10px', padding: '14px',
         borderRadius: '14px', background: 'var(--secondary)',
         color: 'var(--primary)', border: 'none', fontWeight: '900',
         fontSize: '15px', boxShadow: '0 8px 20px rgba(163, 230, 53, 0.2)',
