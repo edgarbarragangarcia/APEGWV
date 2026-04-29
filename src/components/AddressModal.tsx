@@ -324,7 +324,7 @@ const pageStyles = {
 const fieldStyles = {
     input: {
         width: '100%',
-        padding: '12px',
+        padding: '8px 12px',
         borderRadius: '12px',
         border: '1px solid rgba(255,255,255,0.05)',
         color: 'white',
@@ -334,7 +334,7 @@ const fieldStyles = {
     },
     dropdownTrigger: {
         width: '100%',
-        padding: '12px',
+        padding: '8px 12px',
         borderRadius: '12px',
         border: '1px solid rgba(255,255,255,0.05)',
         color: 'white',
