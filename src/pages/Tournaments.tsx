@@ -51,7 +51,8 @@ const Tournaments: React.FC = () => {
                 .order('date', { ascending: true });
 
             if (tError) throw tError;
-            setTournaments((allTourneys as unknown as Tournament[]) || []);
+            
+            let fetchedRegistrations: { id: string, status: string }[] = [];
 
             // Fetch user registrations
             if (user) {
@@ -60,8 +61,12 @@ const Tournaments: React.FC = () => {
                     .select('tournament_id, registration_status')
                     .eq('user_id', user.id);
 
-                setRegistrations(userRegs?.map((r: any) => ({ id: r.tournament_id, status: r.registration_status })) || []);
+                fetchedRegistrations = userRegs?.map((r: any) => ({ id: r.tournament_id, status: r.registration_status })) || [];
             }
+            
+            // Set states together to prevent UI flickering
+            setTournaments((allTourneys as unknown as Tournament[]) || []);
+            setRegistrations(fetchedRegistrations);
         } catch (err) {
             console.error('Error fetching tournaments:', err);
         } finally {
