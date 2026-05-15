@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, useAnimation, AnimatePresence } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../services/SupabaseManager';
-import { Plus, Trophy, Trash2, Calendar, Loader2, Users, User, ChevronLeft, MapPin, Settings, ChevronDown, ChevronUp, Minus, ShieldCheck, HeartHandshake, Copy, CheckCircle2 } from 'lucide-react';
+import { Plus, Trophy, Trash2, Calendar, Loader2, Users, User, ChevronLeft, MapPin, Settings, ChevronDown, ChevronUp, Minus, ShieldCheck, HeartHandshake, Copy, CheckCircle2, Image as ImageIcon } from 'lucide-react';
 import Skeleton from '../components/Skeleton';
 import PageHero from '../components/PageHero';
 import PageHeader from '../components/PageHeader';
@@ -923,7 +923,111 @@ const TournamentManager: React.FC = () => {
                                                         </div>
                                                     </div>
 
-                                                    <div className="glass" style={{ padding: '20px', borderRadius: '24px', background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.05)', marginBottom: '25px', marginTop: '20px' }}>
+                                                    <div className="input-group">
+                                                        <label style={{ fontSize: '11px', fontWeight: '800', marginBottom: '8px', display: 'block', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>URL Imagen del Torneo</label>
+                                                        <div style={{ position: 'relative' }}>
+                                                            <ImageIcon size={16} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--secondary)' }} />
+                                                            <input
+                                                                type="text"
+                                                                value={formData.image_url}
+                                                                onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
+                                                                className="form-input with-icon"
+                                                                style={{
+                                                                    background: 'rgba(255,255,255,0.03)',
+                                                                    border: '1px solid rgba(255,255,255,0.1)',
+                                                                    padding: '16px 16px 16px 45px',
+                                                                    fontSize: '15px'
+                                                                }}
+                                                                placeholder="https://ejemplo.com/imagen.jpg"
+                                                            />
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="input-group">
+                                                        <label style={{ fontSize: '11px', fontWeight: '800', marginBottom: '8px', display: 'block', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Descripción del Evento</label>
+                                                        <textarea
+                                                            value={formData.description}
+                                                            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                                            className="form-input"
+                                                            style={{
+                                                                background: 'rgba(255,255,255,0.03)',
+                                                                border: '1px solid rgba(255,255,255,0.1)',
+                                                                padding: '16px',
+                                                                fontSize: '15px',
+                                                                minHeight: '80px',
+                                                                resize: 'vertical'
+                                                            }}
+                                                            placeholder="Describe de qué trata el torneo..."
+                                                        />
+                                                    </div>
+
+                                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                                                        <div className="input-group">
+                                                            <label style={{ fontSize: '11px', fontWeight: '800', marginBottom: '8px', display: 'block', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Precio Inscripción</label>
+                                                            <div style={{ position: 'relative' }}>
+                                                                <span style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--secondary)', fontWeight: '900', fontSize: '14px' }}>$</span>
+                                                                <input
+                                                                    type="text"
+                                                                    value={formData.displayPrice}
+                                                                    onChange={(e) => {
+                                                                        const raw = e.target.value.replace(/\D/g, '');
+                                                                        setFormData({ ...formData, price: raw, displayPrice: formatPrice(raw) });
+                                                                    }}
+                                                                    className="form-input with-icon"
+                                                                    style={{
+                                                                        background: 'rgba(255,255,255,0.03)',
+                                                                        border: '1px solid rgba(255,255,255,0.1)',
+                                                                        padding: '16px 16px 16px 35px',
+                                                                        fontSize: '15px'
+                                                                    }}
+                                                                    placeholder="0"
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                        <div className="input-group">
+                                                            <label style={{ fontSize: '11px', fontWeight: '800', marginBottom: '8px', display: 'block', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Cupos Disponibles</label>
+                                                            <div style={{ position: 'relative' }}>
+                                                                <Users size={16} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--secondary)' }} />
+                                                                <input
+                                                                    type="number"
+                                                                    value={formData.participants_limit}
+                                                                    onChange={(e) => setFormData({ ...formData, participants_limit: e.target.value })}
+                                                                    className="form-input with-icon"
+                                                                    style={{
+                                                                        background: 'rgba(255,255,255,0.03)',
+                                                                        border: '1px solid rgba(255,255,255,0.1)',
+                                                                        padding: '16px 16px 16px 45px',
+                                                                        fontSize: '15px'
+                                                                    }}
+                                                                    placeholder="Ej: 120"
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="input-group">
+                                                        <label style={{ fontSize: '11px', fontWeight: '800', marginBottom: '8px', display: 'block', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Modo de Juego</label>
+                                                        <select
+                                                            value={formData.game_mode}
+                                                            onChange={(e) => setFormData({ ...formData, game_mode: e.target.value })}
+                                                            className="form-input"
+                                                            style={{
+                                                                background: 'rgba(255,255,255,0.03)',
+                                                                border: '1px solid rgba(255,255,255,0.1)',
+                                                                padding: '16px',
+                                                                fontSize: '15px',
+                                                                color: 'white'
+                                                            }}
+                                                        >
+                                                            <option value="Individual Medal Play">Individual Medal Play</option>
+                                                            <option value="Juego por Golpes">Juego por Golpes</option>
+                                                            <option value="Stableford">Stableford</option>
+                                                            <option value="Match Play">Match Play</option>
+                                                            <option value="Scramble">Scramble</option>
+                                                        </select>
+                                                    </div>
+
+                                                    <div className="glass" style={{ padding: '20px', borderRadius: '24px', background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.05)', marginTop: '10px' }}>
                                                         <h4 style={{ fontSize: '12px', fontWeight: '900', color: 'var(--secondary)', marginBottom: '15px', textTransform: 'uppercase', letterSpacing: '1px' }}>Información de Pago para Inscritos</h4>
                                                         <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '15px' }}>
                                                             <div className="input-group">
@@ -969,83 +1073,60 @@ const TournamentManager: React.FC = () => {
                                                         </div>
                                                     </div>
 
-                                                    {/* Advanced Fields - Only for Management/Edit Mode */}
-                                                    {editingId && (
-                                                        <>
-                                                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
-                                                                <div className="input-group">
-                                                                    <label style={{ fontSize: '11px', fontWeight: '800', marginBottom: '8px', display: 'block', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Precio Inscripción</label>
-                                                                    <div style={{ position: 'relative' }}>
-                                                                        <span style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--secondary)', fontWeight: '900', fontSize: '14px' }}>$</span>
-                                                                        <input
-                                                                            type="text"
-                                                                            value={formData.displayPrice}
-                                                                            onChange={(e) => {
-                                                                                const raw = e.target.value.replace(/\D/g, '');
-                                                                                setFormData({ ...formData, price: raw, displayPrice: formatPrice(raw) });
-                                                                            }}
-                                                                            className="form-input with-icon"
+                                                    <div style={{ marginTop: '10px' }}>
+                                                        <div
+                                                            onClick={() => setShowNotes(!showNotes)}
+                                                            style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', padding: '12px 16px', background: 'rgba(255,255,255,0.02)', borderRadius: '15px', border: '1px solid rgba(255,255,255,0.05)' }}
+                                                        >
+                                                            <span style={{ fontSize: '12px', fontWeight: '800', color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase' }}>Notas Adicionales (Privado)</span>
+                                                            {showNotes ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                                                        </div>
+                                                        <AnimatePresence>
+                                                            {showNotes && (
+                                                                <motion.div
+                                                                    initial={{ height: 0, opacity: 0 }}
+                                                                    animate={{ height: 'auto', opacity: 1 }}
+                                                                    exit={{ height: 0, opacity: 0 }}
+                                                                    style={{ overflow: 'hidden' }}
+                                                                >
+                                                                    <div style={{ paddingTop: '15px' }}>
+                                                                        <textarea
+                                                                            value={formData.notes}
+                                                                            onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                                                                            className="form-input"
                                                                             style={{
-                                                                                background: 'rgba(255,255,255,0.03)',
-                                                                                border: '1px solid rgba(255,255,255,0.1)',
-                                                                                padding: '16px 16px 16px 35px',
-                                                                                fontSize: '15px'
+                                                                                background: 'rgba(255,255,255,0.02)',
+                                                                                border: '1px solid rgba(255,255,255,0.05)',
+                                                                                minHeight: '100px'
                                                                             }}
-                                                                            placeholder="0"
+                                                                            placeholder="Notas internas para el organizador..."
                                                                         />
                                                                     </div>
-                                                                </div>
-                                                                <div className="input-group">
-                                                                    <label style={{ fontSize: '11px', fontWeight: '800', marginBottom: '8px', display: 'block', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Límite Participantes</label>
-                                                                    <div style={{ position: 'relative' }}>
-                                                                        <Users size={16} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--secondary)' }} />
-                                                                        <input
-                                                                            type="number"
-                                                                            value={formData.participants_limit}
-                                                                            onChange={(e) => setFormData({ ...formData, participants_limit: e.target.value })}
-                                                                            className="form-input with-icon"
-                                                                            style={{
-                                                                                background: 'rgba(255,255,255,0.03)',
-                                                                                border: '1px solid rgba(255,255,255,0.1)',
-                                                                                padding: '16px 16px 16px 45px',
-                                                                                fontSize: '15px'
-                                                                            }}
-                                                                        />
-                                                                    </div>
-                                                                </div>
-                                                            </div>
+                                                                </motion.div>
+                                                            )}
+                                                        </AnimatePresence>
+                                                    </div>
 
-                                                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
-                                                                <div className="input-group">
-                                                                    <label style={{ fontSize: '12px', fontWeight: '800', marginBottom: '5px', display: 'block', color: 'var(--text-dim)' }}>Modo de Juego</label>
-                                                                    <select
-                                                                        value={formData.game_mode}
-                                                                        onChange={(e) => setFormData({ ...formData, game_mode: e.target.value })}
-                                                                        className="form-input"
-                                                                        style={{ background: 'rgba(255,255,255,0.05)', color: 'white' }}
-                                                                    >
-                                                                        <option value="Individual Medal Play">Individual Medal Play</option>
-                                                                        <option value="Juego por Golpes">Juego por Golpes</option>
-                                                                        <option value="Stableford">Stableford</option>
-                                                                        <option value="Match Play">Match Play</option>
-                                                                        <option value="Scramble">Scramble</option>
-                                                                    </select>
-                                                                </div>
-                                                                <div className="input-group">
-                                                                    <label style={{ fontSize: '12px', fontWeight: '800', marginBottom: '5px', display: 'block', color: 'var(--text-dim)' }}>Estado del Evento</label>
-                                                                    <select
-                                                                        value={formData.status}
-                                                                        onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                                                                        className="form-input"
-                                                                        style={{ background: 'rgba(255,255,255,0.05)', color: 'white' }}
-                                                                    >
-                                                                        <option value="Borrador">Borrador</option>
-                                                                        <option value="Abierto (Inscripciones)">Abierto (Inscripciones)</option>
-                                                                        <option value="Cerrado (Inscripciones)">Cerrado (Inscripciones)</option>
-                                                                        <option value="Finalizado">Finalizado</option>
-                                                                    </select>
-                                                                </div>
-                                                            </div>
+                                                    <div className="input-group">
+                                                        <label style={{ fontSize: '11px', fontWeight: '800', marginBottom: '8px', display: 'block', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Estado del Evento</label>
+                                                        <select
+                                                            value={formData.status}
+                                                            onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                                                            className="form-input"
+                                                            style={{
+                                                                background: 'rgba(255,255,255,0.03)',
+                                                                border: '1px solid rgba(255,255,255,0.1)',
+                                                                padding: '16px',
+                                                                fontSize: '15px',
+                                                                color: 'white'
+                                                            }}
+                                                        >
+                                                            <option value="Borrador">Borrador</option>
+                                                            <option value="Abierto (Inscripciones)">Abierto (Inscripciones)</option>
+                                                            <option value="Cerrado (Inscripciones)">Cerrado (Inscripciones)</option>
+                                                            <option value="Finalizado">Finalizado</option>
+                                                        </select>
+                                                    </div>
 
                                                             {formData.status === 'Abierto (Inscripciones)' && editingId && (
                                                                 <motion.div
@@ -1145,16 +1226,7 @@ const TournamentManager: React.FC = () => {
                                                             )}
                                                         </>
                                                     )}
-                                                    <div className="input-group">
-                                                        <label style={{ fontSize: '12px', fontWeight: '800', marginBottom: '5px', display: 'block', color: 'var(--text-dim)' }}>Descripción / Notas</label>
-                                                        <textarea
-                                                            value={formData.description}
-                                                            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                                            className="form-input"
-                                                            rows={3}
-                                                            placeholder="Detalles adicionales del torneo..."
-                                                        />
-                                                    </div>
+
                                                 </div>
                                             </motion.div>
                                         )}
