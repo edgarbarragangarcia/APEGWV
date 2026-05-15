@@ -52,7 +52,7 @@ interface BudgetItem {
 const TournamentCard = ({ tourney, onEdit, isAdmin, onApprove, onDelete }: { tourney: Tournament, onEdit: () => void, isAdmin: boolean, onApprove: (id: string) => void, onDelete: () => void }) => {
     const controls = useAnimation();
     const [isOpen, setIsOpen] = useState(false);
-    const dragDistance = (isAdmin && tourney.approval_status === 'pending') ? -140 : -80;
+    const dragDistance = (isAdmin && tourney.approval_status === 'pending') ? -200 : -140;
 
     const onDragEnd = (_: any, info: any) => {
         if (info.offset.x < -30) {
