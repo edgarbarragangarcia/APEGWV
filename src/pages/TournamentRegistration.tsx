@@ -138,7 +138,7 @@ const TournamentRegistration: React.FC = () => {
                 const isCompanion = player2.type === 'companion';
                 registrations.push({
                     tournament_id: tournament.id,
-                    user_id: user?.id || null,
+                    user_id: null, // ALWAYS null for guest to avoid unique constraint on user_id
                     registration_status: 'registered',
                     player_name: player2.name,
                     player_email: player2.email,

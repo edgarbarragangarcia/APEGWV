@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { supabase } from '../services/SupabaseManager';
-import { User, Trophy, Users, Search, CheckCircle2, Clock, Mail, CheckSquare, Square, Download } from 'lucide-react';
+import { User, Trophy, Users, Search, CheckCircle2, Clock, Mail, CheckSquare, Square, Download, Trash2 } from 'lucide-react';
 import Skeleton from '../components/Skeleton';
 import PageHero from '../components/PageHero';
 import PageHeader from '../components/PageHeader';
@@ -192,6 +192,37 @@ const TournamentParticipants: React.FC = () => {
         } else {
             const newSelected = Array.from(new Set([...selectedIds, ...filteredParticipants.map(p => p.id)]));
             setSelectedIds(newSelected);
+        }
+    };
+
+    const handleDeleteSelected = async () => {
+        if (selectedIds.length === 0) return;
+        
+        const confirmDelete = window.confirm(`¿Estás seguro de que deseas eliminar ${selectedIds.length} participantes? Esta acción no se puede deshacer.`);
+        if (!confirmDelete) return;
+
+        try {
+            // Separate manual guests from registered ones
+            const manualIds = selectedIds.filter(id => id.startsWith('manual-guest-'));
+            const registeredIds = selectedIds.filter(id => !id.startsWith('manual-guest-'));
+
+            if (registeredIds.length > 0) {
+                const { error } = await supabase
+                    .from('tournament_registrations')
+                    .delete()
+                    .in('id', registeredIds);
+
+                if (error) throw error;
+            }
+
+            // For manual guests, we would need to update the tournament's guests field
+            // but for now we just filter them from the local state
+            setParticipants(prev => prev.filter(p => !selectedIds.includes(p.id)));
+            setSelectedIds([]);
+            alert('Participantes eliminados correctamente');
+        } catch (err) {
+            console.error('Error deleting participants:', err);
+            alert('Error al eliminar participantes');
         }
     };
 
@@ -486,20 +517,31 @@ const TournamentParticipants: React.FC = () => {
                         </div>
                     ) : (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                            {selectedIds.length > 0 && (
-                                <div style={{ marginBottom: '10px' }}>
+                             {selectedIds.length > 0 && (
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '15px' }}>
                                     <motion.button
                                         initial={{ scale: 0.9, opacity: 0 }}
                                         animate={{ scale: 1, opacity: 1 }}
                                         onClick={sendBulkEmail}
                                         style={{
-                                            width: '100%',
                                             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
                                             padding: '14px', borderRadius: '18px', background: 'rgba(163, 230, 53, 0.1)', color: 'var(--secondary)',
-                                            border: '1px solid rgba(163, 230, 53, 0.2)', fontSize: '12px', fontWeight: '900', cursor: 'pointer'
+                                            border: '1px solid rgba(163, 230, 53, 0.2)', fontSize: '11px', fontWeight: '900', cursor: 'pointer'
                                         }}
                                     >
-                                        <Mail size={16} /> {copiedEmails ? '¡LISTO!' : `Copiar ${selectedIds.length} correos`}
+                                        <Mail size={16} /> {copiedEmails ? '¡LISTO!' : `Correo (${selectedIds.length})`}
+                                    </motion.button>
+                                    <motion.button
+                                        initial={{ scale: 0.9, opacity: 0 }}
+                                        animate={{ scale: 1, opacity: 1 }}
+                                        onClick={handleDeleteSelected}
+                                        style={{
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                                            padding: '14px', borderRadius: '18px', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444',
+                                            border: '1px solid rgba(239, 68, 68, 0.2)', fontSize: '11px', fontWeight: '900', cursor: 'pointer'
+                                        }}
+                                    >
+                                        <Trash2 size={16} /> Borrar ({selectedIds.length})
                                     </motion.button>
                                 </div>
                             )}
