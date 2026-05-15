@@ -496,8 +496,7 @@ const TournamentManager: React.FC = () => {
                         sponsors: formData.sponsors.map(s => s.name).filter(Boolean).join('\n'),
                         prizes: formData.prizes.map(p => p.name).filter(Boolean).join('\n'),
                         guests: formData.guests.map(g => `${g.name}|${g.federation_code || ''}`).filter(Boolean).join('\n'),
-                        payment_method: formData.payment_method,
-                        payment_phone: formData.payment_phone,
+                        notes: formData.notes,
                         approval_status: tournaments.find(t => t.id === editingId)?.approval_status || 'pending',
                         updated_at: new Date().toISOString()
                     })
@@ -523,7 +522,7 @@ const TournamentManager: React.FC = () => {
                         sponsors: formData.sponsors.map(s => s.name).filter(Boolean).join('\n'),
                         prizes: formData.prizes.map(p => p.name).filter(Boolean).join('\n'),
                         guests: formData.guests.map(g => `${g.name}|${g.federation_code || ''}`).filter(Boolean).join('\n'),
-                        payment_phone: formData.payment_phone,
+                        notes: formData.notes,
                         creator_id: user.id,
                         approval_status: isAdmin ? 'approved' : 'pending'
                     } as any])
