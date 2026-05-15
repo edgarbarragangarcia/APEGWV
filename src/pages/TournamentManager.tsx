@@ -966,6 +966,7 @@ const TournamentManager: React.FC = () => {
                                                                         className="form-input"
                                                                         style={{ background: 'rgba(255,255,255,0.05)', color: 'white' }}
                                                                     >
+                                                                        <option value="Individual Medal Play">Individual Medal Play</option>
                                                                         <option value="Juego por Golpes">Juego por Golpes</option>
                                                                         <option value="Stableford">Stableford</option>
                                                                         <option value="Match Play">Match Play</option>
