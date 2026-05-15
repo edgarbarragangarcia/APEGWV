@@ -613,7 +613,8 @@ const TournamentManager: React.FC = () => {
             paid_participants: 0,
             payment_method: 'Nequi',
             payment_phone: '',
-            payment_key: ''
+            payment_key: '',
+            notes: ''
         });
         setEditingId(null);
     };
@@ -1135,13 +1136,8 @@ const TournamentManager: React.FC = () => {
                                                             <option value="Finalizado">Finalizado</option>
                                                         </select>
                                                     </div>
-                                                </div>
-                                            </motion.div>
-                                        )}
-                                    </AnimatePresence>
-                                </div>
-
-                                                            {formData.status === 'Abierto (Inscripciones)' && editingId && (
+                                                
+                                                {formData.status === 'Abierto (Inscripciones)' && editingId && (
                                                                 <motion.div
                                                                     initial={{ opacity: 0, y: -10 }}
                                                                     animate={{ opacity: 1, y: 0 }}
@@ -1237,10 +1233,8 @@ const TournamentManager: React.FC = () => {
                                                                     </p>
                                                                 </motion.div>
                                                             )}
-                                                        </>
-                                                    )}
-
-                                                </div>
+                                                        
+                                                    </div>
                                             </motion.div>
                                         )}
                                     </AnimatePresence>
