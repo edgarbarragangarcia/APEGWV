@@ -54,25 +54,32 @@ const TournamentParticipants: React.FC = () => {
             if (tournamentError) throw tournamentError;
             setTournamentName(tournament.name);
 
+            // 1. Fetch Registrations
             const { data: registrations, error: regError } = await (supabase
                 .from('tournament_registrations') as any)
-                .select(`
-                    id,
-                    registration_status,
-                    payment_date,
-                    user_id,
-                    player_name,
-                    player_email,
-                    player_phone,
-                    player_handicap,
-                    player_federation_code,
-                    profiles (
-                        id, full_name, avatar_url, handicap, email, phone, total_rounds, average_score, federation_code
-                    )
-                `)
+                .select('*')
                 .eq('tournament_id', id || '');
 
             if (regError) throw regError;
+
+            // 2. Fetch Profiles for the registered users
+            const userIds = (registrations || [])
+                .map((r: any) => r.user_id)
+                .filter(Boolean);
+
+            let profilesMap: Record<string, any> = {};
+            if (userIds.length > 0) {
+                const { data: profilesData } = await (supabase
+                    .from('profiles') as any)
+                    .select('id, full_name, avatar_url, handicap, email, phone, total_rounds, average_score, federation_code')
+                    .in('id', userIds);
+                
+                if (profilesData) {
+                    profilesData.forEach((p: any) => {
+                        profilesMap[p.id] = p;
+                    });
+                }
+            }
 
             const manualGuestEntries = tournament.guests ? tournament.guests.split('\n').filter(Boolean).map(g => {
                 const [name, code] = g.split('|');
@@ -80,16 +87,13 @@ const TournamentParticipants: React.FC = () => {
             }) : [];
 
             const registeredParticipants = (registrations || []).map((reg: any) => {
-                // Supabase might return profiles as an object or an array of one element
-                const profile = Array.isArray(reg.profiles) ? reg.profiles[0] : reg.profiles;
+                const profile = reg.user_id ? profilesMap[reg.user_id] : null;
                 const nameMatch = reg.player_name || profile?.full_name || 'Invitado';
 
                 const matchingGuest = manualGuestEntries.find(g =>
                     g.name.toLowerCase() === nameMatch.trim().toLowerCase()
                 );
                 const isSpecialGuest = !!matchingGuest;
-
-                // Solo consideramos "Invitado" a quien esté en la lista de Invitados Especiales (Imagen 3)
                 const finalIsGuest = isSpecialGuest;
 
                 return {
