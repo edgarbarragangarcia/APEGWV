@@ -349,7 +349,11 @@ const TournamentRegistration: React.FC = () => {
                                 <div style={{ textAlign: 'center' }}>
                                     <span style={{ fontSize: '8px', color: 'rgba(255,255,255,0.4)', fontWeight: '900', letterSpacing: '1px', display: 'block' }}>FECHA</span>
                                     <div style={{ color: 'white', fontSize: '12px', fontWeight: '950' }}>
-                                        {new Date(tournament.date).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' })}
+                                        {(() => {
+                                            const d = new Date(tournament.date);
+                                            d.setMinutes(d.getMinutes() + d.getTimezoneOffset());
+                                            return d.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                                        })()}
                                     </div>
                                 </div>
                             </div>
