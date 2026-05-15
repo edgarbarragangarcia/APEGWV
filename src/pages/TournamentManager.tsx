@@ -269,7 +269,7 @@ const TournamentManager: React.FC = () => {
         tournamentName: ''
     });
     const [isAdmin, setIsAdmin] = useState(false);
-    const [activeTab, setActiveTab] = useState<'pending' | 'approved'>('pending');
+    const [activeTab, setActiveTab] = useState<'pending' | 'approved'>('approved');
 
     // Collapsible sections state
     const [showBudgetSection, setShowBudgetSection] = useState(false);
@@ -1942,35 +1942,6 @@ const TournamentManager: React.FC = () => {
                                 marginBottom: '5px'
                             }}>
                                 <button
-                                    onClick={() => setActiveTab('pending')}
-                                    style={{
-                                        flex: 1,
-                                        padding: '12px',
-                                        borderRadius: '16px',
-                                        background: activeTab === 'pending' ? 'rgba(245, 158, 11, 0.15)' : 'rgba(255,255,255,0.03)',
-                                        border: activeTab === 'pending' ? '1px solid rgba(245, 158, 11, 0.3)' : '1px solid rgba(255,255,255,0.05)',
-                                        color: activeTab === 'pending' ? '#f59e0b' : 'var(--text-dim)',
-                                        fontSize: '12px',
-                                        fontWeight: '900',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        gap: '8px',
-                                        transition: 'all 0.3s ease'
-                                    }}
-                                >
-                                    PENDIENTE
-                                    <span style={{
-                                        background: activeTab === 'pending' ? '#f59e0b' : 'rgba(255,255,255,0.1)',
-                                        color: activeTab === 'pending' ? 'var(--primary)' : 'var(--text-dim)',
-                                        padding: '2px 6px',
-                                        borderRadius: '6px',
-                                        fontSize: '10px'
-                                    }}>
-                                        {tournaments.filter(t => t.approval_status === 'pending').length}
-                                    </span>
-                                </button>
-                                <button
                                     onClick={() => setActiveTab('approved')}
                                     style={{
                                         flex: 1,
@@ -1997,6 +1968,35 @@ const TournamentManager: React.FC = () => {
                                         fontSize: '10px'
                                     }}>
                                         {tournaments.filter(t => t.approval_status === 'approved').length}
+                                    </span>
+                                </button>
+                                <button
+                                    onClick={() => setActiveTab('pending')}
+                                    style={{
+                                        flex: 1,
+                                        padding: '12px',
+                                        borderRadius: '16px',
+                                        background: activeTab === 'pending' ? 'rgba(245, 158, 11, 0.15)' : 'rgba(255,255,255,0.03)',
+                                        border: activeTab === 'pending' ? '1px solid rgba(245, 158, 11, 0.3)' : '1px solid rgba(255,255,255,0.05)',
+                                        color: activeTab === 'pending' ? '#f59e0b' : 'var(--text-dim)',
+                                        fontSize: '12px',
+                                        fontWeight: '900',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        gap: '8px',
+                                        transition: 'all 0.3s ease'
+                                    }}
+                                >
+                                    PENDIENTE
+                                    <span style={{
+                                        background: activeTab === 'pending' ? '#f59e0b' : 'rgba(255,255,255,0.1)',
+                                        color: activeTab === 'pending' ? 'var(--primary)' : 'var(--text-dim)',
+                                        padding: '2px 6px',
+                                        borderRadius: '6px',
+                                        fontSize: '10px'
+                                    }}>
+                                        {tournaments.filter(t => t.approval_status === 'pending').length}
                                     </span>
                                 </button>
                             </div>
