@@ -271,7 +271,7 @@ const TournamentParticipants: React.FC = () => {
                         if (selectedParticipant) {
                             setSelectedParticipant(null);
                         } else {
-                            navigate('/my-events');
+                            navigate(-1);
                         }
                     }}
                 />
