@@ -272,7 +272,7 @@ const TournamentManager: React.FC = () => {
     const [activeTab, setActiveTab] = useState<'pending' | 'approved'>('approved');
 
     // Collapsible sections state
-    const [showBasicInfo, setShowBasicInfo] = useState(true);
+    const [showBasicInfo, setShowBasicInfo] = useState(false);
     const [showBudgetSection, setShowBudgetSection] = useState(false);
     const [showAccountingSection, setShowAccountingSection] = useState(false);
     const [showRulesSection, setShowRulesSection] = useState(false);
@@ -1080,24 +1080,23 @@ const TournamentManager: React.FC = () => {
                                                             )}
                                                         </>
                                                     )}
+                                                    <div className="input-group">
+                                                        <label style={{ fontSize: '12px', fontWeight: '800', marginBottom: '5px', display: 'block', color: 'var(--text-dim)' }}>Descripción / Notas</label>
+                                                        <textarea
+                                                            value={formData.description}
+                                                            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                                            className="form-input"
+                                                            rows={3}
+                                                            placeholder="Detalles adicionales del torneo..."
+                                                        />
+                                                    </div>
                                                 </div>
                                             </motion.div>
                                         )}
                                     </AnimatePresence>
                                 </div>
 
-                                        <div className="input-group">
-                                            <label style={{ fontSize: '12px', fontWeight: '800', marginBottom: '5px', display: 'block', color: 'var(--text-dim)' }}>Descripción / Notas</label>
-                                            <textarea
-                                                value={formData.description}
-                                                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                                className="form-input"
-                                                rows={3}
-                                                placeholder="Detalles adicionales del torneo..."
-                                            />
-                                        </div>
-
-                                        {/* Budget Section */}
+                                {/* Budget Section */}
                                         <div style={{ marginTop: '10px', padding: '15px', background: 'rgba(255,255,255,0.03)', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)' }}>
                                             <div
                                                 style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}
