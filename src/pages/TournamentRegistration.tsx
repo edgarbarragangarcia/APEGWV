@@ -286,11 +286,26 @@ const TournamentRegistration: React.FC = () => {
                 </div>
             </div>
 
-            <div style={{ flex: 1, overflowY: 'auto', padding: '15px 25px', display: 'flex', flexDirection: 'column', gap: '30px' }}>
-                <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '30px' }}>
+            <div style={{ 
+                flex: 1, 
+                overflowY: 'auto', 
+                overflowX: 'hidden',
+                WebkitOverflowScrolling: 'touch',
+                padding: '15px 25px', 
+                display: 'flex', 
+                flexDirection: 'column', 
+                gap: '30px' 
+            }}>
+                <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '30px', paddingBottom: '40px' }}>
                     
                     {/* Left: Info */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', width: '100%', maxWidth: isMobile ? '100%' : '350px' }}>
+                    <motion.div 
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true, margin: "-50px" }}
+                        transition={{ duration: 0.5 }}
+                        style={{ display: 'flex', flexDirection: 'column', gap: '20px', width: '100%', maxWidth: isMobile ? '100%' : '350px' }}
+                    >
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '5px' }}>
                             <div style={{ width: '4px', height: '16px', background: 'var(--secondary)', borderRadius: '10px' }} />
                             <h3 style={{ fontSize: '12px', fontWeight: '900', color: 'white', letterSpacing: '1px', margin: 0 }}>INFORMACIÓN DEL TORNEO</h3>
@@ -314,15 +329,22 @@ const TournamentRegistration: React.FC = () => {
                         </div>
 
                         {paymentInfo && (
-                            <div className="glass" style={{ 
-                                padding: '15px', 
-                                borderRadius: '20px', 
-                                background: 'rgba(163, 230, 53, 0.05)', 
-                                border: '1px solid rgba(163, 230, 53, 0.2)',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                gap: '10px'
-                            }}>
+                            <motion.div 
+                                initial={{ opacity: 0, y: 20 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ duration: 0.5, delay: 0.2 }}
+                                className="glass" 
+                                style={{ 
+                                    padding: '15px', 
+                                    borderRadius: '20px', 
+                                    background: 'rgba(163, 230, 53, 0.05)', 
+                                    border: '1px solid rgba(163, 230, 53, 0.2)',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    gap: '10px'
+                                }}
+                            >
                                 <h4 style={{ fontSize: '10px', fontWeight: '900', color: 'var(--secondary)', letterSpacing: '1px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                                     <CheckCircle2 size={14} /> INFORMACIÓN DE PAGO
                                 </h4>
@@ -336,12 +358,18 @@ const TournamentRegistration: React.FC = () => {
                                         <span style={{ color: 'var(--secondary)', fontSize: '13px', fontWeight: '900' }}>{paymentInfo.phone}</span>
                                     </div>
                                 </div>
-                            </div>
+                            </motion.div>
                         )}
-                    </div>
+                    </motion.div>
 
                     {/* Right: Registration Form */}
-                    <div style={{ flex: 1, width: '100%', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                    <motion.div 
+                        initial={{ opacity: 0, y: 30 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true, margin: "-100px" }}
+                        transition={{ duration: 0.6, delay: 0.1 }}
+                        style={{ flex: 1, width: '100%', display: 'flex', flexDirection: 'column', gap: '20px' }}
+                    >
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '5px' }}>
                             <div style={{ width: '4px', height: '16px', background: 'var(--secondary)', borderRadius: '10px' }} />
                             <h3 style={{ fontSize: '12px', fontWeight: '900', color: 'white', letterSpacing: '1px', margin: 0 }}>DATOS DE INSCRIPCIÓN</h3>
@@ -554,7 +582,7 @@ const TournamentRegistration: React.FC = () => {
                                 </motion.div>
                             )}
                         </AnimatePresence>
-                    </div>
+                    </motion.div>
                 </div>
             </div>
 
