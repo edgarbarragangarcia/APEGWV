@@ -335,7 +335,7 @@ const TournamentRegistration: React.FC = () => {
                                 <Calendar size={12} color="var(--secondary)" />
                                 <div style={{ textAlign: 'center' }}>
                                     <span style={{ fontSize: '7px', color: 'rgba(255,255,255,0.4)', fontWeight: '900', letterSpacing: '1px', display: 'block' }}>FECHA</span>
-                                    <div style={{ color: 'white', fontSize: '10px', fontWeight: '950' }}>
+                                    <div style={{ color: 'var(--secondary)', fontSize: '11px', fontWeight: '950' }}>
                                         {(() => {
                                             const d = new Date(tournament.date);
                                             d.setMinutes(d.getMinutes() + d.getTimezoneOffset());
@@ -357,7 +357,7 @@ const TournamentRegistration: React.FC = () => {
                                 <span style={{ color: 'var(--secondary)', fontWeight: '950', fontSize: '12px' }}>$</span>
                                 <div style={{ textAlign: 'center' }}>
                                     <span style={{ fontSize: '7px', color: 'rgba(255,255,255,0.4)', fontWeight: '900', letterSpacing: '1px', display: 'block' }}>VALOR</span>
-                                    <div style={{ color: 'var(--secondary)', fontSize: '10px', fontWeight: '950' }}>
+                                    <div style={{ color: 'var(--secondary)', fontSize: '11px', fontWeight: '950' }}>
                                         {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(tournament.price)}
                                     </div>
                                 </div>
