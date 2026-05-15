@@ -66,7 +66,7 @@ const TournamentParticipants: React.FC = () => {
                     player_phone,
                     player_handicap,
                     player_federation_code,
-                    profiles:user_id (
+                    profiles (
                         id, full_name, avatar_url, handicap, email, phone, total_rounds, average_score, federation_code
                     )
                 `)
