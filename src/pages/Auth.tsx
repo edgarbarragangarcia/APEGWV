@@ -86,6 +86,16 @@ const Auth: React.FC = () => {
         } catch (err: any) {
             console.error('Auth Error:', err);
 
+            // Manejo especial para usuario ya registrado
+            if (!isLogin && err.message?.toLowerCase().includes('already registered')) {
+                setError('Este correo ya tiene una cuenta. Cambiando a Inicio de Sesión...');
+                setTimeout(() => {
+                    setIsLogin(true);
+                    setError(null);
+                }, 2000);
+                return;
+            }
+
             // BYPASS LOGIC: Si es un timeout o error de conexión, intentar login directo
             if (isLogin && (err.message.includes('tardando') || err.message.includes('timeout') || err.message.includes('bloqueadas'))) {
                 console.log('--- INICIANDO BYPASS DE SEGURIDAD (DIRECT FETCH) ---');
