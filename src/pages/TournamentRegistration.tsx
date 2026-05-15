@@ -593,9 +593,7 @@ const TournamentRegistration: React.FC = () => {
                 </button>
             </div> 
         </div>
-    </div>
-</div>
-);
+    );
 };
 
 export default TournamentRegistration;
