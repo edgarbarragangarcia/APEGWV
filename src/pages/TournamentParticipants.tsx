@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { supabase } from '../services/SupabaseManager';
-import { User, Trophy, Users, Search, CheckCircle2, Clock, Mail, CheckSquare, Square } from 'lucide-react';
+import { User, Trophy, Users, Search, CheckCircle2, Clock, Mail, CheckSquare, Square, Download } from 'lucide-react';
 import Skeleton from '../components/Skeleton';
 import PageHero from '../components/PageHero';
 import PageHeader from '../components/PageHeader';
@@ -216,6 +216,42 @@ const TournamentParticipants: React.FC = () => {
         const link = document.createElement('a');
         link.href = mailtoUrl;
         link.target = '_self';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
+    const downloadExcel = () => {
+        const targetParticipants = selectedIds.length > 0 
+            ? participants.filter(p => selectedIds.includes(p.id))
+            : participants;
+
+        if (targetParticipants.length === 0) {
+            alert('No hay participantes para descargar');
+            return;
+        }
+
+        const headers = ['Nombre', 'Email', 'Teléfono', 'Handicap', 'Federación', 'Estado', 'Fecha Pago', 'Invitado'];
+        const csvContent = [
+            "\ufeff" + headers.join(','), // Add BOM for Excel UTF-8 support
+            ...targetParticipants.map(p => [
+                `"${(p.full_name || '').replace(/"/g, '""')}"`,
+                `"${(p.email || '').replace(/"/g, '""')}"`,
+                `"${(p.phone || '').replace(/"/g, '""')}"`,
+                p.handicap ?? '',
+                `"${(p.federation_code || '').replace(/"/g, '""')}"`,
+                `"${(p.registration_status || '').replace(/"/g, '""')}"`,
+                p.payment_date ? `"${new Date(p.payment_date).toLocaleDateString()}"` : '',
+                p.is_guest ? 'SI' : 'NO'
+            ].join(','))
+        ].join('\n');
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', `participantes_${tournamentName.replace(/\s+/g, '_')}.csv`);
+        link.style.visibility = 'hidden';
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -437,19 +473,33 @@ const TournamentParticipants: React.FC = () => {
                     ) : (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                             {selectedIds.length > 0 && (
-                                <motion.button
-                                    initial={{ scale: 0.9, opacity: 0 }}
-                                    animate={{ scale: 1, opacity: 1 }}
-                                    onClick={sendBulkEmail}
-                                    style={{
-                                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
-                                        padding: '14px', borderRadius: '18px', background: 'var(--secondary)', color: 'var(--primary)',
-                                        border: 'none', fontSize: '14px', fontWeight: '900', cursor: 'pointer',
-                                        boxShadow: '0 10px 25px rgba(163, 230, 53, 0.3)', marginBottom: '10px'
-                                    }}
-                                >
-                                    <Mail size={18} /> {copiedEmails ? '¡LISTO!' : `Copiar ${selectedIds.length} correos`}
-                                </motion.button>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '10px' }}>
+                                    <motion.button
+                                        initial={{ scale: 0.9, opacity: 0 }}
+                                        animate={{ scale: 1, opacity: 1 }}
+                                        onClick={sendBulkEmail}
+                                        style={{
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                                            padding: '14px', borderRadius: '18px', background: 'rgba(163, 230, 53, 0.1)', color: 'var(--secondary)',
+                                            border: '1px solid rgba(163, 230, 53, 0.2)', fontSize: '12px', fontWeight: '900', cursor: 'pointer'
+                                        }}
+                                    >
+                                        <Mail size={16} /> {copiedEmails ? '¡LISTO!' : `Copiar Correos`}
+                                    </motion.button>
+                                    <motion.button
+                                        initial={{ scale: 0.9, opacity: 0 }}
+                                        animate={{ scale: 1, opacity: 1 }}
+                                        onClick={downloadExcel}
+                                        style={{
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                                            padding: '14px', borderRadius: '18px', background: 'var(--secondary)', color: 'var(--primary)',
+                                            border: 'none', fontSize: '12px', fontWeight: '900', cursor: 'pointer',
+                                            boxShadow: '0 10px 25px rgba(163, 230, 53, 0.3)'
+                                        }}
+                                    >
+                                        <Download size={16} /> Excel
+                                    </motion.button>
+                                </div>
                             )}
 
                             {filteredParticipants.map(p => (
