@@ -22,6 +22,7 @@ interface Tournament {
     status: string | null;
     image_url: string | null;
     game_mode: string | null;
+    notes: string | null;
     address: string | null;
     budget_per_player: number | null;
     budget_prizes: number | null;
@@ -289,6 +290,7 @@ const TournamentManager: React.FC = () => {
     const [profileResults, setProfileResults] = useState<{ id: string, full_name: string, avatar_url: string | null }[]>([]);
     const [searchingProfiles, setSearchingProfiles] = useState(false);
     const [copied, setCopied] = useState(false);
+    const [showNotes, setShowNotes] = useState(false);
 
 
 
@@ -322,7 +324,8 @@ const TournamentManager: React.FC = () => {
         paid_participants: 0,
         payment_method: 'Nequi',
         payment_phone: '',
-        payment_key: ''
+        payment_key: '',
+        notes: ''
     });
 
     const formatPrice = (val: string) => {
@@ -496,6 +499,7 @@ const TournamentManager: React.FC = () => {
                         payment_method: formData.payment_method,
                         payment_phone: formData.payment_phone,
                         payment_key: formData.payment_key,
+                        notes: formData.notes,
                         approval_status: tournaments.find(t => t.id === editingId)?.approval_status || 'pending',
                         updated_at: new Date().toISOString()
                     })
@@ -521,6 +525,9 @@ const TournamentManager: React.FC = () => {
                         sponsors: formData.sponsors.map(s => s.name).filter(Boolean).join('\n'),
                         prizes: formData.prizes.map(p => p.name).filter(Boolean).join('\n'),
                         guests: formData.guests.map(g => `${g.name}|${g.federation_code || ''}`).filter(Boolean).join('\n'),
+                        payment_phone: formData.payment_phone,
+                        payment_key: formData.payment_key,
+                        notes: formData.notes,
                         creator_id: user.id,
                         approval_status: isAdmin ? 'approved' : 'pending'
                     } as any])
@@ -648,7 +655,8 @@ const TournamentManager: React.FC = () => {
             paid_participants: tournament.paid_participants || 0,
             payment_method: (tournament as any).payment_method || 'Nequi',
             payment_phone: (tournament as any).payment_phone || '',
-            payment_key: (tournament as any).payment_key || ''
+            payment_key: (tournament as any).payment_key || '',
+            notes: (tournament as any).notes || ''
         });
         setEditingId(tournament.id);
         setShowForm(true);
@@ -1127,6 +1135,11 @@ const TournamentManager: React.FC = () => {
                                                             <option value="Finalizado">Finalizado</option>
                                                         </select>
                                                     </div>
+                                                </div>
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+                                </div>
 
                                                             {formData.status === 'Abierto (Inscripciones)' && editingId && (
                                                                 <motion.div
