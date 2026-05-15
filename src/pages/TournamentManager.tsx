@@ -496,7 +496,7 @@ const TournamentManager: React.FC = () => {
                         sponsors: formData.sponsors.map(s => s.name).filter(Boolean).join('\n'),
                         prizes: formData.prizes.map(p => p.name).filter(Boolean).join('\n'),
                         guests: formData.guests.map(g => `${g.name}|${g.federation_code || ''}`).filter(Boolean).join('\n'),
-                        notes: formData.notes,
+                        notes: `${formData.notes}\n\n---PAYMENT_DATA---\nMETHOD:${formData.payment_method}\nPHONE:${formData.payment_phone}\nKEY:${formData.payment_key}`,
                         approval_status: tournaments.find(t => t.id === editingId)?.approval_status || 'pending',
                         updated_at: new Date().toISOString()
                     })
@@ -522,7 +522,7 @@ const TournamentManager: React.FC = () => {
                         sponsors: formData.sponsors.map(s => s.name).filter(Boolean).join('\n'),
                         prizes: formData.prizes.map(p => p.name).filter(Boolean).join('\n'),
                         guests: formData.guests.map(g => `${g.name}|${g.federation_code || ''}`).filter(Boolean).join('\n'),
-                        notes: formData.notes,
+                        notes: `${formData.notes}\n\n---PAYMENT_DATA---\nMETHOD:${formData.payment_method}\nPHONE:${formData.payment_phone}\nKEY:${formData.payment_key}`,
                         creator_id: user.id,
                         approval_status: isAdmin ? 'approved' : 'pending'
                     } as any])
@@ -649,10 +649,19 @@ const TournamentManager: React.FC = () => {
                 : [],
             current_participants: tournament.current_participants || 0,
             paid_participants: tournament.paid_participants || 0,
-            payment_method: (tournament as any).payment_method || 'Nequi',
-            payment_phone: (tournament as any).payment_phone || '',
-            payment_key: (tournament as any).payment_key || '',
-            notes: (tournament as any).notes || ''
+            payment_method: (() => {
+                const match = (tournament.notes || '').match(/METHOD:(.*?)(?:\n|$)/);
+                return match ? match[1].trim() : 'Nequi';
+            })(),
+            payment_phone: (() => {
+                const match = (tournament.notes || '').match(/PHONE:(.*?)(?:\n|$)/);
+                return match ? match[1].trim() : '';
+            })(),
+            payment_key: (() => {
+                const match = (tournament.notes || '').match(/KEY:(.*?)(?:\n|$)/);
+                return match ? match[1].trim() : '';
+            })(),
+            notes: (tournament.notes || '').split('\n\n---PAYMENT_DATA---')[0].trim()
         });
         setEditingId(tournament.id);
         setShowForm(true);
