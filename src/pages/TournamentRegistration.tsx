@@ -449,7 +449,8 @@ const TournamentRegistration: React.FC = () => {
                                     display: 'flex',
                                     alignItems: 'center',
                                     gap: '12px',
-                                    background: 'rgba(255,255,255,0.02)'
+                                    background: 'rgba(255,255,255,0.04)',
+                                    backdropFilter: 'blur(10px)'
                                 }}>
                                     <Trophy size={16} color="var(--secondary)" style={{ opacity: 0.7 }} />
                                     <input
@@ -465,7 +466,7 @@ const TournamentRegistration: React.FC = () => {
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                                     <label style={{ fontSize: '8px', fontWeight: '900', color: 'var(--secondary)', marginLeft: '12px', letterSpacing: '1.5px' }}>HÁNDICAP</label>
-                                    <div className="glass" style={{ padding: '12px 18px', borderRadius: '18px', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(255,255,255,0.02)' }}>
+                                    <div className="glass" style={{ padding: '12px 18px', borderRadius: '18px', border: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(10px)' }}>
                                         <ShieldCheck size={16} color="rgba(255,255,255,0.3)" />
                                         <input
                                             type="number"
@@ -478,7 +479,7 @@ const TournamentRegistration: React.FC = () => {
                                 </div>
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                                     <label style={{ fontSize: '8px', fontWeight: '900', color: 'var(--secondary)', marginLeft: '12px', letterSpacing: '1.5px' }}>FEDERACIÓN</label>
-                                    <div className="glass" style={{ padding: '12px 18px', borderRadius: '18px', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(255,255,255,0.02)' }}>
+                                    <div className="glass" style={{ padding: '12px 18px', borderRadius: '18px', border: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(10px)' }}>
                                         <Calendar size={16} color="rgba(255,255,255,0.3)" />
                                         <input
                                             type="text"
@@ -494,7 +495,7 @@ const TournamentRegistration: React.FC = () => {
                             <div style={{ display: 'grid', gridTemplateColumns: '1.3fr 1fr', gap: '15px' }}>
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                                     <label style={{ fontSize: '8px', fontWeight: '900', color: 'var(--secondary)', marginLeft: '12px', letterSpacing: '1.5px' }}>CORREO ELECTRÓNICO</label>
-                                    <div className="glass" style={{ padding: '12px 18px', borderRadius: '18px', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(255,255,255,0.02)' }}>
+                                    <div className="glass" style={{ padding: '12px 18px', borderRadius: '18px', border: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(10px)' }}>
                                         <Mail size={16} color="rgba(255,255,255,0.3)" />
                                         <input
                                             type="email"
@@ -508,7 +509,7 @@ const TournamentRegistration: React.FC = () => {
 
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                                     <label style={{ fontSize: '8px', fontWeight: '900', color: 'var(--secondary)', marginLeft: '12px', letterSpacing: '1.5px' }}>CELULAR</label>
-                                    <div className="glass" style={{ padding: '12px 18px', borderRadius: '18px', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(255,255,255,0.02)' }}>
+                                    <div className="glass" style={{ padding: '12px 18px', borderRadius: '18px', border: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(10px)' }}>
                                         <HeartHandshake size={16} color="rgba(255,255,255,0.3)" />
                                         <input
                                             type="tel"
@@ -582,7 +583,7 @@ const TournamentRegistration: React.FC = () => {
                                                 flex: 1,
                                                 padding: '12px',
                                                 borderRadius: '15px',
-                                                background: player2.type === 'companion' ? 'rgba(163, 230, 53, 0.2)' : 'rgba(255,255,255,0.02)',
+                                                background: player2.type === 'companion' ? 'rgba(163, 230, 53, 0.2)' : 'rgba(255,255,255,0.04)',
                                                 border: `1px solid ${player2.type === 'companion' ? 'var(--secondary)' : 'rgba(255,255,255,0.1)'}`,
                                                 color: player2.type === 'companion' ? 'var(--secondary)' : 'rgba(255,255,255,0.5)',
                                                 fontSize: '12px',
@@ -595,7 +596,7 @@ const TournamentRegistration: React.FC = () => {
                                     </div>
 
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                                        <div className="glass" style={{ padding: '16px 20px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(255,255,255,0.02)' }}>
+                                        <div className="glass" style={{ padding: '16px 20px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(10px)' }}>
                                             <Trophy size={18} color="rgba(255,255,255,0.3)" />
                                             <input
                                                 type="text"
