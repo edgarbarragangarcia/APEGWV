@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../services/SupabaseManager';
 import { User, Trophy, Users, Search, CheckCircle2, Clock, Mail, CheckSquare, Square, Download, Trash2 } from 'lucide-react';
 import Skeleton from '../components/Skeleton';
@@ -195,14 +195,17 @@ const TournamentParticipants: React.FC = () => {
         }
     };
 
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
+
     const handleDeleteSelected = async () => {
         if (selectedIds.length === 0) return;
-        
-        const confirmDelete = window.confirm(`¿Estás seguro de que deseas eliminar ${selectedIds.length} participantes? Esta acción no se puede deshacer.`);
-        if (!confirmDelete) return;
+        setShowDeleteConfirm(true);
+    };
 
+    const confirmDelete = async () => {
+        setIsDeleting(true);
         try {
-            // Filter manual guests from registered ones for deletion
             const registeredIds = selectedIds.filter(id => !id.startsWith('manual-guest-'));
 
             if (registeredIds.length > 0) {
@@ -214,14 +217,13 @@ const TournamentParticipants: React.FC = () => {
                 if (error) throw error;
             }
 
-            // For manual guests, we would need to update the tournament's guests field
-            // but for now we just filter them from the local state
             setParticipants(prev => prev.filter(p => !selectedIds.includes(p.id)));
             setSelectedIds([]);
-            alert('Participantes eliminados correctamente');
+            setShowDeleteConfirm(false);
         } catch (err) {
             console.error('Error deleting participants:', err);
-            alert('Error al eliminar participantes');
+        } finally {
+            setIsDeleting(false);
         }
     };
 
@@ -291,6 +293,98 @@ const TournamentParticipants: React.FC = () => {
 
     return (
         <div className="animate-fade" style={styles.pageContainer}>
+            <AnimatePresence>
+                {showDeleteConfirm && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        style={{
+                            position: 'fixed',
+                            inset: 0,
+                            zIndex: 3000,
+                            background: 'rgba(0,0,0,0.85)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            padding: '20px',
+                            backdropFilter: 'blur(10px)'
+                        }}
+                    >
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                            animate={{ scale: 1, opacity: 1, y: 0 }}
+                            exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                            style={{
+                                background: 'linear-gradient(135deg, #123B2A 0%, #062e24 100%)',
+                                padding: '35px 25px',
+                                borderRadius: '35px',
+                                width: '100%',
+                                maxWidth: '350px',
+                                textAlign: 'center',
+                                border: '1px solid rgba(239, 68, 68, 0.2)',
+                                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
+                            }}
+                        >
+                            <div style={{
+                                width: '70px', height: '70px',
+                                background: 'rgba(239, 68, 68, 0.1)',
+                                borderRadius: '22px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                margin: '0 auto 20px',
+                                border: '1px solid rgba(239, 68, 68, 0.2)'
+                            }}>
+                                <Trash2 size={32} color="#ef4444" />
+                            </div>
+                            <h2 style={{ fontSize: '20px', fontWeight: '900', color: 'white', marginBottom: '12px' }}>¿Confirmar Eliminación?</h2>
+                            <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '14px', lineHeight: '1.5', marginBottom: '30px' }}>
+                                Estás por eliminar <strong>{selectedIds.length}</strong> participante(s). Esta acción no se puede deshacer.
+                            </p>
+                            <div style={{ display: 'flex', gap: '12px' }}>
+                                <button
+                                    onClick={() => setShowDeleteConfirm(false)}
+                                    style={{
+                                        flex: 1,
+                                        padding: '15px',
+                                        borderRadius: '18px',
+                                        background: 'rgba(255,255,255,0.05)',
+                                        color: 'white',
+                                        border: '1px solid rgba(255,255,255,0.1)',
+                                        fontSize: '12px',
+                                        fontWeight: '800',
+                                        cursor: 'pointer'
+                                    }}
+                                >
+                                    CANCELAR
+                                </button>
+                                <button
+                                    onClick={confirmDelete}
+                                    disabled={isDeleting}
+                                    style={{
+                                        flex: 1,
+                                        padding: '15px',
+                                        borderRadius: '18px',
+                                        background: '#ef4444',
+                                        color: 'white',
+                                        border: 'none',
+                                        fontSize: '12px',
+                                        fontWeight: '900',
+                                        cursor: 'pointer',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        gap: '8px'
+                                    }}
+                                >
+                                    {isDeleting ? '...' : 'ELIMINAR'}
+                                </button>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
             {!selectedParticipant && <PageHero opacity={0.75} />}
 
             <div style={styles.headerArea}>
