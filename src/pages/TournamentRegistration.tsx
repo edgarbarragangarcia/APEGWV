@@ -121,10 +121,15 @@ const TournamentRegistration: React.FC = () => {
         if (!tournament?.notes) return null;
         const matchMethod = tournament.notes.match(/METHOD:(.*?)(?:\n|$)/);
         const matchPhone = tournament.notes.match(/PHONE:(.*?)(?:\n|$)/);
-        if (!matchMethod && !matchPhone) return null;
+        const matchKey = tournament.notes.match(/KEY:(.*?)(?:\n|$)/);
+        if (!matchMethod && !matchPhone && !matchKey) return null;
+        const method = matchMethod ? matchMethod[1].trim() : 'Nequi';
+        const phone = matchPhone ? matchPhone[1].trim() : '';
+        const key = matchKey ? matchKey[1].trim() : '';
         return {
-            method: matchMethod ? matchMethod[1].trim() : 'Nequi',
-            phone: matchPhone ? matchPhone[1].trim() : ''
+            method,
+            account: method === 'Llave BreB' ? (key || phone) : (phone || key),
+            accountLabel: method === 'Llave BreB' ? 'LLAVE BREB' : 'CELULAR NEQUI'
         };
     })();
 
@@ -192,16 +197,14 @@ const TournamentRegistration: React.FC = () => {
 
     return (
         <div style={{
-            minHeight: '100vh',
             background: 'var(--primary)',
             color: 'white',
-            display: 'flex',
-            flexDirection: 'column',
             maxWidth: '1200px',
             margin: '0 auto',
             borderLeft: '1px solid rgba(255,255,255,0.05)',
             borderRight: '1px solid rgba(255,255,255,0.05)',
-            boxShadow: '0 0 50px rgba(0,0,0,0.3)'
+            boxShadow: '0 0 50px rgba(0,0,0,0.3)',
+            paddingBottom: '30px'
         }}>
             <AnimatePresence>
                 {showSuccess && (
@@ -287,12 +290,7 @@ const TournamentRegistration: React.FC = () => {
             </div>
 
             <div style={{ 
-                flex: 1, 
-                padding: '15px 25px', 
-                display: 'flex', 
-                flexDirection: 'column', 
-                gap: '30px',
-                paddingBottom: '40px'
+                padding: '15px 25px 40px'
             }}>
                 <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '30px', paddingBottom: '40px' }}>
                     
@@ -352,8 +350,8 @@ const TournamentRegistration: React.FC = () => {
                                         <span style={{ color: 'white', fontSize: '13px', fontWeight: '800' }}>{paymentInfo.method}</span>
                                     </div>
                                     <div style={{ textAlign: 'right' }}>
-                                        <span style={{ fontSize: '8px', color: 'rgba(255,255,255,0.4)', fontWeight: '800', display: 'block' }}>CELULAR / CUENTA</span>
-                                        <span style={{ color: 'var(--secondary)', fontSize: '13px', fontWeight: '900' }}>{paymentInfo.phone}</span>
+                                        <span style={{ fontSize: '8px', color: 'rgba(255,255,255,0.4)', fontWeight: '800', display: 'block' }}>{paymentInfo.accountLabel}</span>
+                                        <span style={{ color: 'var(--secondary)', fontSize: '13px', fontWeight: '900' }}>{paymentInfo.account}</span>
                                     </div>
                                 </div>
                             </motion.div>
@@ -586,10 +584,10 @@ const TournamentRegistration: React.FC = () => {
 
             <div style={{
                 position: isMobile ? 'sticky' : 'relative',
-                bottom: isMobile ? '20px' : 'auto',
+                bottom: 0,
                 zIndex: 50,
-                flexShrink: 0,
-                padding: '0 25px 15px'
+                padding: '15px 25px',
+                background: isMobile ? 'linear-gradient(to top, var(--primary) 60%, transparent)' : 'transparent'
             }}>
                 <button
                     onClick={handleRegister}
