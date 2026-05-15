@@ -288,22 +288,20 @@ const TournamentRegistration: React.FC = () => {
 
             <div style={{ 
                 flex: 1, 
-                overflowY: 'auto', 
-                overflowX: 'hidden',
-                WebkitOverflowScrolling: 'touch',
                 padding: '15px 25px', 
                 display: 'flex', 
                 flexDirection: 'column', 
-                gap: '30px' 
+                gap: '30px',
+                paddingBottom: '40px'
             }}>
                 <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '30px', paddingBottom: '40px' }}>
                     
                     {/* Left: Info */}
                     <motion.div 
-                        initial={{ opacity: 0, y: 20 }}
+                        initial={{ opacity: 0, y: 40 }}
                         whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true, margin: "-50px" }}
-                        transition={{ duration: 0.5 }}
+                        viewport={{ once: true, amount: 0.1 }}
+                        transition={{ duration: 0.6, ease: "easeOut" }}
                         style={{ display: 'flex', flexDirection: 'column', gap: '20px', width: '100%', maxWidth: isMobile ? '100%' : '350px' }}
                     >
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '5px' }}>
@@ -330,10 +328,10 @@ const TournamentRegistration: React.FC = () => {
 
                         {paymentInfo && (
                             <motion.div 
-                                initial={{ opacity: 0, y: 20 }}
+                                initial={{ opacity: 0, y: 40 }}
                                 whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true }}
-                                transition={{ duration: 0.5, delay: 0.2 }}
+                                viewport={{ once: true, amount: 0.1 }}
+                                transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
                                 className="glass" 
                                 style={{ 
                                     padding: '15px', 
@@ -364,10 +362,10 @@ const TournamentRegistration: React.FC = () => {
 
                     {/* Right: Registration Form */}
                     <motion.div 
-                        initial={{ opacity: 0, y: 30 }}
+                        initial={{ opacity: 0, y: 50 }}
                         whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true, margin: "-100px" }}
-                        transition={{ duration: 0.6, delay: 0.1 }}
+                        viewport={{ once: true, amount: 0.1 }}
+                        transition={{ duration: 0.7, delay: 0.3, ease: "easeOut" }}
                         style={{ flex: 1, width: '100%', display: 'flex', flexDirection: 'column', gap: '20px' }}
                     >
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '5px' }}>
@@ -587,7 +585,9 @@ const TournamentRegistration: React.FC = () => {
             </div>
 
             <div style={{
-                paddingTop: '5px',
+                position: isMobile ? 'sticky' : 'relative',
+                bottom: isMobile ? '20px' : 'auto',
+                zIndex: 50,
                 flexShrink: 0,
                 padding: '0 25px 15px'
             }}>
