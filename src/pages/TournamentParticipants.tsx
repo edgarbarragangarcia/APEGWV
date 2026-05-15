@@ -202,8 +202,7 @@ const TournamentParticipants: React.FC = () => {
         if (!confirmDelete) return;
 
         try {
-            // Separate manual guests from registered ones
-            const manualIds = selectedIds.filter(id => id.startsWith('manual-guest-'));
+            // Filter manual guests from registered ones for deletion
             const registeredIds = selectedIds.filter(id => !id.startsWith('manual-guest-'));
 
             if (registeredIds.length > 0) {
