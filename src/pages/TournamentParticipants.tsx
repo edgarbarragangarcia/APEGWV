@@ -201,6 +201,12 @@ const TournamentParticipants: React.FC = () => {
 
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
+    const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'warning' } | null>(null);
+
+    const showToast = (message: string, type: 'success' | 'error' | 'warning' = 'success') => {
+        setToast({ message, type });
+        setTimeout(() => setToast(null), 4000);
+    };
 
     const handleDeleteSelected = async () => {
         if (selectedIds.length === 0) return;
@@ -210,10 +216,11 @@ const TournamentParticipants: React.FC = () => {
     const confirmDelete = async () => {
         setIsDeleting(true);
         try {
-            // Verify user is authenticated
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) {
-                alert('Debes estar autenticado para eliminar participantes.');
+                showToast('Debes estar autenticado para eliminar participantes.', 'error');
+                setShowDeleteConfirm(false);
+                setIsDeleting(false);
                 return;
             }
 
@@ -222,29 +229,27 @@ const TournamentParticipants: React.FC = () => {
 
             // 1. Delete Registered Participants
             if (registeredIds.length > 0) {
-                console.log('[DELETE] User:', user.id, 'Attempting to delete IDs:', registeredIds);
+                console.log('[DELETE] User:', user.id, 'IDs:', registeredIds);
 
-                const { error, count, status, statusText } = await (supabase
+                const { error, count } = await (supabase
                     .from('tournament_registrations') as any)
                     .delete({ count: 'exact' })
                     .in('id', registeredIds);
 
-                console.log('[DELETE] Result:', { error, count, status, statusText });
+                console.log('[DELETE] Result:', { error, count });
 
                 if (error) {
                     console.error('[DELETE] Error:', error);
-                    alert(`Error de base de datos: ${error.message}\nCódigo: ${error.code}\nDetalles: ${error.details || 'ninguno'}`);
+                    showToast(`Error: ${error.message}`, 'error');
                     throw error;
                 }
 
                 if (count === 0) {
-                    alert('⚠️ No se eliminó ningún registro.\n\nPosibles causas:\n1. Políticas de seguridad (RLS) bloquean la eliminación.\n2. Los registros ya no existen.\n\nSolución: Agregar una política DELETE en Supabase para tournament_registrations.');
+                    showToast('No se pudo eliminar. Verifica permisos en Supabase (RLS).', 'warning');
                     setShowDeleteConfirm(false);
                     setIsDeleting(false);
                     return;
                 }
-
-                console.log(`[DELETE] ✅ Eliminados ${count} registros exitosamente`);
             }
 
             // 2. Delete Manual Guests from Tournament table
@@ -278,10 +283,11 @@ const TournamentParticipants: React.FC = () => {
             setParticipants(prev => prev.filter(p => !selectedIds.includes(p.id)));
             setSelectedIds([]);
             setShowDeleteConfirm(false);
+            showToast(`${selectedIds.length} participante(s) eliminados`, 'success');
             if (navigator.vibrate) navigator.vibrate([50, 30, 50]);
         } catch (err: any) {
             console.error('Error deleting participants:', err);
-            alert(`No se pudo eliminar: ${err.message || 'Error desconocido'}`);
+            showToast(`Error al eliminar: ${err.message || 'desconocido'}`, 'error');
         } finally {
             setIsDeleting(false);
         }
@@ -292,7 +298,7 @@ const TournamentParticipants: React.FC = () => {
         const emails = selectedParticipants.map(p => p.email).filter(Boolean).join(',');
 
         if (!emails) {
-            alert('No hay correos electrónicos disponibles para los participantes seleccionados.');
+            showToast('No hay correos disponibles para los seleccionados.', 'warning');
             return;
         }
 
@@ -319,7 +325,7 @@ const TournamentParticipants: React.FC = () => {
             : participants;
 
         if (targetParticipants.length === 0) {
-            alert('No hay participantes para descargar');
+            showToast('No hay participantes para descargar', 'warning');
             return;
         }
 
@@ -353,6 +359,45 @@ const TournamentParticipants: React.FC = () => {
 
     return (
         <div className="animate-fade" style={styles.pageContainer}>
+            {/* Toast Notification */}
+            <AnimatePresence>
+                {toast && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -30 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -30 }}
+                        onClick={() => setToast(null)}
+                        style={{
+                            position: 'fixed',
+                            top: '20px',
+                            left: '50%',
+                            transform: 'translateX(-50%)',
+                            zIndex: 4000,
+                            padding: '14px 24px',
+                            borderRadius: '18px',
+                            background: toast.type === 'success' ? 'rgba(163, 230, 53, 0.15)'
+                                : toast.type === 'error' ? 'rgba(239, 68, 68, 0.15)'
+                                : 'rgba(251, 191, 36, 0.15)',
+                            border: `1px solid ${toast.type === 'success' ? 'rgba(163, 230, 53, 0.3)'
+                                : toast.type === 'error' ? 'rgba(239, 68, 68, 0.3)'
+                                : 'rgba(251, 191, 36, 0.3)'}`,
+                            color: toast.type === 'success' ? 'var(--secondary)'
+                                : toast.type === 'error' ? '#ef4444'
+                                : '#fbbf24',
+                            fontSize: '13px',
+                            fontWeight: '800',
+                            backdropFilter: 'blur(20px)',
+                            boxShadow: '0 10px 30px rgba(0,0,0,0.3)',
+                            maxWidth: '90%',
+                            textAlign: 'center',
+                            cursor: 'pointer'
+                        }}
+                    >
+                        {toast.message}
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
             <AnimatePresence>
                 {showDeleteConfirm && (
                     <motion.div
