@@ -54,8 +54,8 @@ const TournamentParticipants: React.FC = () => {
             if (tournamentError) throw tournamentError;
             setTournamentName(tournament.name);
 
-            const { data: registrations, error: regError } = await supabase
-                .from('tournament_registrations')
+            const { data: registrations, error: regError } = await (supabase
+                .from('tournament_registrations') as any)
                 .select(`
                     id,
                     registration_status,
@@ -66,7 +66,7 @@ const TournamentParticipants: React.FC = () => {
                     player_phone,
                     player_handicap,
                     player_federation_code,
-                    profiles (
+                    profiles:user_id (
                         id, full_name, avatar_url, handicap, email, phone, total_rounds, average_score, federation_code
                     )
                 `)
@@ -79,8 +79,9 @@ const TournamentParticipants: React.FC = () => {
                 return { name: name?.trim() || '', code: code?.trim() || '' };
             }) : [];
 
-            const registeredParticipants = registrations?.map((reg: any) => {
-                const profile = reg.profiles;
+            const registeredParticipants = (registrations || []).map((reg: any) => {
+                // Supabase might return profiles as an object or an array of one element
+                const profile = Array.isArray(reg.profiles) ? reg.profiles[0] : reg.profiles;
                 const nameMatch = reg.player_name || profile?.full_name || 'Invitado';
 
                 const matchingGuest = manualGuestEntries.find(g =>
@@ -106,11 +107,11 @@ const TournamentParticipants: React.FC = () => {
                     payment_date: reg.payment_date,
                     is_guest: finalIsGuest
                 };
-            }) || [];
+            });
 
             const manualGuestParticipants = manualGuestEntries
-                .filter(g => !registeredParticipants.some(p => p.full_name?.trim().toLowerCase() === g.name.toLowerCase()))
-                .map((g, index: number) => ({
+                .filter((g: any) => !registeredParticipants.some((p: any) => p.full_name?.trim().toLowerCase() === g.name.toLowerCase()))
+                .map((g: any, index: number) => ({
                     id: `manual-guest-${index}`,
                     user_id: null,
                     registration_status: 'Invitado',
