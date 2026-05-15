@@ -267,13 +267,27 @@ const TournamentParticipants: React.FC = () => {
                 <PageHeader
                     noMargin
                     title={tournamentName || 'Participantes'}
-                    onBack={() => {
-                        if (selectedParticipant) {
-                            setSelectedParticipant(null);
-                        } else {
-                            navigate('/my-events');
-                        }
-                    }}
+                    onBack={() => navigate('/my-events')}
+                    rightElement={
+                        <button
+                            onClick={downloadExcel}
+                            style={{
+                                background: 'rgba(163, 230, 53, 0.1)',
+                                border: '1px solid rgba(163, 230, 53, 0.2)',
+                                color: 'var(--secondary)',
+                                padding: '8px 12px',
+                                borderRadius: '12px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                                fontSize: '11px',
+                                fontWeight: '900',
+                                cursor: 'pointer'
+                            }}
+                        >
+                            <Download size={14} /> EXCEL
+                        </button>
+                    }
                 />
             </div>
 
@@ -473,31 +487,19 @@ const TournamentParticipants: React.FC = () => {
                     ) : (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                             {selectedIds.length > 0 && (
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '10px' }}>
+                                <div style={{ marginBottom: '10px' }}>
                                     <motion.button
                                         initial={{ scale: 0.9, opacity: 0 }}
                                         animate={{ scale: 1, opacity: 1 }}
                                         onClick={sendBulkEmail}
                                         style={{
+                                            width: '100%',
                                             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
                                             padding: '14px', borderRadius: '18px', background: 'rgba(163, 230, 53, 0.1)', color: 'var(--secondary)',
                                             border: '1px solid rgba(163, 230, 53, 0.2)', fontSize: '12px', fontWeight: '900', cursor: 'pointer'
                                         }}
                                     >
-                                        <Mail size={16} /> {copiedEmails ? '¡LISTO!' : `Copiar Correos`}
-                                    </motion.button>
-                                    <motion.button
-                                        initial={{ scale: 0.9, opacity: 0 }}
-                                        animate={{ scale: 1, opacity: 1 }}
-                                        onClick={downloadExcel}
-                                        style={{
-                                            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-                                            padding: '14px', borderRadius: '18px', background: 'var(--secondary)', color: 'var(--primary)',
-                                            border: 'none', fontSize: '12px', fontWeight: '900', cursor: 'pointer',
-                                            boxShadow: '0 10px 25px rgba(163, 230, 53, 0.3)'
-                                        }}
-                                    >
-                                        <Download size={16} /> Excel
+                                        <Mail size={16} /> {copiedEmails ? '¡LISTO!' : `Copiar ${selectedIds.length} correos`}
                                     </motion.button>
                                 </div>
                             )}
