@@ -405,14 +405,58 @@ const TournamentRegistration: React.FC = () => {
                             </p>
                         </div>
 
-                        {tournament.custom_rules && (
-                            <div style={{ padding: '0 5px' }}>
-                                <h4 style={{ fontSize: '14px', fontWeight: '900', color: 'white', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                    <HeartHandshake size={16} color="var(--secondary)" /> REGLAMENTO
+                        {/* PREMIOS SECTION */}
+                        {tournament.prizes && (
+                            <div className="glass" style={{ padding: '20px', borderRadius: '24px', background: 'rgba(163, 230, 53, 0.03)', border: '1px solid rgba(163, 230, 53, 0.15)', marginBottom: '25px' }}>
+                                <h4 style={{ fontSize: '13px', fontWeight: '900', color: 'var(--secondary)', marginBottom: '15px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <Trophy size={16} color="var(--secondary)" /> PREMIOS ESPECIALES
                                 </h4>
-                                <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '13px', lineHeight: '1.5', whiteSpace: 'pre-wrap' }}>
-                                    {tournament.custom_rules}
-                                </p>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '10px' }}>
+                                    {tournament.prizes.split('\n').filter(Boolean).map((prize, idx) => (
+                                        <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'rgba(255,255,255,0.8)', fontSize: '13px', fontWeight: '600' }}>
+                                            <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--secondary)' }} />
+                                            {prize}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* REGLAMENTO SECTION */}
+                        {(tournament.rules?.length || tournament.custom_rules) && (
+                            <div className="glass" style={{ padding: '20px', borderRadius: '24px', background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.05)', marginBottom: '25px' }}>
+                                <h4 style={{ fontSize: '13px', fontWeight: '900', color: 'white', marginBottom: '15px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <ShieldCheck size={16} color="var(--secondary)" /> REGLAMENTO Y CONDICIONES
+                                </h4>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                    {tournament.rules?.map((rule, idx) => (
+                                        <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', color: 'rgba(255,255,255,0.5)', fontSize: '12px', lineHeight: '1.4' }}>
+                                            <CheckCircle2 size={14} color="var(--secondary)" style={{ marginTop: '2px', flexShrink: 0 }} />
+                                            {rule}
+                                        </div>
+                                    ))}
+                                    {tournament.custom_rules && (
+                                        <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '13px', lineHeight: '1.5', whiteSpace: 'pre-wrap', marginTop: tournament.rules?.length ? '10px' : '0' }}>
+                                            {tournament.custom_rules}
+                                        </p>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* SPONSORS SECTION */}
+                        {tournament.sponsors && (
+                            <div style={{ marginBottom: '30px' }}>
+                                <h4 style={{ fontSize: '10px', fontWeight: '900', color: 'rgba(255,255,255,0.3)', marginBottom: '15px', textAlign: 'center', letterSpacing: '2px' }}>
+                                    PATROCINADO POR
+                                </h4>
+                                <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '20px', opacity: 0.7 }}>
+                                    {tournament.sponsors.split('\n').filter(Boolean).map((sponsor, idx) => (
+                                        <span key={idx} style={{ color: 'white', fontSize: '14px', fontWeight: '950', letterSpacing: '1px', textTransform: 'uppercase' }}>
+                                            {sponsor}
+                                        </span>
+                                    ))}
+                                </div>
                             </div>
                         )}
                     </div>
