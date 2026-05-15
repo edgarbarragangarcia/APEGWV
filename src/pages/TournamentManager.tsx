@@ -49,10 +49,10 @@ interface BudgetItem {
 
 
 // --- Sub-component for individual tournament cards ---
-const TournamentCard = ({ tourney, onEdit }: { tourney: Tournament, onEdit: () => void }) => {
+const TournamentCard = ({ tourney, onEdit, isAdmin, onApprove }: { tourney: Tournament, onEdit: () => void, isAdmin: boolean, onApprove: (id: string) => void }) => {
     const controls = useAnimation();
     const [isOpen, setIsOpen] = useState(false);
-    const dragDistance = -80; // Space for a single "Gestión" button
+    const dragDistance = (isAdmin && tourney.approval_status === 'pending') ? -140 : -80;
 
     const onDragEnd = (_: any, info: any) => {
         if (info.offset.x < -30) {
@@ -104,13 +104,22 @@ const TournamentCard = ({ tourney, onEdit }: { tourney: Tournament, onEdit: () =
             <div style={{
                 position: 'absolute',
                 top: 0, bottom: 0, right: 0,
-                width: '100px',
+                width: (isAdmin && tourney.approval_status === 'pending') ? '160px' : '100px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'flex-end',
                 paddingRight: '16px',
+                gap: '8px',
                 zIndex: 1
             }}>
+                {isAdmin && tourney.approval_status === 'pending' && (
+                    <ActionBtn
+                        hexColor="#10b981"
+                        icon={<CheckCircle2 size={20} />}
+                        onClick={() => { onApprove(tourney.id); closeActions(); }}
+                        label="APROBAR"
+                    />
+                )}
                 <ActionBtn
                     hexColor="var(--secondary)"
                     icon={<Settings size={20} />}
@@ -174,7 +183,7 @@ const TournamentCard = ({ tourney, onEdit }: { tourney: Tournament, onEdit: () =
                             letterSpacing: '0.03em',
                             border: '1px solid rgba(255,255,255,0.05)'
                         }}>
-                            {tourney.status === 'open' ? 'ABIERTO (INSCRIPCIONES)' : tourney.status === 'finished' ? 'TERMINADO' : 'EN PREPARACIÓN'}
+                            {tourney.status || 'BORRADOR'}
                         </span>
                     </div>
 
@@ -252,14 +261,15 @@ const TournamentManager: React.FC = () => {
     const [isPremium, setIsPremium] = useState(false);
     const [showForm, setShowForm] = useState(false);
     const [saving, setSaving] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
     const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; tournamentId: string | null; tournamentName: string }>({
         isOpen: false,
         tournamentId: null,
         tournamentName: ''
     });
-    const [isDeleting, setIsDeleting] = useState(false);
     const [isAdmin, setIsAdmin] = useState(false);
+    const [activeTab, setActiveTab] = useState<'pending' | 'approved'>('pending');
 
     // Collapsible sections state
     const [showBudgetSection, setShowBudgetSection] = useState(false);
@@ -288,7 +298,7 @@ const TournamentManager: React.FC = () => {
         displayPrice: '', // String with thousand separators for UI
         participants_limit: '100',
         image_url: 'https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?q=80&w=1000&auto=format&fit=crop',
-        status: 'Abierto',
+        status: 'Borrador',
         game_mode: 'Juego por Golpes',
         address: '',
         budget_items: [
@@ -371,15 +381,20 @@ const TournamentManager: React.FC = () => {
 
 
             // Fetch User Tournaments with participant count and finances
-            const { data: userTourneys, error } = await (supabase
-                .from('tournaments') as any)
+            let query = supabase
+                .from('tournaments')
                 .select(`
                     *,
                     registrations: tournament_registrations(count),
                     finances: tournament_finances(*)
                 `)
-                .eq('creator_id', user.id)
                 .order('created_at', { ascending: false });
+
+            if (!profile?.is_admin) {
+                query = query.eq('creator_id', user.id);
+            }
+
+            const { data: userTourneys, error } = await query as any;
 
             if (error) throw error;
 
@@ -468,7 +483,7 @@ const TournamentManager: React.FC = () => {
                         sponsors: formData.sponsors.map(s => s.name).filter(Boolean).join('\n'),
                         prizes: formData.prizes.map(p => p.name).filter(Boolean).join('\n'),
                         guests: formData.guests.map(g => `${g.name}|${g.federation_code || ''}`).filter(Boolean).join('\n'),
-                        approval_status: 'pending',
+                        approval_status: tournaments.find(t => t.id === editingId)?.approval_status || 'pending',
                         updated_at: new Date().toISOString()
                     })
                     .eq('id', editingId)
@@ -495,7 +510,7 @@ const TournamentManager: React.FC = () => {
                         prizes: formData.prizes.map(p => p.name).filter(Boolean).join('\n'),
                         guests: formData.guests.map(g => `${g.name}|${g.federation_code || ''}`).filter(Boolean).join('\n'),
                         creator_id: user.id,
-                        approval_status: 'pending'
+                        approval_status: isAdmin ? 'approved' : 'pending'
                     } as any])
                     .select()
                     .single();
@@ -509,10 +524,12 @@ const TournamentManager: React.FC = () => {
             // Sync finances with tournament_finances table
             if (savedTourneyId) {
                 // Delete existing finances
-                await (supabase
+                const { error: delError } = await (supabase
                     .from('tournament_finances' as any) as any)
                     .delete()
                     .eq('tournament_id', savedTourneyId);
+                
+                if (delError) console.error('Error deleting old finances:', delError);
 
                 // Insert new finances
                 if (formData.budget_items.length > 0) {
@@ -524,9 +541,11 @@ const TournamentManager: React.FC = () => {
                         amount_type: item.type
                     }));
 
-                    await (supabase
+                    const { error: insError } = await (supabase
                         .from('tournament_finances' as any) as any)
                         .insert(financesToInsert);
+                    
+                    if (insError) console.error('Error inserting new finances:', insError);
                 }
             }
 
@@ -556,7 +575,7 @@ const TournamentManager: React.FC = () => {
             displayPrice: '',
             participants_limit: '100',
             image_url: 'https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?q=80&w=1000&auto=format&fit=crop',
-            status: 'Abierto',
+            status: 'Borrador',
             game_mode: 'Juego por Golpes',
             address: '',
             budget_items: [
@@ -586,7 +605,7 @@ const TournamentManager: React.FC = () => {
             displayPrice: formatPrice(p),
             participants_limit: (tournament.participants_limit || 100).toString(),
             image_url: tournament.image_url || 'https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?q=80&w=1000&auto=format&fit=crop',
-            status: tournament.status || 'Abierto',
+            status: tournament.status || 'Borrador',
             game_mode: tournament.game_mode || 'Juego por Golpes',
             address: tournament.address || '',
             budget_items: tournament.finances && tournament.finances.length > 0
@@ -613,6 +632,26 @@ const TournamentManager: React.FC = () => {
         });
         setEditingId(tournament.id);
         setShowForm(true);
+    };
+
+    const handleApprove = async (tourneyId: string) => {
+        try {
+            const { error } = await supabase
+                .from('tournaments')
+                .update({ approval_status: 'approved' })
+                .eq('id', tourneyId);
+
+            if (error) throw error;
+
+            setTournaments(prev => prev.map(t =>
+                t.id === tourneyId ? { ...t, approval_status: 'approved' } : t
+            ));
+            
+            if (navigator.vibrate) navigator.vibrate(50);
+        } catch (err) {
+            console.error('Error approving tournament:', err);
+            alert('No se pudo aprobar el torneo.');
+        }
     };
 
     const handleDeleteClick = (tournament: Tournament) => {
@@ -1896,6 +1935,71 @@ const TournamentManager: React.FC = () => {
                         </motion.form>
                     ) : (
                         <div key="tournament-list" style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginTop: '10px' }}>
+                            {/* Filter Tabs */}
+                            <div style={{
+                                display: 'flex',
+                                gap: '8px',
+                                marginBottom: '5px'
+                            }}>
+                                <button
+                                    onClick={() => setActiveTab('pending')}
+                                    style={{
+                                        flex: 1,
+                                        padding: '12px',
+                                        borderRadius: '16px',
+                                        background: activeTab === 'pending' ? 'rgba(245, 158, 11, 0.15)' : 'rgba(255,255,255,0.03)',
+                                        border: activeTab === 'pending' ? '1px solid rgba(245, 158, 11, 0.3)' : '1px solid rgba(255,255,255,0.05)',
+                                        color: activeTab === 'pending' ? '#f59e0b' : 'var(--text-dim)',
+                                        fontSize: '12px',
+                                        fontWeight: '900',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        gap: '8px',
+                                        transition: 'all 0.3s ease'
+                                    }}
+                                >
+                                    PENDIENTE
+                                    <span style={{
+                                        background: activeTab === 'pending' ? '#f59e0b' : 'rgba(255,255,255,0.1)',
+                                        color: activeTab === 'pending' ? 'var(--primary)' : 'var(--text-dim)',
+                                        padding: '2px 6px',
+                                        borderRadius: '6px',
+                                        fontSize: '10px'
+                                    }}>
+                                        {tournaments.filter(t => t.approval_status === 'pending').length}
+                                    </span>
+                                </button>
+                                <button
+                                    onClick={() => setActiveTab('approved')}
+                                    style={{
+                                        flex: 1,
+                                        padding: '12px',
+                                        borderRadius: '16px',
+                                        background: activeTab === 'approved' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(255,255,255,0.03)',
+                                        border: activeTab === 'approved' ? '1px solid rgba(16, 185, 129, 0.3)' : '1px solid rgba(255,255,255,0.05)',
+                                        color: activeTab === 'approved' ? '#10b981' : 'var(--text-dim)',
+                                        fontSize: '12px',
+                                        fontWeight: '900',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        gap: '8px',
+                                        transition: 'all 0.3s ease'
+                                    }}
+                                >
+                                    EN PREPARACIÓN
+                                    <span style={{
+                                        background: activeTab === 'approved' ? '#10b981' : 'rgba(255,255,255,0.1)',
+                                        color: activeTab === 'approved' ? 'var(--primary)' : 'var(--text-dim)',
+                                        padding: '2px 6px',
+                                        borderRadius: '6px',
+                                        fontSize: '10px'
+                                    }}>
+                                        {tournaments.filter(t => t.approval_status === 'approved').length}
+                                    </span>
+                                </button>
+                            </div>
                             {/* Regular Creator View */}
                             {showPremiumInvitation && (
                                 <div className="glass" style={{
@@ -1981,13 +2085,17 @@ const TournamentManager: React.FC = () => {
                                     <p style={{ color: 'var(--text-dim)', fontSize: '14px' }}>Crea tu primer torneo y empieza a gestionar participantes.</p>
                                 </div>
                             ) : (
-                                tournaments.map(tourney => (
-                                    <TournamentCard
-                                        key={tourney.id}
-                                        tourney={tourney}
-                                        onEdit={() => handleEditClick(tourney)}
-                                    />
-                                ))
+                                tournaments
+                                    .filter(t => t.approval_status === (activeTab === 'pending' ? 'pending' : 'approved'))
+                                    .map(tourney => (
+                                        <TournamentCard
+                                            key={tourney.id}
+                                            tourney={tourney}
+                                            onEdit={() => handleEditClick(tourney)}
+                                            isAdmin={isAdmin}
+                                            onApprove={handleApprove}
+                                        />
+                                    ))
                             )}
                         </div>
                     )}
