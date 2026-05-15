@@ -49,7 +49,7 @@ interface BudgetItem {
 
 
 // --- Sub-component for individual tournament cards ---
-const TournamentCard = ({ tourney, onEdit, isAdmin, onApprove }: { tourney: Tournament, onEdit: () => void, isAdmin: boolean, onApprove: (id: string) => void }) => {
+const TournamentCard = ({ tourney, onEdit, isAdmin, onApprove, onDelete }: { tourney: Tournament, onEdit: () => void, isAdmin: boolean, onApprove: (id: string) => void, onDelete: () => void }) => {
     const controls = useAnimation();
     const [isOpen, setIsOpen] = useState(false);
     const dragDistance = (isAdmin && tourney.approval_status === 'pending') ? -140 : -80;
@@ -104,7 +104,7 @@ const TournamentCard = ({ tourney, onEdit, isAdmin, onApprove }: { tourney: Tour
             <div style={{
                 position: 'absolute',
                 top: 0, bottom: 0, right: 0,
-                width: (isAdmin && tourney.approval_status === 'pending') ? '160px' : '100px',
+                width: (isAdmin && tourney.approval_status === 'pending') ? '220px' : '160px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'flex-end',
@@ -112,6 +112,12 @@ const TournamentCard = ({ tourney, onEdit, isAdmin, onApprove }: { tourney: Tour
                 gap: '8px',
                 zIndex: 1
             }}>
+                <ActionBtn
+                    hexColor="#ef4444"
+                    icon={<Trash2 size={20} />}
+                    onClick={() => { onDelete(); closeActions(); }}
+                    label="BORRAR"
+                />
                 {isAdmin && tourney.approval_status === 'pending' && (
                     <ActionBtn
                         hexColor="#10b981"
@@ -1965,6 +1971,32 @@ const TournamentManager: React.FC = () => {
                                 >
                                     {saving ? <Loader2 className="animate-spin" size={20} /> : (editingId ? 'GUARDAR TODOS LOS CAMBIOS' : 'GUARDAR EVENTO')}
                                 </button>
+
+                                {editingId && (
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            const tourney = tournaments.find(t => t.id === editingId);
+                                            if (tourney) handleDeleteClick(tourney);
+                                        }}
+                                        style={{
+                                            width: '100%',
+                                            padding: '12px',
+                                            marginTop: '5px',
+                                            borderRadius: '16px',
+                                            background: 'rgba(239, 68, 68, 0.05)',
+                                            color: '#ef4444',
+                                            border: '1px solid rgba(239, 68, 68, 0.1)',
+                                            fontSize: '11px',
+                                            fontWeight: '800',
+                                            cursor: 'pointer',
+                                            textTransform: 'uppercase',
+                                            letterSpacing: '0.05em'
+                                        }}
+                                    >
+                                        Eliminar Torneo
+                                    </button>
+                                )}
                             </div>
                         </motion.form>
                     ) : (
@@ -2128,6 +2160,7 @@ const TournamentManager: React.FC = () => {
                                             onEdit={() => handleEditClick(tourney)}
                                             isAdmin={isAdmin}
                                             onApprove={handleApprove}
+                                            onDelete={() => handleDeleteClick(tourney)}
                                         />
                                     ))
                             )}
