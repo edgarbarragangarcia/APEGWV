@@ -206,22 +206,57 @@ const TournamentParticipants: React.FC = () => {
     const confirmDelete = async () => {
         setIsDeleting(true);
         try {
+            const manualIds = selectedIds.filter(id => id.startsWith('manual-guest-'));
             const registeredIds = selectedIds.filter(id => !id.startsWith('manual-guest-'));
 
+            // 1. Delete Registered Participants
             if (registeredIds.length > 0) {
                 const { error } = await supabase
                     .from('tournament_registrations')
                     .delete()
                     .in('id', registeredIds);
 
-                if (error) throw error;
+                if (error) {
+                    alert(`Error de base de datos: ${error.message}`);
+                    throw error;
+                }
+            }
+
+            // 2. Delete Manual Guests from Tournament table
+            if (manualIds.length > 0) {
+                const namesToDelete = participants
+                    .filter(p => manualIds.includes(p.id))
+                    .map(p => p.full_name?.toLowerCase().trim());
+
+                const { data: tournament } = await supabase
+                    .from('tournaments')
+                    .select('guests')
+                    .eq('id', id || '')
+                    .single();
+
+                if (tournament?.guests) {
+                    const remainingGuests = tournament.guests
+                        .split('\n')
+                        .filter((g: string) => {
+                            const [name] = g.split('|');
+                            return !namesToDelete.includes(name?.toLowerCase().trim());
+                        })
+                        .join('\n');
+
+                    await supabase
+                        .from('tournaments')
+                        .update({ guests: remainingGuests })
+                        .eq('id', id || '');
+                }
             }
 
             setParticipants(prev => prev.filter(p => !selectedIds.includes(p.id)));
             setSelectedIds([]);
             setShowDeleteConfirm(false);
-        } catch (err) {
+            if (navigator.vibrate) navigator.vibrate([50, 30, 50]);
+        } catch (err: any) {
             console.error('Error deleting participants:', err);
+            alert(`No se pudo eliminar: ${err.message || 'Error desconocido'}`);
         } finally {
             setIsDeleting(false);
         }
