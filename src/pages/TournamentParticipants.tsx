@@ -210,24 +210,41 @@ const TournamentParticipants: React.FC = () => {
     const confirmDelete = async () => {
         setIsDeleting(true);
         try {
+            // Verify user is authenticated
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) {
+                alert('Debes estar autenticado para eliminar participantes.');
+                return;
+            }
+
             const manualIds = selectedIds.filter(id => id.startsWith('manual-guest-'));
             const registeredIds = selectedIds.filter(id => !id.startsWith('manual-guest-'));
 
             // 1. Delete Registered Participants
             if (registeredIds.length > 0) {
-                const { error, count } = await supabase
-                    .from('tournament_registrations')
+                console.log('[DELETE] User:', user.id, 'Attempting to delete IDs:', registeredIds);
+
+                const { error, count, status, statusText } = await (supabase
+                    .from('tournament_registrations') as any)
                     .delete({ count: 'exact' })
                     .in('id', registeredIds);
 
+                console.log('[DELETE] Result:', { error, count, status, statusText });
+
                 if (error) {
-                    alert(`Error de base de datos: ${error.message}\nCódigo: ${error.code}`);
+                    console.error('[DELETE] Error:', error);
+                    alert(`Error de base de datos: ${error.message}\nCódigo: ${error.code}\nDetalles: ${error.details || 'ninguno'}`);
                     throw error;
                 }
 
                 if (count === 0) {
-                    alert('No se eliminó ningún registro en la base de datos. Esto puede deberse a políticas de seguridad (RLS).');
+                    alert('⚠️ No se eliminó ningún registro.\n\nPosibles causas:\n1. Políticas de seguridad (RLS) bloquean la eliminación.\n2. Los registros ya no existen.\n\nSolución: Agregar una política DELETE en Supabase para tournament_registrations.');
+                    setShowDeleteConfirm(false);
+                    setIsDeleting(false);
+                    return;
                 }
+
+                console.log(`[DELETE] ✅ Eliminados ${count} registros exitosamente`);
             }
 
             // 2. Delete Manual Guests from Tournament table
