@@ -487,8 +487,7 @@ const TournamentManager: React.FC = () => {
                         updated_at: new Date().toISOString()
                     })
                     .eq('id', editingId)
-                    .select()
-                    .single();
+                    .select();
             } else {
                 result = await supabase
                     .from('tournaments')
@@ -512,12 +511,14 @@ const TournamentManager: React.FC = () => {
                         creator_id: user.id,
                         approval_status: isAdmin ? 'approved' : 'pending'
                     } as any])
-                    .select()
-                    .single();
+                    .select();
             }
 
-            const { data, error } = result;
+            const { data: resultData, error } = result;
             if (error) throw error;
+            
+            const data = resultData?.[0];
+            if (!data) throw new Error('No se pudo guardar el torneo. Verifica tus permisos o si el torneo aún existe.');
 
             const savedTourneyId = editingId || (data as any).id;
 
