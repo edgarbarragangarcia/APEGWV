@@ -21,6 +21,7 @@ interface Participant {
     federation_code: string | null;
     payment_date: string | null;
     is_guest?: boolean;
+    is_companion?: boolean;
 }
 
 const TournamentParticipants: React.FC = () => {
@@ -33,7 +34,7 @@ const TournamentParticipants: React.FC = () => {
     const [selectedParticipant, setSelectedParticipant] = useState<Participant | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [copiedEmails, setCopiedEmails] = useState(false);
-    const [statusFilter, setStatusFilter] = useState<'all' | 'paid' | 'registered' | 'guests'>('all');
+    const [statusFilter, setStatusFilter] = useState<'all' | 'paid' | 'registered' | 'guests' | 'companions'>('all');
     const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
     useEffect(() => {
@@ -94,6 +95,7 @@ const TournamentParticipants: React.FC = () => {
                     g.name.toLowerCase() === nameMatch.trim().toLowerCase()
                 );
                 const isSpecialGuest = !!matchingGuest;
+                const isCompanion = !reg.player_handicap && !reg.player_federation_code && !isSpecialGuest;
                 const finalIsGuest = isSpecialGuest;
 
                 return {
@@ -109,7 +111,8 @@ const TournamentParticipants: React.FC = () => {
                     average_score: profile?.average_score,
                     federation_code: reg.player_federation_code || profile?.federation_code || matchingGuest?.code,
                     payment_date: reg.payment_date,
-                    is_guest: finalIsGuest
+                    is_guest: finalIsGuest,
+                    is_companion: isCompanion
                 };
             });
 
@@ -172,9 +175,10 @@ const TournamentParticipants: React.FC = () => {
 
         const matchesStatus =
             statusFilter === 'all' ||
-            (statusFilter === 'paid' && (p.registration_status === 'paid' || p.registration_status === 'Confirmado') && !p.is_guest) ||
-            (statusFilter === 'registered' && p.registration_status !== 'paid' && p.registration_status !== 'Confirmado' && !p.is_guest) ||
-            (statusFilter === 'guests' && p.is_guest);
+            (statusFilter === 'paid' && (p.registration_status === 'paid' || p.registration_status === 'Confirmado')) ||
+            (statusFilter === 'registered' && p.registration_status !== 'paid' && p.registration_status !== 'Confirmado' && !p.is_guest && !p.is_companion) ||
+            (statusFilter === 'guests' && p.is_guest) ||
+            (statusFilter === 'companions' && p.is_companion);
 
         return matchesSearch && matchesStatus;
     });
@@ -211,14 +215,18 @@ const TournamentParticipants: React.FC = () => {
 
             // 1. Delete Registered Participants
             if (registeredIds.length > 0) {
-                const { error } = await supabase
+                const { error, count } = await supabase
                     .from('tournament_registrations')
-                    .delete()
+                    .delete({ count: 'exact' })
                     .in('id', registeredIds);
 
                 if (error) {
-                    alert(`Error de base de datos: ${error.message}`);
+                    alert(`Error de base de datos: ${error.message}\nCódigo: ${error.code}`);
                     throw error;
+                }
+
+                if (count === 0) {
+                    alert('No se eliminó ningún registro en la base de datos. Esto puede deberse a políticas de seguridad (RLS).');
                 }
             }
 
@@ -493,7 +501,8 @@ const TournamentParticipants: React.FC = () => {
                                 { id: 'all', label: 'Todos', icon: <Users size={14} /> },
                                 { id: 'paid', label: 'Pagos', icon: <CheckCircle2 size={14} /> },
                                 { id: 'registered', label: 'Pendientes', icon: <Clock size={14} /> },
-                                { id: 'guests', label: 'Invitados', icon: <User size={14} /> }
+                                { id: 'guests', label: 'Invitados', icon: <User size={14} /> },
+                                { id: 'companions', label: 'Acompañantes', icon: <Users size={14} /> }
                             ].map(filter => (
                                 <button
                                     key={filter.id}
@@ -718,12 +727,24 @@ const TournamentParticipants: React.FC = () => {
                                                     INVITADO
                                                 </span>
                                             )}
+                                            {p.is_companion && (
+                                                <span style={{ fontSize: '8px', background: 'rgba(56, 189, 248, 0.15)', color: '#38bdf8', padding: '2px 6px', borderRadius: '6px', fontWeight: '900', textTransform: 'uppercase' }}>
+                                                    ACOMPAÑANTE
+                                                </span>
+                                            )}
                                         </div>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                            <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontWeight: '700' }}>HCP: <span style={{ color: 'var(--secondary)' }}>{p.handicap ?? '--'}</span></span>
-                                            <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontWeight: '700' }}>ID: <span style={{ color: 'white' }}>{p.federation_code ?? '--'}</span></span>
+                                            {!p.is_companion && (
+                                                <>
+                                                    <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontWeight: '700' }}>HCP: <span style={{ color: 'var(--secondary)' }}>{p.handicap ?? '--'}</span></span>
+                                                    <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontWeight: '700' }}>ID: <span style={{ color: 'white' }}>{p.federation_code ?? '--'}</span></span>
+                                                </>
+                                            )}
+                                            {p.is_companion && (
+                                                <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontWeight: '700' }}>Acompañante de Jugador</span>
+                                            )}
                                         </div>
-                                        {(p.registration_status === 'paid' || p.registration_status === 'Confirmado') && !p.is_guest && (
+                                        {(p.registration_status === 'paid' || p.registration_status === 'Confirmado') && (
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '4px' }}>
                                                 <div style={{ background: 'var(--secondary)', color: 'var(--primary)', fontSize: '8px', fontWeight: '950', padding: '1px 6px', borderRadius: '5px', textTransform: 'uppercase' }}>PAGADO</div>
                                                 {p.payment_date && (
