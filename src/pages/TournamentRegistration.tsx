@@ -190,7 +190,7 @@ const TournamentRegistration: React.FC = () => {
             flexDirection: 'column',
             overflow: 'hidden',
             width: '100%',
-            maxWidth: '600px',
+            maxWidth: '1200px',
             margin: '0 auto',
             position: 'relative',
             borderLeft: '1px solid rgba(255,255,255,0.05)',
@@ -304,7 +304,7 @@ const TournamentRegistration: React.FC = () => {
             </div>
 
             <div style={{
-                padding: '5px 25px 20px',
+                padding: '20px 25px 40px',
                 position: 'relative',
                 zIndex: 10,
                 flex: 1,
@@ -313,7 +313,15 @@ const TournamentRegistration: React.FC = () => {
                 overflowY: 'auto',
                 background: 'transparent'
             }}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '30px', paddingBottom: '30px' }}>
+                <div style={{ 
+                    display: 'grid', 
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', 
+                    gap: '40px', 
+                    maxWidth: '1200px',
+                    margin: '0 auto',
+                    width: '100%'
+                }}>
+
 
                     {/* TOURNAMENT INFORMATION SECTION - NOW AT THE TOP */}
                     <div className="animate-fade-up">
@@ -371,31 +379,14 @@ const TournamentRegistration: React.FC = () => {
                                 alignItems: 'center',
                                 gap: '6px',
                                 background: 'rgba(255,255,255,0.03)',
-                                border: '1px solid rgba(255,255,255,0.05)'
+                                border: '1px solid rgba(255,255,255,0.05)',
+                                gridColumn: 'span 2'
                             }}>
                                 <Trophy size={14} color="var(--secondary)" />
                                 <div style={{ textAlign: 'center' }}>
-                                    <span style={{ fontSize: '8px', color: 'rgba(255,255,255,0.4)', fontWeight: '900', letterSpacing: '1px', display: 'block' }}>MODO</span>
-                                    <div style={{ color: 'white', fontSize: '11px', fontWeight: '950', textTransform: 'uppercase' }}>
-                                        {tournament.game_mode?.split(' ')[0]}
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="glass" style={{
-                                padding: '15px 10px',
-                                borderRadius: '20px',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'center',
-                                gap: '6px',
-                                background: 'rgba(255,255,255,0.03)',
-                                border: '1px solid rgba(255,255,255,0.05)'
-                            }}>
-                                <Users size={14} color="var(--secondary)" />
-                                <div style={{ textAlign: 'center' }}>
-                                    <span style={{ fontSize: '8px', color: 'rgba(255,255,255,0.4)', fontWeight: '900', letterSpacing: '1px', display: 'block' }}>INSCRITOS</span>
-                                    <div style={{ color: 'white', fontSize: '12px', fontWeight: '950' }}>
-                                        {(tournament.registrations?.[0]?.count || 0)} PERSONAS
+                                    <span style={{ fontSize: '8px', color: 'rgba(255,255,255,0.4)', fontWeight: '900', letterSpacing: '1px', display: 'block' }}>MODO DE JUEGO</span>
+                                    <div style={{ color: 'white', fontSize: '13px', fontWeight: '950', textTransform: 'uppercase' }}>
+                                        {tournament.game_mode || 'Individual Medal Play'}
                                     </div>
                                 </div>
                             </div>
@@ -421,8 +412,6 @@ const TournamentRegistration: React.FC = () => {
                             </div>
                         )}
                     </div>
-
-                    <div style={{ height: '1px', background: 'rgba(255,255,255,0.05)', margin: '10px 0' }} />
 
                     {/* INSCRIPCIÓN SECTION - NOW BELOW INFO */}
                     <div className="animate-fade-up">
@@ -602,9 +591,11 @@ const TournamentRegistration: React.FC = () => {
                     {registering ? <Loader2 className="animate-spin" size={24} /> :
                         isRegistered ? 'INSCRIPCIÓN COMPLETADA' : 'INSCRIBIRME AHORA'}
                 </button>
-            </div>
+            </div> 
         </div>
-    );
+    </div>
+</div>
+);
 };
 
 export default TournamentRegistration;

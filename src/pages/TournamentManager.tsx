@@ -319,7 +319,10 @@ const TournamentManager: React.FC = () => {
         prizes: [] as { id: string, name: string }[],
         guests: [] as { id: string, name: string, federation_code: string }[],
         current_participants: 0,
-        paid_participants: 0
+        paid_participants: 0,
+        payment_method: 'Nequi',
+        payment_phone: '',
+        payment_key: ''
     });
 
     const formatPrice = (val: string) => {
@@ -490,6 +493,9 @@ const TournamentManager: React.FC = () => {
                         sponsors: formData.sponsors.map(s => s.name).filter(Boolean).join('\n'),
                         prizes: formData.prizes.map(p => p.name).filter(Boolean).join('\n'),
                         guests: formData.guests.map(g => `${g.name}|${g.federation_code || ''}`).filter(Boolean).join('\n'),
+                        payment_method: formData.payment_method,
+                        payment_phone: formData.payment_phone,
+                        payment_key: formData.payment_key,
                         approval_status: tournaments.find(t => t.id === editingId)?.approval_status || 'pending',
                         updated_at: new Date().toISOString()
                     })
@@ -597,7 +603,10 @@ const TournamentManager: React.FC = () => {
             prizes: [],
             guests: [],
             current_participants: 0,
-            paid_participants: 0
+            paid_participants: 0,
+            payment_method: 'Nequi',
+            payment_phone: '',
+            payment_key: ''
         });
         setEditingId(null);
     };
@@ -636,7 +645,10 @@ const TournamentManager: React.FC = () => {
                 })
                 : [],
             current_participants: tournament.current_participants || 0,
-            paid_participants: tournament.paid_participants || 0
+            paid_participants: tournament.paid_participants || 0,
+            payment_method: (tournament as any).payment_method || 'Nequi',
+            payment_phone: (tournament as any).payment_phone || '',
+            payment_key: (tournament as any).payment_key || ''
         });
         setEditingId(tournament.id);
         setShowForm(true);
@@ -908,6 +920,52 @@ const TournamentManager: React.FC = () => {
                                                                     required
                                                                 />
                                                             </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="glass" style={{ padding: '20px', borderRadius: '24px', background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.05)', marginBottom: '25px', marginTop: '20px' }}>
+                                                        <h4 style={{ fontSize: '12px', fontWeight: '900', color: 'var(--secondary)', marginBottom: '15px', textTransform: 'uppercase', letterSpacing: '1px' }}>Información de Pago para Inscritos</h4>
+                                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '15px' }}>
+                                                            <div className="input-group">
+                                                                <label style={{ fontSize: '11px', fontWeight: '800', marginBottom: '8px', display: 'block', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>Método de Pago</label>
+                                                                <select
+                                                                    value={formData.payment_method}
+                                                                    onChange={(e) => setFormData({ ...formData, payment_method: e.target.value })}
+                                                                    className="form-input"
+                                                                    style={{ background: 'rgba(255,255,255,0.05)', color: 'white' }}
+                                                                >
+                                                                    <option value="Nequi">Nequi</option>
+                                                                    <option value="Llave BreB">Llave BreB</option>
+                                                                </select>
+                                                            </div>
+
+                                                            {formData.payment_method === 'Nequi' && (
+                                                                <div className="input-group">
+                                                                    <label style={{ fontSize: '11px', fontWeight: '800', marginBottom: '8px', display: 'block', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>Celular Nequi</label>
+                                                                    <input
+                                                                        type="text"
+                                                                        value={formData.payment_phone}
+                                                                        onChange={(e) => setFormData({ ...formData, payment_phone: e.target.value })}
+                                                                        className="form-input"
+                                                                        placeholder="Ej: 300 123 4567"
+                                                                        style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }}
+                                                                    />
+                                                                </div>
+                                                            )}
+
+                                                            {formData.payment_method === 'Llave BreB' && (
+                                                                <div className="input-group">
+                                                                    <label style={{ fontSize: '11px', fontWeight: '800', marginBottom: '8px', display: 'block', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>Llave BreB</label>
+                                                                    <input
+                                                                        type="text"
+                                                                        value={formData.payment_key}
+                                                                        onChange={(e) => setFormData({ ...formData, payment_key: e.target.value })}
+                                                                        className="form-input"
+                                                                        placeholder="Ingresa la llave de pago"
+                                                                        style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }}
+                                                                    />
+                                                                </div>
+                                                            )}
                                                         </div>
                                                     </div>
 
