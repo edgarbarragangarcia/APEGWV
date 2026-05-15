@@ -22,6 +22,7 @@ interface Tournament {
     rules: string[] | null;
     custom_rules?: string | null;
     registrations?: { count: number }[];
+    notes?: string | null;
     [key: string]: any;
 }
 
@@ -36,6 +37,7 @@ const TournamentRegistration: React.FC = () => {
     const [showSuccess, setShowSuccess] = useState(false);
     const [isRegistered, setIsRegistered] = useState(false);
     const [addGuest, setAddGuest] = useState(false);
+    const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
 
     // Registration form states
     const [player1, setPlayer1] = useState({
@@ -54,11 +56,18 @@ const TournamentRegistration: React.FC = () => {
         type: 'player' as 'player' | 'companion'
     });
 
+    useEffect(() => {
+        const handleResize = () => setWindowWidth(window.innerWidth);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
+    const isMobile = windowWidth < 768;
+
     const fetchData = async () => {
         if (!id) return;
         setLoading(true);
         try {
-            // Fetch tournament details
             const { data: tData, error: tError } = await supabase
                 .from('tournaments')
                 .select(`
@@ -69,10 +78,8 @@ const TournamentRegistration: React.FC = () => {
                 .single();
 
             if (tError) throw tError;
-
             setTournament(tData);
 
-            // Check if user is already registered (if logged in)
             if (user) {
                 const { data: profile } = await supabase
                     .from('profiles')
@@ -100,7 +107,7 @@ const TournamentRegistration: React.FC = () => {
                 if (regData) setIsRegistered(true);
             }
         } catch (err) {
-            console.error('Error fetching tournament:', err);
+            console.error('Error fetching data:', err);
         } finally {
             setLoading(false);
         }
@@ -110,10 +117,19 @@ const TournamentRegistration: React.FC = () => {
         fetchData();
     }, [id, user]);
 
+    const paymentInfo = (() => {
+        if (!tournament?.notes) return null;
+        const matchMethod = tournament.notes.match(/METHOD:(.*?)(?:\n|$)/);
+        const matchPhone = tournament.notes.match(/PHONE:(.*?)(?:\n|$)/);
+        if (!matchMethod && !matchPhone) return null;
+        return {
+            method: matchMethod ? matchMethod[1].trim() : 'Nequi',
+            phone: matchPhone ? matchPhone[1].trim() : ''
+        };
+    })();
+
     const handleRegister = async () => {
         if (isRegistered || !tournament) return;
-
-        // Validation
         if (!player1.name || !player1.email) {
             alert('Por favor completa los campos del jugador principal.');
             return;
@@ -124,7 +140,7 @@ const TournamentRegistration: React.FC = () => {
             const registrations = [
                 {
                     tournament_id: tournament.id,
-                    user_id: user?.id || null, // Allow null for non-logged in users
+                    user_id: user?.id || null, 
                     registration_status: 'registered',
                     player_name: player1.name,
                     player_email: player1.email,
@@ -138,7 +154,7 @@ const TournamentRegistration: React.FC = () => {
                 const isCompanion = player2.type === 'companion';
                 registrations.push({
                     tournament_id: tournament.id,
-                    user_id: user?.id || null, // Same user_id to link companion to player
+                    user_id: user?.id || null,
                     registration_status: 'registered',
                     player_name: player2.name,
                     player_email: player2.email,
@@ -153,291 +169,180 @@ const TournamentRegistration: React.FC = () => {
                 .insert(registrations);
 
             if (error) throw error;
-
             setIsRegistered(true);
             setShowSuccess(true);
             if (navigator.vibrate) navigator.vibrate([50, 30, 50]);
         } catch (err) {
             console.error('Error registering:', err);
-            alert('Hubo un error al procesar tu inscripción. Por favor intenta de nuevo.');
+            alert('Hubo un error al procesar tu inscripción.');
         } finally {
             setRegistering(false);
         }
     };
 
-    if (loading) {
+    if (loading || !tournament) {
         return (
-            <div className="animate-fade" style={{ background: 'var(--primary)', minHeight: '100dvh', padding: '20px' }}>
-                <Skeleton height="200px" borderRadius="30px" style={{ marginBottom: '20px' }} />
+            <div style={{ minHeight: '100vh', background: 'var(--primary)', padding: '20px' }}>
+                <Skeleton width="100%" height="200px" borderRadius="30px" style={{ marginBottom: '20px' }} />
                 <Skeleton width="60%" height="30px" style={{ marginBottom: '10px' }} />
-                <Skeleton width="40%" height="20px" style={{ marginBottom: '20px' }} />
-                <Skeleton height="100px" borderRadius="20px" />
-            </div>
-        );
-    }
-
-    if (!tournament) {
-        return (
-            <div style={{ padding: '40px', textAlign: 'center', color: 'white' }}>
-                <h2>Torneo no encontrado</h2>
-                <button onClick={() => navigate('/')} className="btn-primary" style={{ marginTop: '20px' }}>Ir al Inicio</button>
+                <Skeleton width="40%" height="20px" />
             </div>
         );
     }
 
     return (
-        <div className="animate-fade golf-premium-bg" style={{
-            height: '100dvh',
+        <div style={{
+            minHeight: '100vh',
+            background: 'var(--primary)',
+            color: 'white',
             display: 'flex',
             flexDirection: 'column',
-            overflow: 'hidden',
-            width: '100%',
             maxWidth: '1200px',
             margin: '0 auto',
-            position: 'relative',
             borderLeft: '1px solid rgba(255,255,255,0.05)',
             borderRight: '1px solid rgba(255,255,255,0.05)',
             boxShadow: '0 0 50px rgba(0,0,0,0.3)'
         }}>
-            {/* Success Modal */}
             <AnimatePresence>
                 {showSuccess && (
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
+                        className="glass"
                         style={{
                             position: 'fixed',
                             inset: 0,
-                            zIndex: 2000,
-                            background: 'rgba(0,0,0,0.85)',
+                            zIndex: 100,
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
                             padding: '20px',
+                            background: 'rgba(0,0,0,0.8)',
                             backdropFilter: 'blur(10px)'
                         }}
                     >
                         <motion.div
-                            initial={{ scale: 0.9, opacity: 0, y: 20 }}
-                            animate={{ scale: 1, opacity: 1, y: 0 }}
+                            initial={{ scale: 0.9, y: 20 }}
+                            animate={{ scale: 1, y: 0 }}
                             style={{
-                                background: 'linear-gradient(135deg, #123B2A 0%, #062e24 100%)',
+                                background: 'linear-gradient(135deg, rgba(10,31,25,0.95), rgba(5,15,12,0.95))',
                                 padding: '40px 30px',
-                                borderRadius: '40px',
-                                width: '100%',
-                                maxWidth: '400px',
-                                textAlign: 'center',
+                                borderRadius: '30px',
                                 border: '1px solid rgba(163, 230, 53, 0.2)',
-                                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
+                                textAlign: 'center',
+                                maxWidth: '400px',
+                                width: '100%'
                             }}
                         >
                             <div style={{
-                                width: '100px', height: '100px',
-                                background: 'rgba(163, 230, 53, 0.1)',
+                                width: '80px',
+                                height: '80px',
                                 borderRadius: '50%',
+                                background: 'rgba(163, 230, 53, 0.1)',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
                                 margin: '0 auto 25px',
-                                border: '2px solid var(--secondary)'
+                                color: 'var(--secondary)'
                             }}>
-                                <CheckCircle2 size={50} color="var(--secondary)" />
+                                <Trophy size={40} />
                             </div>
-                            <h2 style={{ fontSize: '24px', fontWeight: '900', color: 'white', marginBottom: '15px' }}>¡Inscripción Exitosa!</h2>
-                            <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '15px', lineHeight: '1.6', marginBottom: '30px' }}>
-                                Gracias por inscribirte en <strong>{tournament.name}</strong>. Te esperamos en el campo.
+                            <h2 style={{ fontSize: '28px', fontWeight: '900', color: 'white', marginBottom: '15px' }}>¡INSCRIPCIÓN EXITOSA!</h2>
+                            <p style={{ color: 'rgba(255,255,255,0.6)', lineHeight: '1.6', marginBottom: '30px' }}>
+                                Tu solicitud ha sido procesada. En breve recibirás un correo con los detalles del evento.
                             </p>
                             <button
-                                onClick={() => setShowSuccess(false)}
+                                onClick={() => navigate('/my-events')}
                                 className="btn-primary"
-                                style={{ width: '100%' }}
+                                style={{ width: '100%', padding: '16px', borderRadius: '20px', fontWeight: '900' }}
                             >
-                                CONTINUAR
+                                VER MIS EVENTOS
                             </button>
                         </motion.div>
                     </motion.div>
                 )}
             </AnimatePresence>
 
-            {/* Header Content AREA - Reduced for Single Page Feel */}
-            <div style={{ position: 'relative', height: '15vh', flexShrink: 0, overflow: 'hidden' }}>
+            <div style={{ position: 'relative', height: '18vh', flexShrink: 0, overflow: 'hidden' }}>
                 <img
                     src={tournament.image_url || 'https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?q=80&w=1000'}
-                    style={{
-                        width: '100%',
-                        height: '100%',
-                        objectFit: 'cover',
-                        opacity: 0.5
-                    }}
-                    alt={tournament.name}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.4 }}
+                    alt=""
                 />
-                <div style={{
-                    position: 'absolute',
-                    inset: 0,
-                    background: 'linear-gradient(to bottom, rgba(14, 47, 31, 0.3) 0%, var(--primary) 100%)',
-                    backdropFilter: 'blur(1px)'
-                }} />
-
-                <div style={{ position: 'absolute', bottom: '15px', left: '25px', right: '25px' }}>
-                    <div style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '6px',
-                        background: 'rgba(163, 230, 53, 0.15)',
-                        padding: '4px 10px',
-                        borderRadius: '10px',
-                        color: 'var(--secondary)',
-                        fontSize: '10px',
-                        fontWeight: '800',
-                        marginBottom: '8px',
-                        backdropFilter: 'blur(10px)',
-                        border: '1px solid rgba(163, 230, 53, 0.2)'
+                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent, var(--primary))' }} />
+                <div style={{ position: 'absolute', bottom: '20px', left: '25px' }}>
+                    <div className="glass" style={{
+                        display: 'inline-flex', alignItems: 'center', gap: '6px',
+                        padding: '4px 10px', borderRadius: '8px', background: 'rgba(163, 230, 53, 0.1)',
+                        border: '1px solid rgba(163, 230, 53, 0.2)', marginBottom: '8px'
                     }}>
-                        <Trophy size={12} /> TORNEO OFICIAL
+                        <Trophy size={10} color="var(--secondary)" />
+                        <span style={{ fontSize: '8px', fontWeight: '900', color: 'var(--secondary)', letterSpacing: '1px' }}>TORNEO OFICIAL</span>
                     </div>
-                    <h1 style={{ fontSize: '24px', fontWeight: '950', color: 'white', letterSpacing: '-1px', marginBottom: '2px', lineHeight: '1' }}>
-                        {tournament.name}
-                    </h1>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'rgba(255,255,255,0.5)', fontSize: '11px' }}>
-                        <MapPin size={12} color="var(--secondary)" />
-                        {tournament.club}
+                    <h1 style={{ fontSize: '24px', fontWeight: '950', margin: 0, color: 'white', letterSpacing: '-0.5px' }}>{tournament.name}</h1>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'rgba(255,255,255,0.5)', fontSize: '11px', marginTop: '4px' }}>
+                        <MapPin size={12} color="var(--secondary)" /> {tournament.club}
                     </div>
                 </div>
             </div>
 
-            <div style={{
-                flex: 1,
-                overflowY: addGuest ? 'auto' : 'hidden', // Only scroll if adding guest
-                padding: '15px 25px',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '15px'
-            }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1.8fr', gap: '30px' }}>
-                    <div className="animate-fade-right">
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '15px' }}>
+            <div style={{ flex: 1, overflowY: 'auto', padding: '15px 25px', display: 'flex', flexDirection: 'column', gap: '30px' }}>
+                <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '30px' }}>
+                    
+                    {/* Left: Info */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', width: '100%', maxWidth: isMobile ? '100%' : '350px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '5px' }}>
                             <div style={{ width: '4px', height: '16px', background: 'var(--secondary)', borderRadius: '10px' }} />
                             <h3 style={{ fontSize: '12px', fontWeight: '900', color: 'white', letterSpacing: '1px', margin: 0 }}>INFORMACIÓN DEL TORNEO</h3>
                         </div>
 
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '15px' }}>
-                            <div className="glass" style={{
-                                padding: '12px',
-                                borderRadius: '20px',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                gap: '6px',
-                                background: 'rgba(255,255,255,0.03)',
-                                border: '1px solid rgba(255,255,255,0.05)',
-                                height: '85px'
-                            }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                            <div className="glass" style={{ padding: '12px', borderRadius: '20px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', height: '85px', justifyContent: 'center' }}>
                                 <Calendar size={16} color="var(--secondary)" />
                                 <div style={{ textAlign: 'center' }}>
-                                    <span style={{ fontSize: '9px', color: 'rgba(255,255,255,0.4)', fontWeight: '900', letterSpacing: '1.5px', display: 'block', marginBottom: '2px' }}>FECHA</span>
-                                    <div style={{ color: 'var(--secondary)', fontSize: '14px', fontWeight: '950' }}>
-                                        {(() => {
-                                            const d = new Date(tournament.date);
-                                            d.setMinutes(d.getMinutes() + d.getTimezoneOffset());
-                                            return d.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
-                                        })()}
-                                    </div>
+                                    <span style={{ fontSize: '9px', color: 'rgba(255,255,255,0.4)', fontWeight: '900', letterSpacing: '1.5px', display: 'block' }}>FECHA</span>
+                                    <div style={{ color: 'var(--secondary)', fontSize: '12px', fontWeight: '950' }}>{new Date(tournament.date).toLocaleDateString('es-ES')}</div>
                                 </div>
                             </div>
-                            <div className="glass" style={{
-                                padding: '12px',
-                                borderRadius: '20px',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                gap: '6px',
-                                background: 'rgba(163, 230, 53, 0.03)',
-                                border: '1px solid rgba(163, 230, 53, 0.1)',
-                                height: '85px'
-                            }}>
-                                <span style={{ color: 'var(--secondary)', fontWeight: '950', fontSize: '16px', lineHeight: '1' }}>$</span>
+                            <div className="glass" style={{ padding: '12px', borderRadius: '20px', background: 'rgba(163, 230, 53, 0.03)', border: '1px solid rgba(163, 230, 53, 0.1)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', height: '85px', justifyContent: 'center' }}>
+                                <span style={{ color: 'var(--secondary)', fontWeight: '950', fontSize: '16px' }}>$</span>
                                 <div style={{ textAlign: 'center' }}>
-                                    <span style={{ fontSize: '9px', color: 'rgba(255,255,255,0.4)', fontWeight: '900', letterSpacing: '1.5px', display: 'block', marginBottom: '2px' }}>VALOR</span>
-                                    <div style={{ color: 'var(--secondary)', fontSize: '14px', fontWeight: '950' }}>
-                                        {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(tournament.price)}
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="glass" style={{
-                                padding: '10px',
-                                borderRadius: '16px',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'center',
-                                gap: '4px',
-                                background: 'rgba(255,255,255,0.03)',
-                                border: '1px solid rgba(255,255,255,0.05)',
-                                gridColumn: 'span 2'
-                            }}>
-                                <Trophy size={12} color="var(--secondary)" />
-                                <div style={{ textAlign: 'center' }}>
-                                    <span style={{ fontSize: '7px', color: 'rgba(255,255,255,0.4)', fontWeight: '900', letterSpacing: '1px', display: 'block' }}>MODO DE JUEGO</span>
-                                    <div style={{ color: 'white', fontSize: '11px', fontWeight: '950', textTransform: 'uppercase' }}>
-                                        {tournament.game_mode || 'Individual Medal Play'}
-                                    </div>
+                                    <span style={{ fontSize: '9px', color: 'rgba(255,255,255,0.4)', fontWeight: '900', letterSpacing: '1.5px', display: 'block' }}>VALOR</span>
+                                    <div style={{ color: 'var(--secondary)', fontSize: '12px', fontWeight: '950' }}>{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(tournament.price)}</div>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="glass" style={{ padding: '12px 15px', borderRadius: '20px', background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.05)', marginBottom: '15px' }}>
-                            <h4 style={{ fontSize: '11px', fontWeight: '900', color: 'white', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                <ShieldCheck size={14} color="var(--secondary)" /> DETALLES DEL EVENTO
-                            </h4>
-                            <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '11px', lineHeight: '1.4', fontWeight: '500' }}>
-                                {tournament.description || 'Disfruta de una jornada única de golf diseñada para los amantes del deporte y la comunidad APEG.'}
-                            </p>
-                        </div>
-                        
-                        {/* REGLAMENTO SECTION - Compact */}
-                        {(tournament.rules?.length || tournament.custom_rules) && (
-                            <div className="glass" style={{ padding: '12px 15px', borderRadius: '20px', background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.05)', marginBottom: '15px' }}>
-                                <h4 style={{ fontSize: '11px', fontWeight: '900', color: 'white', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                    <ShieldCheck size={14} color="var(--secondary)" /> REGLAMENTO Y CONDICIONES
+                        {paymentInfo && (
+                            <div className="glass" style={{ 
+                                padding: '15px', 
+                                borderRadius: '20px', 
+                                background: 'rgba(163, 230, 53, 0.05)', 
+                                border: '1px solid rgba(163, 230, 53, 0.2)',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: '10px'
+                            }}>
+                                <h4 style={{ fontSize: '10px', fontWeight: '900', color: 'var(--secondary)', letterSpacing: '1px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <CheckCircle2 size={14} /> INFORMACIÓN DE PAGO
                                 </h4>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                    {tournament.rules?.slice(0, 3).map((rule: string, idx: number) => (
-                                        <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', color: 'rgba(255,255,255,0.5)', fontSize: '10px', lineHeight: '1.3' }}>
-                                            <CheckCircle2 size={12} color="var(--secondary)" style={{ marginTop: '1px', flexShrink: 0 }} />
-                                            {rule}
-                                        </div>
-                                    ))}
-                                    {tournament.custom_rules && (
-                                        <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '10px', lineHeight: '1.4', whiteSpace: 'pre-wrap' }}>
-                                            {tournament.custom_rules}
-                                        </p>
-                                    )}
-                                </div>
-                            </div>
-                        )}
-
-                        {/* SPONSORS SECTION - More compact */}
-                        {tournament.sponsors && (
-                            <div style={{ marginBottom: '15px' }}>
-                                <h4 style={{ fontSize: '8px', fontWeight: '900', color: 'rgba(255,255,255,0.2)', marginBottom: '8px', textAlign: 'center', letterSpacing: '1.5px' }}>
-                                    PATROCINADO POR
-                                </h4>
-                                <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '15px', opacity: 0.5 }}>
-                                    {tournament.sponsors.split('\n').filter(Boolean).map((sponsor: string, idx: number) => (
-                                        <span key={idx} style={{ color: 'white', fontSize: '11px', fontWeight: '950', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
-                                            {sponsor}
-                                        </span>
-                                    ))}
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <div>
+                                        <span style={{ fontSize: '8px', color: 'rgba(255,255,255,0.4)', fontWeight: '800', display: 'block' }}>MÉTODO</span>
+                                        <span style={{ color: 'white', fontSize: '13px', fontWeight: '800' }}>{paymentInfo.method}</span>
+                                    </div>
+                                    <div style={{ textAlign: 'right' }}>
+                                        <span style={{ fontSize: '8px', color: 'rgba(255,255,255,0.4)', fontWeight: '800', display: 'block' }}>CELULAR / CUENTA</span>
+                                        <span style={{ color: 'var(--secondary)', fontSize: '13px', fontWeight: '900' }}>{paymentInfo.phone}</span>
+                                    </div>
                                 </div>
                             </div>
                         )}
                     </div>
 
-                    {/* INSCRIPCIÓN SECTION - Now BELOW INFO */}
-                    <div className="animate-fade-up">
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '15px' }}>
+                    {/* Right: Registration Form */}
+                    <div style={{ flex: 1, width: '100%', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '5px' }}>
                             <div style={{ width: '4px', height: '16px', background: 'var(--secondary)', borderRadius: '10px' }} />
                             <h3 style={{ fontSize: '12px', fontWeight: '900', color: 'white', letterSpacing: '1px', margin: 0 }}>DATOS DE INSCRIPCIÓN</h3>
                         </div>
@@ -446,16 +351,7 @@ const TournamentRegistration: React.FC = () => {
                             {/* Player 1 Information */}
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                                 <label style={{ fontSize: '8px', fontWeight: '900', color: 'var(--secondary)', marginLeft: '12px', letterSpacing: '1.5px', textTransform: 'uppercase' }}>Nombre del Jugador</label>
-                                <div className="glass" style={{
-                                    padding: '12px 18px',
-                                    borderRadius: '18px',
-                                    border: '1px solid rgba(255,255,255,0.08)',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '12px',
-                                    background: 'rgba(255,255,255,0.04)',
-                                    backdropFilter: 'blur(10px)'
-                                }}>
+                                <div className="glass" style={{ padding: '12px 18px', borderRadius: '18px', border: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(10px)' }}>
                                     <Trophy size={16} color="var(--secondary)" style={{ opacity: 0.7 }} />
                                     <input
                                         type="text"
@@ -467,7 +363,7 @@ const TournamentRegistration: React.FC = () => {
                                 </div>
                             </div>
 
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '15px' }}>
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                                     <label style={{ fontSize: '8px', fontWeight: '900', color: 'var(--secondary)', marginLeft: '12px', letterSpacing: '1.5px' }}>HÁNDICAP</label>
                                     <div className="glass" style={{ padding: '12px 18px', borderRadius: '18px', border: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(10px)' }}>
@@ -496,7 +392,7 @@ const TournamentRegistration: React.FC = () => {
                                 </div>
                             </div>
 
-                            <div style={{ display: 'grid', gridTemplateColumns: '1.3fr 1fr', gap: '15px' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1.3fr 1fr', gap: '15px' }}>
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                                     <label style={{ fontSize: '8px', fontWeight: '900', color: 'var(--secondary)', marginLeft: '12px', letterSpacing: '1.5px' }}>CORREO ELECTRÓNICO</label>
                                     <div className="glass" style={{ padding: '12px 18px', borderRadius: '18px', border: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(10px)' }}>
@@ -527,7 +423,7 @@ const TournamentRegistration: React.FC = () => {
                             </div>
                         </div>
 
-                        {/* Guest Toggle - More compact */}
+                        {/* Guest Toggle */}
                         <div
                             onClick={() => setAddGuest(!addGuest)}
                             style={{
@@ -557,11 +453,10 @@ const TournamentRegistration: React.FC = () => {
                                     initial={{ opacity: 0, height: 0 }}
                                     animate={{ opacity: 1, height: 'auto' }}
                                     exit={{ opacity: 0, height: 0 }}
-                                    style={{ marginTop: '25px', display: 'flex', flexDirection: 'column', gap: '20px', overflow: 'hidden' }}
+                                    style={{ display: 'flex', flexDirection: 'column', gap: '20px', overflow: 'hidden' }}
                                 >
                                     <h2 style={{ fontSize: '16px', fontWeight: '900', color: 'var(--secondary)', marginBottom: '5px' }}>DATOS DEL INVITADO</h2>
                                     
-                                    {/* Selector de Tipo de Invitado */}
                                     <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
                                         <button
                                             type="button"
@@ -570,12 +465,11 @@ const TournamentRegistration: React.FC = () => {
                                                 flex: 1,
                                                 padding: '12px',
                                                 borderRadius: '15px',
-                                                background: player2.type === 'player' ? 'rgba(163, 230, 53, 0.2)' : 'rgba(255,255,255,0.02)',
+                                                background: player2.type === 'player' ? 'rgba(163, 230, 53, 0.2)' : 'rgba(255,255,255,0.04)',
                                                 border: `1px solid ${player2.type === 'player' ? 'var(--secondary)' : 'rgba(255,255,255,0.1)'}`,
                                                 color: player2.type === 'player' ? 'var(--secondary)' : 'rgba(255,255,255,0.5)',
                                                 fontSize: '12px',
-                                                fontWeight: '800',
-                                                transition: 'all 0.3s ease'
+                                                fontWeight: '800'
                                             }}
                                         >
                                             JUGADOR
@@ -591,8 +485,7 @@ const TournamentRegistration: React.FC = () => {
                                                 border: `1px solid ${player2.type === 'companion' ? 'var(--secondary)' : 'rgba(255,255,255,0.1)'}`,
                                                 color: player2.type === 'companion' ? 'var(--secondary)' : 'rgba(255,255,255,0.5)',
                                                 fontSize: '12px',
-                                                fontWeight: '800',
-                                                transition: 'all 0.3s ease'
+                                                fontWeight: '800'
                                             }}
                                         >
                                             ACOMPAÑANTE
@@ -667,7 +560,6 @@ const TournamentRegistration: React.FC = () => {
 
             <div style={{
                 paddingTop: '5px',
-                backgroundColor: 'transparent',
                 flexShrink: 0,
                 padding: '0 25px 15px'
             }}>
@@ -679,10 +571,9 @@ const TournamentRegistration: React.FC = () => {
                         width: '100%',
                         padding: '16px',
                         fontSize: '14px',
-                        height: 'auto',
                         boxShadow: '0 10px 30px rgba(163, 230, 53, 0.15)',
                         background: isRegistered ? 'rgba(255,255,255,0.05)' : 'var(--secondary)',
-                        color: isRegistered ? 'var(--text-dim)' : 'var(--primary)',
+                        color: isRegistered ? 'rgba(255,255,255,0.4)' : 'var(--primary)',
                         border: isRegistered ? '1px solid rgba(255,255,255,0.1)' : 'none',
                         borderRadius: '20px',
                         fontWeight: '950',
