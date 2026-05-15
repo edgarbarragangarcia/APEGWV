@@ -130,7 +130,7 @@ const TournamentCard = ({ tourney, onEdit, isAdmin, onApprove }: { tourney: Tour
 
             <div style={{
                 position: 'relative',
-                background: 'rgba(255,b255,b255,0.01)',
+                background: 'rgba(255,255,255,0.01)',
                 borderRadius: '28px',
                 overflow: 'hidden',
                 boxShadow: '0 20px 40px rgba(0,0,0,0.3)',
@@ -272,6 +272,7 @@ const TournamentManager: React.FC = () => {
     const [activeTab, setActiveTab] = useState<'pending' | 'approved'>('approved');
 
     // Collapsible sections state
+    const [showBasicInfo, setShowBasicInfo] = useState(true);
     const [showBudgetSection, setShowBudgetSection] = useState(false);
     const [showAccountingSection, setShowAccountingSection] = useState(false);
     const [showRulesSection, setShowRulesSection] = useState(false);
@@ -818,239 +819,272 @@ const TournamentManager: React.FC = () => {
                         >
 
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                                <div className="input-group">
-                                    <label style={{ fontSize: '11px', fontWeight: '800', marginBottom: '8px', display: 'block', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Nombre del Torneo*</label>
-                                    <input
-                                        type="text"
-                                        value={formData.name}
-                                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                        className="form-input"
-                                        style={{
-                                            background: 'rgba(255,255,255,0.03)',
-                                            border: '1px solid rgba(255,255,255,0.1)',
-                                            padding: '16px',
-                                            fontSize: '15px'
-                                        }}
-                                        placeholder="Ej: Copa Diamante 2024"
-                                        required
-                                    />
-                                </div>
-
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
-                                    <div className="input-group">
-                                        <label style={{ fontSize: '11px', fontWeight: '800', marginBottom: '8px', display: 'block', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Club o Lugar*</label>
-                                        <div style={{ position: 'relative' }}>
-                                            <MapPin size={16} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--secondary)' }} />
-                                            <input
-                                                type="text"
-                                                value={formData.club}
-                                                onChange={(e) => setFormData({ ...formData, club: e.target.value })}
-                                                className="form-input with-icon"
-                                                style={{
-                                                    background: 'rgba(255,255,255,0.03)',
-                                                    border: '1px solid rgba(255,255,255,0.1)',
-                                                    padding: '16px 16px 16px 45px',
-                                                    fontSize: '15px'
-                                                }}
-                                                placeholder="Ej: Club Campestre"
-                                                required
-                                            />
+                                {/* Basic Information Section */}
+                                <div style={{ marginTop: '0px', padding: '15px', background: 'rgba(255,255,255,0.03)', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                    <div
+                                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}
+                                        onClick={() => setShowBasicInfo(!showBasicInfo)}
+                                    >
+                                        <h3 style={{ fontSize: '14px', fontWeight: '900', color: 'var(--secondary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            <div style={{ width: '20px', height: '20px', borderRadius: '6px', background: 'var(--secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                <Trophy size={12} color="var(--primary)" />
+                                            </div>
+                                            Información Básica
+                                        </h3>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                            {showBasicInfo ? <ChevronUp size={20} color="var(--text-dim)" /> : <ChevronDown size={20} color="var(--text-dim)" />}
                                         </div>
                                     </div>
-                                    <div className="input-group">
-                                        <label style={{ fontSize: '11px', fontWeight: '800', marginBottom: '8px', display: 'block', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Fecha*</label>
-                                        <div style={{ position: 'relative' }}>
-                                            <Calendar size={16} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--secondary)' }} />
-                                            <input
-                                                type="date"
-                                                value={formData.date}
-                                                onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                                                className="form-input with-icon"
-                                                style={{
-                                                    background: 'rgba(255,255,255,0.03)',
-                                                    border: '1px solid rgba(255,255,255,0.1)',
-                                                    padding: '16px 16px 16px 45px',
-                                                    fontSize: '15px'
-                                                }}
-                                                required
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
 
-                                {/* Advanced Fields - Only for Management/Edit Mode */}
-                                {editingId && (
-                                    <>
-                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
-                                            <div className="input-group">
-                                                <label style={{ fontSize: '11px', fontWeight: '800', marginBottom: '8px', display: 'block', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Precio Inscripción</label>
-                                                <div style={{ position: 'relative' }}>
-                                                    <span style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--secondary)', fontWeight: '900', fontSize: '14px' }}>$</span>
-                                                    <input
-                                                        type="text"
-                                                        value={formData.displayPrice}
-                                                        onChange={(e) => {
-                                                            const raw = e.target.value.replace(/\D/g, '');
-                                                            setFormData({ ...formData, price: raw, displayPrice: formatPrice(raw) });
-                                                        }}
-                                                        className="form-input with-icon"
-                                                        style={{
-                                                            background: 'rgba(255,255,255,0.03)',
-                                                            border: '1px solid rgba(255,255,255,0.1)',
-                                                            padding: '16px 16px 16px 35px',
-                                                            fontSize: '15px'
-                                                        }}
-                                                        placeholder="0"
-                                                    />
-                                                </div>
-                                            </div>
-                                            <div className="input-group">
-                                                <label style={{ fontSize: '11px', fontWeight: '800', marginBottom: '8px', display: 'block', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Límite Participantes</label>
-                                                <div style={{ position: 'relative' }}>
-                                                    <Users size={16} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--secondary)' }} />
-                                                    <input
-                                                        type="number"
-                                                        value={formData.participants_limit}
-                                                        onChange={(e) => setFormData({ ...formData, participants_limit: e.target.value })}
-                                                        className="form-input with-icon"
-                                                        style={{
-                                                            background: 'rgba(255,255,255,0.03)',
-                                                            border: '1px solid rgba(255,255,255,0.1)',
-                                                            padding: '16px 16px 16px 45px',
-                                                            fontSize: '15px'
-                                                        }}
-                                                    />
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
-                                            <div className="input-group">
-                                                <label style={{ fontSize: '12px', fontWeight: '800', marginBottom: '5px', display: 'block', color: 'var(--text-dim)' }}>Modo de Juego</label>
-                                                <select
-                                                    value={formData.game_mode}
-                                                    onChange={(e) => setFormData({ ...formData, game_mode: e.target.value })}
-                                                    className="form-input"
-                                                    style={{ background: 'rgba(255,255,255,0.05)', color: 'white' }}
-                                                >
-                                                    <option value="Juego por Golpes">Juego por Golpes</option>
-                                                    <option value="Stableford">Stableford</option>
-                                                    <option value="Match Play">Match Play</option>
-                                                    <option value="Scramble">Scramble</option>
-                                                </select>
-                                            </div>
-                                            <div className="input-group">
-                                                <label style={{ fontSize: '12px', fontWeight: '800', marginBottom: '5px', display: 'block', color: 'var(--text-dim)' }}>Estado del Evento</label>
-                                                <select
-                                                    value={formData.status}
-                                                    onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                                                    className="form-input"
-                                                    style={{ background: 'rgba(255,255,255,0.05)', color: 'white' }}
-                                                >
-                                                    <option value="Borrador">Borrador</option>
-                                                    <option value="Abierto (Inscripciones)">Abierto (Inscripciones)</option>
-                                                    <option value="Cerrado (Inscripciones)">Cerrado (Inscripciones)</option>
-                                                    <option value="Finalizado">Finalizado</option>
-                                                </select>
-                                            </div>
-                                        </div>
-
-                                        {formData.status === 'Abierto (Inscripciones)' && editingId && (
+                                    <AnimatePresence>
+                                        {showBasicInfo && (
                                             <motion.div
-                                                initial={{ opacity: 0, y: -10 }}
-                                                animate={{ opacity: 1, y: 0 }}
-                                                className="glass"
-                                                style={{
-                                                    padding: '16px',
-                                                    borderRadius: '20px',
-                                                    background: 'rgba(163, 230, 53, 0.05)',
-                                                    border: '1px solid rgba(163, 230, 53, 0.2)',
-                                                    marginBottom: '15px'
-                                                }}
+                                                initial={{ height: 0, opacity: 0 }}
+                                                animate={{ height: 'auto', opacity: 1 }}
+                                                exit={{ height: 0, opacity: 0 }}
+                                                style={{ overflow: 'hidden' }}
                                             >
-                                                <label style={{ fontSize: '10px', fontWeight: '950', color: 'var(--secondary)', display: 'block', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                                                    Link Público de Inscripción
-                                                </label>
-                                                <div style={{ display: 'flex', gap: '10px' }}>
-                                                    <div style={{
-                                                        flex: 1,
-                                                        background: 'rgba(0,0,0,0.2)',
-                                                        padding: '10px 14px',
-                                                        borderRadius: '12px',
-                                                        fontSize: '12px',
-                                                        color: 'white',
-                                                        overflow: 'hidden',
-                                                        textOverflow: 'ellipsis',
-                                                        whiteSpace: 'nowrap',
-                                                        border: '1px solid rgba(255,255,255,0.05)',
-                                                        fontFamily: 'monospace'
-                                                    }}>
-                                                        {`https://apegwv.vercel.app/tournament-register/${editingId}`}
+                                                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginTop: '15px' }}>
+                                                    <div className="input-group">
+                                                        <label style={{ fontSize: '11px', fontWeight: '800', marginBottom: '8px', display: 'block', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Nombre del Torneo*</label>
+                                                        <input
+                                                            type="text"
+                                                            value={formData.name}
+                                                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                                            className="form-input"
+                                                            style={{
+                                                                background: 'rgba(255,255,255,0.03)',
+                                                                border: '1px solid rgba(255,255,255,0.1)',
+                                                                padding: '16px',
+                                                                fontSize: '15px'
+                                                            }}
+                                                            placeholder="Ej: Copa Diamante 2024"
+                                                            required
+                                                        />
                                                     </div>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => {
-                                                            const url = `https://apegwv.vercel.app/tournament-register/${editingId}`;
-                                                            navigator.clipboard.writeText(url);
-                                                            setCopied(true);
-                                                            setTimeout(() => setCopied(false), 2000);
-                                                            if (navigator.vibrate) navigator.vibrate(50);
-                                                        }}
-                                                        style={{
-                                                            width: '40px',
-                                                            height: '40px',
-                                                            borderRadius: '12px',
-                                                            background: 'var(--secondary)',
-                                                            color: 'var(--primary)',
-                                                            display: 'flex',
-                                                            alignItems: 'center',
-                                                            justifyContent: 'center',
-                                                            border: 'none',
-                                                            cursor: 'pointer',
-                                                            position: 'relative'
-                                                        }}
-                                                    >
-                                                        <AnimatePresence>
-                                                            {copied ? (
-                                                                <motion.div
-                                                                    key="check"
-                                                                    initial={{ scale: 0, opacity: 0 }}
-                                                                    animate={{ scale: 1, opacity: 1 }}
-                                                                    exit={{ scale: 0, opacity: 0 }}
+
+                                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                                                        <div className="input-group">
+                                                            <label style={{ fontSize: '11px', fontWeight: '800', marginBottom: '8px', display: 'block', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Club o Lugar*</label>
+                                                            <div style={{ position: 'relative' }}>
+                                                                <MapPin size={16} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--secondary)' }} />
+                                                                <input
+                                                                    type="text"
+                                                                    value={formData.club}
+                                                                    onChange={(e) => setFormData({ ...formData, club: e.target.value })}
+                                                                    className="form-input with-icon"
                                                                     style={{
-                                                                        position: 'absolute',
-                                                                        top: '-35px',
-                                                                        background: 'var(--secondary)',
-                                                                        color: 'var(--primary)',
-                                                                        padding: '4px 8px',
-                                                                        borderRadius: '8px',
-                                                                        fontSize: '10px',
-                                                                        fontWeight: '900',
-                                                                        whiteSpace: 'nowrap',
-                                                                        boxShadow: '0 4px 10px rgba(0,0,0,0.3)'
+                                                                        background: 'rgba(255,255,255,0.03)',
+                                                                        border: '1px solid rgba(255,255,255,0.1)',
+                                                                        padding: '16px 16px 16px 45px',
+                                                                        fontSize: '15px'
+                                                                    }}
+                                                                    placeholder="Ej: Club Campestre"
+                                                                    required
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                        <div className="input-group">
+                                                            <label style={{ fontSize: '11px', fontWeight: '800', marginBottom: '8px', display: 'block', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Fecha*</label>
+                                                            <div style={{ position: 'relative' }}>
+                                                                <Calendar size={16} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--secondary)' }} />
+                                                                <input
+                                                                    type="date"
+                                                                    value={formData.date}
+                                                                    onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                                                                    className="form-input with-icon"
+                                                                    style={{
+                                                                        background: 'rgba(255,255,255,0.03)',
+                                                                        border: '1px solid rgba(255,255,255,0.1)',
+                                                                        padding: '16px 16px 16px 45px',
+                                                                        fontSize: '15px'
+                                                                    }}
+                                                                    required
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Advanced Fields - Only for Management/Edit Mode */}
+                                                    {editingId && (
+                                                        <>
+                                                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                                                                <div className="input-group">
+                                                                    <label style={{ fontSize: '11px', fontWeight: '800', marginBottom: '8px', display: 'block', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Precio Inscripción</label>
+                                                                    <div style={{ position: 'relative' }}>
+                                                                        <span style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--secondary)', fontWeight: '900', fontSize: '14px' }}>$</span>
+                                                                        <input
+                                                                            type="text"
+                                                                            value={formData.displayPrice}
+                                                                            onChange={(e) => {
+                                                                                const raw = e.target.value.replace(/\D/g, '');
+                                                                                setFormData({ ...formData, price: raw, displayPrice: formatPrice(raw) });
+                                                                            }}
+                                                                            className="form-input with-icon"
+                                                                            style={{
+                                                                                background: 'rgba(255,255,255,0.03)',
+                                                                                border: '1px solid rgba(255,255,255,0.1)',
+                                                                                padding: '16px 16px 16px 35px',
+                                                                                fontSize: '15px'
+                                                                            }}
+                                                                            placeholder="0"
+                                                                        />
+                                                                    </div>
+                                                                </div>
+                                                                <div className="input-group">
+                                                                    <label style={{ fontSize: '11px', fontWeight: '800', marginBottom: '8px', display: 'block', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Límite Participantes</label>
+                                                                    <div style={{ position: 'relative' }}>
+                                                                        <Users size={16} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--secondary)' }} />
+                                                                        <input
+                                                                            type="number"
+                                                                            value={formData.participants_limit}
+                                                                            onChange={(e) => setFormData({ ...formData, participants_limit: e.target.value })}
+                                                                            className="form-input with-icon"
+                                                                            style={{
+                                                                                background: 'rgba(255,255,255,0.03)',
+                                                                                border: '1px solid rgba(255,255,255,0.1)',
+                                                                                padding: '16px 16px 16px 45px',
+                                                                                fontSize: '15px'
+                                                                            }}
+                                                                        />
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+
+                                                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                                                                <div className="input-group">
+                                                                    <label style={{ fontSize: '12px', fontWeight: '800', marginBottom: '5px', display: 'block', color: 'var(--text-dim)' }}>Modo de Juego</label>
+                                                                    <select
+                                                                        value={formData.game_mode}
+                                                                        onChange={(e) => setFormData({ ...formData, game_mode: e.target.value })}
+                                                                        className="form-input"
+                                                                        style={{ background: 'rgba(255,255,255,0.05)', color: 'white' }}
+                                                                    >
+                                                                        <option value="Juego por Golpes">Juego por Golpes</option>
+                                                                        <option value="Stableford">Stableford</option>
+                                                                        <option value="Match Play">Match Play</option>
+                                                                        <option value="Scramble">Scramble</option>
+                                                                    </select>
+                                                                </div>
+                                                                <div className="input-group">
+                                                                    <label style={{ fontSize: '12px', fontWeight: '800', marginBottom: '5px', display: 'block', color: 'var(--text-dim)' }}>Estado del Evento</label>
+                                                                    <select
+                                                                        value={formData.status}
+                                                                        onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                                                                        className="form-input"
+                                                                        style={{ background: 'rgba(255,255,255,0.05)', color: 'white' }}
+                                                                    >
+                                                                        <option value="Borrador">Borrador</option>
+                                                                        <option value="Abierto (Inscripciones)">Abierto (Inscripciones)</option>
+                                                                        <option value="Cerrado (Inscripciones)">Cerrado (Inscripciones)</option>
+                                                                        <option value="Finalizado">Finalizado</option>
+                                                                    </select>
+                                                                </div>
+                                                            </div>
+
+                                                            {formData.status === 'Abierto (Inscripciones)' && editingId && (
+                                                                <motion.div
+                                                                    initial={{ opacity: 0, y: -10 }}
+                                                                    animate={{ opacity: 1, y: 0 }}
+                                                                    className="glass"
+                                                                    style={{
+                                                                        padding: '16px',
+                                                                        borderRadius: '20px',
+                                                                        background: 'rgba(163, 230, 53, 0.05)',
+                                                                        border: '1px solid rgba(163, 230, 53, 0.2)',
+                                                                        marginBottom: '5px'
                                                                     }}
                                                                 >
-                                                                    ¡COPIADO!
-                                                                    <div style={{
-                                                                        position: 'absolute',
-                                                                        bottom: '-4px',
-                                                                        left: '50%',
-                                                                        transform: 'translateX(-50%) rotate(45deg)',
-                                                                        width: '8px',
-                                                                        height: '8px',
-                                                                        background: 'var(--secondary)'
-                                                                    }} />
+                                                                    <label style={{ fontSize: '10px', fontWeight: '950', color: 'var(--secondary)', display: 'block', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                                                        Link Público de Inscripción
+                                                                    </label>
+                                                                    <div style={{ display: 'flex', gap: '10px' }}>
+                                                                        <div style={{
+                                                                            flex: 1,
+                                                                            background: 'rgba(0,0,0,0.2)',
+                                                                            padding: '10px 14px',
+                                                                            borderRadius: '12px',
+                                                                            fontSize: '12px',
+                                                                            color: 'white',
+                                                                            overflow: 'hidden',
+                                                                            textOverflow: 'ellipsis',
+                                                                            whiteSpace: 'nowrap',
+                                                                            border: '1px solid rgba(255,255,255,0.05)',
+                                                                            fontFamily: 'monospace'
+                                                                        }}>
+                                                                            {`https://apegwv.vercel.app/tournament-register/${editingId}`}
+                                                                        </div>
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() => {
+                                                                                const url = `https://apegwv.vercel.app/tournament-register/${editingId}`;
+                                                                                navigator.clipboard.writeText(url);
+                                                                                setCopied(true);
+                                                                                setTimeout(() => setCopied(false), 2000);
+                                                                                if (navigator.vibrate) navigator.vibrate(50);
+                                                                            }}
+                                                                            style={{
+                                                                                width: '40px',
+                                                                                height: '40px',
+                                                                                borderRadius: '12px',
+                                                                                background: 'var(--secondary)',
+                                                                                color: 'var(--primary)',
+                                                                                display: 'flex',
+                                                                                alignItems: 'center',
+                                                                                justifyContent: 'center',
+                                                                                border: 'none',
+                                                                                cursor: 'pointer',
+                                                                                position: 'relative'
+                                                                            }}
+                                                                        >
+                                                                            <AnimatePresence>
+                                                                                {copied ? (
+                                                                                    <motion.div
+                                                                                        key="check"
+                                                                                        initial={{ scale: 0, opacity: 0 }}
+                                                                                        animate={{ scale: 1, opacity: 1 }}
+                                                                                        exit={{ scale: 0, opacity: 0 }}
+                                                                                        style={{
+                                                                                            position: 'absolute',
+                                                                                            top: '-35px',
+                                                                                            background: 'var(--secondary)',
+                                                                                            color: 'var(--primary)',
+                                                                                            padding: '4px 8px',
+                                                                                            borderRadius: '8px',
+                                                                                            fontSize: '10px',
+                                                                                            fontWeight: '900',
+                                                                                            whiteSpace: 'nowrap',
+                                                                                            boxShadow: '0 4px 10px rgba(0,0,0,0.3)'
+                                                                                        }}
+                                                                                    >
+                                                                                        ¡COPIADO!
+                                                                                        <div style={{
+                                                                                            position: 'absolute',
+                                                                                            bottom: '-4px',
+                                                                                            left: '50%',
+                                                                                            transform: 'translateX(-50%) rotate(45deg)',
+                                                                                            width: '8px',
+                                                                                            height: '8px',
+                                                                                            background: 'var(--secondary)'
+                                                                                        }} />
+                                                                                    </motion.div>
+                                                                                ) : null}
+                                                                            </AnimatePresence>
+                                                                            {copied ? <CheckCircle2 size={18} /> : <Copy size={18} />}
+                                                                        </button>
+                                                                    </div>
+                                                                    <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', marginTop: '8px', fontWeight: '600' }}>
+                                                                        Copia este link para compartirlo con los jugadores.
+                                                                    </p>
                                                                 </motion.div>
-                                                            ) : null}
-                                                        </AnimatePresence>
-                                                        {copied ? <CheckCircle2 size={18} /> : <Copy size={18} />}
-                                                    </button>
+                                                            )}
+                                                        </>
+                                                    )}
                                                 </div>
-                                                <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', marginTop: '8px', fontWeight: '600' }}>
-                                                    Copia este link para compartirlo con los jugadores.
-                                                </p>
                                             </motion.div>
                                         )}
+                                    </AnimatePresence>
+                                </div>
 
                                         <div className="input-group">
                                             <label style={{ fontSize: '12px', fontWeight: '800', marginBottom: '5px', display: 'block', color: 'var(--text-dim)' }}>Descripción / Notas</label>
@@ -1103,7 +1137,7 @@ const TournamentManager: React.FC = () => {
                                                                     setFormData({ ...formData, budget_items: [...formData.budget_items, newItem] });
                                                                 }}
                                                                 style={{
-                                                                    background: 'rgba(255,b255,b255,0.05)',
+                                                                    background: 'rgba(255,255,255,0.05)',
                                                                     border: '1px solid rgba(255,255,255,0.1)',
                                                                     color: 'white',
                                                                     fontSize: '11px',
@@ -1479,7 +1513,7 @@ const TournamentManager: React.FC = () => {
                                             </AnimatePresence>
                                         </div>
 
-                                        <div style={{ marginTop: '10px', padding: '15px', background: 'rgba(255,b255,b255,0.03)', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                        <div style={{ marginTop: '10px', padding: '15px', background: 'rgba(255,255,255,0.03)', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)' }}>
                                             <div
                                                 style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}
                                                 onClick={() => setShowRulesSection(!showRulesSection)}
@@ -1534,7 +1568,7 @@ const TournamentManager: React.FC = () => {
                                             </AnimatePresence>
                                         </div>
 
-                                        <div style={{ marginTop: '10px', padding: '15px', background: 'rgba(255,b255,b255,0.03)', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                        <div style={{ marginTop: '10px', padding: '15px', background: 'rgba(255,255,255,0.03)', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)' }}>
                                             <div
                                                 style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}
                                                 onClick={() => setShowSponsorsSection(!showSponsorsSection)}
@@ -1613,7 +1647,7 @@ const TournamentManager: React.FC = () => {
                                             </AnimatePresence>
                                         </div>
 
-                                        <div style={{ marginTop: '10px', padding: '15px', background: 'rgba(255,b255,b255,0.03)', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                        <div style={{ marginTop: '10px', padding: '15px', background: 'rgba(255,255,255,0.03)', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)' }}>
                                             <div
                                                 style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}
                                                 onClick={() => setShowPrizesSection(!showPrizesSection)}
@@ -1870,59 +1904,59 @@ const TournamentManager: React.FC = () => {
                                         </div>
 
                                         {/* Action buttons for admin/manage */}
-                                        <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
-                                            <motion.button
-                                                type="button"
-                                                whileTap={{ scale: 0.98 }}
-                                                onClick={(e) => {
-                                                    e.preventDefault();
-                                                    e.stopPropagation();
-                                                    navigate(`/my-events/${editingId}/participants`);
-                                                }}
-                                                style={{
-                                                    flex: 1,
-                                                    padding: '16px',
-                                                    borderRadius: '24px',
-                                                    background: 'linear-gradient(135deg, rgba(163, 230, 53, 0.15) 0%, rgba(163, 230, 53, 0.05) 100%)',
-                                                    color: 'var(--secondary)',
-                                                    border: '1px solid rgba(163, 230, 53, 0.3)',
-                                                    fontSize: '14px',
-                                                    fontWeight: '950',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center',
-                                                    gap: '12px',
-                                                    cursor: 'pointer',
-                                                    boxShadow: '0 8px 25px rgba(0,0,0,0.2)',
-                                                    letterSpacing: '-0.3px'
-                                                }}
-                                            >
-                                                <Users size={20} strokeWidth={2.5} />
-                                                <span>Ver Participantes</span>
-                                                <div style={{
-                                                    background: 'var(--secondary)',
-                                                    color: 'var(--primary)',
-                                                    padding: '2px 8px',
-                                                    borderRadius: '10px',
-                                                    fontSize: '11px',
-                                                    fontWeight: '950'
-                                                }}>
-                                                    {(formData.current_participants || 0) + (formData.guests?.length || 0)}
-                                                </div>
-                                            </motion.button>
-                                            <button
-                                                type="button"
-                                                onClick={() => {
-                                                    const tourney = tournaments.find(t => t.id === editingId);
-                                                    if (tourney) handleDeleteClick(tourney);
-                                                }}
-                                                style={{ padding: '12px', borderRadius: '15px', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.2)', cursor: 'pointer' }}
-                                            >
-                                                <Trash2 size={18} />
-                                            </button>
-                                        </div>
-                                    </>
-                                )}
+                                        {editingId && (
+                                            <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+                                                <motion.button
+                                                    type="button"
+                                                    whileTap={{ scale: 0.98 }}
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        e.stopPropagation();
+                                                        navigate(`/my-events/${editingId}/participants`);
+                                                    }}
+                                                    style={{
+                                                        flex: 1,
+                                                        padding: '16px',
+                                                        borderRadius: '24px',
+                                                        background: 'linear-gradient(135deg, rgba(163, 230, 53, 0.15) 0%, rgba(163, 230, 53, 0.05) 100%)',
+                                                        color: 'var(--secondary)',
+                                                        border: '1px solid rgba(163, 230, 53, 0.3)',
+                                                        fontSize: '14px',
+                                                        fontWeight: '950',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        gap: '12px',
+                                                        cursor: 'pointer',
+                                                        boxShadow: '0 8px 25px rgba(0,0,0,0.2)',
+                                                        letterSpacing: '-0.3px'
+                                                    }}
+                                                >
+                                                    <Users size={20} strokeWidth={2.5} />
+                                                    <span>Ver Participantes</span>
+                                                    <div style={{
+                                                        background: 'var(--secondary)',
+                                                        color: 'var(--primary)',
+                                                        padding: '2px 8px',
+                                                        borderRadius: '10px',
+                                                        fontSize: '11px',
+                                                        fontWeight: '950'
+                                                    }}>
+                                                        {(formData.current_participants || 0) + (formData.guests?.length || 0)}
+                                                    </div>
+                                                </motion.button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        const tourney = tournaments.find(t => t.id === editingId);
+                                                        if (tourney) handleDeleteClick(tourney);
+                                                    }}
+                                                    style={{ padding: '12px', borderRadius: '15px', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.2)', cursor: 'pointer' }}
+                                                >
+                                                    <Trash2 size={18} />
+                                                </button>
+                                            </div>
+                                        )}
 
                                 <button
                                     type="submit"
