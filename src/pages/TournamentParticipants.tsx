@@ -22,6 +22,7 @@ interface Participant {
     payment_date: string | null;
     is_guest?: boolean;
     is_companion?: boolean;
+    registered_by?: string | null;
 }
 
 const TournamentParticipants: React.FC = () => {
@@ -95,7 +96,9 @@ const TournamentParticipants: React.FC = () => {
                     g.name.toLowerCase() === nameMatch.trim().toLowerCase()
                 );
                 const isSpecialGuest = !!matchingGuest;
-                const isCompanion = !reg.player_handicap && !reg.player_federation_code && !isSpecialGuest;
+                const fedCode = reg.player_federation_code || '';
+                const isCompanion = fedCode.startsWith('ACOMP:') || (!reg.player_handicap && !fedCode && !isSpecialGuest);
+                const registeredBy = fedCode.startsWith('ACOMP:') ? fedCode.replace('ACOMP:', '') : null;
                 const finalIsGuest = isSpecialGuest;
 
                 return {
@@ -109,10 +112,11 @@ const TournamentParticipants: React.FC = () => {
                     avatar_url: profile?.avatar_url,
                     total_rounds: profile?.total_rounds,
                     average_score: profile?.average_score,
-                    federation_code: reg.player_federation_code || profile?.federation_code || matchingGuest?.code,
+                    federation_code: isCompanion ? null : (reg.player_federation_code || profile?.federation_code || matchingGuest?.code),
                     payment_date: reg.payment_date,
                     is_guest: finalIsGuest,
-                    is_companion: isCompanion
+                    is_companion: isCompanion,
+                    registered_by: registeredBy
                 };
             });
 
@@ -803,7 +807,7 @@ const TournamentParticipants: React.FC = () => {
                                                 </>
                                             )}
                                             {p.is_companion && (
-                                                <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontWeight: '700' }}>Acompañante de Jugador</span>
+                                                <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontWeight: '700' }}>Acompañante de <span style={{ color: '#38bdf8' }}>{p.registered_by || 'Jugador'}</span></span>
                                             )}
                                         </div>
                                         {(p.registration_status === 'paid' || p.registration_status === 'Confirmado') && (
