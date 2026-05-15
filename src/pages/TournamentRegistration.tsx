@@ -323,19 +323,21 @@ const TournamentRegistration: React.FC = () => {
 
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '15px' }}>
                             <div className="glass" style={{
-                                padding: '10px',
-                                borderRadius: '16px',
+                                padding: '12px',
+                                borderRadius: '20px',
                                 display: 'flex',
                                 flexDirection: 'column',
                                 alignItems: 'center',
-                                gap: '4px',
+                                justifyContent: 'center',
+                                gap: '6px',
                                 background: 'rgba(255,255,255,0.03)',
-                                border: '1px solid rgba(255,255,255,0.05)'
+                                border: '1px solid rgba(255,255,255,0.05)',
+                                height: '85px'
                             }}>
-                                <Calendar size={12} color="var(--secondary)" />
+                                <Calendar size={16} color="var(--secondary)" />
                                 <div style={{ textAlign: 'center' }}>
-                                    <span style={{ fontSize: '7px', color: 'rgba(255,255,255,0.4)', fontWeight: '900', letterSpacing: '1px', display: 'block' }}>FECHA</span>
-                                    <div style={{ color: 'var(--secondary)', fontSize: '11px', fontWeight: '950' }}>
+                                    <span style={{ fontSize: '9px', color: 'rgba(255,255,255,0.4)', fontWeight: '900', letterSpacing: '1.5px', display: 'block', marginBottom: '2px' }}>FECHA</span>
+                                    <div style={{ color: 'var(--secondary)', fontSize: '14px', fontWeight: '950' }}>
                                         {(() => {
                                             const d = new Date(tournament.date);
                                             d.setMinutes(d.getMinutes() + d.getTimezoneOffset());
@@ -345,19 +347,21 @@ const TournamentRegistration: React.FC = () => {
                                 </div>
                             </div>
                             <div className="glass" style={{
-                                padding: '10px',
-                                borderRadius: '16px',
+                                padding: '12px',
+                                borderRadius: '20px',
                                 display: 'flex',
                                 flexDirection: 'column',
                                 alignItems: 'center',
-                                gap: '4px',
+                                justifyContent: 'center',
+                                gap: '6px',
                                 background: 'rgba(163, 230, 53, 0.03)',
-                                border: '1px solid rgba(163, 230, 53, 0.1)'
+                                border: '1px solid rgba(163, 230, 53, 0.1)',
+                                height: '85px'
                             }}>
-                                <span style={{ color: 'var(--secondary)', fontWeight: '950', fontSize: '12px' }}>$</span>
+                                <span style={{ color: 'var(--secondary)', fontWeight: '950', fontSize: '16px', lineHeight: '1' }}>$</span>
                                 <div style={{ textAlign: 'center' }}>
-                                    <span style={{ fontSize: '7px', color: 'rgba(255,255,255,0.4)', fontWeight: '900', letterSpacing: '1px', display: 'block' }}>VALOR</span>
-                                    <div style={{ color: 'var(--secondary)', fontSize: '11px', fontWeight: '950' }}>
+                                    <span style={{ fontSize: '9px', color: 'rgba(255,255,255,0.4)', fontWeight: '900', letterSpacing: '1.5px', display: 'block', marginBottom: '2px' }}>VALOR</span>
+                                    <div style={{ color: 'var(--secondary)', fontSize: '14px', fontWeight: '950' }}>
                                         {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(tournament.price)}
                                     </div>
                                 </div>
