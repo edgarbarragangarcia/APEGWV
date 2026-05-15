@@ -50,7 +50,8 @@ const TournamentRegistration: React.FC = () => {
         email: '',
         phone: '',
         federationCode: '',
-        handicap: ''
+        handicap: '',
+        type: 'player' as 'player' | 'companion'
     });
 
     const fetchData = async () => {
@@ -412,7 +413,7 @@ const TournamentRegistration: React.FC = () => {
                                     <Trophy size={16} color="var(--secondary)" /> PREMIOS ESPECIALES
                                 </h4>
                                 <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '10px' }}>
-                                    {tournament.prizes.split('\n').filter(Boolean).map((prize, idx) => (
+                                    {tournament.prizes.split('\n').filter(Boolean).map((prize: string, idx: number) => (
                                         <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'rgba(255,255,255,0.8)', fontSize: '13px', fontWeight: '600' }}>
                                             <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--secondary)' }} />
                                             {prize}
@@ -451,7 +452,7 @@ const TournamentRegistration: React.FC = () => {
                                     PATROCINADO POR
                                 </h4>
                                 <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '20px', opacity: 0.7 }}>
-                                    {tournament.sponsors.split('\n').filter(Boolean).map((sponsor, idx) => (
+                                    {tournament.sponsors.split('\n').filter(Boolean).map((sponsor: string, idx: number) => (
                                         <span key={idx} style={{ color: 'white', fontSize: '14px', fontWeight: '950', letterSpacing: '1px', textTransform: 'uppercase' }}>
                                             {sponsor}
                                         </span>
@@ -584,17 +585,82 @@ const TournamentRegistration: React.FC = () => {
                                     style={{ marginTop: '25px', display: 'flex', flexDirection: 'column', gap: '20px', overflow: 'hidden' }}
                                 >
                                     <h2 style={{ fontSize: '16px', fontWeight: '900', color: 'var(--secondary)', marginBottom: '5px' }}>DATOS DEL INVITADO</h2>
+                                    
+                                    {/* Selector de Tipo de Invitado */}
+                                    <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
+                                        <button
+                                            type="button"
+                                            onClick={() => setPlayer2({ ...player2, type: 'player' })}
+                                            style={{
+                                                flex: 1,
+                                                padding: '12px',
+                                                borderRadius: '15px',
+                                                background: player2.type === 'player' ? 'rgba(163, 230, 53, 0.2)' : 'rgba(255,255,255,0.02)',
+                                                border: `1px solid ${player2.type === 'player' ? 'var(--secondary)' : 'rgba(255,255,255,0.1)'}`,
+                                                color: player2.type === 'player' ? 'var(--secondary)' : 'rgba(255,255,255,0.5)',
+                                                fontSize: '12px',
+                                                fontWeight: '800',
+                                                transition: 'all 0.3s ease'
+                                            }}
+                                        >
+                                            JUGADOR
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setPlayer2({ ...player2, type: 'companion' })}
+                                            style={{
+                                                flex: 1,
+                                                padding: '12px',
+                                                borderRadius: '15px',
+                                                background: player2.type === 'companion' ? 'rgba(163, 230, 53, 0.2)' : 'rgba(255,255,255,0.02)',
+                                                border: `1px solid ${player2.type === 'companion' ? 'var(--secondary)' : 'rgba(255,255,255,0.1)'}`,
+                                                color: player2.type === 'companion' ? 'var(--secondary)' : 'rgba(255,255,255,0.5)',
+                                                fontSize: '12px',
+                                                fontWeight: '800',
+                                                transition: 'all 0.3s ease'
+                                            }}
+                                        >
+                                            ACOMPAÑANTE
+                                        </button>
+                                    </div>
+
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                                         <div className="glass" style={{ padding: '16px 20px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(255,255,255,0.02)' }}>
                                             <Trophy size={18} color="rgba(255,255,255,0.3)" />
                                             <input
                                                 type="text"
-                                                placeholder="Nombre completo invitado"
+                                                placeholder={player2.type === 'player' ? "Nombre completo jugador invitado" : "Nombre completo acompañante"}
                                                 value={player2.name}
                                                 onChange={(e) => setPlayer2({ ...player2, name: e.target.value })}
                                                 style={{ background: 'transparent', border: 'none', color: 'white', fontSize: '15px', width: '100%', outline: 'none' }}
                                             />
                                         </div>
+
+                                        {player2.type === 'player' && (
+                                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                                                <div className="glass" style={{ padding: '16px 20px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(255,255,255,0.02)' }}>
+                                                    <ShieldCheck size={18} color="rgba(255,255,255,0.3)" />
+                                                    <input
+                                                        type="number"
+                                                        placeholder="Hándicap"
+                                                        value={player2.handicap}
+                                                        onChange={(e) => setPlayer2({ ...player2, handicap: e.target.value })}
+                                                        style={{ background: 'transparent', border: 'none', color: 'white', fontSize: '15px', width: '100%', outline: 'none' }}
+                                                    />
+                                                </div>
+                                                <div className="glass" style={{ padding: '16px 20px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(255,255,255,0.02)' }}>
+                                                    <Calendar size={18} color="rgba(255,255,255,0.3)" />
+                                                    <input
+                                                        type="text"
+                                                        placeholder="ID FED"
+                                                        value={player2.federationCode}
+                                                        onChange={(e) => setPlayer2({ ...player2, federationCode: e.target.value })}
+                                                        style={{ background: 'transparent', border: 'none', color: 'white', fontSize: '15px', width: '100%', outline: 'none' }}
+                                                    />
+                                                </div>
+                                            </div>
+                                        )}
+
                                         <div className="glass" style={{ padding: '16px 20px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(255,255,255,0.02)' }}>
                                             <Mail size={18} color="rgba(255,255,255,0.3)" />
                                             <input
@@ -602,6 +668,17 @@ const TournamentRegistration: React.FC = () => {
                                                 placeholder="Correo invitado"
                                                 value={player2.email}
                                                 onChange={(e) => setPlayer2({ ...player2, email: e.target.value })}
+                                                style={{ background: 'transparent', border: 'none', color: 'white', fontSize: '15px', width: '100%', outline: 'none' }}
+                                            />
+                                        </div>
+
+                                        <div className="glass" style={{ padding: '16px 20px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(255,255,255,0.02)' }}>
+                                            <HeartHandshake size={18} color="rgba(255,255,255,0.3)" />
+                                            <input
+                                                type="tel"
+                                                placeholder="Celular invitado"
+                                                value={player2.phone}
+                                                onChange={(e) => setPlayer2({ ...player2, phone: e.target.value })}
                                                 style={{ background: 'transparent', border: 'none', color: 'white', fontSize: '15px', width: '100%', outline: 'none' }}
                                             />
                                         </div>
