@@ -1099,21 +1099,23 @@ const TournamentManager: React.FC = () => {
                                                                         </div>
                                                                         {(pm.method.includes('Cuenta') || pm.method === 'Bancolombia') && (
                                                                             <>
-                                                                                <div className="input-group">
-                                                                                    <label style={{ fontSize: '10px', fontWeight: '800', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>Banco</label>
-                                                                                    <input
-                                                                                        type="text"
-                                                                                        value={pm.bankName || ''}
-                                                                                        onChange={(e) => {
-                                                                                            const newMethods = [...formData.payment_methods];
-                                                                                            newMethods[idx].bankName = e.target.value;
-                                                                                            setFormData({ ...formData, payment_methods: newMethods });
-                                                                                        }}
-                                                                                        className="form-input"
-                                                                                        placeholder="Ej: Bancolombia, Davivienda"
-                                                                                        style={{ background: 'rgba(255,255,255,0.05)', color: 'white', padding: '10px 12px' }}
-                                                                                    />
-                                                                                </div>
+                                                                                {pm.method !== 'Bancolombia' && (
+                                                                                    <div className="input-group">
+                                                                                        <label style={{ fontSize: '10px', fontWeight: '800', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>Banco</label>
+                                                                                        <input
+                                                                                            type="text"
+                                                                                            value={pm.bankName || ''}
+                                                                                            onChange={(e) => {
+                                                                                                const newMethods = [...formData.payment_methods];
+                                                                                                newMethods[idx].bankName = e.target.value;
+                                                                                                setFormData({ ...formData, payment_methods: newMethods });
+                                                                                            }}
+                                                                                            className="form-input"
+                                                                                            placeholder="Ej: Bancolombia, Davivienda"
+                                                                                            style={{ background: 'rgba(255,255,255,0.05)', color: 'white', padding: '10px 12px' }}
+                                                                                        />
+                                                                                    </div>
+                                                                                )}
                                                                                 <div className="input-group">
                                                                                     <label style={{ fontSize: '10px', fontWeight: '800', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>Tipo de Cuenta</label>
                                                                                     <select

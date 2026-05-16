@@ -144,6 +144,7 @@ const TournamentRegistration: React.FC = () => {
                     let label = p.method === 'Llave BreB' ? 'LLAVE BREB' : 
                                 p.method === 'Nequi' ? 'CELULAR NEQUI' : 
                                 (p.method === 'Daviplata' || p.method === 'DaviPlata') ? 'CELULAR DAVIPLATA' : 
+                                p.method === 'Bancolombia' ? 'CUENTA BANCARIA BANCOLOMBIA' :
                                 p.method === 'Cuenta de Ahorros' ? 'CUENTA DE AHORROS' :
                                 p.method === 'Cuenta Corriente' ? 'CUENTA CORRIENTE' :
                                 p.method === 'Cuenta Bancaria' ? 'CUENTA BANCARIA' : 'CUENTA';
