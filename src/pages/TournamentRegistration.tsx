@@ -278,7 +278,7 @@ const TournamentRegistration: React.FC = () => {
             </AnimatePresence>
 
             {/* Premium Hero Section (Sticky on all devices) */}
-            <div style={{ position: 'sticky', top: 0, zIndex: 40, background: 'var(--primary)', perspective: '1000px' }}>
+            <div style={{ position: 'sticky', top: 0, zIndex: 40, background: 'var(--primary)', perspective: '1200px' }}>
                 <motion.div
                     animate={{ 
                         rotateY: isFlipped ? 180 : 0,
@@ -288,18 +288,20 @@ const TournamentRegistration: React.FC = () => {
                     style={{ 
                         position: 'relative', 
                         minHeight: isMobile && isFlipped ? '550px' : '350px',
-                        overflow: 'hidden',
-                        transformStyle: 'preserve-3d'
+                        transformStyle: 'preserve-3d',
+                        WebkitTransformStyle: 'preserve-3d'
                     }}
                 >
                     {/* FRONT SIDE */}
                     <div style={{ 
                         backfaceVisibility: 'hidden',
+                        WebkitBackfaceVisibility: 'hidden',
                         position: 'absolute',
                         inset: 0,
                         width: '100%',
                         height: '100%',
-                        zIndex: isFlipped ? 0 : 2
+                        zIndex: isFlipped ? 0 : 2,
+                        pointerEvents: isFlipped ? 'none' : 'auto'
                     }}>
                         <img
                             src={tournament.image_url || 'https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?q=80&w=2000'}
@@ -383,26 +385,28 @@ const TournamentRegistration: React.FC = () => {
                     {/* BACK SIDE (Form) */}
                     <div style={{ 
                         backfaceVisibility: 'hidden', 
+                        WebkitBackfaceVisibility: 'hidden',
                         transform: 'rotateY(180deg)', 
                         position: 'absolute', 
                         inset: 0,
                         width: '100%',
                         height: '100%',
-                        background: 'linear-gradient(135deg, #152c1e, #0a0f0d)',
+                        background: '#0a0f0d', // Solid background for reliability
                         display: 'flex',
                         flexDirection: 'column',
-                        zIndex: isFlipped ? 2 : 0
+                        zIndex: isFlipped ? 2 : 0,
+                        pointerEvents: isFlipped ? 'auto' : 'none'
                     }}>
                         <div style={{ 
                             padding: '20px 30px', 
                             display: 'flex', 
                             alignItems: 'center', 
                             justifyContent: 'space-between',
-                            borderBottom: '1px solid rgba(255,255,255,0.05)',
-                            background: 'rgba(0,0,0,0.2)'
+                            borderBottom: '1px solid rgba(255,255,255,0.1)',
+                            background: 'rgba(0,0,0,0.4)'
                         }}>
                             <div>
-                                <h3 style={{ fontSize: '18px', fontWeight: '950', margin: 0 }}>INSCRIPCIÓN</h3>
+                                <h3 style={{ fontSize: '18px', fontWeight: '950', margin: 0, color: 'white' }}>INSCRIPCIÓN</h3>
                                 <p style={{ fontSize: '10px', color: 'var(--secondary)', fontWeight: '700', margin: 0 }}>{tournament.name}</p>
                             </div>
                             <button 
@@ -420,9 +424,14 @@ const TournamentRegistration: React.FC = () => {
                                 VOLVER
                             </button>
                         </div>
-                        <div style={{ flex: 1, overflowY: 'auto', padding: '20px 30px' }}>
+                        <div style={{ 
+                            flex: 1, 
+                            overflowY: 'auto', 
+                            padding: '30px',
+                            background: 'linear-gradient(135deg, #152c1e, #0a0f0d)'
+                        }}>
                             {/* Reusing form fields structure for back side */}
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                                 {[
                                     { icon: <Users />, label: 'NOMBRE COMPLETO', value: player1.name, field: 'name' },
                                     { icon: <Mail />, label: 'CORREO ELECTRÓNICO', value: player1.email, field: 'email' },
@@ -430,19 +439,19 @@ const TournamentRegistration: React.FC = () => {
                                     { icon: <Star />, label: 'ID FEDERACIÓN', value: player1.federationCode, field: 'federationCode' },
                                     { icon: <HeartHandshake />, label: 'TELÉFONO', value: player1.phone, field: 'phone' }
                                 ].map((input, i) => (
-                                    <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                                        <label style={{ fontSize: '8px', fontWeight: '900', color: 'var(--secondary)', marginLeft: '10px', letterSpacing: '1px' }}>{input.label}</label>
+                                    <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                        <label style={{ fontSize: '9px', fontWeight: '900', color: 'var(--secondary)', marginLeft: '10px', letterSpacing: '1px' }}>{input.label}</label>
                                         <div style={{ 
-                                            padding: '12px 15px', borderRadius: '15px', display: 'flex', alignItems: 'center', gap: '12px',
+                                            padding: '15px 20px', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '15px',
                                             background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.05)'
                                         }}>
-                                            <div style={{ color: 'rgba(255,255,255,0.3)' }}>{React.cloneElement(input.icon as any, { size: 16 })}</div>
+                                            <div style={{ color: 'rgba(255,255,255,0.3)' }}>{React.cloneElement(input.icon as any, { size: 18 })}</div>
                                             <input
                                                 type="text"
                                                 value={input.value}
                                                 onChange={(e) => setPlayer1({ ...player1, [input.field]: e.target.value })}
                                                 placeholder={`Tu ${input.label.toLowerCase()}`}
-                                                style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none', fontSize: '14px', fontWeight: '600' }}
+                                                style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none', fontSize: '15px', fontWeight: '600' }}
                                             />
                                         </div>
                                     </div>
@@ -453,18 +462,18 @@ const TournamentRegistration: React.FC = () => {
                                     disabled={registering || (isRegistered && !showSuccess)}
                                     className="btn-primary"
                                     style={{ 
-                                        width: '100%', padding: '18px', borderRadius: '20px', 
-                                        fontWeight: '950', fontSize: '14px', marginTop: '10px',
-                                        boxShadow: '0 10px 30px rgba(163, 230, 53, 0.3)',
+                                        width: '100%', padding: '20px', borderRadius: '25px', 
+                                        fontWeight: '950', fontSize: '16px', marginTop: '10px',
+                                        boxShadow: '0 15px 40px rgba(163, 230, 53, 0.3)',
                                         background: isRegistered ? 'rgba(255,255,255,0.05)' : 'var(--secondary)',
                                         color: isRegistered ? 'rgba(255,255,255,0.3)' : 'var(--primary)',
                                     }}
                                 >
-                                    {registering ? <Loader2 className="animate-spin" size={20} /> :
+                                    {registering ? <Loader2 className="animate-spin" size={24} /> :
                                         isRegistered ? 'YA ESTÁS INSCRITO' : 'INSCRIBIRME AHORA'}
                                 </button>
                                 
-                                <p style={{ textAlign: 'center', fontSize: '10px', color: 'rgba(255,255,255,0.3)', marginBottom: '40px' }}>
+                                <p style={{ textAlign: 'center', fontSize: '11px', color: 'rgba(255,255,255,0.4)', paddingBottom: '40px' }}>
                                     Al inscribirte aceptas los términos y condiciones del torneo.
                                 </p>
                             </div>
