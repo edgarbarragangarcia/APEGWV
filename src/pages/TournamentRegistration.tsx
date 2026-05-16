@@ -325,7 +325,7 @@ const TournamentRegistration: React.FC = () => {
                             </div>
                         </div>
 
-                        <div style={{ position: 'absolute', bottom: isMobile ? '80px' : '50px', left: '0', width: '100%', padding: '0 30px' }}>
+                        <div style={{ position: 'absolute', bottom: isMobile ? '120px' : '50px', left: '0', width: '100%', padding: '0 30px' }}>
                             <div style={{ opacity: 1 }}>
                                 <h1 style={{ 
                                     fontSize: isMobile ? '36px' : '56px', 
@@ -342,10 +342,39 @@ const TournamentRegistration: React.FC = () => {
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', fontWeight: '600' }}>
                                         <MapPin size={18} color="var(--secondary)" /> {tournament.club}
                                     </div>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', fontWeight: '600' }}>
-                                        <Users size={18} color="var(--secondary)" /> {tournament.current_participants || 0} / {tournament.participants_limit || '∞'} JUGADORES
-                                    </div>
+                                    {!isMobile && (
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', fontWeight: '600' }}>
+                                            <Users size={18} color="var(--secondary)" /> {tournament.current_participants || 0} / {tournament.participants_limit || '∞'} JUGADORES
+                                        </div>
+                                    )}
                                 </div>
+
+                                {isMobile && (
+                                    <div style={{ 
+                                        marginTop: '25px', 
+                                        padding: '20px', 
+                                        borderRadius: '25px', 
+                                        background: 'rgba(255,255,255,0.05)', 
+                                        border: '1px solid rgba(255,255,255,0.1)', 
+                                        backdropFilter: 'blur(10px)',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        gap: '8px',
+                                        width: 'fit-content',
+                                        minWidth: '200px'
+                                    }}>
+                                        <div style={{ fontSize: '10px', fontWeight: '900', color: 'var(--secondary)', letterSpacing: '1px' }}>VALOR INSCRIPCIÓN</div>
+                                        <div style={{ fontSize: '24px', fontWeight: '950', color: 'white' }}>
+                                            {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(tournament.price)}
+                                        </div>
+                                        {paymentInfo && (
+                                            <div style={{ marginTop: '5px', paddingTop: '10px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                                                <div style={{ fontSize: '9px', fontWeight: '900', color: 'rgba(255,255,255,0.4)', letterSpacing: '1px' }}>{paymentInfo.method}</div>
+                                                <div style={{ fontSize: '14px', fontWeight: '900', color: 'var(--secondary)' }}>{paymentInfo.account}</div>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
                             </div>
                         </div>
 
