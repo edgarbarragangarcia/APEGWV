@@ -402,7 +402,7 @@ const TournamentRegistration: React.FC = () => {
                                             }}>
                                                 {paymentMethods.map((pm: any, i: number) => (
                                                     <div key={i}>
-                                                        <div style={{ fontSize: '9px', fontWeight: '900', color: 'rgba(255,255,255,0.4)', letterSpacing: '1px', textTransform: 'uppercase' }}>{pm.label}</div>
+                                                        <div style={{ fontSize: '10px', fontWeight: '950', color: 'rgba(255,255,255,0.7)', letterSpacing: '1px', textTransform: 'uppercase' }}>{pm.label}</div>
                                                         <div style={{ fontSize:pm.account.length > 15 ? '12px' : '14px', fontWeight: '900', color: 'white', wordBreak: 'break-all' }}>{pm.account}</div>
                                                     </div>
                                                 ))}
