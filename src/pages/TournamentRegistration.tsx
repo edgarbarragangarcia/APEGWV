@@ -301,13 +301,58 @@ const TournamentRegistration: React.FC = () => {
                             <p style={{ color: 'rgba(255,255,255,0.6)', lineHeight: '1.7', marginBottom: '40px', fontSize: '16px' }}>
                                 Has quedado inscrito oficialmente en el <strong>{tournament.name}</strong>. ¡Nos vemos en el campo!
                             </p>
-                            <button
-                                onClick={() => navigate('/my-events')}
-                                className="btn-primary"
-                                style={{ width: '100%', padding: '20px', borderRadius: '25px', fontWeight: '950', fontSize: '15px', letterSpacing: '1px' }}
-                            >
-                                IR A MIS EVENTOS
-                            </button>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                <button
+                                    onClick={() => {
+                                        // Reset fields
+                                        setPlayer1({
+                                            name: '',
+                                            email: '',
+                                            phone: '',
+                                            federationCode: '',
+                                            handicap: ''
+                                        });
+                                        setPlayer2({
+                                            name: '',
+                                            email: '',
+                                            phone: '',
+                                            federationCode: '',
+                                            handicap: '',
+                                            type: 'player'
+                                        });
+                                        setAddGuest(false);
+                                        setIsFlipped(false);
+                                        setIsRegistered(false);
+                                        setShowSuccess(false);
+                                        
+                                        // Fetch profile data again to re-populate the main logged-in player
+                                        fetchData();
+
+                                        // Scroll to top of the page/form
+                                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                                    }}
+                                    className="btn-primary"
+                                    style={{ width: '100%', padding: '18px', borderRadius: '25px', fontWeight: '950', fontSize: '15px', letterSpacing: '1px' }}
+                                >
+                                    NUEVO REGISTRO / VOLVER
+                                </button>
+                                <button
+                                    onClick={() => navigate('/my-events')}
+                                    style={{ 
+                                        width: '100%', 
+                                        padding: '16px', 
+                                        borderRadius: '25px', 
+                                        fontWeight: '700', 
+                                        fontSize: '14px', 
+                                        background: 'rgba(255,255,255,0.05)', 
+                                        color: 'white', 
+                                        border: '1px solid rgba(255,255,255,0.1)',
+                                        cursor: 'pointer'
+                                    }}
+                                >
+                                    VER MIS EVENTOS
+                                </button>
+                            </div>
                         </motion.div>
                     </motion.div>
                 )}
