@@ -276,8 +276,9 @@ const TournamentRegistration: React.FC = () => {
                 )}
             </AnimatePresence>
 
-            {/* Premium Hero Section */}
-            <div style={{ position: 'relative', height: '40vh', minHeight: '350px', overflow: 'hidden' }}>
+            {/* Premium Hero Section & Quick Info (Sticky on Desktop) */}
+            <div style={{ position: isMobile ? 'relative' : 'sticky', top: 0, zIndex: 40, background: 'var(--primary)' }}>
+                <div style={{ position: 'relative', height: '40vh', minHeight: '350px', overflow: 'hidden' }}>
                 <img
                     src={tournament.image_url || 'https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?q=80&w=2000'}
                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
@@ -347,6 +348,10 @@ const TournamentRegistration: React.FC = () => {
                         </div>
                     ))}
                 </div>
+            </div>
+
+            {/* Scrollable Content Area */}
+            <div style={{ padding: '20px 30px', position: 'relative', zIndex: 20 }}>
 
                 <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '40px' }}>
                     {/* Content Column */}
