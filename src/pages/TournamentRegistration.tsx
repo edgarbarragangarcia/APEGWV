@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
     Calendar, MapPin, Trophy, ShieldCheck, HeartHandshake, 
     CheckCircle2, Loader2, Plus, X, Mail, BookOpen, 
-    Info, Star, Users, Flag, Layout, ChevronRight
+    Info, Star, Users, Flag, Layout
 } from 'lucide-react';
 import { supabase } from '../services/SupabaseManager';
 import { useAuth } from '../context/AuthContext';
