@@ -416,15 +416,13 @@ const TournamentRegistration: React.FC = () => {
                         {/* Quick Info Grid */}
                         <div style={{ 
                             display: 'grid', 
-                            gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, 1fr)', 
+                            gridTemplateColumns: isMobile ? '1fr 1fr' : '1fr 1fr', 
                             gap: isMobile ? '15px' : '15px', 
                             marginBottom: '40px' 
                         }}>
                             {[
                                 { icon: <Calendar />, label: 'FECHA', value: new Date(tournament.date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC' }) },
-                                { icon: <Flag />, label: 'MODO JUEGO', value: tournament.game_mode || 'Stableford' },
-                                { icon: <Layout />, label: 'HÁNDICAP', value: 'Al 100%' },
-                                { icon: <CheckCircle2 />, label: 'ESTADO', value: 'Abierto', color: 'var(--secondary)' }
+                                { icon: <Flag />, label: 'MODO JUEGO', value: tournament.game_mode || 'Stableford' }
                             ].map((item, i) => (
                                 <div
                                     key={i}
