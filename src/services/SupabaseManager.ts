@@ -4,8 +4,13 @@ import type { Database } from '../types/database.types';
 const rawUrl = (import.meta.env.VITE_SUPABASE_URL || '').trim();
 const supabaseAnonKey = (import.meta.env.VITE_SUPABASE_ANON_KEY || '').trim();
 
-// La librería puede seguir usando la URL real para no romper nada interno
-export const supabase = createClient<Database>(rawUrl, supabaseAnonKey);
+// En desarrollo usamos el proxy local para evitar problemas de CORS y bloqueos de red
+// En producción (si rawUrl existe y no estamos en local) usamos la URL real
+const supabaseUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+    ? '/supabase-proxy' 
+    : rawUrl;
+
+export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
 
 export const manualLogin = async (email: string, password: string) => {
     // Usamos el proxy relativo para que no haya CORS
