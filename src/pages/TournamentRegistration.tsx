@@ -31,7 +31,7 @@ interface Tournament {
 }
 
 const TournamentRegistration: React.FC = () => {
-    const { id } = useParams<{ id: string }>();
+    const { idOrSlug } = useParams<{ idOrSlug: string }>();
     const navigate = useNavigate();
     const { user } = useAuth();
 
@@ -71,20 +71,31 @@ const TournamentRegistration: React.FC = () => {
     const isMobile = windowWidth < 768;
 
     const fetchData = async () => {
-        if (!id) return;
+        if (!idOrSlug) return;
         setLoading(true);
         try {
-            const { data: tData, error: tError } = await supabase
+            // Check if idOrSlug is a valid UUID
+            const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(idOrSlug);
+            
+            let query = supabase
                 .from('tournaments')
                 .select(`
                     *,
                     registrations: tournament_registrations(count)
-                `)
-                .eq('id', id)
-                .single();
+                `);
+
+            if (isUUID) {
+                query = query.eq('id', idOrSlug);
+            } else {
+                query = query.eq('slug', idOrSlug);
+            }
+
+            const { data: tData, error: tError } = await query.single();
 
             if (tError) throw tError;
             setTournament(tData);
+
+            const tourneyId = tData.id;
 
             if (user) {
                 const { data: profile } = await supabase
@@ -106,7 +117,7 @@ const TournamentRegistration: React.FC = () => {
                 const { data: regData } = await supabase
                     .from('tournament_registrations')
                     .select('id')
-                    .eq('tournament_id', id)
+                    .eq('tournament_id', tourneyId)
                     .eq('user_id', user.id)
                     .maybeSingle();
 
@@ -121,7 +132,7 @@ const TournamentRegistration: React.FC = () => {
 
     useEffect(() => {
         fetchData();
-    }, [id, user]);
+    }, [idOrSlug, user]);
 
     const paymentMethods = (() => {
         if (!tournament?.notes) return [];

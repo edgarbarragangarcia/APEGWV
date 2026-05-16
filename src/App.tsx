@@ -151,7 +151,7 @@ const AppContent: React.FC = () => {
         style={(!session && !isRegistrationPage) ? { flex: 1, overflowX: 'hidden', overflowY: 'auto', display: 'flex', flexDirection: 'column', width: '100%', padding: 0, margin: 0, position: 'relative' } : { flex: 1, overflow: isRegistrationPage ? 'auto' : (isFixedPage ? 'hidden' : 'auto'), position: 'relative' }}
       >
         <Routes>
-          <Route path="/tournament-register/:id" element={<TournamentRegistration />} />
+          <Route path="/tournament-register/:idOrSlug" element={<TournamentRegistration />} />
           {!session ? (
             <>
               <Route path="/auth" element={<Auth />} />
