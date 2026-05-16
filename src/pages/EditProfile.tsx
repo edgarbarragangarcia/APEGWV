@@ -54,7 +54,23 @@ const EditProfile: React.FC = () => {
 
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
-        if (!file || !user) return; // Check user exists
+        if (!file || !user) return;
+
+        // --- REFUERZO DE SEGURIDAD: Validación de archivo ---
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
+        const maxSize = 5 * 1024 * 1024; // 5MB
+
+        if (!allowedTypes.includes(file.type)) {
+            setSuccessMessage({ title: 'Archivo no permitido', message: 'Por favor sube solo imágenes (JPG, PNG, WEBP).', type: 'error' });
+            setShowSuccessModal(true);
+            return;
+        }
+
+        if (file.size > maxSize) {
+            setSuccessMessage({ title: 'Archivo muy grande', message: 'El tamaño máximo es de 5MB.', type: 'error' });
+            setShowSuccessModal(true);
+            return;
+        }
 
         setUploading(true);
         try {

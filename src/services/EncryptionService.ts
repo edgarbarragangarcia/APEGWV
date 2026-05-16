@@ -3,9 +3,11 @@
 // For this implementation, we'll use a consistent key for the user session or derive it from the user ID
 async function getEncryptionKey(userId: string): Promise<CryptoKey> {
     const encoder = new TextEncoder();
-    const keyData = encoder.encode(`apeg-secure-${userId}`);
+    // Añadimos una sal secreta desde las variables de entorno para reforzar la llave
+    const secretSalt = (import.meta.env.VITE_ENCRYPTION_SALT || 'apeg-system-vault-2026').trim();
+    const keyData = encoder.encode(`${secretSalt}-${userId}`);
 
-    // Hash the userId to get a consistent 256-bit key
+    // Hash the combined data to get a consistent 256-bit key
     const hash = await crypto.subtle.digest('SHA-256', keyData);
 
     return await crypto.subtle.importKey(
