@@ -708,17 +708,35 @@ const TournamentManager: React.FC = () => {
         setIsDeleting(true);
 
         try {
+            // First, delete related records due to potential foreign key constraints
+            // and RLS policies that might block a direct tournament delete if children exist
+            
+            // Delete finances
+            await (supabase
+                .from('tournament_finances' as any) as any)
+                .delete()
+                .eq('tournament_id', deleteModal.tournamentId);
+
+            // Delete registrations
+            await (supabase
+                .from('tournament_registrations' as any) as any)
+                .delete()
+                .eq('tournament_id', deleteModal.tournamentId);
+
+            // Now delete the tournament
             const { error } = await supabase
                 .from('tournaments')
                 .delete()
                 .eq('id', deleteModal.tournamentId);
 
             if (error) throw error;
+            
             setTournaments(tournaments.filter(t => t.id !== deleteModal.tournamentId));
             setDeleteModal({ isOpen: false, tournamentId: null, tournamentName: '' });
+            alert('Evento eliminado correctamente');
         } catch (err) {
             console.error('Error deleting tournament:', err);
-            alert('Error al eliminar el torneo');
+            alert('Error al eliminar el torneo. Es posible que tenga registros dependientes que no se pudieron borrar.');
         } finally {
             setIsDeleting(false);
         }
