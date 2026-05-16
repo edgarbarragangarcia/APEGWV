@@ -1114,6 +1114,7 @@ const TournamentManager: React.FC = () => {
                                                             <option value="Llave BreB" />
                                                             <option value="Daviplata" />
                                                             <option value="Bancolombia" />
+                                                            <option value="Cuenta Bancaria" />
                                                         </datalist>
                                                     </div>
 
