@@ -460,6 +460,72 @@ const TournamentRegistration: React.FC = () => {
                                     </div>
                                 ))}
 
+                                {/* Add Companion Toggle */}
+                                <div 
+                                    onClick={() => setAddGuest(!addGuest)}
+                                    style={{ 
+                                        marginTop: '10px', padding: '18px', borderRadius: '20px', 
+                                        border: `1px dashed ${addGuest ? 'var(--secondary)' : 'rgba(255,255,255,0.2)'}`,
+                                        textAlign: 'center', cursor: 'pointer', background: addGuest ? 'rgba(163, 230, 53, 0.05)' : 'transparent',
+                                        transition: 'all 0.3s ease'
+                                    }}
+                                >
+                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', color: addGuest ? 'var(--secondary)' : 'white' }}>
+                                        {addGuest ? <X size={16} /> : <Plus size={16} />}
+                                        <span style={{ fontSize: '11px', fontWeight: '900' }}>{addGuest ? 'CANCELAR INVITADO' : 'AGREGAR JUGADOR / ACOMPAÑANTE'}</span>
+                                    </div>
+                                </div>
+
+                                {/* Companion Form */}
+                                <AnimatePresence>
+                                    {addGuest && (
+                                        <motion.div
+                                            initial={{ opacity: 0, height: 0 }}
+                                            animate={{ opacity: 1, height: 'auto' }}
+                                            exit={{ opacity: 0, height: 0 }}
+                                            style={{ overflow: 'hidden' }}
+                                        >
+                                            <div style={{ padding: '15px 0', display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                                                <div style={{ display: 'flex', gap: '10px' }}>
+                                                    {['player', 'companion'].map(type => (
+                                                        <button
+                                                            key={type}
+                                                            onClick={() => setPlayer2({ ...player2, type: type as any })}
+                                                            style={{ 
+                                                                flex: 1, padding: '10px', borderRadius: '12px', 
+                                                                background: player2.type === type ? 'var(--secondary)' : 'rgba(255,255,255,0.05)',
+                                                                color: player2.type === type ? 'var(--primary)' : 'white',
+                                                                fontSize: '10px', fontWeight: '900', textTransform: 'uppercase'
+                                                            }}
+                                                        >
+                                                            {type === 'player' ? 'Jugador' : 'Acompañante'}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                                <div style={{ padding: '12px 15px', borderRadius: '15px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                                    <input
+                                                        type="text"
+                                                        placeholder="Nombre del invitado"
+                                                        value={player2.name}
+                                                        onChange={(e) => setPlayer2({ ...player2, name: e.target.value })}
+                                                        style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none', fontSize: '14px' }}
+                                                    />
+                                                </div>
+                                                {player2.type === 'player' && (
+                                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                                                        <div style={{ padding: '12px 15px', borderRadius: '15px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                                            <input type="text" placeholder="Hándicap" value={player2.handicap} onChange={(e) => setPlayer2({ ...player2, handicap: e.target.value })} style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none', fontSize: '13px' }} />
+                                                        </div>
+                                                        <div style={{ padding: '12px 15px', borderRadius: '15px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                                            <input type="text" placeholder="Federación" value={player2.federationCode} onChange={(e) => setPlayer2({ ...player2, federationCode: e.target.value })} style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none', fontSize: '13px' }} />
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+
                                 <button
                                     onClick={handleRegister}
                                     disabled={registering || (isRegistered && !showSuccess)}
