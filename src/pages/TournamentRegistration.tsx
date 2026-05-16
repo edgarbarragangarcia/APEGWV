@@ -1,7 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Calendar, MapPin, Trophy, ShieldCheck, HeartHandshake, CheckCircle2, Loader2, Plus, X, Mail } from 'lucide-react';
+import { 
+    Calendar, MapPin, Trophy, ShieldCheck, HeartHandshake, 
+    CheckCircle2, Loader2, Plus, X, Mail, BookOpen, 
+    Info, Star, Users, Flag, Layout, ChevronRight
+} from 'lucide-react';
 import { supabase } from '../services/SupabaseManager';
 import { useAuth } from '../context/AuthContext';
 import Skeleton from '../components/Skeleton';
@@ -37,6 +41,7 @@ const TournamentRegistration: React.FC = () => {
     const [showSuccess, setShowSuccess] = useState(false);
     const [isRegistered, setIsRegistered] = useState(false);
     const [addGuest, setAddGuest] = useState(false);
+    const [activeTab, setActiveTab] = useState<'rules' | 'notes' | 'info'>('info');
     const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
 
     // Registration form states
@@ -188,9 +193,13 @@ const TournamentRegistration: React.FC = () => {
     if (loading || !tournament) {
         return (
             <div style={{ minHeight: '100vh', background: 'var(--primary)', padding: '20px' }}>
-                <Skeleton width="100%" height="200px" borderRadius="30px" style={{ marginBottom: '20px' }} />
-                <Skeleton width="60%" height="30px" style={{ marginBottom: '10px' }} />
-                <Skeleton width="40%" height="20px" />
+                <Skeleton width="100%" height="240px" borderRadius="30px" style={{ marginBottom: '25px' }} />
+                <Skeleton width="60%" height="40px" style={{ marginBottom: '15px' }} />
+                <Skeleton width="40%" height="20px" style={{ marginBottom: '40px' }} />
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                    <Skeleton height="100px" borderRadius="20px" />
+                    <Skeleton height="100px" borderRadius="20px" />
+                </div>
             </div>
         );
     }
@@ -201,415 +210,437 @@ const TournamentRegistration: React.FC = () => {
             color: 'white',
             maxWidth: '1200px',
             margin: '0 auto',
-            borderLeft: '1px solid rgba(255,255,255,0.05)',
-            borderRight: '1px solid rgba(255,255,255,0.05)',
-            boxShadow: '0 0 50px rgba(0,0,0,0.3)',
-            paddingBottom: '30px'
+            minHeight: '100vh',
+            position: 'relative'
         }}>
+            {/* Success Modal */}
             <AnimatePresence>
                 {showSuccess && (
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
-                        className="glass"
+                        exit={{ opacity: 0 }}
                         style={{
                             position: 'fixed',
                             inset: 0,
-                            zIndex: 100,
+                            zIndex: 1000,
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
                             padding: '20px',
-                            background: 'rgba(0,0,0,0.8)',
-                            backdropFilter: 'blur(10px)'
+                            background: 'rgba(0,0,0,0.9)',
+                            backdropFilter: 'blur(15px)'
                         }}
                     >
                         <motion.div
-                            initial={{ scale: 0.9, y: 20 }}
-                            animate={{ scale: 1, y: 0 }}
+                            initial={{ scale: 0.8, y: 50, opacity: 0 }}
+                            animate={{ scale: 1, y: 0, opacity: 1 }}
                             style={{
-                                background: 'linear-gradient(135deg, rgba(10,31,25,0.95), rgba(5,15,12,0.95))',
-                                padding: '40px 30px',
-                                borderRadius: '30px',
-                                border: '1px solid rgba(163, 230, 53, 0.2)',
+                                background: 'linear-gradient(135deg, #152c1e, #0a0f0d)',
+                                padding: '50px 30px',
+                                borderRadius: '40px',
+                                border: '1px solid rgba(163, 230, 53, 0.3)',
                                 textAlign: 'center',
-                                maxWidth: '400px',
-                                width: '100%'
+                                maxWidth: '450px',
+                                width: '100%',
+                                boxShadow: '0 25px 50px rgba(0,0,0,0.5), 0 0 30px rgba(163, 230, 53, 0.1)'
                             }}
                         >
                             <div style={{
-                                width: '80px',
-                                height: '80px',
+                                width: '100px',
+                                height: '100px',
                                 borderRadius: '50%',
-                                background: 'rgba(163, 230, 53, 0.1)',
+                                background: 'rgba(163, 230, 53, 0.15)',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                margin: '0 auto 25px',
-                                color: 'var(--secondary)'
+                                margin: '0 auto 30px',
+                                color: 'var(--secondary)',
+                                border: '2px solid rgba(163, 230, 53, 0.2)'
                             }}>
-                                <Trophy size={40} />
+                                <Trophy size={50} />
                             </div>
-                            <h2 style={{ fontSize: '28px', fontWeight: '900', color: 'white', marginBottom: '15px' }}>¡INSCRIPCIÓN EXITOSA!</h2>
-                            <p style={{ color: 'rgba(255,255,255,0.6)', lineHeight: '1.6', marginBottom: '30px' }}>
-                                Tu solicitud ha sido procesada. En breve recibirás un correo con los detalles del evento.
+                            <h2 style={{ fontSize: '32px', fontWeight: '950', color: 'white', marginBottom: '15px', letterSpacing: '-1px' }}>¡FELICIDADES!</h2>
+                            <p style={{ color: 'rgba(255,255,255,0.6)', lineHeight: '1.7', marginBottom: '40px', fontSize: '16px' }}>
+                                Has quedado inscrito oficialmente en el <strong>{tournament.name}</strong>. ¡Nos vemos en el campo!
                             </p>
                             <button
                                 onClick={() => navigate('/my-events')}
                                 className="btn-primary"
-                                style={{ width: '100%', padding: '16px', borderRadius: '20px', fontWeight: '900' }}
+                                style={{ width: '100%', padding: '20px', borderRadius: '25px', fontWeight: '950', fontSize: '15px', letterSpacing: '1px' }}
                             >
-                                VER MIS EVENTOS
+                                IR A MIS EVENTOS
                             </button>
                         </motion.div>
                     </motion.div>
                 )}
             </AnimatePresence>
 
-            <div style={{ position: 'relative', height: '18vh', flexShrink: 0, overflow: 'hidden' }}>
+            {/* Premium Hero Section */}
+            <div style={{ position: 'relative', height: '40vh', minHeight: '350px', overflow: 'hidden' }}>
                 <img
-                    src={tournament.image_url || 'https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?q=80&w=1000'}
-                    style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.4 }}
+                    src={tournament.image_url || 'https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?q=80&w=2000'}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                     alt=""
                 />
-                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent, var(--primary))' }} />
-                <div style={{ position: 'absolute', bottom: '20px', left: '25px' }}>
+                <div style={{ 
+                    position: 'absolute', 
+                    inset: 0, 
+                    background: 'linear-gradient(to top, var(--primary) 5%, rgba(14,47,31,0.6) 50%, transparent 100%)' 
+                }} />
+                
+                {/* Float elements for depth */}
+                <div style={{ position: 'absolute', top: '20px', left: '20px', zIndex: 10 }}>
                     <div className="glass" style={{
-                        display: 'inline-flex', alignItems: 'center', gap: '6px',
-                        padding: '4px 10px', borderRadius: '8px', background: 'rgba(163, 230, 53, 0.1)',
-                        border: '1px solid rgba(163, 230, 53, 0.2)', marginBottom: '8px'
+                        padding: '10px 15px', borderRadius: '15px', background: 'rgba(0,0,0,0.3)',
+                        border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', gap: '10px'
                     }}>
-                        <Trophy size={10} color="var(--secondary)" />
-                        <span style={{ fontSize: '8px', fontWeight: '900', color: 'var(--secondary)', letterSpacing: '1px' }}>TORNEO OFICIAL</span>
+                        <Star size={14} color="var(--secondary)" fill="var(--secondary)" />
+                        <span style={{ fontSize: '10px', fontWeight: '900', color: 'white', letterSpacing: '1px' }}>EVENTO PREMIER</span>
                     </div>
-                    <h1 style={{ fontSize: '24px', fontWeight: '950', margin: 0, color: 'white', letterSpacing: '-0.5px' }}>{tournament.name}</h1>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'rgba(255,255,255,0.5)', fontSize: '11px', marginTop: '4px' }}>
-                        <MapPin size={12} color="var(--secondary)" /> {tournament.club}
-                    </div>
+                </div>
+
+                <div style={{ position: 'absolute', bottom: '40px', left: '0', width: '100%', padding: '0 30px' }}>
+                    <motion.div
+                        initial={{ opacity: 0, y: 30 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.8 }}
+                    >
+                        <h1 style={{ 
+                            fontSize: isMobile ? '36px' : '56px', 
+                            fontWeight: '950', 
+                            margin: '0 0 10px 0', 
+                            color: 'white', 
+                            letterSpacing: '-2px',
+                            lineHeight: '1',
+                            textShadow: '0 10px 20px rgba(0,0,0,0.5)'
+                        }}>
+                            {tournament.name}
+                        </h1>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '20px', color: 'rgba(255,255,255,0.8)' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', fontWeight: '600' }}>
+                                <MapPin size={18} color="var(--secondary)" /> {tournament.club}
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', fontWeight: '600' }}>
+                                <Users size={18} color="var(--secondary)" /> {tournament.current_participants || 0} / {tournament.participants_limit || '∞'} JUGADORES
+                            </div>
+                        </div>
+                    </motion.div>
                 </div>
             </div>
 
-            <div style={{ 
-                padding: '15px 25px 40px'
-            }}>
-                <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '30px', paddingBottom: '40px' }}>
-                    
-                    {/* Left: Info */}
-                    <motion.div 
-                        initial={{ opacity: 0, y: 40 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true, amount: 0.1 }}
-                        transition={{ duration: 0.6, ease: "easeOut" }}
-                        style={{ display: 'flex', flexDirection: 'column', gap: '20px', width: '100%', maxWidth: isMobile ? '100%' : '350px' }}
-                    >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '5px' }}>
-                            <div style={{ width: '4px', height: '16px', background: 'var(--secondary)', borderRadius: '10px' }} />
-                            <h3 style={{ fontSize: '12px', fontWeight: '900', color: 'white', letterSpacing: '1px', margin: 0 }}>INFORMACIÓN DEL TORNEO</h3>
-                        </div>
-
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                            <div className="glass" style={{ padding: '12px', borderRadius: '20px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', height: '85px', justifyContent: 'center' }}>
-                                <Calendar size={16} color="var(--secondary)" />
-                                <div style={{ textAlign: 'center' }}>
-                                    <span style={{ fontSize: '9px', color: 'rgba(255,255,255,0.4)', fontWeight: '900', letterSpacing: '1.5px', display: 'block' }}>FECHA</span>
-                                    <div style={{ color: 'var(--secondary)', fontSize: '12px', fontWeight: '950' }}>{new Date(tournament.date).toLocaleDateString('es-ES')}</div>
-                                </div>
-                            </div>
-                            <div className="glass" style={{ padding: '12px', borderRadius: '20px', background: 'rgba(163, 230, 53, 0.03)', border: '1px solid rgba(163, 230, 53, 0.1)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', height: '85px', justifyContent: 'center' }}>
-                                <span style={{ color: 'var(--secondary)', fontWeight: '950', fontSize: '16px' }}>$</span>
-                                <div style={{ textAlign: 'center' }}>
-                                    <span style={{ fontSize: '9px', color: 'rgba(255,255,255,0.4)', fontWeight: '900', letterSpacing: '1.5px', display: 'block' }}>VALOR</span>
-                                    <div style={{ color: 'var(--secondary)', fontSize: '12px', fontWeight: '950' }}>{new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(tournament.price)}</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {paymentInfo && (
-                            <motion.div 
-                                initial={{ opacity: 0, y: 40 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true, amount: 0.1 }}
-                                transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
-                                className="glass" 
-                                style={{ 
-                                    padding: '15px', 
-                                    borderRadius: '20px', 
-                                    background: 'rgba(163, 230, 53, 0.05)', 
-                                    border: '1px solid rgba(163, 230, 53, 0.2)',
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    gap: '10px'
-                                }}
-                            >
-                                <h4 style={{ fontSize: '10px', fontWeight: '900', color: 'var(--secondary)', letterSpacing: '1px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                    <CheckCircle2 size={14} /> INFORMACIÓN DE PAGO
-                                </h4>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <div>
-                                        <span style={{ fontSize: '8px', color: 'rgba(255,255,255,0.4)', fontWeight: '800', display: 'block' }}>MÉTODO</span>
-                                        <span style={{ color: 'white', fontSize: '13px', fontWeight: '800' }}>{paymentInfo.method}</span>
-                                    </div>
-                                    <div style={{ textAlign: 'right' }}>
-                                        <span style={{ fontSize: '8px', color: 'rgba(255,255,255,0.4)', fontWeight: '800', display: 'block' }}>{paymentInfo.accountLabel}</span>
-                                        <span style={{ color: 'var(--secondary)', fontSize: '13px', fontWeight: '900' }}>{paymentInfo.account}</span>
-                                    </div>
-                                </div>
-                            </motion.div>
-                        )}
-                    </motion.div>
-
-                    {/* Right: Registration Form */}
-                    <motion.div 
-                        initial={{ opacity: 0, y: 50 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true, amount: 0.1 }}
-                        transition={{ duration: 0.7, delay: 0.3, ease: "easeOut" }}
-                        style={{ flex: 1, width: '100%', display: 'flex', flexDirection: 'column', gap: '20px' }}
-                    >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '5px' }}>
-                            <div style={{ width: '4px', height: '16px', background: 'var(--secondary)', borderRadius: '10px' }} />
-                            <h3 style={{ fontSize: '12px', fontWeight: '900', color: 'white', letterSpacing: '1px', margin: 0 }}>DATOS DE INSCRIPCIÓN</h3>
-                        </div>
-
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                            {/* Player 1 Information */}
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                                <label style={{ fontSize: '8px', fontWeight: '900', color: 'var(--secondary)', marginLeft: '12px', letterSpacing: '1.5px', textTransform: 'uppercase' }}>Nombre del Jugador</label>
-                                <div className="glass" style={{ padding: '12px 18px', borderRadius: '18px', border: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(10px)' }}>
-                                    <Trophy size={16} color="var(--secondary)" style={{ opacity: 0.7 }} />
-                                    <input
-                                        type="text"
-                                        placeholder="Nombre completo"
-                                        value={player1.name}
-                                        onChange={(e) => setPlayer1({ ...player1, name: e.target.value })}
-                                        style={{ background: 'transparent', border: 'none', color: 'white', fontSize: '14px', width: '100%', outline: 'none', fontWeight: '600' }}
-                                    />
-                                </div>
-                            </div>
-
-                            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '15px' }}>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                                    <label style={{ fontSize: '8px', fontWeight: '900', color: 'var(--secondary)', marginLeft: '12px', letterSpacing: '1.5px' }}>HÁNDICAP</label>
-                                    <div className="glass" style={{ padding: '12px 18px', borderRadius: '18px', border: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(10px)' }}>
-                                        <ShieldCheck size={16} color="rgba(255,255,255,0.3)" />
-                                        <input
-                                            type="number"
-                                            placeholder="0.0"
-                                            value={player1.handicap}
-                                            onChange={(e) => setPlayer1({ ...player1, handicap: e.target.value })}
-                                            style={{ background: 'transparent', border: 'none', color: 'white', fontSize: '14px', width: '100%', outline: 'none', fontWeight: '600' }}
-                                        />
-                                    </div>
-                                </div>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                                    <label style={{ fontSize: '8px', fontWeight: '900', color: 'var(--secondary)', marginLeft: '12px', letterSpacing: '1.5px' }}>FEDERACIÓN</label>
-                                    <div className="glass" style={{ padding: '12px 18px', borderRadius: '18px', border: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(10px)' }}>
-                                        <Calendar size={16} color="rgba(255,255,255,0.3)" />
-                                        <input
-                                            type="text"
-                                            placeholder="ID"
-                                            value={player1.federationCode}
-                                            onChange={(e) => setPlayer1({ ...player1, federationCode: e.target.value })}
-                                            style={{ background: 'transparent', border: 'none', color: 'white', fontSize: '14px', width: '100%', outline: 'none', fontWeight: '600' }}
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1.3fr 1fr', gap: '15px' }}>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                                    <label style={{ fontSize: '8px', fontWeight: '900', color: 'var(--secondary)', marginLeft: '12px', letterSpacing: '1.5px' }}>CORREO ELECTRÓNICO</label>
-                                    <div className="glass" style={{ padding: '12px 18px', borderRadius: '18px', border: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(10px)' }}>
-                                        <Mail size={16} color="rgba(255,255,255,0.3)" />
-                                        <input
-                                            type="email"
-                                            placeholder="email@ejemplo.com"
-                                            value={player1.email}
-                                            onChange={(e) => setPlayer1({ ...player1, email: e.target.value })}
-                                            style={{ background: 'transparent', border: 'none', color: 'white', fontSize: '13px', width: '100%', outline: 'none', fontWeight: '600' }}
-                                        />
-                                    </div>
-                                </div>
-
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                                    <label style={{ fontSize: '8px', fontWeight: '900', color: 'var(--secondary)', marginLeft: '12px', letterSpacing: '1.5px' }}>CELULAR</label>
-                                    <div className="glass" style={{ padding: '12px 18px', borderRadius: '18px', border: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(10px)' }}>
-                                        <HeartHandshake size={16} color="rgba(255,255,255,0.3)" />
-                                        <input
-                                            type="tel"
-                                            placeholder="300 000 0000"
-                                            value={player1.phone}
-                                            onChange={(e) => setPlayer1({ ...player1, phone: e.target.value })}
-                                            style={{ background: 'transparent', border: 'none', color: 'white', fontSize: '14px', width: '100%', outline: 'none', fontWeight: '600' }}
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Guest Toggle */}
-                        <div
-                            onClick={() => setAddGuest(!addGuest)}
-                            style={{
-                                marginTop: '20px',
-                                padding: '12px',
-                                borderRadius: '16px',
-                                border: '1px dashed rgba(163, 230, 53, 0.3)',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                gap: '8px',
-                                color: 'var(--secondary)',
-                                cursor: 'pointer',
-                                background: addGuest ? 'rgba(163, 230, 53, 0.03)' : 'transparent',
-                                transition: 'all 0.3s ease'
-                            }}
+            <div style={{ padding: '0 30px', marginTop: '-20px', position: 'relative', zIndex: 20 }}>
+                {/* Quick Info Grid */}
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(4, 1fr)', gap: '15px', marginBottom: '40px' }}>
+                    {[
+                        { icon: <Calendar />, label: 'FECHA', value: new Date(tournament.date).toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' }) },
+                        { icon: <Flag />, label: 'MODO JUEGO', value: tournament.game_mode || 'Stableford' },
+                        { icon: <Layout />, label: 'HÁNDICAP', value: 'Al 100%' },
+                        { icon: <CheckCircle2 />, label: 'ESTADO', value: 'Abierto', color: 'var(--secondary)' }
+                    ].map((item, i) => (
+                        <motion.div
+                            key={i}
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ delay: i * 0.1 }}
+                            className="glass"
+                            style={{ padding: '20px', borderRadius: '25px', display: 'flex', flexDirection: 'column', gap: '10px', background: 'rgba(255,255,255,0.03)' }}
                         >
-                            {addGuest ? <X size={14} /> : <Plus size={14} />}
-                            <span style={{ fontSize: '12px', fontWeight: '700', letterSpacing: '0.5px' }}>
-                                {addGuest ? 'QUITAR INVITADO' : 'INSCRIBIR A OTRA PERSONA'}
-                            </span>
+                            <div style={{ color: 'var(--secondary)', opacity: 0.8 }}>{item.icon}</div>
+                            <div>
+                                <div style={{ fontSize: '9px', fontWeight: '900', color: 'rgba(255,255,255,0.4)', letterSpacing: '1.5px' }}>{item.label}</div>
+                                <div style={{ fontSize: '14px', fontWeight: '900', color: item.color || 'white', marginTop: '2px' }}>{item.value}</div>
+                            </div>
+                        </motion.div>
+                    ))}
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '40px' }}>
+                    {/* Content Column */}
+                    <div style={{ flex: 1.5 }}>
+                        {/* Tabs for detailed info */}
+                        <div style={{ display: 'flex', gap: '25px', borderBottom: '1px solid rgba(255,255,255,0.05)', marginBottom: '30px' }}>
+                            {['info', 'rules', 'notes'].map((tab) => (
+                                <button
+                                    key={tab}
+                                    onClick={() => setActiveTab(tab as any)}
+                                    style={{
+                                        padding: '15px 5px',
+                                        fontSize: '13px',
+                                        fontWeight: '900',
+                                        letterSpacing: '1px',
+                                        color: activeTab === tab ? 'var(--secondary)' : 'rgba(255,255,255,0.4)',
+                                        borderBottom: `3px solid ${activeTab === tab ? 'var(--secondary)' : 'transparent'}`,
+                                        transition: 'all 0.3s ease',
+                                        textTransform: 'uppercase'
+                                    }}
+                                >
+                                    {tab === 'info' ? 'DETALLES' : tab === 'rules' ? 'REGLAS' : 'NOTAS'}
+                                </button>
+                            ))}
                         </div>
 
-                        <AnimatePresence>
-                            {addGuest && (
-                                <motion.div
-                                    initial={{ opacity: 0, height: 0 }}
-                                    animate={{ opacity: 1, height: 'auto' }}
-                                    exit={{ opacity: 0, height: 0 }}
-                                    style={{ display: 'flex', flexDirection: 'column', gap: '20px', overflow: 'hidden' }}
-                                >
-                                    <h2 style={{ fontSize: '16px', fontWeight: '900', color: 'var(--secondary)', marginBottom: '5px' }}>DATOS DEL INVITADO</h2>
-                                    
-                                    <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
-                                        <button
-                                            type="button"
-                                            onClick={() => setPlayer2({ ...player2, type: 'player' })}
-                                            style={{
-                                                flex: 1,
-                                                padding: '12px',
-                                                borderRadius: '15px',
-                                                background: player2.type === 'player' ? 'rgba(163, 230, 53, 0.2)' : 'rgba(255,255,255,0.04)',
-                                                border: `1px solid ${player2.type === 'player' ? 'var(--secondary)' : 'rgba(255,255,255,0.1)'}`,
-                                                color: player2.type === 'player' ? 'var(--secondary)' : 'rgba(255,255,255,0.5)',
-                                                fontSize: '12px',
-                                                fontWeight: '800'
-                                            }}
-                                        >
-                                            JUGADOR
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={() => setPlayer2({ ...player2, type: 'companion' })}
-                                            style={{
-                                                flex: 1,
-                                                padding: '12px',
-                                                borderRadius: '15px',
-                                                background: player2.type === 'companion' ? 'rgba(163, 230, 53, 0.2)' : 'rgba(255,255,255,0.04)',
-                                                border: `1px solid ${player2.type === 'companion' ? 'var(--secondary)' : 'rgba(255,255,255,0.1)'}`,
-                                                color: player2.type === 'companion' ? 'var(--secondary)' : 'rgba(255,255,255,0.5)',
-                                                fontSize: '12px',
-                                                fontWeight: '800'
-                                            }}
-                                        >
-                                            ACOMPAÑANTE
-                                        </button>
-                                    </div>
-
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                                        <div className="glass" style={{ padding: '16px 20px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(10px)' }}>
-                                            <Trophy size={18} color="rgba(255,255,255,0.3)" />
-                                            <input
-                                                type="text"
-                                                placeholder={player2.type === 'player' ? "Nombre completo jugador invitado" : "Nombre completo acompañante"}
-                                                value={player2.name}
-                                                onChange={(e) => setPlayer2({ ...player2, name: e.target.value })}
-                                                style={{ background: 'transparent', border: 'none', color: 'white', fontSize: '15px', width: '100%', outline: 'none' }}
-                                            />
+                        <AnimatePresence mode="wait">
+                            <motion.div
+                                key={activeTab}
+                                initial={{ opacity: 0, x: -10 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: 10 }}
+                                transition={{ duration: 0.3 }}
+                                style={{ minHeight: '200px' }}
+                            >
+                                {activeTab === 'info' && (
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
+                                        <div>
+                                            <p style={{ fontSize: '16px', lineHeight: '1.8', color: 'rgba(255,255,255,0.7)', fontWeight: '400' }}>
+                                                {tournament.description || "Únete a este prestigioso torneo donde la competitividad y la camaradería se encuentran en el campo. Una jornada diseñada para los amantes del golf que buscan excelencia en cada golpe."}
+                                            </p>
+                                        </div>
+                                        
+                                        {/* Value Card */}
+                                        <div className="glass" style={{ 
+                                            padding: '25px', 
+                                            borderRadius: '30px', 
+                                            background: 'linear-gradient(135deg, rgba(163, 230, 53, 0.1), rgba(163, 230, 53, 0.05))',
+                                            border: '1px solid rgba(163, 230, 53, 0.2)',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'space-between'
+                                        }}>
+                                            <div>
+                                                <div style={{ fontSize: '10px', fontWeight: '900', color: 'var(--secondary)', letterSpacing: '2px' }}>VALOR DE INSCRIPCIÓN</div>
+                                                <div style={{ fontSize: '32px', fontWeight: '950', color: 'white', marginTop: '5px' }}>
+                                                    {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(tournament.price)}
+                                                </div>
+                                            </div>
+                                            <div style={{ 
+                                                width: '60px', height: '60px', borderRadius: '20px', 
+                                                background: 'var(--secondary)', color: 'var(--primary)',
+                                                display: 'flex', alignItems: 'center', justifyContent: 'center'
+                                            }}>
+                                                <Trophy size={28} />
+                                            </div>
                                         </div>
 
-                                        {player2.type === 'player' && (
-                                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
-                                                <div className="glass" style={{ padding: '16px 20px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(255,255,255,0.02)' }}>
-                                                    <ShieldCheck size={18} color="rgba(255,255,255,0.3)" />
-                                                    <input
-                                                        type="number"
-                                                        placeholder="Hándicap"
-                                                        value={player2.handicap}
-                                                        onChange={(e) => setPlayer2({ ...player2, handicap: e.target.value })}
-                                                        style={{ background: 'transparent', border: 'none', color: 'white', fontSize: '15px', width: '100%', outline: 'none' }}
-                                                    />
+                                        {/* Payment Box */}
+                                        {paymentInfo && (
+                                            <div className="glass" style={{ padding: '25px', borderRadius: '30px', border: '1px solid rgba(255,255,255,0.08)' }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
+                                                    <div style={{ padding: '8px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px' }}>
+                                                        <Star size={18} color="var(--secondary)" />
+                                                    </div>
+                                                    <h4 style={{ fontSize: '13px', fontWeight: '900', letterSpacing: '1px' }}>MÉTODO DE PAGO OFICIAL</h4>
                                                 </div>
-                                                <div className="glass" style={{ padding: '16px 20px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(255,255,255,0.02)' }}>
-                                                    <Calendar size={18} color="rgba(255,255,255,0.3)" />
-                                                    <input
-                                                        type="text"
-                                                        placeholder="ID FED"
-                                                        value={player2.federationCode}
-                                                        onChange={(e) => setPlayer2({ ...player2, federationCode: e.target.value })}
-                                                        style={{ background: 'transparent', border: 'none', color: 'white', fontSize: '15px', width: '100%', outline: 'none' }}
-                                                    />
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                                                    <div>
+                                                        <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', fontWeight: '800' }}>PLATAFORMA</span>
+                                                        <div style={{ fontSize: '18px', fontWeight: '900', color: 'white' }}>{paymentInfo.method}</div>
+                                                    </div>
+                                                    <div style={{ textAlign: 'right' }}>
+                                                        <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', fontWeight: '800' }}>{paymentInfo.accountLabel}</span>
+                                                        <div style={{ fontSize: '20px', fontWeight: '950', color: 'var(--secondary)' }}>{paymentInfo.account}</div>
+                                                    </div>
                                                 </div>
                                             </div>
                                         )}
+                                    </div>
+                                )}
 
-                                        <div className="glass" style={{ padding: '16px 20px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(255,255,255,0.02)' }}>
-                                            <Mail size={18} color="rgba(255,255,255,0.3)" />
-                                            <input
-                                                type="email"
-                                                placeholder="Correo invitado"
-                                                value={player2.email}
-                                                onChange={(e) => setPlayer2({ ...player2, email: e.target.value })}
-                                                style={{ background: 'transparent', border: 'none', color: 'white', fontSize: '15px', width: '100%', outline: 'none' }}
-                                            />
+                                {activeTab === 'rules' && (
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                                        {tournament.rules && tournament.rules.length > 0 ? (
+                                            tournament.rules.map((rule, idx) => (
+                                                <div key={idx} style={{ 
+                                                    padding: '18px 25px', borderRadius: '20px', background: 'rgba(255,255,255,0.03)',
+                                                    border: '1px solid rgba(255,255,255,0.05)', display: 'flex', gap: '15px', alignItems: 'flex-start'
+                                                }}>
+                                                    <div style={{ color: 'var(--secondary)', marginTop: '3px' }}><CheckCircle2 size={16} /></div>
+                                                    <p style={{ margin: 0, fontSize: '14px', color: 'rgba(255,255,255,0.8)', fontWeight: '500' }}>{rule}</p>
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <div style={{ padding: '40px', textAlign: 'center', opacity: 0.5 }}>
+                                                <BookOpen size={40} style={{ marginBottom: '15px' }} />
+                                                <p>Reglas locales estándar de la federación.</p>
+                                            </div>
+                                        )}
+                                        {tournament.custom_rules && (
+                                            <div style={{ marginTop: '20px', padding: '20px', background: 'rgba(163, 230, 53, 0.05)', borderRadius: '20px', border: '1px dashed rgba(163, 230, 53, 0.3)' }}>
+                                                <h5 style={{ color: 'var(--secondary)', marginBottom: '10px', fontSize: '12px' }}>REGLAS ADICIONALES</h5>
+                                                <p style={{ fontSize: '13px', lineHeight: '1.6' }}>{tournament.custom_rules}</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
+                                {activeTab === 'notes' && (
+                                    <div style={{ padding: '30px', background: 'rgba(255,255,255,0.02)', borderRadius: '30px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                        <h4 style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px' }}>
+                                            <Info size={18} color="var(--secondary)" /> NOTAS DEL ORGANIZADOR
+                                        </h4>
+                                        <p style={{ lineHeight: '1.8', color: 'rgba(255,255,255,0.7)' }}>
+                                            {tournament.notes?.split('---PAYMENT_DATA---')[0] || "No hay notas adicionales para este torneo."}
+                                        </p>
+                                    </div>
+                                )}
+                            </motion.div>
+                        </AnimatePresence>
+
+                        {/* Sponsors Section */}
+                        <div style={{ marginTop: '60px', padding: '40px 0' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '30px' }}>
+                                <div style={{ height: '1px', flex: 1, background: 'rgba(255,255,255,0.05)' }} />
+                                <h4 style={{ fontSize: '11px', fontWeight: '900', color: 'rgba(255,255,255,0.4)', letterSpacing: '3px' }}>PATROCINADORES OFICIALES</h4>
+                                <div style={{ height: '1px', flex: 1, background: 'rgba(255,255,255,0.05)' }} />
+                            </div>
+                            <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '40px', opacity: 0.6 }}>
+                                {[1, 2, 3, 4].map(i => (
+                                    <div key={i} style={{ width: '100px', height: '50px', background: 'rgba(255,255,255,0.05)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                        <Trophy size={20} color="white" style={{ opacity: 0.3 }} />
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Registration Form Column */}
+                    <div style={{ flex: 1.2 }}>
+                        <div style={{ position: isMobile ? 'relative' : 'sticky', top: '30px' }}>
+                            <motion.div
+                                initial={{ opacity: 0, x: 20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                className="glass"
+                                style={{ 
+                                    padding: '35px', 
+                                    borderRadius: '40px', 
+                                    background: 'rgba(255,255,255,0.03)',
+                                    border: '1px solid rgba(255,255,255,0.08)',
+                                    boxShadow: '0 40px 80px rgba(0,0,0,0.4)'
+                                }}
+                            >
+                                <div style={{ marginBottom: '30px' }}>
+                                    <h3 style={{ fontSize: '24px', fontWeight: '950', marginBottom: '5px' }}>Inscripción</h3>
+                                    <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.4)', fontWeight: '600' }}>Completa tus datos para participar</p>
+                                </div>
+
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                                    {/* Input Fields */}
+                                    {[
+                                        { icon: <Users />, label: 'NOMBRE COMPLETO', value: player1.name, field: 'name' },
+                                        { icon: <Mail />, label: 'CORREO ELECTRÓNICO', value: player1.email, field: 'email' },
+                                        { icon: <ShieldCheck />, label: 'HÁNDICAP', value: player1.handicap, field: 'handicap', half: true },
+                                        { icon: <Star />, label: 'ID FEDERACIÓN', value: player1.federationCode, field: 'federationCode', half: true },
+                                        { icon: <HeartHandshake />, label: 'TELÉFONO', value: player1.phone, field: 'phone' }
+                                    ].map((input, i) => (
+                                        <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                            <label style={{ fontSize: '9px', fontWeight: '900', color: 'var(--secondary)', marginLeft: '10px', letterSpacing: '1px' }}>{input.label}</label>
+                                            <div className="glass" style={{ 
+                                                padding: '15px 20px', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '15px',
+                                                background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.05)',
+                                                transition: 'all 0.3s ease'
+                                            }}>
+                                                <div style={{ color: 'rgba(255,255,255,0.3)' }}>{input.icon}</div>
+                                                <input
+                                                    type="text"
+                                                    value={input.value}
+                                                    onChange={(e) => setPlayer1({ ...player1, [input.field]: e.target.value })}
+                                                    placeholder={`Ingresa tu ${input.label.toLowerCase()}`}
+                                                    style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none', fontSize: '15px', fontWeight: '600' }}
+                                                />
+                                            </div>
                                         </div>
+                                    ))}
 
-                                        <div className="glass" style={{ padding: '16px 20px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(255,255,255,0.02)' }}>
-                                            <HeartHandshake size={18} color="rgba(255,255,255,0.3)" />
-                                            <input
-                                                type="tel"
-                                                placeholder="Celular invitado"
-                                                value={player2.phone}
-                                                onChange={(e) => setPlayer2({ ...player2, phone: e.target.value })}
-                                                style={{ background: 'transparent', border: 'none', color: 'white', fontSize: '15px', width: '100%', outline: 'none' }}
-                                            />
+                                    {/* Add Companion Toggle */}
+                                    <div 
+                                        onClick={() => setAddGuest(!addGuest)}
+                                        style={{ 
+                                            marginTop: '10px', padding: '20px', borderRadius: '25px', 
+                                            border: `1px dashed ${addGuest ? 'var(--secondary)' : 'rgba(255,255,255,0.2)'}`,
+                                            textAlign: 'center', cursor: 'pointer', background: addGuest ? 'rgba(163, 230, 53, 0.05)' : 'transparent',
+                                            transition: 'all 0.3s ease'
+                                        }}
+                                    >
+                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', color: addGuest ? 'var(--secondary)' : 'white' }}>
+                                            {addGuest ? <X size={18} /> : <Plus size={18} />}
+                                            <span style={{ fontSize: '13px', fontWeight: '900' }}>{addGuest ? 'CANCELAR INVITADO' : 'AGREGAR JUGADOR / ACOMPAÑANTE'}</span>
                                         </div>
                                     </div>
-                                </motion.div>
-                            )}
-                        </AnimatePresence>
-                    </motion.div>
+
+                                    {/* Companion Form */}
+                                    <AnimatePresence>
+                                        {addGuest && (
+                                            <motion.div
+                                                initial={{ opacity: 0, height: 0 }}
+                                                animate={{ opacity: 1, height: 'auto' }}
+                                                exit={{ opacity: 0, height: 0 }}
+                                                style={{ overflow: 'hidden' }}
+                                            >
+                                                <div style={{ paddingTop: '30px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                                                    <div style={{ display: 'flex', gap: '10px' }}>
+                                                        {['player', 'companion'].map(type => (
+                                                            <button
+                                                                key={type}
+                                                                onClick={() => setPlayer2({ ...player2, type: type as any })}
+                                                                style={{ 
+                                                                    flex: 1, padding: '12px', borderRadius: '15px', 
+                                                                    background: player2.type === type ? 'var(--secondary)' : 'rgba(255,255,255,0.05)',
+                                                                    color: player2.type === type ? 'var(--primary)' : 'white',
+                                                                    fontSize: '11px', fontWeight: '900', textTransform: 'uppercase'
+                                                                }}
+                                                            >
+                                                                {type === 'player' ? 'Jugador' : 'Acompañante'}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                    <div className="glass" style={{ padding: '15px 20px', borderRadius: '20px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                                        <input
+                                                            type="text"
+                                                            placeholder="Nombre completo"
+                                                            value={player2.name}
+                                                            onChange={(e) => setPlayer2({ ...player2, name: e.target.value })}
+                                                            style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none', fontSize: '14px' }}
+                                                        />
+                                                    </div>
+                                                    {player2.type === 'player' && (
+                                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                                                            <div className="glass" style={{ padding: '15px 20px', borderRadius: '20px', background: 'rgba(255,255,255,0.05)' }}>
+                                                                <input type="text" placeholder="Hándicap" value={player2.handicap} onChange={(e) => setPlayer2({ ...player2, handicap: e.target.value })} style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none', fontSize: '13px' }} />
+                                                            </div>
+                                                            <div className="glass" style={{ padding: '15px 20px', borderRadius: '20px', background: 'rgba(255,255,255,0.05)' }}>
+                                                                <input type="text" placeholder="Federación" value={player2.federationCode} onChange={(e) => setPlayer2({ ...player2, federationCode: e.target.value })} style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none', fontSize: '13px' }} />
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+
+                                    {/* Submit Button */}
+                                    <button
+                                        onClick={handleRegister}
+                                        disabled={registering || (isRegistered && !showSuccess)}
+                                        className="btn-primary"
+                                        style={{ 
+                                            width: '100%', padding: '20px', borderRadius: '25px', 
+                                            fontWeight: '950', fontSize: '16px', marginTop: '20px',
+                                            boxShadow: '0 15px 40px rgba(163, 230, 53, 0.3)',
+                                            background: isRegistered ? 'rgba(255,255,255,0.05)' : 'var(--secondary)',
+                                            color: isRegistered ? 'rgba(255,255,255,0.3)' : 'var(--primary)',
+                                            border: isRegistered ? '1px solid rgba(255,255,255,0.1)' : 'none',
+                                        }}
+                                    >
+                                        {registering ? <Loader2 className="animate-spin" size={24} /> :
+                                            isRegistered ? 'YA ESTÁS INSCRITO' : 'INSCRIBIRME AHORA'}
+                                    </button>
+                                </div>
+                            </motion.div>
+                        </div>
+                    </div>
                 </div>
             </div>
-
-            <div style={{
-                position: isMobile ? 'sticky' : 'relative',
-                bottom: 0,
-                zIndex: 50,
-                padding: '15px 25px',
-                background: isMobile ? 'linear-gradient(to top, var(--primary) 60%, transparent)' : 'transparent'
-            }}>
-                <button
-                    onClick={handleRegister}
-                    disabled={registering || (isRegistered && !showSuccess)}
-                    className="btn-primary"
-                    style={{
-                        width: '100%',
-                        padding: '16px',
-                        fontSize: '14px',
-                        boxShadow: '0 10px 30px rgba(163, 230, 53, 0.15)',
-                        background: isRegistered ? 'rgba(255,255,255,0.05)' : 'var(--secondary)',
-                        color: isRegistered ? 'rgba(255,255,255,0.4)' : 'var(--primary)',
-                        border: isRegistered ? '1px solid rgba(255,255,255,0.1)' : 'none',
-                        borderRadius: '20px',
-                        fontWeight: '950',
-                        letterSpacing: '1px'
-                    }}
-                >
-                    {registering ? <Loader2 className="animate-spin" size={20} /> :
-                        isRegistered ? 'INSCRIPCIÓN COMPLETADA' : 'INSCRIBIRME AHORA'}
-                </button>
-            </div> 
         </div>
     );
 };
