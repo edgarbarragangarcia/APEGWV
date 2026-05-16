@@ -483,9 +483,14 @@ const TournamentRegistration: React.FC = () => {
             </div> {/* End of Sticky Wrapper */}
 
 
-            <div style={{ padding: '0 30px', marginTop: '-20px', position: 'relative', zIndex: 20 }}>
+            <div style={{ padding: isMobile ? '30px' : '0 30px', marginTop: isMobile ? '20px' : '-20px', position: 'relative', zIndex: 20 }}>
                 {/* Quick Info Grid */}
-                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, 1fr)', gap: isMobile ? '10px' : '15px', marginBottom: '40px' }}>
+                <div style={{ 
+                    display: 'grid', 
+                    gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, 1fr)', 
+                    gap: isMobile ? '15px' : '15px', 
+                    marginBottom: '40px' 
+                }}>
                     {[
                         { icon: <Calendar />, label: 'FECHA', value: new Date(tournament.date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC' }) },
                         { icon: <Flag />, label: 'MODO JUEGO', value: tournament.game_mode || 'Stableford' },
@@ -496,18 +501,19 @@ const TournamentRegistration: React.FC = () => {
                             key={i}
                             className="glass"
                             style={{ 
-                                padding: isMobile ? '12px 15px' : '20px', 
-                                borderRadius: isMobile ? '20px' : '25px', 
+                                padding: isMobile ? '18px 20px' : '20px', 
+                                borderRadius: isMobile ? '25px' : '25px', 
                                 display: 'flex', 
                                 flexDirection: 'column', 
-                                gap: '8px', 
-                                background: 'rgba(255,255,255,0.03)' 
+                                gap: '10px', 
+                                background: 'rgba(255,255,255,0.03)',
+                                border: '1px solid rgba(255,255,255,0.05)'
                             }}
                         >
-                            <div style={{ color: 'var(--secondary)', opacity: 0.8, transform: isMobile ? 'scale(0.8)' : 'none', transformOrigin: 'left center' }}>{item.icon}</div>
+                            <div style={{ color: 'var(--secondary)', opacity: 0.9, transform: isMobile ? 'scale(0.9)' : 'none', transformOrigin: 'left center' }}>{item.icon}</div>
                             <div>
-                                <div style={{ fontSize: isMobile ? '8px' : '9px', fontWeight: '900', color: 'rgba(255,255,255,0.4)', letterSpacing: '1px' }}>{item.label}</div>
-                                <div style={{ fontSize: isMobile ? '12px' : '14px', fontWeight: '900', color: item.color || 'white', marginTop: '2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.value}</div>
+                                <div style={{ fontSize: isMobile ? '9px' : '9px', fontWeight: '900', color: 'rgba(255,255,255,0.4)', letterSpacing: '1px' }}>{item.label}</div>
+                                <div style={{ fontSize: isMobile ? '13px' : '14px', fontWeight: '900', color: item.color || 'white', marginTop: '4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.value}</div>
                             </div>
                         </div>
                     ))}
