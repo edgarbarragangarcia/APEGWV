@@ -411,10 +411,6 @@ const TournamentRegistration: React.FC = () => {
                         )}
                     </div> {/* End of Hero Image Container */}
 
-                    </motion.div>
-            </div> {/* End of Sticky Wrapper */}
-
-
 
                     <div style={{ padding: isMobile ? '30px' : '0 30px', marginTop: isMobile ? '20px' : '-20px', position: 'relative', zIndex: 20 }}>
                         {/* Quick Info Grid */}
@@ -765,7 +761,6 @@ const TournamentRegistration: React.FC = () => {
 
                     {/* BACK SIDE (Mobile Form) */}
                     {isMobile && (
-{/* BACK SIDE (Form) */}
                     <div style={{ 
                         backfaceVisibility: 'hidden', 
                         WebkitBackfaceVisibility: 'hidden',
