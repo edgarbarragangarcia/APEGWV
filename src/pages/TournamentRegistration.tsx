@@ -276,7 +276,7 @@ const TournamentRegistration: React.FC = () => {
                 )}
             </AnimatePresence>
 
-            {/* Premium Hero Section & Quick Info (Sticky on all devices) */}
+            {/* Premium Hero Section (Sticky on all devices) */}
             <div style={{ position: 'sticky', top: 0, zIndex: 40, background: 'var(--primary)' }}>
                 <div style={{ position: 'relative', height: '40vh', minHeight: '350px', overflow: 'hidden' }}>
                 <img
@@ -325,6 +325,7 @@ const TournamentRegistration: React.FC = () => {
                     </div>
                 </div>
             </div>
+            </div> {/* End of Sticky Wrapper */}
 
             <div style={{ padding: '0 30px', marginTop: '-20px', position: 'relative', zIndex: 20 }}>
                 {/* Quick Info Grid */}
@@ -349,7 +350,6 @@ const TournamentRegistration: React.FC = () => {
                     ))}
                 </div>
             </div>
-        </div>
 
         {/* Scrollable Content Area */}
         <div style={{ padding: '20px 30px', position: 'relative', zIndex: 20 }}>
