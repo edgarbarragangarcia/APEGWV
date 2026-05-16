@@ -42,6 +42,7 @@ const TournamentRegistration: React.FC = () => {
     const [isRegistered, setIsRegistered] = useState(false);
     const [addGuest, setAddGuest] = useState(false);
     const [activeTab, setActiveTab] = useState<'rules' | 'notes' | 'info'>('info');
+    const [isFlipped, setIsFlipped] = useState(false);
     const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
 
     // Registration form states
@@ -277,55 +278,201 @@ const TournamentRegistration: React.FC = () => {
             </AnimatePresence>
 
             {/* Premium Hero Section (Sticky on all devices) */}
-            <div style={{ position: 'sticky', top: 0, zIndex: 40, background: 'var(--primary)' }}>
-                <div style={{ position: 'relative', height: '40vh', minHeight: '350px', overflow: 'hidden' }}>
-                <img
-                    src={tournament.image_url || 'https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?q=80&w=2000'}
-                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                    alt=""
-                />
-                <div style={{ 
-                    position: 'absolute', 
-                    bottom: 0, left: 0, right: 0, height: '70%', 
-                    background: 'linear-gradient(to top, var(--primary) 0%, rgba(14,47,31,0.8) 40%, transparent 100%)' 
-                }} />
-                
-                {/* Float elements for depth */}
-                <div style={{ position: 'absolute', top: '20px', left: '20px', zIndex: 10 }}>
-                    <div className="glass" style={{
-                        padding: '10px 15px', borderRadius: '15px', background: 'rgba(0,0,0,0.3)',
-                        border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', gap: '10px'
+            <div style={{ position: 'sticky', top: 0, zIndex: 40, background: 'var(--primary)', perspective: '1000px' }}>
+                <motion.div
+                    animate={{ 
+                        rotateY: isFlipped ? 180 : 0,
+                        height: isMobile && isFlipped ? '85vh' : '40vh'
+                    }}
+                    transition={{ duration: 0.6, type: 'spring', stiffness: 260, damping: 20 }}
+                    style={{ 
+                        position: 'relative', 
+                        minHeight: isMobile && isFlipped ? '550px' : '350px',
+                        overflow: 'hidden',
+                        transformStyle: 'preserve-3d'
+                    }}
+                >
+                    {/* FRONT SIDE */}
+                    <div style={{ 
+                        backfaceVisibility: 'hidden',
+                        position: 'absolute',
+                        inset: 0,
+                        width: '100%',
+                        height: '100%',
+                        zIndex: isFlipped ? 0 : 2
                     }}>
-                        <Star size={14} color="var(--secondary)" fill="var(--secondary)" />
-                        <span style={{ fontSize: '10px', fontWeight: '900', color: 'white', letterSpacing: '1px' }}>EVENTO PREMIER</span>
-                    </div>
-                </div>
-
-                <div style={{ position: 'absolute', bottom: isMobile ? '70px' : '50px', left: '0', width: '100%', padding: '0 30px' }}>
-                    <div style={{ opacity: 1 }}>
-                        <h1 style={{ 
-                            fontSize: isMobile ? '36px' : '56px', 
-                            fontWeight: '950', 
-                            margin: '0 0 10px 0', 
-                            color: 'white', 
-                            letterSpacing: '-2px',
-                            lineHeight: '1',
-                            textShadow: '0 10px 20px rgba(0,0,0,0.5)'
-                        }}>
-                            {tournament.name}
-                        </h1>
-                        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '20px', color: 'rgba(255,255,255,0.8)' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', fontWeight: '600' }}>
-                                <MapPin size={18} color="var(--secondary)" /> {tournament.club}
+                        <img
+                            src={tournament.image_url || 'https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?q=80&w=2000'}
+                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                            alt=""
+                        />
+                        <div style={{ 
+                            position: 'absolute', 
+                            bottom: 0, left: 0, right: 0, height: '70%', 
+                            background: 'linear-gradient(to top, var(--primary) 0%, rgba(14,47,31,0.8) 40%, transparent 100%)' 
+                        }} />
+                        
+                        {/* Float elements for depth */}
+                        <div style={{ position: 'absolute', top: '20px', left: '20px', zIndex: 10 }}>
+                            <div className="glass" style={{
+                                padding: '10px 15px', borderRadius: '15px', background: 'rgba(0,0,0,0.3)',
+                                border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', gap: '10px'
+                            }}>
+                                <Star size={14} color="var(--secondary)" fill="var(--secondary)" />
+                                <span style={{ fontSize: '10px', fontWeight: '900', color: 'white', letterSpacing: '1px' }}>EVENTO PREMIER</span>
                             </div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', fontWeight: '600' }}>
-                                <Users size={18} color="var(--secondary)" /> {tournament.current_participants || 0} / {tournament.participants_limit || '∞'} JUGADORES
+                        </div>
+
+                        <div style={{ position: 'absolute', bottom: isMobile ? '70px' : '50px', left: '0', width: '100%', padding: '0 30px' }}>
+                            <div style={{ opacity: 1 }}>
+                                <h1 style={{ 
+                                    fontSize: isMobile ? '36px' : '56px', 
+                                    fontWeight: '950', 
+                                    margin: '0 0 10px 0', 
+                                    color: 'white', 
+                                    letterSpacing: '-2px',
+                                    lineHeight: '1',
+                                    textShadow: '0 10px 20px rgba(0,0,0,0.5)'
+                                }}>
+                                    {tournament.name}
+                                </h1>
+                                <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '20px', color: 'rgba(255,255,255,0.8)' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', fontWeight: '600' }}>
+                                        <MapPin size={18} color="var(--secondary)" /> {tournament.club}
+                                    </div>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', fontWeight: '600' }}>
+                                        <Users size={18} color="var(--secondary)" /> {tournament.current_participants || 0} / {tournament.participants_limit || '∞'} JUGADORES
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Mobile Registration Button */}
+                        {isMobile && !isFlipped && (
+                            <motion.button
+                                initial={{ opacity: 0, scale: 0.8 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    setIsFlipped(true);
+                                }}
+                                style={{
+                                    position: 'absolute',
+                                    bottom: '30px',
+                                    right: '30px',
+                                    background: 'var(--secondary)',
+                                    color: 'var(--primary)',
+                                    border: 'none',
+                                    padding: '15px 25px',
+                                    borderRadius: '20px',
+                                    fontWeight: '950',
+                                    fontSize: '12px',
+                                    letterSpacing: '1px',
+                                    boxShadow: '0 15px 30px rgba(163, 230, 53, 0.4)',
+                                    zIndex: 50,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '10px'
+                                }}
+                            >
+                                INSCRIPCIÓN <Trophy size={16} />
+                            </motion.button>
+                        )}
+                    </div>
+
+                    {/* BACK SIDE (Form) */}
+                    <div style={{ 
+                        backfaceVisibility: 'hidden', 
+                        transform: 'rotateY(180deg)', 
+                        position: 'absolute', 
+                        inset: 0,
+                        width: '100%',
+                        height: '100%',
+                        background: 'linear-gradient(135deg, #152c1e, #0a0f0d)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        zIndex: isFlipped ? 2 : 0
+                    }}>
+                        <div style={{ 
+                            padding: '20px 30px', 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            justifyContent: 'space-between',
+                            borderBottom: '1px solid rgba(255,255,255,0.05)',
+                            background: 'rgba(0,0,0,0.2)'
+                        }}>
+                            <div>
+                                <h3 style={{ fontSize: '18px', fontWeight: '950', margin: 0 }}>INSCRIPCIÓN</h3>
+                                <p style={{ fontSize: '10px', color: 'var(--secondary)', fontWeight: '700', margin: 0 }}>{tournament.name}</p>
+                            </div>
+                            <button 
+                                onClick={() => setIsFlipped(false)}
+                                style={{
+                                    background: 'rgba(255,255,255,0.05)',
+                                    border: '1px solid rgba(255,255,255,0.1)',
+                                    color: 'white',
+                                    padding: '8px 15px',
+                                    borderRadius: '12px',
+                                    fontSize: '11px',
+                                    fontWeight: '900'
+                                }}
+                            >
+                                VOLVER
+                            </button>
+                        </div>
+                        <div style={{ flex: 1, overflowY: 'auto', padding: '20px 30px' }}>
+                            {/* Reusing form fields structure for back side */}
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                                {[
+                                    { icon: <Users />, label: 'NOMBRE COMPLETO', value: player1.name, field: 'name' },
+                                    { icon: <Mail />, label: 'CORREO ELECTRÓNICO', value: player1.email, field: 'email' },
+                                    { icon: <ShieldCheck />, label: 'HÁNDICAP', value: player1.handicap, field: 'handicap' },
+                                    { icon: <Star />, label: 'ID FEDERACIÓN', value: player1.federationCode, field: 'federationCode' },
+                                    { icon: <HeartHandshake />, label: 'TELÉFONO', value: player1.phone, field: 'phone' }
+                                ].map((input, i) => (
+                                    <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                                        <label style={{ fontSize: '8px', fontWeight: '900', color: 'var(--secondary)', marginLeft: '10px', letterSpacing: '1px' }}>{input.label}</label>
+                                        <div style={{ 
+                                            padding: '12px 15px', borderRadius: '15px', display: 'flex', alignItems: 'center', gap: '12px',
+                                            background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.05)'
+                                        }}>
+                                            <div style={{ color: 'rgba(255,255,255,0.3)' }}>{React.cloneElement(input.icon as any, { size: 16 })}</div>
+                                            <input
+                                                type="text"
+                                                value={input.value}
+                                                onChange={(e) => setPlayer1({ ...player1, [input.field]: e.target.value })}
+                                                placeholder={`Tu ${input.label.toLowerCase()}`}
+                                                style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none', fontSize: '14px', fontWeight: '600' }}
+                                            />
+                                        </div>
+                                    </div>
+                                ))}
+
+                                <button
+                                    onClick={handleRegister}
+                                    disabled={registering || (isRegistered && !showSuccess)}
+                                    className="btn-primary"
+                                    style={{ 
+                                        width: '100%', padding: '18px', borderRadius: '20px', 
+                                        fontWeight: '950', fontSize: '14px', marginTop: '10px',
+                                        boxShadow: '0 10px 30px rgba(163, 230, 53, 0.3)',
+                                        background: isRegistered ? 'rgba(255,255,255,0.05)' : 'var(--secondary)',
+                                        color: isRegistered ? 'rgba(255,255,255,0.3)' : 'var(--primary)',
+                                    }}
+                                >
+                                    {registering ? <Loader2 className="animate-spin" size={20} /> :
+                                        isRegistered ? 'YA ESTÁS INSCRITO' : 'INSCRIBIRME AHORA'}
+                                </button>
+                                
+                                <p style={{ textAlign: 'center', fontSize: '10px', color: 'rgba(255,255,255,0.3)', marginBottom: '40px' }}>
+                                    Al inscribirte aceptas los términos y condiciones del torneo.
+                                </p>
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
+                </motion.div>
             </div> {/* End of Sticky Wrapper */}
+
 
             <div style={{ padding: '0 30px', marginTop: '-20px', position: 'relative', zIndex: 20 }}>
                 {/* Quick Info Grid */}
@@ -509,141 +656,144 @@ const TournamentRegistration: React.FC = () => {
                         </div>
                     </div>
 
-                    {/* Registration Form Column */}
-                    <div style={{ flex: 1.2 }}>
-                        <div style={{ position: isMobile ? 'relative' : 'sticky', top: '30px' }}>
-                            <motion.div
-                                initial={{ opacity: 0, x: 20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                className="glass"
-                                style={{ 
-                                    padding: '35px', 
-                                    borderRadius: '40px', 
-                                    background: 'rgba(255,255,255,0.03)',
-                                    border: '1px solid rgba(255,255,255,0.08)',
-                                    boxShadow: '0 40px 80px rgba(0,0,0,0.4)'
-                                }}
-                            >
-                                <div style={{ marginBottom: '30px' }}>
-                                    <h3 style={{ fontSize: '24px', fontWeight: '950', marginBottom: '5px' }}>Inscripción</h3>
-                                    <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.4)', fontWeight: '600' }}>Completa tus datos para participar</p>
-                                </div>
-
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                                    {/* Input Fields */}
-                                    {[
-                                        { icon: <Users />, label: 'NOMBRE COMPLETO', value: player1.name, field: 'name' },
-                                        { icon: <Mail />, label: 'CORREO ELECTRÓNICO', value: player1.email, field: 'email' },
-                                        { icon: <ShieldCheck />, label: 'HÁNDICAP', value: player1.handicap, field: 'handicap', half: true },
-                                        { icon: <Star />, label: 'ID FEDERACIÓN', value: player1.federationCode, field: 'federationCode', half: true },
-                                        { icon: <HeartHandshake />, label: 'TELÉFONO', value: player1.phone, field: 'phone' }
-                                    ].map((input, i) => (
-                                        <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                            <label style={{ fontSize: '9px', fontWeight: '900', color: 'var(--secondary)', marginLeft: '10px', letterSpacing: '1px' }}>{input.label}</label>
-                                            <div className="glass" style={{ 
-                                                padding: '15px 20px', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '15px',
-                                                background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.05)',
-                                                transition: 'all 0.3s ease'
-                                            }}>
-                                                <div style={{ color: 'rgba(255,255,255,0.3)' }}>{input.icon}</div>
-                                                <input
-                                                    type="text"
-                                                    value={input.value}
-                                                    onChange={(e) => setPlayer1({ ...player1, [input.field]: e.target.value })}
-                                                    placeholder={`Ingresa tu ${input.label.toLowerCase()}`}
-                                                    style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none', fontSize: '15px', fontWeight: '600' }}
-                                                />
-                                            </div>
-                                        </div>
-                                    ))}
-
-                                    {/* Add Companion Toggle */}
-                                    <div 
-                                        onClick={() => setAddGuest(!addGuest)}
-                                        style={{ 
-                                            marginTop: '10px', padding: '20px', borderRadius: '25px', 
-                                            border: `1px dashed ${addGuest ? 'var(--secondary)' : 'rgba(255,255,255,0.2)'}`,
-                                            textAlign: 'center', cursor: 'pointer', background: addGuest ? 'rgba(163, 230, 53, 0.05)' : 'transparent',
-                                            transition: 'all 0.3s ease'
-                                        }}
-                                    >
-                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', color: addGuest ? 'var(--secondary)' : 'white' }}>
-                                            {addGuest ? <X size={18} /> : <Plus size={18} />}
-                                            <span style={{ fontSize: '13px', fontWeight: '900' }}>{addGuest ? 'CANCELAR INVITADO' : 'AGREGAR JUGADOR / ACOMPAÑANTE'}</span>
-                                        </div>
+                    {/* Registration Form Column (Desktop Only) */}
+                    {!isMobile && (
+                        <div style={{ flex: 1.2 }}>
+                            <div style={{ position: 'sticky', top: '30px' }}>
+                                <motion.div
+                                    initial={{ opacity: 0, x: 20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    className="glass"
+                                    style={{ 
+                                        padding: '35px', 
+                                        borderRadius: '40px', 
+                                        background: 'rgba(255,255,255,0.03)',
+                                        border: '1px solid rgba(255,255,255,0.08)',
+                                        boxShadow: '0 40px 80px rgba(0,0,0,0.4)'
+                                    }}
+                                >
+                                    <div style={{ marginBottom: '30px' }}>
+                                        <h3 style={{ fontSize: '24px', fontWeight: '950', marginBottom: '5px' }}>Inscripción</h3>
+                                        <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.4)', fontWeight: '600' }}>Completa tus datos para participar</p>
                                     </div>
 
-                                    {/* Companion Form */}
-                                    <AnimatePresence>
-                                        {addGuest && (
-                                            <motion.div
-                                                initial={{ opacity: 0, height: 0 }}
-                                                animate={{ opacity: 1, height: 'auto' }}
-                                                exit={{ opacity: 0, height: 0 }}
-                                                style={{ overflow: 'hidden' }}
-                                            >
-                                                <div style={{ paddingTop: '30px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                                                    <div style={{ display: 'flex', gap: '10px' }}>
-                                                        {['player', 'companion'].map(type => (
-                                                            <button
-                                                                key={type}
-                                                                onClick={() => setPlayer2({ ...player2, type: type as any })}
-                                                                style={{ 
-                                                                    flex: 1, padding: '12px', borderRadius: '15px', 
-                                                                    background: player2.type === type ? 'var(--secondary)' : 'rgba(255,255,255,0.05)',
-                                                                    color: player2.type === type ? 'var(--primary)' : 'white',
-                                                                    fontSize: '11px', fontWeight: '900', textTransform: 'uppercase'
-                                                                }}
-                                                            >
-                                                                {type === 'player' ? 'Jugador' : 'Acompañante'}
-                                                            </button>
-                                                        ))}
-                                                    </div>
-                                                    <div className="glass" style={{ padding: '15px 20px', borderRadius: '20px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
-                                                        <input
-                                                            type="text"
-                                                            placeholder="Nombre completo"
-                                                            value={player2.name}
-                                                            onChange={(e) => setPlayer2({ ...player2, name: e.target.value })}
-                                                            style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none', fontSize: '14px' }}
-                                                        />
-                                                    </div>
-                                                    {player2.type === 'player' && (
-                                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
-                                                            <div className="glass" style={{ padding: '15px 20px', borderRadius: '20px', background: 'rgba(255,255,255,0.05)' }}>
-                                                                <input type="text" placeholder="Hándicap" value={player2.handicap} onChange={(e) => setPlayer2({ ...player2, handicap: e.target.value })} style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none', fontSize: '13px' }} />
-                                                            </div>
-                                                            <div className="glass" style={{ padding: '15px 20px', borderRadius: '20px', background: 'rgba(255,255,255,0.05)' }}>
-                                                                <input type="text" placeholder="Federación" value={player2.federationCode} onChange={(e) => setPlayer2({ ...player2, federationCode: e.target.value })} style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none', fontSize: '13px' }} />
-                                                            </div>
-                                                        </div>
-                                                    )}
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                                        {/* Input Fields */}
+                                        {[
+                                            { icon: <Users />, label: 'NOMBRE COMPLETO', value: player1.name, field: 'name' },
+                                            { icon: <Mail />, label: 'CORREO ELECTRÓNICO', value: player1.email, field: 'email' },
+                                            { icon: <ShieldCheck />, label: 'HÁNDICAP', value: player1.handicap, field: 'handicap', half: true },
+                                            { icon: <Star />, label: 'ID FEDERACIÓN', value: player1.federationCode, field: 'federationCode', half: true },
+                                            { icon: <HeartHandshake />, label: 'TELÉFONO', value: player1.phone, field: 'phone' }
+                                        ].map((input, i) => (
+                                            <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                                <label style={{ fontSize: '9px', fontWeight: '900', color: 'var(--secondary)', marginLeft: '10px', letterSpacing: '1px' }}>{input.label}</label>
+                                                <div className="glass" style={{ 
+                                                    padding: '15px 20px', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '15px',
+                                                    background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.05)',
+                                                    transition: 'all 0.3s ease'
+                                                }}>
+                                                    <div style={{ color: 'rgba(255,255,255,0.3)' }}>{input.icon}</div>
+                                                    <input
+                                                        type="text"
+                                                        value={input.value}
+                                                        onChange={(e) => setPlayer1({ ...player1, [input.field]: e.target.value })}
+                                                        placeholder={`Ingresa tu ${input.label.toLowerCase()}`}
+                                                        style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none', fontSize: '15px', fontWeight: '600' }}
+                                                    />
                                                 </div>
-                                            </motion.div>
-                                        )}
-                                    </AnimatePresence>
+                                            </div>
+                                        ))}
 
-                                    {/* Submit Button */}
-                                    <button
-                                        onClick={handleRegister}
-                                        disabled={registering || (isRegistered && !showSuccess)}
-                                        className="btn-primary"
-                                        style={{ 
-                                            width: '100%', padding: '20px', borderRadius: '25px', 
-                                            fontWeight: '950', fontSize: '16px', marginTop: '20px',
-                                            boxShadow: '0 15px 40px rgba(163, 230, 53, 0.3)',
-                                            background: isRegistered ? 'rgba(255,255,255,0.05)' : 'var(--secondary)',
-                                            color: isRegistered ? 'rgba(255,255,255,0.3)' : 'var(--primary)',
-                                            border: isRegistered ? '1px solid rgba(255,255,255,0.1)' : 'none',
-                                        }}
-                                    >
-                                        {registering ? <Loader2 className="animate-spin" size={24} /> :
-                                            isRegistered ? 'YA ESTÁS INSCRITO' : 'INSCRIBIRME AHORA'}
-                                    </button>
-                                </div>
-                            </motion.div>
+                                        {/* Add Companion Toggle */}
+                                        <div 
+                                            onClick={() => setAddGuest(!addGuest)}
+                                            style={{ 
+                                                marginTop: '10px', padding: '20px', borderRadius: '25px', 
+                                                border: `1px dashed ${addGuest ? 'var(--secondary)' : 'rgba(255,255,255,0.2)'}`,
+                                                textAlign: 'center', cursor: 'pointer', background: addGuest ? 'rgba(163, 230, 53, 0.05)' : 'transparent',
+                                                transition: 'all 0.3s ease'
+                                            }}
+                                        >
+                                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', color: addGuest ? 'var(--secondary)' : 'white' }}>
+                                                {addGuest ? <X size={18} /> : <Plus size={18} />}
+                                                <span style={{ fontSize: '13px', fontWeight: '900' }}>{addGuest ? 'CANCELAR INVITADO' : 'AGREGAR JUGADOR / ACOMPAÑANTE'}</span>
+                                            </div>
+                                        </div>
+
+                                        {/* Companion Form */}
+                                        <AnimatePresence>
+                                            {addGuest && (
+                                                <motion.div
+                                                    initial={{ opacity: 0, height: 0 }}
+                                                    animate={{ opacity: 1, height: 'auto' }}
+                                                    exit={{ opacity: 0, height: 0 }}
+                                                    style={{ overflow: 'hidden' }}
+                                                >
+                                                    <div style={{ paddingTop: '30px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                                                        <div style={{ display: 'flex', gap: '10px' }}>
+                                                            {['player', 'companion'].map(type => (
+                                                                <button
+                                                                    key={type}
+                                                                    onClick={() => setPlayer2({ ...player2, type: type as any })}
+                                                                    style={{ 
+                                                                        flex: 1, padding: '12px', borderRadius: '15px', 
+                                                                        background: player2.type === type ? 'var(--secondary)' : 'rgba(255,255,255,0.05)',
+                                                                        color: player2.type === type ? 'var(--primary)' : 'white',
+                                                                        fontSize: '11px', fontWeight: '900', textTransform: 'uppercase'
+                                                                    }}
+                                                                >
+                                                                    {type === 'player' ? 'Jugador' : 'Acompañante'}
+                                                                </button>
+                                                            ))}
+                                                        </div>
+                                                        <div className="glass" style={{ padding: '15px 20px', borderRadius: '20px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                                            <input
+                                                                type="text"
+                                                                placeholder="Nombre completo"
+                                                                value={player2.name}
+                                                                onChange={(e) => setPlayer2({ ...player2, name: e.target.value })}
+                                                                style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none', fontSize: '14px' }}
+                                                            />
+                                                        </div>
+                                                        {player2.type === 'player' && (
+                                                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                                                                <div className="glass" style={{ padding: '15px 20px', borderRadius: '20px', background: 'rgba(255,255,255,0.05)' }}>
+                                                                    <input type="text" placeholder="Hándicap" value={player2.handicap} onChange={(e) => setPlayer2({ ...player2, handicap: e.target.value })} style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none', fontSize: '13px' }} />
+                                                                </div>
+                                                                <div className="glass" style={{ padding: '15px 20px', borderRadius: '20px', background: 'rgba(255,255,255,0.05)' }}>
+                                                                    <input type="text" placeholder="Federación" value={player2.federationCode} onChange={(e) => setPlayer2({ ...player2, federationCode: e.target.value })} style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none', fontSize: '13px' }} />
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </motion.div>
+                                            )}
+                                        </AnimatePresence>
+
+                                        {/* Submit Button */}
+                                        <button
+                                            onClick={handleRegister}
+                                            disabled={registering || (isRegistered && !showSuccess)}
+                                            className="btn-primary"
+                                            style={{ 
+                                                width: '100%', padding: '20px', borderRadius: '25px', 
+                                                fontWeight: '950', fontSize: '16px', marginTop: '20px',
+                                                boxShadow: '0 15px 40px rgba(163, 230, 53, 0.3)',
+                                                background: isRegistered ? 'rgba(255,255,255,0.05)' : 'var(--secondary)',
+                                                color: isRegistered ? 'rgba(255,255,255,0.3)' : 'var(--primary)',
+                                                border: isRegistered ? '1px solid rgba(255,255,255,0.1)' : 'none',
+                                            }}
+                                        >
+                                            {registering ? <Loader2 className="animate-spin" size={24} /> :
+                                                isRegistered ? 'YA ESTÁS INSCRITO' : 'INSCRIBIRME AHORA'}
+                                        </button>
+                                    </div>
+                                </motion.div>
+                            </div>
                         </div>
-                    </div>
+                    )}
+
                 </div>
             </div>
         </div>
