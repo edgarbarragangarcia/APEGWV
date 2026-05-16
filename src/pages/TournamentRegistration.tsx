@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
     Calendar, MapPin, Trophy, ShieldCheck, HeartHandshake, 
     CheckCircle2, Loader2, Plus, X, Mail, BookOpen, 
-    Info, Star, Users, Flag, Layout
+    Info, Star, Users, Flag
 } from 'lucide-react';
 import { supabase } from '../services/SupabaseManager';
 import { useAuth } from '../context/AuthContext';
@@ -440,7 +440,7 @@ const TournamentRegistration: React.FC = () => {
                                     <div style={{ color: 'var(--secondary)', opacity: 0.9, transform: isMobile ? 'scale(0.9)' : 'none', transformOrigin: 'left center' }}>{item.icon}</div>
                                     <div>
                                         <div style={{ fontSize: isMobile ? '9px' : '9px', fontWeight: '900', color: 'rgba(255,255,255,0.4)', letterSpacing: '1px' }}>{item.label}</div>
-                                        <div style={{ fontSize: isMobile ? '13px' : '14px', fontWeight: '900', color: item.color || 'white', marginTop: '4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.value}</div>
+                                        <div style={{ fontSize: isMobile ? '13px' : '14px', fontWeight: '900', color: (item as any).color || 'white', marginTop: '4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.value}</div>
                                     </div>
                                 </div>
                             ))}
