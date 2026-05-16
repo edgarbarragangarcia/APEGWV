@@ -218,9 +218,10 @@ const TournamentRegistration: React.FC = () => {
             setIsRegistered(true);
             setShowSuccess(true);
             if (navigator.vibrate) navigator.vibrate([50, 30, 50]);
-        } catch (err) {
+        } catch (err: any) {
             console.error('Error registering:', err);
-            alert('Hubo un error al procesar tu inscripción.');
+            const msg = err.message || 'Error desconocido';
+            alert(`Hubo un error al procesar tu inscripción: ${msg}`);
         } finally {
             setRegistering(false);
         }
