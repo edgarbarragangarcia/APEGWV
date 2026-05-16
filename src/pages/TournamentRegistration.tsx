@@ -325,7 +325,7 @@ const TournamentRegistration: React.FC = () => {
                             </div>
                         </div>
 
-                        <div style={{ position: 'absolute', bottom: isMobile ? '70px' : '50px', left: '0', width: '100%', padding: '0 30px' }}>
+                        <div style={{ position: 'absolute', bottom: isMobile ? '80px' : '50px', left: '0', width: '100%', padding: '0 30px' }}>
                             <div style={{ opacity: 1 }}>
                                 <h1 style={{ 
                                     fontSize: isMobile ? '36px' : '56px', 
@@ -349,7 +349,7 @@ const TournamentRegistration: React.FC = () => {
                             </div>
                         </div>
 
-                        {/* Mobile Registration Button */}
+                        {/* Mobile Registration Button - Floating over the edge */}
                         {isMobile && !isFlipped && (
                             <motion.button
                                 initial={{ opacity: 0, scale: 0.8, x: '-50%' }}
@@ -360,23 +360,23 @@ const TournamentRegistration: React.FC = () => {
                                 }}
                                 style={{
                                     position: 'absolute',
-                                    bottom: '25px',
+                                    bottom: '-25px', // Floating over the edge
                                     left: '50%',
                                     background: 'var(--secondary)',
                                     color: 'var(--primary)',
                                     border: 'none',
-                                    padding: '20px 45px', // Increased padding
+                                    padding: '18px 45px',
                                     borderRadius: '25px',
                                     fontWeight: '950',
                                     fontSize: '14px',
                                     letterSpacing: '1px',
-                                    boxShadow: '0 20px 40px rgba(163, 230, 53, 0.4)',
-                                    zIndex: 50,
+                                    boxShadow: '0 20px 40px rgba(0, 0, 0, 0.4), 0 0 20px rgba(163, 230, 53, 0.2)',
+                                    zIndex: 100,
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
                                     gap: '12px',
-                                    width: '80%', // Make it wider and centered
+                                    width: '80%',
                                     maxWidth: '300px'
                                 }}
                             >
