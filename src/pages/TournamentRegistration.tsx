@@ -277,32 +277,29 @@ const TournamentRegistration: React.FC = () => {
                 )}
             </AnimatePresence>
 
-            {/* Premium Hero Section (Sticky on all devices) */}
-            <div style={{ position: 'sticky', top: 0, zIndex: 40, background: 'var(--primary)', perspective: '1200px' }}>
+            {/* Full Page Flip Wrapper on Mobile */}
+            <div style={{ perspective: isMobile ? '1500px' : 'none' }}>
                 <motion.div
-                    animate={{ 
-                        rotateY: isFlipped ? 180 : 0,
-                        height: isMobile && isFlipped ? '85vh' : '40vh'
-                    }}
+                    animate={isMobile ? { rotateY: isFlipped ? 180 : 0 } : {}}
                     transition={{ duration: 0.6, type: 'spring', stiffness: 260, damping: 20 }}
                     style={{ 
                         position: 'relative', 
-                        minHeight: isMobile && isFlipped ? '550px' : '350px',
-                        transformStyle: 'preserve-3d',
-                        WebkitTransformStyle: 'preserve-3d'
+                        transformStyle: isMobile ? 'preserve-3d' : 'flat',
+                        WebkitTransformStyle: isMobile ? 'preserve-3d' : 'flat'
                     }}
                 >
-                    {/* FRONT SIDE */}
+                    {/* FRONT SIDE (Entire Page) */}
                     <div style={{ 
                         backfaceVisibility: 'hidden',
                         WebkitBackfaceVisibility: 'hidden',
-                        position: 'absolute',
-                        inset: 0,
-                        width: '100%',
-                        height: '100%',
-                        zIndex: isFlipped ? 0 : 2,
-                        pointerEvents: isFlipped ? 'none' : 'auto'
+                        position: (isMobile && isFlipped) ? 'absolute' : 'relative',
+                        top: 0, left: 0, width: '100%',
+                        zIndex: (isMobile && isFlipped) ? 0 : 2,
+                        pointerEvents: (isMobile && isFlipped) ? 'none' : 'auto',
+                        background: 'var(--primary)'
                     }}>
+                        {/* Hero Image Container */}
+                        <div style={{ position: 'relative', height: isMobile ? '65vh' : '40vh', minHeight: '400px' }}>
                         <img
                             src={tournament.image_url || 'https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?q=80&w=2000'}
                             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
@@ -412,200 +409,13 @@ const TournamentRegistration: React.FC = () => {
                                 INSCRIPCIÓN <Trophy size={20} />
                             </motion.button>
                         )}
-                    </div>
+                    </div> {/* End of Hero Image Container */}
 
-                    {/* BACK SIDE (Form) */}
-                    <div style={{ 
-                        backfaceVisibility: 'hidden', 
-                        WebkitBackfaceVisibility: 'hidden',
-                        transform: 'rotateY(180deg)', 
-                        position: 'absolute', 
-                        inset: 0,
-                        width: '100%',
-                        height: '100%',
-                        background: '#0a0f0d', // Solid background for reliability
-                        display: 'flex',
-                        flexDirection: 'column',
-                        zIndex: isFlipped ? 2 : 0,
-                        pointerEvents: isFlipped ? 'auto' : 'none'
-                    }}>
-                        <div style={{ 
-                            padding: '20px 30px', 
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            justifyContent: 'space-between',
-                            borderBottom: '1px solid rgba(255,255,255,0.1)',
-                            background: 'rgba(0,0,0,0.4)'
-                        }}>
-                            <div>
-                                <h3 style={{ fontSize: '18px', fontWeight: '950', margin: 0, color: 'white' }}>INSCRIPCIÓN</h3>
-                                <p style={{ fontSize: '10px', color: 'var(--secondary)', fontWeight: '700', margin: 0 }}>{tournament.name}</p>
-                            </div>
-                            <button 
-                                onClick={() => setIsFlipped(false)}
-                                style={{
-                                    background: 'rgba(255,255,255,0.05)',
-                                    border: '1px solid rgba(255,255,255,0.1)',
-                                    color: 'white',
-                                    padding: '8px 15px',
-                                    borderRadius: '12px',
-                                    fontSize: '11px',
-                                    fontWeight: '900'
-                                }}
-                            >
-                                VOLVER
-                            </button>
-                        </div>
-                        <div style={{ 
-                            flex: 1, 
-                            overflowY: 'auto', 
-                            padding: '30px',
-                            background: 'linear-gradient(135deg, #152c1e, #0a0f0d)'
-                        }}>
-                            {/* Reusing form fields structure for back side */}
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                                {[
-                                    { icon: <Users />, label: 'NOMBRE COMPLETO', value: player1.name, field: 'name' },
-                                    { icon: <Mail />, label: 'CORREO ELECTRÓNICO', value: player1.email, field: 'email' },
-                                    { icon: <ShieldCheck />, label: 'HÁNDICAP', value: player1.handicap, field: 'handicap' },
-                                    { icon: <Star />, label: 'ID FEDERACIÓN', value: player1.federationCode, field: 'federationCode' },
-                                    { icon: <HeartHandshake />, label: 'TELÉFONO', value: player1.phone, field: 'phone' }
-                                ].map((input, i) => (
-                                    <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                        <label style={{ fontSize: '9px', fontWeight: '900', color: 'var(--secondary)', marginLeft: '10px', letterSpacing: '1px' }}>{input.label}</label>
-                                        <div style={{ 
-                                            padding: '15px 20px', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '15px',
-                                            background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.05)'
-                                        }}>
-                                            <div style={{ color: 'rgba(255,255,255,0.3)' }}>{React.cloneElement(input.icon as any, { size: 18 })}</div>
-                                            <input
-                                                type="text"
-                                                value={input.value}
-                                                onChange={(e) => setPlayer1({ ...player1, [input.field]: e.target.value })}
-                                                placeholder={`Tu ${input.label.toLowerCase()}`}
-                                                style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none', fontSize: '15px', fontWeight: '600' }}
-                                            />
-                                        </div>
-                                    </div>
-                                ))}
-
-                                {/* Add Companion Toggle */}
-                                <div 
-                                    onClick={() => setAddGuest(!addGuest)}
-                                    style={{ 
-                                        marginTop: '10px', padding: '18px', borderRadius: '20px', 
-                                        border: `1px dashed ${addGuest ? 'var(--secondary)' : 'rgba(255,255,255,0.2)'}`,
-                                        textAlign: 'center', cursor: 'pointer', background: addGuest ? 'rgba(163, 230, 53, 0.05)' : 'transparent',
-                                        transition: 'all 0.3s ease'
-                                    }}
-                                >
-                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', color: addGuest ? 'var(--secondary)' : 'white' }}>
-                                        {addGuest ? <X size={16} /> : <Plus size={16} />}
-                                        <span style={{ fontSize: '11px', fontWeight: '900' }}>{addGuest ? 'CANCELAR INVITADO' : 'AGREGAR JUGADOR / ACOMPAÑANTE'}</span>
-                                    </div>
-                                </div>
-
-                                {/* Companion Form */}
-                                <AnimatePresence>
-                                    {addGuest && (
-                                        <motion.div
-                                            initial={{ opacity: 0, height: 0 }}
-                                            animate={{ opacity: 1, height: 'auto' }}
-                                            exit={{ opacity: 0, height: 0 }}
-                                            style={{ overflow: 'hidden' }}
-                                        >
-                                            <div style={{ padding: '15px 0', display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                                                <div style={{ display: 'flex', gap: '10px' }}>
-                                                    {['player', 'companion'].map(type => (
-                                                        <button
-                                                            key={type}
-                                                            onClick={() => setPlayer2({ ...player2, type: type as any })}
-                                                            style={{ 
-                                                                flex: 1, padding: '10px', borderRadius: '12px', 
-                                                                background: player2.type === type ? 'var(--secondary)' : 'rgba(255,255,255,0.05)',
-                                                                color: player2.type === type ? 'var(--primary)' : 'white',
-                                                                fontSize: '10px', fontWeight: '900', textTransform: 'uppercase'
-                                                            }}
-                                                        >
-                                                            {type === 'player' ? 'Jugador' : 'Acompañante'}
-                                                        </button>
-                                                    ))}
-                                                </div>
-                                                <div style={{ padding: '12px 15px', borderRadius: '15px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
-                                                    <input
-                                                        type="text"
-                                                        placeholder="Nombre del invitado"
-                                                        value={player2.name}
-                                                        onChange={(e) => setPlayer2({ ...player2, name: e.target.value })}
-                                                        style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none', fontSize: '14px' }}
-                                                    />
-                                                </div>
-                                                <div style={{ padding: '12px 15px', borderRadius: '15px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
-                                                    <input
-                                                        type="email"
-                                                        placeholder="Correo del invitado"
-                                                        value={player2.email}
-                                                        onChange={(e) => setPlayer2({ ...player2, email: e.target.value })}
-                                                        style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none', fontSize: '14px' }}
-                                                    />
-                                                </div>
-                                                <div style={{ padding: '12px 15px', borderRadius: '15px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
-                                                    <input
-                                                        type="text"
-                                                        placeholder="Teléfono del invitado"
-                                                        value={player2.phone}
-                                                        onChange={(e) => setPlayer2({ ...player2, phone: e.target.value })}
-                                                        style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none', fontSize: '14px' }}
-                                                    />
-                                                </div>
-                                                {player2.type === 'player' && (
-                                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                                                        <div style={{ padding: '12px 15px', borderRadius: '15px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.05)' }}>
-                                                            <input type="text" placeholder="Hándicap" value={player2.handicap} onChange={(e) => setPlayer2({ ...player2, handicap: e.target.value })} style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none', fontSize: '13px' }} />
-                                                        </div>
-                                                        <div style={{ padding: '12px 15px', borderRadius: '15px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.05)' }}>
-                                                            <input type="text" placeholder="Federación" value={player2.federationCode} onChange={(e) => setPlayer2({ ...player2, federationCode: e.target.value })} style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none', fontSize: '13px' }} />
-                                                        </div>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </motion.div>
-                                    )}
-                                </AnimatePresence>
-
-                                <button
-                                    onClick={handleRegister}
-                                    disabled={registering || (isRegistered && !showSuccess)}
-                                    className="btn-primary"
-                                    style={{ 
-                                        width: '100%', padding: '20px', borderRadius: '25px', 
-                                        fontWeight: '950', fontSize: '16px', marginTop: '10px',
-                                        boxShadow: '0 15px 40px rgba(163, 230, 53, 0.3)',
-                                        background: isRegistered ? 'rgba(255,255,255,0.05)' : 'var(--secondary)',
-                                        color: isRegistered ? 'rgba(255,255,255,0.3)' : 'var(--primary)',
-                                    }}
-                                >
-                                    {registering ? <Loader2 className="animate-spin" size={24} /> :
-                                        isRegistered ? 'YA ESTÁS INSCRITO' : 'INSCRIBIRME AHORA'}
-                                </button>
-                                
-                                <p style={{ textAlign: 'center', fontSize: '11px', color: 'rgba(255,255,255,0.4)', paddingBottom: '40px' }}>
-                                    Al inscribirte aceptas los términos y condiciones del torneo.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </motion.div>
+                    </motion.div>
             </div> {/* End of Sticky Wrapper */}
 
 
-            {(!isMobile || !isFlipped) && (
-                <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.3 }}
-                >
+
                     <div style={{ padding: isMobile ? '30px' : '0 30px', marginTop: isMobile ? '20px' : '-20px', position: 'relative', zIndex: 20 }}>
                         {/* Quick Info Grid */}
                         <div style={{ 
@@ -951,8 +761,195 @@ const TournamentRegistration: React.FC = () => {
 
                         </div>
                     </div>
+                    </div> {/* End of FRONT SIDE */}
+
+                    {/* BACK SIDE (Mobile Form) */}
+                    {isMobile && (
+{/* BACK SIDE (Form) */}
+                    <div style={{ 
+                        backfaceVisibility: 'hidden', 
+                        WebkitBackfaceVisibility: 'hidden',
+                        transform: 'rotateY(180deg)', 
+                        position: 'absolute', 
+                        inset: 0,
+                        width: '100%',
+                        height: '100%',
+                        background: '#0a0f0d', // Solid background for reliability
+                        display: 'flex',
+                        flexDirection: 'column',
+                        zIndex: isFlipped ? 2 : 0,
+                        pointerEvents: isFlipped ? 'auto' : 'none'
+                    }}>
+                        <div style={{ 
+                            padding: '20px 30px', 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            justifyContent: 'space-between',
+                            borderBottom: '1px solid rgba(255,255,255,0.1)',
+                            background: 'rgba(0,0,0,0.4)'
+                        }}>
+                            <div>
+                                <h3 style={{ fontSize: '18px', fontWeight: '950', margin: 0, color: 'white' }}>INSCRIPCIÓN</h3>
+                                <p style={{ fontSize: '10px', color: 'var(--secondary)', fontWeight: '700', margin: 0 }}>{tournament.name}</p>
+                            </div>
+                            <button 
+                                onClick={() => setIsFlipped(false)}
+                                style={{
+                                    background: 'rgba(255,255,255,0.05)',
+                                    border: '1px solid rgba(255,255,255,0.1)',
+                                    color: 'white',
+                                    padding: '8px 15px',
+                                    borderRadius: '12px',
+                                    fontSize: '11px',
+                                    fontWeight: '900'
+                                }}
+                            >
+                                VOLVER
+                            </button>
+                        </div>
+                        <div style={{ 
+                            flex: 1, 
+                            overflowY: 'auto', 
+                            padding: '30px',
+                            background: 'linear-gradient(135deg, #152c1e, #0a0f0d)'
+                        }}>
+                            {/* Reusing form fields structure for back side */}
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                                {[
+                                    { icon: <Users />, label: 'NOMBRE COMPLETO', value: player1.name, field: 'name' },
+                                    { icon: <Mail />, label: 'CORREO ELECTRÓNICO', value: player1.email, field: 'email' },
+                                    { icon: <ShieldCheck />, label: 'HÁNDICAP', value: player1.handicap, field: 'handicap' },
+                                    { icon: <Star />, label: 'ID FEDERACIÓN', value: player1.federationCode, field: 'federationCode' },
+                                    { icon: <HeartHandshake />, label: 'TELÉFONO', value: player1.phone, field: 'phone' }
+                                ].map((input, i) => (
+                                    <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                        <label style={{ fontSize: '9px', fontWeight: '900', color: 'var(--secondary)', marginLeft: '10px', letterSpacing: '1px' }}>{input.label}</label>
+                                        <div style={{ 
+                                            padding: '15px 20px', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '15px',
+                                            background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.05)'
+                                        }}>
+                                            <div style={{ color: 'rgba(255,255,255,0.3)' }}>{React.cloneElement(input.icon as any, { size: 18 })}</div>
+                                            <input
+                                                type="text"
+                                                value={input.value}
+                                                onChange={(e) => setPlayer1({ ...player1, [input.field]: e.target.value })}
+                                                placeholder={`Tu ${input.label.toLowerCase()}`}
+                                                style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none', fontSize: '15px', fontWeight: '600' }}
+                                            />
+                                        </div>
+                                    </div>
+                                ))}
+
+                                {/* Add Companion Toggle */}
+                                <div 
+                                    onClick={() => setAddGuest(!addGuest)}
+                                    style={{ 
+                                        marginTop: '10px', padding: '18px', borderRadius: '20px', 
+                                        border: `1px dashed ${addGuest ? 'var(--secondary)' : 'rgba(255,255,255,0.2)'}`,
+                                        textAlign: 'center', cursor: 'pointer', background: addGuest ? 'rgba(163, 230, 53, 0.05)' : 'transparent',
+                                        transition: 'all 0.3s ease'
+                                    }}
+                                >
+                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', color: addGuest ? 'var(--secondary)' : 'white' }}>
+                                        {addGuest ? <X size={16} /> : <Plus size={16} />}
+                                        <span style={{ fontSize: '11px', fontWeight: '900' }}>{addGuest ? 'CANCELAR INVITADO' : 'AGREGAR JUGADOR / ACOMPAÑANTE'}</span>
+                                    </div>
+                                </div>
+
+                                {/* Companion Form */}
+                                <AnimatePresence>
+                                    {addGuest && (
+                                        <motion.div
+                                            initial={{ opacity: 0, height: 0 }}
+                                            animate={{ opacity: 1, height: 'auto' }}
+                                            exit={{ opacity: 0, height: 0 }}
+                                            style={{ overflow: 'hidden' }}
+                                        >
+                                            <div style={{ padding: '15px 0', display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                                                <div style={{ display: 'flex', gap: '10px' }}>
+                                                    {['player', 'companion'].map(type => (
+                                                        <button
+                                                            key={type}
+                                                            onClick={() => setPlayer2({ ...player2, type: type as any })}
+                                                            style={{ 
+                                                                flex: 1, padding: '10px', borderRadius: '12px', 
+                                                                background: player2.type === type ? 'var(--secondary)' : 'rgba(255,255,255,0.05)',
+                                                                color: player2.type === type ? 'var(--primary)' : 'white',
+                                                                fontSize: '10px', fontWeight: '900', textTransform: 'uppercase'
+                                                            }}
+                                                        >
+                                                            {type === 'player' ? 'Jugador' : 'Acompañante'}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                                <div style={{ padding: '12px 15px', borderRadius: '15px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                                    <input
+                                                        type="text"
+                                                        placeholder="Nombre del invitado"
+                                                        value={player2.name}
+                                                        onChange={(e) => setPlayer2({ ...player2, name: e.target.value })}
+                                                        style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none', fontSize: '14px' }}
+                                                    />
+                                                </div>
+                                                <div style={{ padding: '12px 15px', borderRadius: '15px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                                    <input
+                                                        type="email"
+                                                        placeholder="Correo del invitado"
+                                                        value={player2.email}
+                                                        onChange={(e) => setPlayer2({ ...player2, email: e.target.value })}
+                                                        style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none', fontSize: '14px' }}
+                                                    />
+                                                </div>
+                                                <div style={{ padding: '12px 15px', borderRadius: '15px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                                    <input
+                                                        type="text"
+                                                        placeholder="Teléfono del invitado"
+                                                        value={player2.phone}
+                                                        onChange={(e) => setPlayer2({ ...player2, phone: e.target.value })}
+                                                        style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none', fontSize: '14px' }}
+                                                    />
+                                                </div>
+                                                {player2.type === 'player' && (
+                                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                                                        <div style={{ padding: '12px 15px', borderRadius: '15px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                                            <input type="text" placeholder="Hándicap" value={player2.handicap} onChange={(e) => setPlayer2({ ...player2, handicap: e.target.value })} style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none', fontSize: '13px' }} />
+                                                        </div>
+                                                        <div style={{ padding: '12px 15px', borderRadius: '15px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                                            <input type="text" placeholder="Federación" value={player2.federationCode} onChange={(e) => setPlayer2({ ...player2, federationCode: e.target.value })} style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none', fontSize: '13px' }} />
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+
+                                <button
+                                    onClick={handleRegister}
+                                    disabled={registering || (isRegistered && !showSuccess)}
+                                    className="btn-primary"
+                                    style={{ 
+                                        width: '100%', padding: '20px', borderRadius: '25px', 
+                                        fontWeight: '950', fontSize: '16px', marginTop: '10px',
+                                        boxShadow: '0 15px 40px rgba(163, 230, 53, 0.3)',
+                                        background: isRegistered ? 'rgba(255,255,255,0.05)' : 'var(--secondary)',
+                                        color: isRegistered ? 'rgba(255,255,255,0.3)' : 'var(--primary)',
+                                    }}
+                                >
+                                    {registering ? <Loader2 className="animate-spin" size={24} /> :
+                                        isRegistered ? 'YA ESTÁS INSCRITO' : 'INSCRIBIRME AHORA'}
+                                </button>
+                                
+                                <p style={{ textAlign: 'center', fontSize: '11px', color: 'rgba(255,255,255,0.4)', paddingBottom: '40px' }}>
+                                    Al inscribirte aceptas los términos y condiciones del torneo.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                
+                    )}
                 </motion.div>
-            )}
+            </div>
         </div>
     );
 };
