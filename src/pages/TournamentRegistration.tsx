@@ -492,53 +492,7 @@ const TournamentRegistration: React.FC = () => {
                                                         {tournament.description || "Únete a este prestigioso torneo donde la competitividad y la camaradería se encuentran en el campo. Una jornada diseñada para los amantes del golf que buscan excelencia en cada golpe."}
                                                     </p>
                                                 </div>
-                                                
-                                                {/* Value Card */}
-                                                <div className="glass" style={{ 
-                                                    padding: '25px', 
-                                                    borderRadius: '30px', 
-                                                    background: 'linear-gradient(135deg, rgba(163, 230, 53, 0.1), rgba(163, 230, 53, 0.05))',
-                                                    border: '1px solid rgba(163, 230, 53, 0.2)',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'space-between'
-                                                }}>
-                                                    <div>
-                                                        <div style={{ fontSize: '10px', fontWeight: '900', color: 'var(--secondary)', letterSpacing: '2px' }}>VALOR DE INSCRIPCIÓN</div>
-                                                        <div style={{ fontSize: '32px', fontWeight: '950', color: 'white', marginTop: '5px' }}>
-                                                            {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(tournament.price)}
-                                                        </div>
-                                                    </div>
-                                                    <div style={{ 
-                                                        width: '60px', height: '60px', borderRadius: '20px', 
-                                                        background: 'var(--secondary)', color: 'var(--primary)',
-                                                        display: 'flex', alignItems: 'center', justifyContent: 'center'
-                                                    }}>
-                                                        <Trophy size={28} />
-                                                    </div>
-                                                </div>
 
-                                                {/* Payment Box */}
-                                                {paymentInfo && (
-                                                    <div className="glass" style={{ padding: '25px', borderRadius: '30px', border: '1px solid rgba(255,255,255,0.08)' }}>
-                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
-                                                            <div style={{ padding: '8px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px' }}>
-                                                                <Star size={18} color="var(--secondary)" />
-                                                            </div>
-                                                            <h4 style={{ fontSize: '13px', fontWeight: '900', letterSpacing: '1px' }}>MÉTODO DE PAGO OFICIAL</h4>
-                                                        </div>
-                                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-                                                            <div>
-                                                                <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', fontWeight: '800' }}>PLATAFORMA</span>
-                                                                <div style={{ fontSize: '18px', fontWeight: '900', color: 'white' }}>{paymentInfo.method}</div>
-                                                            </div>
-                                                            <div style={{ textAlign: 'right' }}>
-                                                                <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', fontWeight: '800' }}>{paymentInfo.accountLabel}</span>
-                                                                <div style={{ fontSize: '20px', fontWeight: '950', color: 'var(--secondary)' }}>{paymentInfo.account}</div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                )}
                                             </div>
                                         )}
 
@@ -765,10 +719,10 @@ const TournamentRegistration: React.FC = () => {
                         backfaceVisibility: 'hidden', 
                         WebkitBackfaceVisibility: 'hidden',
                         transform: 'rotateY(180deg)', 
-                        position: 'absolute', 
-                        inset: 0,
+                        position: (isMobile && isFlipped) ? 'relative' : 'absolute', 
+                        top: 0, left: 0,
                         width: '100%',
-                        height: '100%',
+                        minHeight: '100vh',
                         background: '#0a0f0d', // Solid background for reliability
                         display: 'flex',
                         flexDirection: 'column',
@@ -803,8 +757,7 @@ const TournamentRegistration: React.FC = () => {
                             </button>
                         </div>
                         <div style={{ 
-                            flex: 1, 
-                            overflowY: 'auto', 
+                            flexGrow: 1, 
                             padding: '30px',
                             background: 'linear-gradient(135deg, #152c1e, #0a0f0d)'
                         }}>
