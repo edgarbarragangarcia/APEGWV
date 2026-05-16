@@ -349,9 +349,10 @@ const TournamentRegistration: React.FC = () => {
                     ))}
                 </div>
             </div>
+        </div>
 
-            {/* Scrollable Content Area */}
-            <div style={{ padding: '20px 30px', position: 'relative', zIndex: 20 }}>
+        {/* Scrollable Content Area */}
+        <div style={{ padding: '20px 30px', position: 'relative', zIndex: 20 }}>
 
                 <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '40px' }}>
                     {/* Content Column */}
