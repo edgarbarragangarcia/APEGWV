@@ -286,8 +286,8 @@ const TournamentRegistration: React.FC = () => {
                 />
                 <div style={{ 
                     position: 'absolute', 
-                    inset: 0, 
-                    background: 'linear-gradient(to top, var(--primary) 5%, rgba(14,47,31,0.6) 50%, transparent 100%)' 
+                    bottom: 0, left: 0, right: 0, height: '70%', 
+                    background: 'linear-gradient(to top, var(--primary) 0%, rgba(14,47,31,0.8) 40%, transparent 100%)' 
                 }} />
                 
                 {/* Float elements for depth */}
