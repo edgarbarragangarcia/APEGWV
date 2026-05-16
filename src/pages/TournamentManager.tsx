@@ -325,7 +325,7 @@ const TournamentManager: React.FC = () => {
         payment_method: 'Nequi',
         payment_phone: '',
         payment_key: '',
-        payment_methods: [{ id: '1', method: 'Nequi', account: '' }] as { id: string, method: string, account: string }[],
+        payment_methods: [{ id: '1', method: 'Nequi', account: '', bankName: '', accountType: '' }] as { id: string, method: string, account: string, bankName?: string, accountType?: string }[],
         notes: ''
     });
 
@@ -1090,8 +1090,44 @@ const TournamentManager: React.FC = () => {
                                                                                 style={{ background: 'rgba(255,255,255,0.05)', color: 'white', padding: '10px 12px' }}
                                                                             />
                                                                         </div>
+                                                                        {(pm.method.includes('Cuenta') || pm.method === 'Bancolombia') && (
+                                                                            <>
+                                                                                <div className="input-group">
+                                                                                    <label style={{ fontSize: '10px', fontWeight: '800', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>Banco</label>
+                                                                                    <input
+                                                                                        type="text"
+                                                                                        value={pm.bankName || ''}
+                                                                                        onChange={(e) => {
+                                                                                            const newMethods = [...formData.payment_methods];
+                                                                                            newMethods[idx].bankName = e.target.value;
+                                                                                            setFormData({ ...formData, payment_methods: newMethods });
+                                                                                        }}
+                                                                                        className="form-input"
+                                                                                        placeholder="Ej: Bancolombia, Davivienda"
+                                                                                        style={{ background: 'rgba(255,255,255,0.05)', color: 'white', padding: '10px 12px' }}
+                                                                                    />
+                                                                                </div>
+                                                                                <div className="input-group">
+                                                                                    <label style={{ fontSize: '10px', fontWeight: '800', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>Tipo de Cuenta</label>
+                                                                                    <select
+                                                                                        value={pm.accountType || ''}
+                                                                                        onChange={(e) => {
+                                                                                            const newMethods = [...formData.payment_methods];
+                                                                                            newMethods[idx].accountType = e.target.value;
+                                                                                            setFormData({ ...formData, payment_methods: newMethods });
+                                                                                        }}
+                                                                                        className="form-input"
+                                                                                        style={{ background: 'rgba(255,255,255,0.05)', color: 'white', padding: '10px 12px' }}
+                                                                                    >
+                                                                                        <option value="">Seleccionar...</option>
+                                                                                        <option value="Ahorros">Ahorros</option>
+                                                                                        <option value="Corriente">Corriente</option>
+                                                                                    </select>
+                                                                                </div>
+                                                                            </>
+                                                                        )}
                                                                         <div className="input-group">
-                                                                            <label style={{ fontSize: '10px', fontWeight: '800', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>Número / Cuenta</label>
+                                                                            <label style={{ fontSize: '10px', fontWeight: '800', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>Número de Cuenta / Teléfono</label>
                                                                             <input
                                                                                 type="text"
                                                                                 value={pm.account}
@@ -1101,7 +1137,7 @@ const TournamentManager: React.FC = () => {
                                                                                     setFormData({ ...formData, payment_methods: newMethods });
                                                                                 }}
                                                                                 className="form-input"
-                                                                                placeholder="@usuario o número"
+                                                                                placeholder="Número de cuenta o celular"
                                                                                 style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', padding: '10px 12px' }}
                                                                             />
                                                                         </div>

@@ -140,16 +140,23 @@ const TournamentRegistration: React.FC = () => {
         if (jsonMatch) {
             try { 
                 const parsed = JSON.parse(jsonMatch[1]);
-                return parsed.map((p: any) => ({
-                    method: p.method,
-                    account: p.account,
-                    label: p.method === 'Llave BreB' ? 'LLAVE BREB' : 
-                           p.method === 'Nequi' ? 'CELULAR NEQUI' : 
-                           (p.method === 'Daviplata' || p.method === 'DaviPlata') ? 'CELULAR DAVIPLATA' : 
-                           p.method === 'Cuenta de Ahorros' ? 'CUENTA DE AHORROS' :
-                           p.method === 'Cuenta Corriente' ? 'CUENTA CORRIENTE' :
-                           p.method === 'Cuenta Bancaria' ? 'CUENTA BANCARIA' : 'CUENTA'
-                }));
+                return parsed.map((p: any) => {
+                    let label = p.method === 'Llave BreB' ? 'LLAVE BREB' : 
+                                p.method === 'Nequi' ? 'CELULAR NEQUI' : 
+                                (p.method === 'Daviplata' || p.method === 'DaviPlata') ? 'CELULAR DAVIPLATA' : 
+                                p.method === 'Cuenta de Ahorros' ? 'CUENTA DE AHORROS' :
+                                p.method === 'Cuenta Corriente' ? 'CUENTA CORRIENTE' :
+                                p.method === 'Cuenta Bancaria' ? 'CUENTA BANCARIA' : 'CUENTA';
+                    
+                    if (p.bankName) label = `${label} ${p.bankName}`.toUpperCase();
+                    if (p.accountType) label = `${label} (${p.accountType})`.toUpperCase();
+
+                    return {
+                        method: p.method,
+                        account: p.account,
+                        label
+                    };
+                });
             } catch(e) { console.error("JSON parse error", e); }
         }
         // Fallback to legacy
