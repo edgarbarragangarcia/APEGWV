@@ -325,7 +325,7 @@ const TournamentRegistration: React.FC = () => {
                             </div>
                         </div>
 
-                        <div style={{ position: 'absolute', bottom: isMobile ? '120px' : '50px', left: '0', width: '100%', padding: '0 30px' }}>
+                        <div style={{ position: 'absolute', bottom: isMobile ? '80px' : '50px', left: '0', width: '100%', padding: '0 30px' }}>
                             <div style={{ opacity: 1 }}>
                                 <h1 style={{ 
                                     fontSize: isMobile ? '36px' : '56px', 
@@ -540,6 +540,24 @@ const TournamentRegistration: React.FC = () => {
                                                         style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none', fontSize: '14px' }}
                                                     />
                                                 </div>
+                                                <div style={{ padding: '12px 15px', borderRadius: '15px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                                    <input
+                                                        type="email"
+                                                        placeholder="Correo del invitado"
+                                                        value={player2.email}
+                                                        onChange={(e) => setPlayer2({ ...player2, email: e.target.value })}
+                                                        style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none', fontSize: '14px' }}
+                                                    />
+                                                </div>
+                                                <div style={{ padding: '12px 15px', borderRadius: '15px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                                    <input
+                                                        type="text"
+                                                        placeholder="Teléfono del invitado"
+                                                        value={player2.phone}
+                                                        onChange={(e) => setPlayer2({ ...player2, phone: e.target.value })}
+                                                        style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none', fontSize: '14px' }}
+                                                    />
+                                                </div>
                                                 {player2.type === 'player' && (
                                                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                                                         <div style={{ padding: '12px 15px', borderRadius: '15px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.05)' }}>
@@ -581,334 +599,360 @@ const TournamentRegistration: React.FC = () => {
             </div> {/* End of Sticky Wrapper */}
 
 
-            <div style={{ padding: isMobile ? '30px' : '0 30px', marginTop: isMobile ? '20px' : '-20px', position: 'relative', zIndex: 20 }}>
-                {/* Quick Info Grid */}
-                <div style={{ 
-                    display: 'grid', 
-                    gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, 1fr)', 
-                    gap: isMobile ? '15px' : '15px', 
-                    marginBottom: '40px' 
-                }}>
-                    {[
-                        { icon: <Calendar />, label: 'FECHA', value: new Date(tournament.date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC' }) },
-                        { icon: <Flag />, label: 'MODO JUEGO', value: tournament.game_mode || 'Stableford' },
-                        { icon: <Layout />, label: 'HÁNDICAP', value: 'Al 100%' },
-                        { icon: <CheckCircle2 />, label: 'ESTADO', value: 'Abierto', color: 'var(--secondary)' }
-                    ].map((item, i) => (
-                        <div
-                            key={i}
-                            className="glass"
-                            style={{ 
-                                padding: isMobile ? '18px 20px' : '20px', 
-                                borderRadius: isMobile ? '25px' : '25px', 
-                                display: 'flex', 
-                                flexDirection: 'column', 
-                                gap: '10px', 
-                                background: 'rgba(255,255,255,0.03)',
-                                border: '1px solid rgba(255,255,255,0.05)'
-                            }}
-                        >
-                            <div style={{ color: 'var(--secondary)', opacity: 0.9, transform: isMobile ? 'scale(0.9)' : 'none', transformOrigin: 'left center' }}>{item.icon}</div>
-                            <div>
-                                <div style={{ fontSize: isMobile ? '9px' : '9px', fontWeight: '900', color: 'rgba(255,255,255,0.4)', letterSpacing: '1px' }}>{item.label}</div>
-                                <div style={{ fontSize: isMobile ? '13px' : '14px', fontWeight: '900', color: item.color || 'white', marginTop: '4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.value}</div>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </div>
-
-        {/* Scrollable Content Area */}
-        <div style={{ padding: '20px 30px', position: 'relative', zIndex: 20 }}>
-
-                <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '40px' }}>
-                    {/* Content Column */}
-                    <div style={{ flex: 1.5 }}>
-                        {/* Tabs for detailed info */}
-                        <div style={{ display: 'flex', gap: '25px', borderBottom: '1px solid rgba(255,255,255,0.05)', marginBottom: '30px' }}>
-                            {['info', 'rules', 'notes'].map((tab) => (
-                                <button
-                                    key={tab}
-                                    onClick={() => setActiveTab(tab as any)}
-                                    style={{
-                                        padding: '15px 5px',
-                                        fontSize: '13px',
-                                        fontWeight: '900',
-                                        letterSpacing: '1px',
-                                        color: activeTab === tab ? 'var(--secondary)' : 'rgba(255,255,255,0.4)',
-                                        borderBottom: `3px solid ${activeTab === tab ? 'var(--secondary)' : 'transparent'}`,
-                                        transition: 'all 0.3s ease',
-                                        textTransform: 'uppercase'
+            {(!isMobile || !isFlipped) && (
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                >
+                    <div style={{ padding: isMobile ? '30px' : '0 30px', marginTop: isMobile ? '20px' : '-20px', position: 'relative', zIndex: 20 }}>
+                        {/* Quick Info Grid */}
+                        <div style={{ 
+                            display: 'grid', 
+                            gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, 1fr)', 
+                            gap: isMobile ? '15px' : '15px', 
+                            marginBottom: '40px' 
+                        }}>
+                            {[
+                                { icon: <Calendar />, label: 'FECHA', value: new Date(tournament.date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC' }) },
+                                { icon: <Flag />, label: 'MODO JUEGO', value: tournament.game_mode || 'Stableford' },
+                                { icon: <Layout />, label: 'HÁNDICAP', value: 'Al 100%' },
+                                { icon: <CheckCircle2 />, label: 'ESTADO', value: 'Abierto', color: 'var(--secondary)' }
+                            ].map((item, i) => (
+                                <div
+                                    key={i}
+                                    className="glass"
+                                    style={{ 
+                                        padding: isMobile ? '18px 20px' : '20px', 
+                                        borderRadius: isMobile ? '25px' : '25px', 
+                                        display: 'flex', 
+                                        flexDirection: 'column', 
+                                        gap: '10px', 
+                                        background: 'rgba(255,255,255,0.03)',
+                                        border: '1px solid rgba(255,255,255,0.05)'
                                     }}
                                 >
-                                    {tab === 'info' ? 'DETALLES' : tab === 'rules' ? 'REGLAS' : 'NOTAS'}
-                                </button>
+                                    <div style={{ color: 'var(--secondary)', opacity: 0.9, transform: isMobile ? 'scale(0.9)' : 'none', transformOrigin: 'left center' }}>{item.icon}</div>
+                                    <div>
+                                        <div style={{ fontSize: isMobile ? '9px' : '9px', fontWeight: '900', color: 'rgba(255,255,255,0.4)', letterSpacing: '1px' }}>{item.label}</div>
+                                        <div style={{ fontSize: isMobile ? '13px' : '14px', fontWeight: '900', color: item.color || 'white', marginTop: '4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.value}</div>
+                                    </div>
+                                </div>
                             ))}
-                        </div>
-
-                        <AnimatePresence mode="wait">
-                            <motion.div
-                                key={activeTab}
-                                initial={{ opacity: 0, x: -10 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                exit={{ opacity: 0, x: 10 }}
-                                transition={{ duration: 0.3 }}
-                                style={{ minHeight: '200px' }}
-                            >
-                                {activeTab === 'info' && (
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
-                                        <div>
-                                            <p style={{ fontSize: '16px', lineHeight: '1.8', color: 'rgba(255,255,255,0.7)', fontWeight: '400' }}>
-                                                {tournament.description || "Únete a este prestigioso torneo donde la competitividad y la camaradería se encuentran en el campo. Una jornada diseñada para los amantes del golf que buscan excelencia en cada golpe."}
-                                            </p>
-                                        </div>
-                                        
-                                        {/* Value Card */}
-                                        <div className="glass" style={{ 
-                                            padding: '25px', 
-                                            borderRadius: '30px', 
-                                            background: 'linear-gradient(135deg, rgba(163, 230, 53, 0.1), rgba(163, 230, 53, 0.05))',
-                                            border: '1px solid rgba(163, 230, 53, 0.2)',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'space-between'
-                                        }}>
-                                            <div>
-                                                <div style={{ fontSize: '10px', fontWeight: '900', color: 'var(--secondary)', letterSpacing: '2px' }}>VALOR DE INSCRIPCIÓN</div>
-                                                <div style={{ fontSize: '32px', fontWeight: '950', color: 'white', marginTop: '5px' }}>
-                                                    {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(tournament.price)}
-                                                </div>
-                                            </div>
-                                            <div style={{ 
-                                                width: '60px', height: '60px', borderRadius: '20px', 
-                                                background: 'var(--secondary)', color: 'var(--primary)',
-                                                display: 'flex', alignItems: 'center', justifyContent: 'center'
-                                            }}>
-                                                <Trophy size={28} />
-                                            </div>
-                                        </div>
-
-                                        {/* Payment Box */}
-                                        {paymentInfo && (
-                                            <div className="glass" style={{ padding: '25px', borderRadius: '30px', border: '1px solid rgba(255,255,255,0.08)' }}>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
-                                                    <div style={{ padding: '8px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px' }}>
-                                                        <Star size={18} color="var(--secondary)" />
-                                                    </div>
-                                                    <h4 style={{ fontSize: '13px', fontWeight: '900', letterSpacing: '1px' }}>MÉTODO DE PAGO OFICIAL</h4>
-                                                </div>
-                                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-                                                    <div>
-                                                        <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', fontWeight: '800' }}>PLATAFORMA</span>
-                                                        <div style={{ fontSize: '18px', fontWeight: '900', color: 'white' }}>{paymentInfo.method}</div>
-                                                    </div>
-                                                    <div style={{ textAlign: 'right' }}>
-                                                        <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', fontWeight: '800' }}>{paymentInfo.accountLabel}</span>
-                                                        <div style={{ fontSize: '20px', fontWeight: '950', color: 'var(--secondary)' }}>{paymentInfo.account}</div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
-
-                                {activeTab === 'rules' && (
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                                        {tournament.rules && tournament.rules.length > 0 ? (
-                                            tournament.rules.map((rule, idx) => (
-                                                <div key={idx} style={{ 
-                                                    padding: '18px 25px', borderRadius: '20px', background: 'rgba(255,255,255,0.03)',
-                                                    border: '1px solid rgba(255,255,255,0.05)', display: 'flex', gap: '15px', alignItems: 'flex-start'
-                                                }}>
-                                                    <div style={{ color: 'var(--secondary)', marginTop: '3px' }}><CheckCircle2 size={16} /></div>
-                                                    <p style={{ margin: 0, fontSize: '14px', color: 'rgba(255,255,255,0.8)', fontWeight: '500' }}>{rule}</p>
-                                                </div>
-                                            ))
-                                        ) : (
-                                            <div style={{ padding: '40px', textAlign: 'center', opacity: 0.5 }}>
-                                                <BookOpen size={40} style={{ marginBottom: '15px' }} />
-                                                <p>Reglas locales estándar de la federación.</p>
-                                            </div>
-                                        )}
-                                        {tournament.custom_rules && (
-                                            <div style={{ marginTop: '20px', padding: '20px', background: 'rgba(163, 230, 53, 0.05)', borderRadius: '20px', border: '1px dashed rgba(163, 230, 53, 0.3)' }}>
-                                                <h5 style={{ color: 'var(--secondary)', marginBottom: '10px', fontSize: '12px' }}>REGLAS ADICIONALES</h5>
-                                                <p style={{ fontSize: '13px', lineHeight: '1.6' }}>{tournament.custom_rules}</p>
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
-
-                                {activeTab === 'notes' && (
-                                    <div style={{ padding: '30px', background: 'rgba(255,255,255,0.02)', borderRadius: '30px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                                        <h4 style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px' }}>
-                                            <Info size={18} color="var(--secondary)" /> NOTAS DEL ORGANIZADOR
-                                        </h4>
-                                        <p style={{ lineHeight: '1.8', color: 'rgba(255,255,255,0.7)' }}>
-                                            {tournament.notes?.split('---PAYMENT_DATA---')[0] || "No hay notas adicionales para este torneo."}
-                                        </p>
-                                    </div>
-                                )}
-                            </motion.div>
-                        </AnimatePresence>
-
-                        {/* Sponsors Section */}
-                        <div style={{ marginTop: '60px', padding: '40px 0' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '30px' }}>
-                                <div style={{ height: '1px', flex: 1, background: 'rgba(255,255,255,0.05)' }} />
-                                <h4 style={{ fontSize: '11px', fontWeight: '900', color: 'rgba(255,255,255,0.4)', letterSpacing: '3px' }}>PATROCINADORES OFICIALES</h4>
-                                <div style={{ height: '1px', flex: 1, background: 'rgba(255,255,255,0.05)' }} />
-                            </div>
-                            <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '40px', opacity: 0.6 }}>
-                                {[1, 2, 3, 4].map(i => (
-                                    <div key={i} style={{ width: '100px', height: '50px', background: 'rgba(255,255,255,0.05)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                        <Trophy size={20} color="white" style={{ opacity: 0.3 }} />
-                                    </div>
-                                ))}
-                            </div>
                         </div>
                     </div>
 
-                    {/* Registration Form Column (Desktop Only) */}
-                    {!isMobile && (
-                        <div style={{ flex: 1.2 }}>
-                            <div style={{ position: 'sticky', top: '30px' }}>
-                                <motion.div
-                                    initial={{ opacity: 0, x: 20 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    className="glass"
-                                    style={{ 
-                                        padding: '35px', 
-                                        borderRadius: '40px', 
-                                        background: 'rgba(255,255,255,0.03)',
-                                        border: '1px solid rgba(255,255,255,0.08)',
-                                        boxShadow: '0 40px 80px rgba(0,0,0,0.4)'
-                                    }}
-                                >
-                                    <div style={{ marginBottom: '30px' }}>
-                                        <h3 style={{ fontSize: '24px', fontWeight: '950', marginBottom: '5px' }}>Inscripción</h3>
-                                        <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.4)', fontWeight: '600' }}>Completa tus datos para participar</p>
-                                    </div>
+                    {/* Scrollable Content Area */}
+                    <div style={{ padding: '20px 30px', position: 'relative', zIndex: 20 }}>
+                        <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '40px' }}>
+                            {/* Content Column */}
+                            <div style={{ flex: 1.5 }}>
+                                {/* Tabs for detailed info */}
+                                <div style={{ display: 'flex', gap: '25px', borderBottom: '1px solid rgba(255,255,255,0.05)', marginBottom: '30px' }}>
+                                    {['info', 'rules', 'notes'].map((tab) => (
+                                        <button
+                                            key={tab}
+                                            onClick={() => setActiveTab(tab as any)}
+                                            style={{
+                                                padding: '15px 5px',
+                                                fontSize: '13px',
+                                                fontWeight: '900',
+                                                letterSpacing: '1px',
+                                                color: activeTab === tab ? 'var(--secondary)' : 'rgba(255,255,255,0.4)',
+                                                borderBottom: `3px solid ${activeTab === tab ? 'var(--secondary)' : 'transparent'}`,
+                                                transition: 'all 0.3s ease',
+                                                textTransform: 'uppercase'
+                                            }}
+                                        >
+                                            {tab === 'info' ? 'DETALLES' : tab === 'rules' ? 'REGLAS' : 'NOTAS'}
+                                        </button>
+                                    ))}
+                                </div>
 
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                                        {/* Input Fields */}
-                                        {[
-                                            { icon: <Users />, label: 'NOMBRE COMPLETO', value: player1.name, field: 'name' },
-                                            { icon: <Mail />, label: 'CORREO ELECTRÓNICO', value: player1.email, field: 'email' },
-                                            { icon: <ShieldCheck />, label: 'HÁNDICAP', value: player1.handicap, field: 'handicap', half: true },
-                                            { icon: <Star />, label: 'ID FEDERACIÓN', value: player1.federationCode, field: 'federationCode', half: true },
-                                            { icon: <HeartHandshake />, label: 'TELÉFONO', value: player1.phone, field: 'phone' }
-                                        ].map((input, i) => (
-                                            <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                                <label style={{ fontSize: '9px', fontWeight: '900', color: 'var(--secondary)', marginLeft: '10px', letterSpacing: '1px' }}>{input.label}</label>
-                                                <div className="glass" style={{ 
-                                                    padding: '15px 20px', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '15px',
-                                                    background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.05)',
-                                                    transition: 'all 0.3s ease'
-                                                }}>
-                                                    <div style={{ color: 'rgba(255,255,255,0.3)' }}>{input.icon}</div>
-                                                    <input
-                                                        type="text"
-                                                        value={input.value}
-                                                        onChange={(e) => setPlayer1({ ...player1, [input.field]: e.target.value })}
-                                                        placeholder={`Ingresa tu ${input.label.toLowerCase()}`}
-                                                        style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none', fontSize: '15px', fontWeight: '600' }}
-                                                    />
+                                <AnimatePresence mode="wait">
+                                    <motion.div
+                                        key={activeTab}
+                                        initial={{ opacity: 0, x: -10 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        exit={{ opacity: 0, x: 10 }}
+                                        transition={{ duration: 0.3 }}
+                                        style={{ minHeight: '200px' }}
+                                    >
+                                        {activeTab === 'info' && (
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
+                                                <div>
+                                                    <p style={{ fontSize: '16px', lineHeight: '1.8', color: 'rgba(255,255,255,0.7)', fontWeight: '400' }}>
+                                                        {tournament.description || "Únete a este prestigioso torneo donde la competitividad y la camaradería se encuentran en el campo. Una jornada diseñada para los amantes del golf que buscan excelencia en cada golpe."}
+                                                    </p>
                                                 </div>
+                                                
+                                                {/* Value Card */}
+                                                <div className="glass" style={{ 
+                                                    padding: '25px', 
+                                                    borderRadius: '30px', 
+                                                    background: 'linear-gradient(135deg, rgba(163, 230, 53, 0.1), rgba(163, 230, 53, 0.05))',
+                                                    border: '1px solid rgba(163, 230, 53, 0.2)',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'space-between'
+                                                }}>
+                                                    <div>
+                                                        <div style={{ fontSize: '10px', fontWeight: '900', color: 'var(--secondary)', letterSpacing: '2px' }}>VALOR DE INSCRIPCIÓN</div>
+                                                        <div style={{ fontSize: '32px', fontWeight: '950', color: 'white', marginTop: '5px' }}>
+                                                            {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(tournament.price)}
+                                                        </div>
+                                                    </div>
+                                                    <div style={{ 
+                                                        width: '60px', height: '60px', borderRadius: '20px', 
+                                                        background: 'var(--secondary)', color: 'var(--primary)',
+                                                        display: 'flex', alignItems: 'center', justifyContent: 'center'
+                                                    }}>
+                                                        <Trophy size={28} />
+                                                    </div>
+                                                </div>
+
+                                                {/* Payment Box */}
+                                                {paymentInfo && (
+                                                    <div className="glass" style={{ padding: '25px', borderRadius: '30px', border: '1px solid rgba(255,255,255,0.08)' }}>
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
+                                                            <div style={{ padding: '8px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px' }}>
+                                                                <Star size={18} color="var(--secondary)" />
+                                                            </div>
+                                                            <h4 style={{ fontSize: '13px', fontWeight: '900', letterSpacing: '1px' }}>MÉTODO DE PAGO OFICIAL</h4>
+                                                        </div>
+                                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                                                            <div>
+                                                                <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', fontWeight: '800' }}>PLATAFORMA</span>
+                                                                <div style={{ fontSize: '18px', fontWeight: '900', color: 'white' }}>{paymentInfo.method}</div>
+                                                            </div>
+                                                            <div style={{ textAlign: 'right' }}>
+                                                                <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', fontWeight: '800' }}>{paymentInfo.accountLabel}</span>
+                                                                <div style={{ fontSize: '20px', fontWeight: '950', color: 'var(--secondary)' }}>{paymentInfo.account}</div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+
+                                        {activeTab === 'rules' && (
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                                                {tournament.rules && tournament.rules.length > 0 ? (
+                                                    tournament.rules.map((rule, idx) => (
+                                                        <div key={idx} style={{ 
+                                                            padding: '18px 25px', borderRadius: '20px', background: 'rgba(255,255,255,0.03)',
+                                                            border: '1px solid rgba(255,255,255,0.05)', display: 'flex', gap: '15px', alignItems: 'flex-start'
+                                                        }}>
+                                                            <div style={{ color: 'var(--secondary)', marginTop: '3px' }}><CheckCircle2 size={16} /></div>
+                                                            <p style={{ margin: 0, fontSize: '14px', color: 'rgba(255,255,255,0.8)', fontWeight: '500' }}>{rule}</p>
+                                                        </div>
+                                                    ))
+                                                ) : (
+                                                    <div style={{ padding: '40px', textAlign: 'center', opacity: 0.5 }}>
+                                                        <BookOpen size={40} style={{ marginBottom: '15px' }} />
+                                                        <p>Reglas locales estándar de la federación.</p>
+                                                    </div>
+                                                )}
+                                                {tournament.custom_rules && (
+                                                    <div style={{ marginTop: '20px', padding: '20px', background: 'rgba(163, 230, 53, 0.05)', borderRadius: '20px', border: '1px dashed rgba(163, 230, 53, 0.3)' }}>
+                                                        <h5 style={{ color: 'var(--secondary)', marginBottom: '10px', fontSize: '12px' }}>REGLAS ADICIONALES</h5>
+                                                        <p style={{ fontSize: '13px', lineHeight: '1.6' }}>{tournament.custom_rules}</p>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+
+                                        {activeTab === 'notes' && (
+                                            <div style={{ padding: '30px', background: 'rgba(255,255,255,0.02)', borderRadius: '30px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                                <h4 style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px' }}>
+                                                    <Info size={18} color="var(--secondary)" /> NOTAS DEL ORGANIZADOR
+                                                </h4>
+                                                <p style={{ lineHeight: '1.8', color: 'rgba(255,255,255,0.7)' }}>
+                                                    {tournament.notes?.split('---PAYMENT_DATA---')[0] || "No hay notas adicionales para este torneo."}
+                                                </p>
+                                            </div>
+                                        )}
+                                    </motion.div>
+                                </AnimatePresence>
+
+                                {/* Sponsors Section */}
+                                <div style={{ marginTop: '60px', padding: '40px 0' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '30px' }}>
+                                        <div style={{ height: '1px', flex: 1, background: 'rgba(255,255,255,0.05)' }} />
+                                        <h4 style={{ fontSize: '11px', fontWeight: '900', color: 'rgba(255,255,255,0.4)', letterSpacing: '3px' }}>PATROCINADORES OFICIALES</h4>
+                                        <div style={{ height: '1px', flex: 1, background: 'rgba(255,255,255,0.05)' }} />
+                                    </div>
+                                    <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '40px', opacity: 0.6 }}>
+                                        {[1, 2, 3, 4].map(i => (
+                                            <div key={i} style={{ width: '100px', height: '50px', background: 'rgba(255,255,255,0.05)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                <Trophy size={20} color="white" style={{ opacity: 0.3 }} />
                                             </div>
                                         ))}
+                                    </div>
+                                </div>
+                            </div>
 
-                                        {/* Add Companion Toggle */}
-                                        <div 
-                                            onClick={() => setAddGuest(!addGuest)}
+                            {/* Registration Form Column (Desktop Only) */}
+                            {!isMobile && (
+                                <div style={{ flex: 1.2 }}>
+                                    <div style={{ position: 'sticky', top: '30px' }}>
+                                        <motion.div
+                                            initial={{ opacity: 0, x: 20 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            className="glass"
                                             style={{ 
-                                                marginTop: '10px', padding: '20px', borderRadius: '25px', 
-                                                border: `1px dashed ${addGuest ? 'var(--secondary)' : 'rgba(255,255,255,0.2)'}`,
-                                                textAlign: 'center', cursor: 'pointer', background: addGuest ? 'rgba(163, 230, 53, 0.05)' : 'transparent',
-                                                transition: 'all 0.3s ease'
+                                                padding: '35px', 
+                                                borderRadius: '40px', 
+                                                background: 'rgba(255,255,255,0.03)',
+                                                border: '1px solid rgba(255,255,255,0.08)',
+                                                boxShadow: '0 40px 80px rgba(0,0,0,0.4)'
                                             }}
                                         >
-                                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', color: addGuest ? 'var(--secondary)' : 'white' }}>
-                                                {addGuest ? <X size={18} /> : <Plus size={18} />}
-                                                <span style={{ fontSize: '13px', fontWeight: '900' }}>{addGuest ? 'CANCELAR INVITADO' : 'AGREGAR JUGADOR / ACOMPAÑANTE'}</span>
+                                            <div style={{ marginBottom: '30px' }}>
+                                                <h3 style={{ fontSize: '24px', fontWeight: '950', marginBottom: '5px' }}>Inscripción</h3>
+                                                <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.4)', fontWeight: '600' }}>Completa tus datos para participar</p>
                                             </div>
-                                        </div>
 
-                                        {/* Companion Form */}
-                                        <AnimatePresence>
-                                            {addGuest && (
-                                                <motion.div
-                                                    initial={{ opacity: 0, height: 0 }}
-                                                    animate={{ opacity: 1, height: 'auto' }}
-                                                    exit={{ opacity: 0, height: 0 }}
-                                                    style={{ overflow: 'hidden' }}
-                                                >
-                                                    <div style={{ paddingTop: '30px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                                                        <div style={{ display: 'flex', gap: '10px' }}>
-                                                            {['player', 'companion'].map(type => (
-                                                                <button
-                                                                    key={type}
-                                                                    onClick={() => setPlayer2({ ...player2, type: type as any })}
-                                                                    style={{ 
-                                                                        flex: 1, padding: '12px', borderRadius: '15px', 
-                                                                        background: player2.type === type ? 'var(--secondary)' : 'rgba(255,255,255,0.05)',
-                                                                        color: player2.type === type ? 'var(--primary)' : 'white',
-                                                                        fontSize: '11px', fontWeight: '900', textTransform: 'uppercase'
-                                                                    }}
-                                                                >
-                                                                    {type === 'player' ? 'Jugador' : 'Acompañante'}
-                                                                </button>
-                                                            ))}
-                                                        </div>
-                                                        <div className="glass" style={{ padding: '15px 20px', borderRadius: '20px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                                                {/* Input Fields */}
+                                                {[
+                                                    { icon: <Users />, label: 'NOMBRE COMPLETO', value: player1.name, field: 'name' },
+                                                    { icon: <Mail />, label: 'CORREO ELECTRÓNICO', value: player1.email, field: 'email' },
+                                                    { icon: <ShieldCheck />, label: 'HÁNDICAP', value: player1.handicap, field: 'handicap', half: true },
+                                                    { icon: <Star />, label: 'ID FEDERACIÓN', value: player1.federationCode, field: 'federationCode', half: true },
+                                                    { icon: <HeartHandshake />, label: 'TELÉFONO', value: player1.phone, field: 'phone' }
+                                                ].map((input, i) => (
+                                                    <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                                        <label style={{ fontSize: '9px', fontWeight: '900', color: 'var(--secondary)', marginLeft: '10px', letterSpacing: '1px' }}>{input.label}</label>
+                                                        <div className="glass" style={{ 
+                                                            padding: '15px 20px', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '15px',
+                                                            background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.05)',
+                                                            transition: 'all 0.3s ease'
+                                                        }}>
+                                                            <div style={{ color: 'rgba(255,255,255,0.3)' }}>{input.icon}</div>
                                                             <input
                                                                 type="text"
-                                                                placeholder="Nombre completo"
-                                                                value={player2.name}
-                                                                onChange={(e) => setPlayer2({ ...player2, name: e.target.value })}
-                                                                style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none', fontSize: '14px' }}
+                                                                value={input.value}
+                                                                onChange={(e) => setPlayer1({ ...player1, [input.field]: e.target.value })}
+                                                                placeholder={`Ingresa tu ${input.label.toLowerCase()}`}
+                                                                style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none', fontSize: '15px', fontWeight: '600' }}
                                                             />
                                                         </div>
-                                                        {player2.type === 'player' && (
-                                                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
-                                                                <div className="glass" style={{ padding: '15px 20px', borderRadius: '20px', background: 'rgba(255,255,255,0.05)' }}>
-                                                                    <input type="text" placeholder="Hándicap" value={player2.handicap} onChange={(e) => setPlayer2({ ...player2, handicap: e.target.value })} style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none', fontSize: '13px' }} />
-                                                                </div>
-                                                                <div className="glass" style={{ padding: '15px 20px', borderRadius: '20px', background: 'rgba(255,255,255,0.05)' }}>
-                                                                    <input type="text" placeholder="Federación" value={player2.federationCode} onChange={(e) => setPlayer2({ ...player2, federationCode: e.target.value })} style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none', fontSize: '13px' }} />
-                                                                </div>
-                                                            </div>
-                                                        )}
                                                     </div>
-                                                </motion.div>
-                                            )}
-                                        </AnimatePresence>
+                                                ))}
 
-                                        {/* Submit Button */}
-                                        <button
-                                            onClick={handleRegister}
-                                            disabled={registering || (isRegistered && !showSuccess)}
-                                            className="btn-primary"
-                                            style={{ 
-                                                width: '100%', padding: '20px', borderRadius: '25px', 
-                                                fontWeight: '950', fontSize: '16px', marginTop: '20px',
-                                                boxShadow: '0 15px 40px rgba(163, 230, 53, 0.3)',
-                                                background: isRegistered ? 'rgba(255,255,255,0.05)' : 'var(--secondary)',
-                                                color: isRegistered ? 'rgba(255,255,255,0.3)' : 'var(--primary)',
-                                                border: isRegistered ? '1px solid rgba(255,255,255,0.1)' : 'none',
-                                            }}
-                                        >
-                                            {registering ? <Loader2 className="animate-spin" size={24} /> :
-                                                isRegistered ? 'YA ESTÁS INSCRITO' : 'INSCRIBIRME AHORA'}
-                                        </button>
+                                                {/* Add Companion Toggle */}
+                                                <div 
+                                                    onClick={() => setAddGuest(!addGuest)}
+                                                    style={{ 
+                                                        marginTop: '10px', padding: '20px', borderRadius: '25px', 
+                                                        border: `1px dashed ${addGuest ? 'var(--secondary)' : 'rgba(255,255,255,0.2)'}`,
+                                                        textAlign: 'center', cursor: 'pointer', background: addGuest ? 'rgba(163, 230, 53, 0.05)' : 'transparent',
+                                                        transition: 'all 0.3s ease'
+                                                    }}
+                                                >
+                                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', color: addGuest ? 'var(--secondary)' : 'white' }}>
+                                                        {addGuest ? <X size={18} /> : <Plus size={18} />}
+                                                        <span style={{ fontSize: '13px', fontWeight: '900' }}>{addGuest ? 'CANCELAR INVITADO' : 'AGREGAR JUGADOR / ACOMPAÑANTE'}</span>
+                                                    </div>
+                                                </div>
+
+                                                {/* Companion Form */}
+                                                <AnimatePresence>
+                                                    {addGuest && (
+                                                        <motion.div
+                                                            initial={{ opacity: 0, height: 0 }}
+                                                            animate={{ opacity: 1, height: 'auto' }}
+                                                            exit={{ opacity: 0, height: 0 }}
+                                                            style={{ overflow: 'hidden' }}
+                                                        >
+                                                            <div style={{ paddingTop: '30px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                                                                <div style={{ display: 'flex', gap: '10px' }}>
+                                                                    {['player', 'companion'].map(type => (
+                                                                        <button
+                                                                            key={type}
+                                                                            onClick={() => setPlayer2({ ...player2, type: type as any })}
+                                                                            style={{ 
+                                                                                flex: 1, padding: '12px', borderRadius: '15px', 
+                                                                                background: player2.type === type ? 'var(--secondary)' : 'rgba(255,255,255,0.05)',
+                                                                                color: player2.type === type ? 'var(--primary)' : 'white',
+                                                                                fontSize: '11px', fontWeight: '900', textTransform: 'uppercase'
+                                                                            }}
+                                                                        >
+                                                                            {type === 'player' ? 'Jugador' : 'Acompañante'}
+                                                                        </button>
+                                                                    ))}
+                                                                </div>
+                                                                <div className="glass" style={{ padding: '15px 20px', borderRadius: '20px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                                                    <input
+                                                                        type="text"
+                                                                        placeholder="Nombre completo"
+                                                                        value={player2.name}
+                                                                        onChange={(e) => setPlayer2({ ...player2, name: e.target.value })}
+                                                                        style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none', fontSize: '14px' }}
+                                                                    />
+                                                                </div>
+                                                                <div className="glass" style={{ padding: '15px 20px', borderRadius: '20px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                                                    <input
+                                                                        type="email"
+                                                                        placeholder="Correo electrónico"
+                                                                        value={player2.email}
+                                                                        onChange={(e) => setPlayer2({ ...player2, email: e.target.value })}
+                                                                        style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none', fontSize: '14px' }}
+                                                                    />
+                                                                </div>
+                                                                <div className="glass" style={{ padding: '15px 20px', borderRadius: '20px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                                                    <input
+                                                                        type="text"
+                                                                        placeholder="Teléfono"
+                                                                        value={player2.phone}
+                                                                        onChange={(e) => setPlayer2({ ...player2, phone: e.target.value })}
+                                                                        style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none', fontSize: '14px' }}
+                                                                    />
+                                                                </div>
+                                                                {player2.type === 'player' && (
+                                                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                                                                        <div className="glass" style={{ padding: '15px 20px', borderRadius: '20px', background: 'rgba(255,255,255,0.05)' }}>
+                                                                            <input type="text" placeholder="Hándicap" value={player2.handicap} onChange={(e) => setPlayer2({ ...player2, handicap: e.target.value })} style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none', fontSize: '13px' }} />
+                                                                        </div>
+                                                                        <div className="glass" style={{ padding: '15px 20px', borderRadius: '20px', background: 'rgba(255,255,255,0.05)' }}>
+                                                                            <input type="text" placeholder="Federación" value={player2.federationCode} onChange={(e) => setPlayer2({ ...player2, federationCode: e.target.value })} style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none', fontSize: '13px' }} />
+                                                                        </div>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </motion.div>
+                                                    )}
+                                                </AnimatePresence>
+
+                                                {/* Submit Button */}
+                                                <button
+                                                    onClick={handleRegister}
+                                                    disabled={registering || (isRegistered && !showSuccess)}
+                                                    className="btn-primary"
+                                                    style={{ 
+                                                        width: '100%', padding: '20px', borderRadius: '25px', 
+                                                        fontWeight: '950', fontSize: '16px', marginTop: '20px',
+                                                        boxShadow: '0 15px 40px rgba(163, 230, 53, 0.3)',
+                                                        background: isRegistered ? 'rgba(255,255,255,0.05)' : 'var(--secondary)',
+                                                        color: isRegistered ? 'rgba(255,255,255,0.3)' : 'var(--primary)',
+                                                        border: isRegistered ? '1px solid rgba(255,255,255,0.1)' : 'none',
+                                                    }}
+                                                >
+                                                    {registering ? <Loader2 className="animate-spin" size={24} /> :
+                                                        isRegistered ? 'YA ESTÁS INSCRITO' : 'INSCRIBIRME AHORA'}
+                                                </button>
+                                            </div>
+                                        </motion.div>
                                     </div>
-                                </motion.div>
-                            </div>
-                        </div>
-                    )}
+                                </div>
+                            )}
 
-                </div>
-            </div>
+                        </div>
+                    </div>
+                </motion.div>
+            )}
         </div>
     );
 };
