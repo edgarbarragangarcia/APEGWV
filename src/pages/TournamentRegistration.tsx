@@ -346,15 +346,7 @@ const TournamentRegistration: React.FC = () => {
                         }} />
                         
                         {/* Float elements for depth */}
-                        <div style={{ position: 'absolute', top: '20px', left: '20px', zIndex: 10 }}>
-                            <div className="glass" style={{
-                                padding: '10px 15px', borderRadius: '15px', background: 'rgba(0,0,0,0.3)',
-                                border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', gap: '10px'
-                            }}>
-                                <Star size={14} color="var(--secondary)" fill="var(--secondary)" />
-                                <span style={{ fontSize: '10px', fontWeight: '900', color: 'white', letterSpacing: '1px' }}>EVENTO PREMIER</span>
-                            </div>
-                        </div>
+
 
                         <div style={{ position: 'absolute', bottom: isMobile ? '80px' : '50px', left: '0', width: '100%', padding: '0 30px' }}>
                             <div style={{ opacity: 1 }}>
