@@ -352,32 +352,35 @@ const TournamentRegistration: React.FC = () => {
                         {/* Mobile Registration Button */}
                         {isMobile && !isFlipped && (
                             <motion.button
-                                initial={{ opacity: 0, scale: 0.8 }}
-                                animate={{ opacity: 1, scale: 1 }}
+                                initial={{ opacity: 0, scale: 0.8, x: '-50%' }}
+                                animate={{ opacity: 1, scale: 1, x: '-50%' }}
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     setIsFlipped(true);
                                 }}
                                 style={{
                                     position: 'absolute',
-                                    bottom: '30px',
-                                    right: '30px',
+                                    bottom: '25px',
+                                    left: '50%',
                                     background: 'var(--secondary)',
                                     color: 'var(--primary)',
                                     border: 'none',
-                                    padding: '15px 25px',
-                                    borderRadius: '20px',
+                                    padding: '20px 45px', // Increased padding
+                                    borderRadius: '25px',
                                     fontWeight: '950',
-                                    fontSize: '12px',
+                                    fontSize: '14px',
                                     letterSpacing: '1px',
-                                    boxShadow: '0 15px 30px rgba(163, 230, 53, 0.4)',
+                                    boxShadow: '0 20px 40px rgba(163, 230, 53, 0.4)',
                                     zIndex: 50,
                                     display: 'flex',
                                     alignItems: 'center',
-                                    gap: '10px'
+                                    justifyContent: 'center',
+                                    gap: '12px',
+                                    width: '80%', // Make it wider and centered
+                                    maxWidth: '300px'
                                 }}
                             >
-                                INSCRIPCIÓN <Trophy size={16} />
+                                INSCRIPCIÓN <Trophy size={20} />
                             </motion.button>
                         )}
                     </div>
