@@ -1077,8 +1077,7 @@ const TournamentManager: React.FC = () => {
                                                                     <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '12px' }}>
                                                                         <div className="input-group">
                                                                             <label style={{ fontSize: '10px', fontWeight: '800', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>Método</label>
-                                                                            <input
-                                                                                list="payment-methods"
+                                                                            <select
                                                                                 value={pm.method}
                                                                                 onChange={(e) => {
                                                                                     const newMethods = [...formData.payment_methods];
@@ -1086,9 +1085,17 @@ const TournamentManager: React.FC = () => {
                                                                                     setFormData({ ...formData, payment_methods: newMethods });
                                                                                 }}
                                                                                 className="form-input"
-                                                                                placeholder="Nequi, Daviplata, etc"
                                                                                 style={{ background: 'rgba(255,255,255,0.05)', color: 'white', padding: '10px 12px' }}
-                                                                            />
+                                                                            >
+                                                                                <option value="Nequi">Nequi</option>
+                                                                                <option value="Llave BreB">Llave BreB</option>
+                                                                                <option value="Daviplata">Daviplata</option>
+                                                                                <option value="Bancolombia">Bancolombia</option>
+                                                                                <option value="Cuenta de Ahorros">Cuenta de Ahorros</option>
+                                                                                <option value="Cuenta Corriente">Cuenta Corriente</option>
+                                                                                <option value="Cuenta Bancaria">Cuenta Bancaria</option>
+                                                                                <option value="Otro">Otro...</option>
+                                                                            </select>
                                                                         </div>
                                                                         {(pm.method.includes('Cuenta') || pm.method === 'Bancolombia') && (
                                                                             <>
@@ -1145,15 +1152,7 @@ const TournamentManager: React.FC = () => {
                                                                 </div>
                                                             ))}
                                                         </div>
-                                                        <datalist id="payment-methods">
-                                                            <option value="Nequi" />
-                                                            <option value="Llave BreB" />
-                                                            <option value="Daviplata" />
-                                                            <option value="Bancolombia" />
-                                                            <option value="Cuenta de Ahorros" />
-                                                            <option value="Cuenta Corriente" />
-                                                            <option value="Cuenta Bancaria" />
-                                                        </datalist>
+
                                                     </div>
 
                                                     <div style={{ marginTop: '10px' }}>
