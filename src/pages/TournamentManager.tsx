@@ -708,35 +708,47 @@ const TournamentManager: React.FC = () => {
         setIsDeleting(true);
 
         try {
-            // First, delete related records due to potential foreign key constraints
-            // and RLS policies that might block a direct tournament delete if children exist
+            console.log('Iniciando proceso de borrado para torneo:', deleteModal.tournamentId);
             
             // Delete finances
-            await (supabase
+            const { error: finError } = await (supabase
                 .from('tournament_finances' as any) as any)
                 .delete()
                 .eq('tournament_id', deleteModal.tournamentId);
+            
+            if (finError) {
+                console.error('Error borrando finanzas:', finError);
+                throw new Error(`Error en finanzas: ${finError.message}`);
+            }
 
             // Delete registrations
-            await (supabase
+            const { error: regError } = await (supabase
                 .from('tournament_registrations' as any) as any)
                 .delete()
                 .eq('tournament_id', deleteModal.tournamentId);
+            
+            if (regError) {
+                console.error('Error borrando registros:', regError);
+                throw new Error(`Error en inscripciones: ${regError.message}`);
+            }
 
             // Now delete the tournament
-            const { error } = await supabase
+            const { error: tourError } = await supabase
                 .from('tournaments')
                 .delete()
                 .eq('id', deleteModal.tournamentId);
 
-            if (error) throw error;
+            if (tourError) {
+                console.error('Error borrando torneo:', tourError);
+                throw new Error(`Error en torneo: ${tourError.message}`);
+            }
             
             setTournaments(tournaments.filter(t => t.id !== deleteModal.tournamentId));
             setDeleteModal({ isOpen: false, tournamentId: null, tournamentName: '' });
             alert('Evento eliminado correctamente');
-        } catch (err) {
-            console.error('Error deleting tournament:', err);
-            alert('Error al eliminar el torneo. Es posible que tenga registros dependientes que no se pudieron borrar.');
+        } catch (err: any) {
+            console.error('Error detallado de borrado:', err);
+            alert(`No se pudo eliminar: ${err.message || 'Error desconocido'}`);
         } finally {
             setIsDeleting(false);
         }
