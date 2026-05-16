@@ -301,11 +301,7 @@ const TournamentRegistration: React.FC = () => {
                 </div>
 
                 <div style={{ position: 'absolute', bottom: '40px', left: '0', width: '100%', padding: '0 30px' }}>
-                    <motion.div
-                        initial={{ opacity: 0, y: 30 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.8 }}
-                    >
+                    <div style={{ opacity: 1 }}>
                         <h1 style={{ 
                             fontSize: isMobile ? '36px' : '56px', 
                             fontWeight: '950', 
@@ -325,7 +321,7 @@ const TournamentRegistration: React.FC = () => {
                                 <Users size={18} color="var(--secondary)" /> {tournament.current_participants || 0} / {tournament.participants_limit || '∞'} JUGADORES
                             </div>
                         </div>
-                    </motion.div>
+                    </div>
                 </div>
             </div>
 
@@ -338,12 +334,8 @@ const TournamentRegistration: React.FC = () => {
                         { icon: <Layout />, label: 'HÁNDICAP', value: 'Al 100%' },
                         { icon: <CheckCircle2 />, label: 'ESTADO', value: 'Abierto', color: 'var(--secondary)' }
                     ].map((item, i) => (
-                        <motion.div
+                        <div
                             key={i}
-                            initial={{ opacity: 0, y: 20 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true }}
-                            transition={{ delay: i * 0.1 }}
                             className="glass"
                             style={{ padding: '20px', borderRadius: '25px', display: 'flex', flexDirection: 'column', gap: '10px', background: 'rgba(255,255,255,0.03)' }}
                         >
@@ -352,7 +344,7 @@ const TournamentRegistration: React.FC = () => {
                                 <div style={{ fontSize: '9px', fontWeight: '900', color: 'rgba(255,255,255,0.4)', letterSpacing: '1.5px' }}>{item.label}</div>
                                 <div style={{ fontSize: '14px', fontWeight: '900', color: item.color || 'white', marginTop: '2px' }}>{item.value}</div>
                             </div>
-                        </motion.div>
+                        </div>
                     ))}
                 </div>
 
