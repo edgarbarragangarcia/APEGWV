@@ -385,7 +385,7 @@ const TournamentRegistration: React.FC = () => {
                                         flexDirection: 'column',
                                         gap: '8px',
                                         width: 'fit-content',
-                                        minWidth: '200px'
+                                        minWidth: '350px'
                                     }}>
                                         <div style={{ fontSize: '10px', fontWeight: '900', color: 'var(--secondary)', letterSpacing: '1px' }}>VALOR INSCRIPCIÓN</div>
                                         <div style={{ fontSize: '24px', fontWeight: '950', color: 'white' }}>
