@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, useAnimation, AnimatePresence } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../services/SupabaseManager';
-import { Plus, Trophy, Trash2, Calendar, Loader2, Users, User, ChevronLeft, MapPin, Settings, ChevronDown, ChevronUp, Minus, ShieldCheck, HeartHandshake, Copy, CheckCircle2, Image as ImageIcon } from 'lucide-react';
+import { Plus, Trophy, Trash2, Calendar, Loader2, Users, User, ChevronLeft, MapPin, Settings, ChevronDown, ChevronUp, Minus, ShieldCheck, HeartHandshake, Copy, CheckCircle2, Image as ImageIcon, X } from 'lucide-react';
 import Skeleton from '../components/Skeleton';
 import PageHero from '../components/PageHero';
 import PageHeader from '../components/PageHeader';
@@ -325,6 +325,7 @@ const TournamentManager: React.FC = () => {
         payment_method: 'Nequi',
         payment_phone: '',
         payment_key: '',
+        payment_methods: [{ id: '1', method: 'Nequi', account: '' }] as { id: string, method: string, account: string }[],
         notes: ''
     });
 
@@ -496,7 +497,7 @@ const TournamentManager: React.FC = () => {
                         sponsors: formData.sponsors.map(s => s.name).filter(Boolean).join('\n'),
                         prizes: formData.prizes.map(p => p.name).filter(Boolean).join('\n'),
                         guests: formData.guests.map(g => `${g.name}|${g.federation_code || ''}`).filter(Boolean).join('\n'),
-                        notes: `${formData.notes}\n\n---PAYMENT_DATA---\nMETHOD:${formData.payment_method}\nPHONE:${formData.payment_phone}\nKEY:${formData.payment_key}`,
+                        notes: `${formData.notes}\n\n---PAYMENTS_JSON---\n${JSON.stringify(formData.payment_methods)}`,
                         approval_status: tournaments.find(t => t.id === editingId)?.approval_status || 'pending',
                         updated_at: new Date().toISOString()
                     })
@@ -609,6 +610,7 @@ const TournamentManager: React.FC = () => {
             payment_method: 'Nequi',
             payment_phone: '',
             payment_key: '',
+            payment_methods: [{ id: '1', method: 'Nequi', account: '' }],
             notes: ''
         });
         setEditingId(null);
@@ -649,19 +651,25 @@ const TournamentManager: React.FC = () => {
                 : [],
             current_participants: tournament.current_participants || 0,
             paid_participants: tournament.paid_participants || 0,
-            payment_method: (() => {
-                const match = (tournament.notes || '').match(/METHOD:(.*?)(?:\n|$)/);
-                return match ? match[1].trim() : 'Nequi';
+            payment_methods: (() => {
+                const notes = tournament.notes || '';
+                const jsonMatch = notes.match(/---PAYMENTS_JSON---\n([\s\S]*?)(?:\n\n|$)/);
+                if (jsonMatch) {
+                    try { return JSON.parse(jsonMatch[1]); } catch(e) { console.error("JSON parse error", e); }
+                }
+                // Fallback to legacy parsing
+                const methodMatch = notes.match(/METHOD:(.*?)(?:\n|$)/);
+                const phoneMatch = notes.match(/PHONE:(.*?)(?:\n|$)/);
+                const keyMatch = notes.match(/KEY:(.*?)(?:\n|$)/);
+                const method = methodMatch ? methodMatch[1].trim() : 'Nequi';
+                const account = (phoneMatch ? phoneMatch[1].trim() : '') || (keyMatch ? keyMatch[1].trim() : '');
+                return [{ id: '1', method, account }];
             })(),
-            payment_phone: (() => {
-                const match = (tournament.notes || '').match(/PHONE:(.*?)(?:\n|$)/);
-                return match ? match[1].trim() : '';
-            })(),
-            payment_key: (() => {
-                const match = (tournament.notes || '').match(/KEY:(.*?)(?:\n|$)/);
-                return match ? match[1].trim() : '';
-            })(),
-            notes: (tournament.notes || '').split('\n\n---PAYMENT_DATA---')[0].trim()
+            // Keep legacy fields to satisfy type definition
+            payment_method: 'Nequi',
+            payment_phone: '',
+            payment_key: '',
+            notes: (tournament.notes || '').split('\n\n---PAYMENT_DATA---')[0].split('\n\n---PAYMENTS_JSON---')[0].trim()
         });
         setEditingId(tournament.id);
         setShowForm(true);
@@ -1041,38 +1049,72 @@ const TournamentManager: React.FC = () => {
                                                     </div>
 
                                                     <div className="glass" style={{ padding: '20px', borderRadius: '24px', background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.05)', marginTop: '10px' }}>
-                                                        <h4 style={{ fontSize: '12px', fontWeight: '900', color: 'var(--secondary)', marginBottom: '15px', textTransform: 'uppercase', letterSpacing: '1px' }}>Información de Pago para Inscritos</h4>
-                                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '15px' }}>
-                                                            <div className="input-group">
-                                                                <label style={{ fontSize: '11px', fontWeight: '800', marginBottom: '8px', display: 'block', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>Método de Pago</label>
-                                                                <input
-                                                                    list="payment-methods"
-                                                                    value={formData.payment_method}
-                                                                    onChange={(e) => setFormData({ ...formData, payment_method: e.target.value })}
-                                                                    className="form-input"
-                                                                    placeholder="Ej: Nequi, Daviplata, Bancolombia"
-                                                                    style={{ background: 'rgba(255,255,255,0.05)', color: 'white' }}
-                                                                />
-                                                                <datalist id="payment-methods">
-                                                                    <option value="Nequi" />
-                                                                    <option value="Llave BreB" />
-                                                                    <option value="Daviplata" />
-                                                                    <option value="Bancolombia" />
-                                                                </datalist>
-                                                            </div>
-
-                                                            <div className="input-group">
-                                                                <label style={{ fontSize: '11px', fontWeight: '800', marginBottom: '8px', display: 'block', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>Número / Cuenta / Llave</label>
-                                                                <input
-                                                                    type="text"
-                                                                    value={formData.payment_key || formData.payment_phone}
-                                                                    onChange={(e) => setFormData({ ...formData, payment_key: e.target.value, payment_phone: e.target.value })}
-                                                                    className="form-input"
-                                                                    placeholder="Ej: 300 123 4567"
-                                                                    style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }}
-                                                                />
-                                                            </div>
+                                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+                                                            <h4 style={{ fontSize: '12px', fontWeight: '900', color: 'var(--secondary)', textTransform: 'uppercase', letterSpacing: '1px', margin: 0 }}>Métodos de Pago</h4>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => setFormData({ ...formData, payment_methods: [...formData.payment_methods, { id: Date.now().toString(), method: 'Nequi', account: '' }] })}
+                                                                style={{ background: 'rgba(163, 230, 53, 0.1)', border: '1px solid rgba(163, 230, 53, 0.2)', color: 'var(--secondary)', padding: '5px 10px', borderRadius: '10px', fontSize: '10px', fontWeight: '900', cursor: 'pointer' }}
+                                                            >
+                                                                + AGREGAR
+                                                            </button>
                                                         </div>
+                                                        
+                                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                                                            {formData.payment_methods.map((pm, idx) => (
+                                                                <div key={pm.id} style={{ background: 'rgba(255,255,255,0.02)', padding: '15px', borderRadius: '18px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                                                    <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '10px' }}>
+                                                                        {formData.payment_methods.length > 1 && (
+                                                                            <button 
+                                                                                type="button"
+                                                                                onClick={() => setFormData({ ...formData, payment_methods: formData.payment_methods.filter(p => p.id !== pm.id) })}
+                                                                                style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.2)', cursor: 'pointer' }}
+                                                                            >
+                                                                                <X size={14} />
+                                                                            </button>
+                                                                        )}
+                                                                    </div>
+                                                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '12px' }}>
+                                                                        <div className="input-group">
+                                                                            <label style={{ fontSize: '10px', fontWeight: '800', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>Método</label>
+                                                                            <input
+                                                                                list="payment-methods"
+                                                                                value={pm.method}
+                                                                                onChange={(e) => {
+                                                                                    const newMethods = [...formData.payment_methods];
+                                                                                    newMethods[idx].method = e.target.value;
+                                                                                    setFormData({ ...formData, payment_methods: newMethods });
+                                                                                }}
+                                                                                className="form-input"
+                                                                                placeholder="Nequi, Daviplata, etc"
+                                                                                style={{ background: 'rgba(255,255,255,0.05)', color: 'white', padding: '10px 12px' }}
+                                                                            />
+                                                                        </div>
+                                                                        <div className="input-group">
+                                                                            <label style={{ fontSize: '10px', fontWeight: '800', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>Número / Cuenta</label>
+                                                                            <input
+                                                                                type="text"
+                                                                                value={pm.account}
+                                                                                onChange={(e) => {
+                                                                                    const newMethods = [...formData.payment_methods];
+                                                                                    newMethods[idx].account = e.target.value;
+                                                                                    setFormData({ ...formData, payment_methods: newMethods });
+                                                                                }}
+                                                                                className="form-input"
+                                                                                placeholder="@usuario o número"
+                                                                                style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', padding: '10px 12px' }}
+                                                                            />
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                        <datalist id="payment-methods">
+                                                            <option value="Nequi" />
+                                                            <option value="Llave BreB" />
+                                                            <option value="Daviplata" />
+                                                            <option value="Bancolombia" />
+                                                        </datalist>
                                                     </div>
 
                                                     <div style={{ marginTop: '10px' }}>

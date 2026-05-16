@@ -123,25 +123,31 @@ const TournamentRegistration: React.FC = () => {
         fetchData();
     }, [id, user]);
 
-    const paymentInfo = (() => {
-        if (!tournament?.notes) return null;
+    const paymentMethods = (() => {
+        if (!tournament?.notes) return [];
+        const jsonMatch = tournament.notes.match(/---PAYMENTS_JSON---\n([\s\S]*?)(?:\n\n|$)/);
+        if (jsonMatch) {
+            try { 
+                const parsed = JSON.parse(jsonMatch[1]);
+                return parsed.map((p: any) => ({
+                    method: p.method,
+                    account: p.account,
+                    label: p.method === 'Llave BreB' ? 'LLAVE BREB' : p.method === 'Nequi' ? 'CELULAR NEQUI' : p.method === 'Daviplata' ? 'CELULAR DAVIPLATA' : 'CUENTA'
+                }));
+            } catch(e) { console.error("JSON parse error", e); }
+        }
+        // Fallback to legacy
         const matchMethod = tournament.notes.match(/METHOD:(.*?)(?:\n|$)/);
         const matchPhone = tournament.notes.match(/PHONE:(.*?)(?:\n|$)/);
         const matchKey = tournament.notes.match(/KEY:(.*?)(?:\n|$)/);
-        if (!matchMethod && !matchPhone && !matchKey) return null;
+        if (!matchMethod && !matchPhone && !matchKey) return [];
         const method = matchMethod ? matchMethod[1].trim() : 'Nequi';
-        const phone = matchPhone ? matchPhone[1].trim() : '';
-        const key = matchKey ? matchKey[1].trim() : '';
-        let accountLabel = 'CUENTA';
-        if (method === 'Llave BreB') accountLabel = 'LLAVE BREB';
-        else if (method === 'Nequi') accountLabel = 'CELULAR NEQUI';
-        else if (method === 'Daviplata') accountLabel = 'CELULAR DAVIPLATA';
-        
-        return {
+        const account = (matchPhone ? matchPhone[1].trim() : '') || (matchKey ? matchKey[1].trim() : '');
+        return [{
             method,
-            account: phone || key,
-            accountLabel
-        };
+            account,
+            label: method === 'Llave BreB' ? 'LLAVE BREB' : method === 'Nequi' ? 'CELULAR NEQUI' : 'CUENTA'
+        }];
     })();
 
     const handleRegister = async () => {
@@ -369,10 +375,21 @@ const TournamentRegistration: React.FC = () => {
                                         <div style={{ fontSize: '24px', fontWeight: '950', color: 'white' }}>
                                             {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(tournament.price)}
                                         </div>
-                                        {paymentInfo && (
-                                            <div style={{ marginTop: '5px', paddingTop: '10px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-                                                <div style={{ fontSize: '9px', fontWeight: '900', color: 'rgba(255,255,255,0.4)', letterSpacing: '1px' }}>{paymentInfo.method}</div>
-                                                <div style={{ fontSize: '14px', fontWeight: '900', color: 'white' }}>{paymentInfo.account}</div>
+                                        {paymentMethods.length > 0 && (
+                                            <div style={{ 
+                                                marginTop: '10px', 
+                                                paddingTop: '10px', 
+                                                borderTop: '1px solid rgba(255,255,255,0.05)',
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                gap: '12px'
+                                            }}>
+                                                {paymentMethods.map((pm: any, i: number) => (
+                                                    <div key={i}>
+                                                        <div style={{ fontSize: '9px', fontWeight: '900', color: 'rgba(255,255,255,0.4)', letterSpacing: '1px', textTransform: 'uppercase' }}>{pm.label}</div>
+                                                        <div style={{ fontSize:pm.account.length > 15 ? '12px' : '14px', fontWeight: '900', color: 'white', wordBreak: 'break-all' }}>{pm.account}</div>
+                                                    </div>
+                                                ))}
                                             </div>
                                         )}
                                     </div>
