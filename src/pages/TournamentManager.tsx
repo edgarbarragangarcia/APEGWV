@@ -1089,12 +1089,7 @@ const TournamentManager: React.FC = () => {
                                                                             >
                                                                                 <option value="Nequi">Nequi</option>
                                                                                 <option value="Llave BreB">Llave BreB</option>
-                                                                                <option value="Daviplata">Daviplata</option>
-                                                                                <option value="Bancolombia">Bancolombia</option>
-                                                                                <option value="Cuenta de Ahorros">Cuenta de Ahorros</option>
-                                                                                <option value="Cuenta Corriente">Cuenta Corriente</option>
                                                                                 <option value="Cuenta Bancaria">Cuenta Bancaria</option>
-                                                                                <option value="Otro">Otro...</option>
                                                                             </select>
                                                                         </div>
                                                                         {(pm.method.includes('Cuenta') || pm.method === 'Bancolombia') && (
