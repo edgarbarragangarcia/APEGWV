@@ -1045,44 +1045,33 @@ const TournamentManager: React.FC = () => {
                                                         <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '15px' }}>
                                                             <div className="input-group">
                                                                 <label style={{ fontSize: '11px', fontWeight: '800', marginBottom: '8px', display: 'block', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>Método de Pago</label>
-                                                                <select
+                                                                <input
+                                                                    list="payment-methods"
                                                                     value={formData.payment_method}
                                                                     onChange={(e) => setFormData({ ...formData, payment_method: e.target.value })}
                                                                     className="form-input"
+                                                                    placeholder="Ej: Nequi, Daviplata, Bancolombia"
                                                                     style={{ background: 'rgba(255,255,255,0.05)', color: 'white' }}
-                                                                >
-                                                                    <option value="Nequi">Nequi</option>
-                                                                    <option value="Llave BreB">Llave BreB</option>
-                                                                </select>
+                                                                />
+                                                                <datalist id="payment-methods">
+                                                                    <option value="Nequi" />
+                                                                    <option value="Llave BreB" />
+                                                                    <option value="Daviplata" />
+                                                                    <option value="Bancolombia" />
+                                                                </datalist>
                                                             </div>
 
-                                                            {formData.payment_method === 'Nequi' && (
-                                                                <div className="input-group">
-                                                                    <label style={{ fontSize: '11px', fontWeight: '800', marginBottom: '8px', display: 'block', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>Celular Nequi</label>
-                                                                    <input
-                                                                        type="text"
-                                                                        value={formData.payment_phone}
-                                                                        onChange={(e) => setFormData({ ...formData, payment_phone: e.target.value })}
-                                                                        className="form-input"
-                                                                        placeholder="Ej: 300 123 4567"
-                                                                        style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }}
-                                                                    />
-                                                                </div>
-                                                            )}
-
-                                                            {formData.payment_method === 'Llave BreB' && (
-                                                                <div className="input-group">
-                                                                    <label style={{ fontSize: '11px', fontWeight: '800', marginBottom: '8px', display: 'block', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>Llave BreB</label>
-                                                                    <input
-                                                                        type="text"
-                                                                        value={formData.payment_key}
-                                                                        onChange={(e) => setFormData({ ...formData, payment_key: e.target.value })}
-                                                                        className="form-input"
-                                                                        placeholder="Ingresa la llave de pago"
-                                                                        style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }}
-                                                                    />
-                                                                </div>
-                                                            )}
+                                                            <div className="input-group">
+                                                                <label style={{ fontSize: '11px', fontWeight: '800', marginBottom: '8px', display: 'block', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>Número / Cuenta / Llave</label>
+                                                                <input
+                                                                    type="text"
+                                                                    value={formData.payment_key || formData.payment_phone}
+                                                                    onChange={(e) => setFormData({ ...formData, payment_key: e.target.value, payment_phone: e.target.value })}
+                                                                    className="form-input"
+                                                                    placeholder="Ej: 300 123 4567"
+                                                                    style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }}
+                                                                />
+                                                            </div>
                                                         </div>
                                                     </div>
 

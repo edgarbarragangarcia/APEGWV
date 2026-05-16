@@ -132,10 +132,15 @@ const TournamentRegistration: React.FC = () => {
         const method = matchMethod ? matchMethod[1].trim() : 'Nequi';
         const phone = matchPhone ? matchPhone[1].trim() : '';
         const key = matchKey ? matchKey[1].trim() : '';
+        let accountLabel = 'CUENTA';
+        if (method === 'Llave BreB') accountLabel = 'LLAVE BREB';
+        else if (method === 'Nequi') accountLabel = 'CELULAR NEQUI';
+        else if (method === 'Daviplata') accountLabel = 'CELULAR DAVIPLATA';
+        
         return {
             method,
-            account: method === 'Llave BreB' ? (key || phone) : (phone || key),
-            accountLabel: method === 'Llave BreB' ? 'LLAVE BREB' : 'CELULAR NEQUI'
+            account: phone || key,
+            accountLabel
         };
     })();
 
@@ -367,7 +372,7 @@ const TournamentRegistration: React.FC = () => {
                                         {paymentInfo && (
                                             <div style={{ marginTop: '5px', paddingTop: '10px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
                                                 <div style={{ fontSize: '9px', fontWeight: '900', color: 'rgba(255,255,255,0.4)', letterSpacing: '1px' }}>{paymentInfo.method}</div>
-                                                <div style={{ fontSize: '14px', fontWeight: '900', color: 'var(--secondary)' }}>{paymentInfo.account}</div>
+                                                <div style={{ fontSize: '14px', fontWeight: '900', color: 'white' }}>{paymentInfo.account}</div>
                                             </div>
                                         )}
                                     </div>
