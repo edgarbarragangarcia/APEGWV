@@ -723,7 +723,7 @@ const TournamentRegistration: React.FC = () => {
                         top: 0, left: 0,
                         width: '100%',
                         minHeight: '100vh',
-                        background: '#0a0f0d', // Solid background for reliability
+                        background: 'linear-gradient(135deg, #152c1e, #0a0f0d)',
                         display: 'flex',
                         flexDirection: 'column',
                         zIndex: isFlipped ? 2 : 0,
@@ -759,7 +759,7 @@ const TournamentRegistration: React.FC = () => {
                         <div style={{ 
                             flexGrow: 1, 
                             padding: '30px',
-                            background: 'linear-gradient(135deg, #152c1e, #0a0f0d)'
+                            background: 'transparent'
                         }}>
                             {/* Reusing form fields structure for back side */}
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
