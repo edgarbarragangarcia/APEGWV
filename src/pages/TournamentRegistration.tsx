@@ -523,7 +523,7 @@ const TournamentRegistration: React.FC = () => {
 
                                 {isMobile && (
                                     <div style={{ 
-                                        margin: '25px auto 0 auto', 
+                                        margin: '5px auto 0 auto', 
                                         padding: '20px', 
                                         borderRadius: '25px', 
                                         background: 'rgba(255,255,255,0.05)', 
