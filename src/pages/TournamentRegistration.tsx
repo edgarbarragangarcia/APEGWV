@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
     Calendar, MapPin, Trophy, ShieldCheck, HeartHandshake, 
@@ -32,7 +32,6 @@ interface Tournament {
 
 const TournamentRegistration: React.FC = () => {
     const { idOrSlug } = useParams<{ idOrSlug: string }>();
-    const navigate = useNavigate();
     const { user } = useAuth();
 
     const [loading, setLoading] = useState(true);
@@ -334,23 +333,7 @@ const TournamentRegistration: React.FC = () => {
                                     className="btn-primary"
                                     style={{ width: '100%', padding: '18px', borderRadius: '25px', fontWeight: '950', fontSize: '15px', letterSpacing: '1px' }}
                                 >
-                                    NUEVO REGISTRO / VOLVER
-                                </button>
-                                <button
-                                    onClick={() => navigate('/my-events')}
-                                    style={{ 
-                                        width: '100%', 
-                                        padding: '16px', 
-                                        borderRadius: '25px', 
-                                        fontWeight: '700', 
-                                        fontSize: '14px', 
-                                        background: 'rgba(255,255,255,0.05)', 
-                                        color: 'white', 
-                                        border: '1px solid rgba(255,255,255,0.1)',
-                                        cursor: 'pointer'
-                                    }}
-                                >
-                                    VER MIS EVENTOS
+                                    NUEVO REGISTRO
                                 </button>
                             </div>
                         </motion.div>
