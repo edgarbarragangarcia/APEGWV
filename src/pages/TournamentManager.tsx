@@ -12,6 +12,7 @@ import ConfirmationModal from '../components/ConfirmationModal';
 interface Tournament {
     id: string;
     name: string;
+    slug?: string | null;
     description: string | null;
     date: string;
     club: string;
@@ -300,6 +301,7 @@ const TournamentManager: React.FC = () => {
     // Form State
     const [formData, setFormData] = useState({
         name: '',
+        slug: '',
         description: '',
         date: '',
         club: '',
@@ -482,6 +484,7 @@ const TournamentManager: React.FC = () => {
                     .from('tournaments')
                     .update({
                         name: formData.name,
+                        slug: formData.slug || null,
                         description: formData.description,
                         date: formData.date,
                         club: formData.club,
@@ -508,6 +511,7 @@ const TournamentManager: React.FC = () => {
                     .from('tournaments')
                     .insert([{
                         name: formData.name,
+                        slug: formData.slug || null,
                         description: formData.description,
                         date: formData.date,
                         club: formData.club,
@@ -585,6 +589,7 @@ const TournamentManager: React.FC = () => {
     const resetForm = () => {
         setFormData({
             name: '',
+            slug: '',
             description: '',
             date: '',
             club: '',
@@ -620,6 +625,7 @@ const TournamentManager: React.FC = () => {
         const p = tournament.price.toString();
         setFormData({
             name: tournament.name,
+            slug: tournament.slug || '',
             description: tournament.description || '',
             date: tournament.date.split('T')[0],
             club: tournament.club,
@@ -930,6 +936,47 @@ const TournamentManager: React.FC = () => {
                                                             placeholder="Ej: Copa Diamante 2024"
                                                             required
                                                         />
+                                                    </div>
+
+                                                    <div className="input-group">
+                                                        <label style={{ fontSize: '11px', fontWeight: '800', marginBottom: '8px', display: 'block', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                                            Enlace Personalizado (Slug)*
+                                                        </label>
+                                                        <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                                                            <span style={{ 
+                                                                position: 'absolute', 
+                                                                left: '16px', 
+                                                                color: 'rgba(255,255,255,0.3)', 
+                                                                fontSize: '14px', 
+                                                                fontWeight: '600',
+                                                                userSelect: 'none'
+                                                            }}>
+                                                                tournament-register/
+                                                            </span>
+                                                            <input
+                                                                type="text"
+                                                                value={formData.slug}
+                                                                onChange={(e) => {
+                                                                    const sanitized = e.target.value
+                                                                        .toLowerCase()
+                                                                        .replace(/[^a-z0-9-_]/g, '');
+                                                                    setFormData({ ...formData, slug: sanitized });
+                                                                }}
+                                                                className="form-input"
+                                                                style={{
+                                                                    background: 'rgba(255,255,255,0.03)',
+                                                                    border: '1px solid rgba(255,255,255,0.1)',
+                                                                    padding: '16px 16px 16px 155px',
+                                                                    fontSize: '15px',
+                                                                    width: '100%'
+                                                                }}
+                                                                placeholder="ej: apeg"
+                                                                required
+                                                            />
+                                                        </div>
+                                                        <small style={{ display: 'block', marginTop: '6px', fontSize: '11px', color: 'rgba(255,255,255,0.3)' }}>
+                                                            Define la dirección de registro pública (ej: https://apegwv.vercel.app/tournament-register/apeg).
+                                                        </small>
                                                     </div>
 
                                                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
@@ -1292,12 +1339,12 @@ const TournamentManager: React.FC = () => {
                                                                             border: '1px solid rgba(255,255,255,0.05)',
                                                                             fontFamily: 'monospace'
                                                                         }}>
-                                                                            {`https://apegwv.vercel.app/tournament-register/${editingId}`}
+                                                                            {`https://apegwv.vercel.app/tournament-register/${formData.slug || editingId}`}
                                                                         </div>
                                                                         <button
                                                                             type="button"
                                                                             onClick={() => {
-                                                                                const url = `https://apegwv.vercel.app/tournament-register/${editingId}`;
+                                                                                const url = `https://apegwv.vercel.app/tournament-register/${formData.slug || editingId}`;
                                                                                 navigator.clipboard.writeText(url);
                                                                                 setCopied(true);
                                                                                 setTimeout(() => setCopied(false), 2000);
