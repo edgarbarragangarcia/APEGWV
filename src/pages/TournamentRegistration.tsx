@@ -484,9 +484,9 @@ const TournamentRegistration: React.FC = () => {
                         }}>
                             <div style={{ opacity: 1 }}>
                                 <h1 style={{ 
-                                    fontSize: isMobile ? '20px' : '40px', 
+                                    fontSize: isMobile ? '26px' : '42px', 
                                     fontWeight: '950', 
-                                    margin: '0 0 10px 0', 
+                                    margin: '0 0 12px 0', 
                                     color: 'white', 
                                     letterSpacing: isMobile ? '-0.5px' : '-1.5px',
                                     lineHeight: '1.2',
@@ -508,11 +508,11 @@ const TournamentRegistration: React.FC = () => {
                                         alignItems: 'center', 
                                         justifyContent: isMobile ? 'center' : 'flex-start',
                                         gap: '8px', 
-                                        fontSize: '14px', 
+                                        fontSize: isMobile ? '16px' : '18px', 
                                         fontWeight: '600',
                                         width: isMobile ? '100%' : 'auto'
                                     }}>
-                                        <MapPin size={18} color="var(--secondary)" /> {tournament.club}
+                                        <MapPin size={20} color="var(--secondary)" /> {tournament.club}
                                     </div>
                                     {!isMobile && (
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', fontWeight: '600' }}>
