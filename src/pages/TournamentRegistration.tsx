@@ -479,7 +479,7 @@ const TournamentRegistration: React.FC = () => {
                     </div> {/* End of Hero Image Container */}
 
 
-                    <div style={{ padding: isMobile ? '0 30px' : '0 30px', marginTop: isMobile ? '10px' : '-20px', position: 'relative', zIndex: 20 }}>
+                    <div style={{ padding: isMobile ? '0 30px' : '0 30px', marginTop: isMobile ? '35px' : '-20px', position: 'relative', zIndex: 20 }}>
                         {/* Quick Info Grid */}
                         <div style={{ 
                             display: 'grid', 
@@ -491,9 +491,16 @@ const TournamentRegistration: React.FC = () => {
                                 { icon: <Calendar />, label: 'FECHA', value: new Date(tournament.date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC' }) },
                                 { icon: <Flag />, label: 'MODO JUEGO', value: tournament.game_mode || 'Stableford' }
                             ].map((item, i) => (
-                                <div
+                                <motion.div
                                     key={i}
                                     className="glass"
+                                    whileHover={{ 
+                                        y: -5, 
+                                        boxShadow: '0 20px 45px rgba(0, 0, 0, 0.45), 0 0 15px rgba(163, 230, 53, 0.15)',
+                                        borderColor: 'rgba(163, 230, 53, 0.3)'
+                                    }}
+                                    whileTap={{ scale: 0.97 }}
+                                    transition={{ type: 'spring', stiffness: 400, damping: 25 }}
                                     style={{ 
                                         padding: isMobile ? '18px 20px' : '20px', 
                                         borderRadius: isMobile ? '25px' : '25px', 
@@ -501,7 +508,10 @@ const TournamentRegistration: React.FC = () => {
                                         flexDirection: 'column', 
                                         gap: '10px', 
                                         background: 'rgba(255,255,255,0.03)',
-                                        border: '1px solid rgba(255,255,255,0.05)'
+                                        border: '1px solid rgba(255,255,255,0.08)',
+                                        backdropFilter: 'blur(20px)',
+                                        boxShadow: '0 10px 30px rgba(0,0,0,0.2), inset 0 1px 1px rgba(255,255,255,0.05)',
+                                        cursor: 'pointer'
                                     }}
                                 >
                                     <div style={{ color: 'var(--secondary)', opacity: 0.9, transform: isMobile ? 'scale(0.9)' : 'none', transformOrigin: 'left center' }}>{item.icon}</div>
@@ -509,7 +519,7 @@ const TournamentRegistration: React.FC = () => {
                                         <div style={{ fontSize: isMobile ? '9px' : '9px', fontWeight: '900', color: 'rgba(255,255,255,0.4)', letterSpacing: '1px' }}>{item.label}</div>
                                         <div style={{ fontSize: isMobile ? '13px' : '14px', fontWeight: '900', color: (item as any).color || 'white', marginTop: '4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.value}</div>
                                     </div>
-                                </div>
+                                </motion.div>
                             ))}
                         </div>
                     </div>
