@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
     Calendar, MapPin, Trophy, ShieldCheck, HeartHandshake, 
     CheckCircle2, Loader2, Plus, X, Mail, BookOpen, 
-    Star, Users, Flag
+    Star, Users, Flag, Copy, Check
 } from 'lucide-react';
 import { supabase } from '../services/SupabaseManager';
 import { useAuth } from '../context/AuthContext';
@@ -43,6 +43,14 @@ const TournamentRegistration: React.FC = () => {
     const [activeTab, setActiveTab] = useState<'rules' | 'notes' | 'info'>('info');
     const [isFlipped, setIsFlipped] = useState(false);
     const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
+    const [copiedId, setCopiedId] = useState<string | null>(null);
+
+    const handleCopy = (text: string, id: string) => {
+        navigator.clipboard.writeText(text).then(() => {
+            setCopiedId(id);
+            setTimeout(() => setCopiedId(null), 2000);
+        });
+    };
 
     // Registration form states
     const [player1, setPlayer1] = useState({
@@ -449,12 +457,88 @@ const TournamentRegistration: React.FC = () => {
                                                 width: '100%',
                                                 alignItems: 'center'
                                             }}>
-                                                {paymentMethods.map((pm: any, i: number) => (
-                                                    <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
-                                                        <div style={{ fontSize: '10px', fontWeight: '950', color: 'rgba(255,255,255,0.7)', letterSpacing: '1px', textTransform: 'uppercase' }}>{pm.label}</div>
-                                                        <div style={{ fontSize:pm.account.length > 15 ? '12px' : '14px', fontWeight: '900', color: 'white', wordBreak: 'break-all' }}>{pm.account}</div>
-                                                    </div>
-                                                ))}
+                                                {paymentMethods.map((pm: any, i: number) => {
+                                                    const isCopied = copiedId === pm.account;
+                                                    return (
+                                                        <div 
+                                                            key={i} 
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleCopy(pm.account, pm.account);
+                                                            }}
+                                                            style={{ 
+                                                                display: 'flex', 
+                                                                flexDirection: 'column', 
+                                                                alignItems: 'center', 
+                                                                width: '100%',
+                                                                cursor: 'pointer',
+                                                                padding: '10px 12px',
+                                                                borderRadius: '15px',
+                                                                background: 'rgba(255, 255, 255, 0.02)',
+                                                                border: '1px dashed rgba(255, 255, 255, 0.1)',
+                                                                transition: 'all 0.2s ease',
+                                                                userSelect: 'none'
+                                                            }}
+                                                        >
+                                                            <div style={{ fontSize: '10px', fontWeight: '950', color: 'rgba(255,255,255,0.5)', letterSpacing: '1px', textTransform: 'uppercase' }}>
+                                                                {pm.label}
+                                                            </div>
+                                                            <div style={{ 
+                                                                display: 'flex', 
+                                                                alignItems: 'center', 
+                                                                justifyContent: 'center',
+                                                                gap: '8px', 
+                                                                marginTop: '2px',
+                                                                width: '100%'
+                                                            }}>
+                                                                <span style={{ fontSize: pm.account.length > 15 ? '12px' : '14px', fontWeight: '900', color: 'white', wordBreak: 'break-all' }}>
+                                                                    {pm.account}
+                                                                </span>
+                                                                {isCopied ? (
+                                                                    <Check size={14} color="var(--secondary)" style={{ flexShrink: 0 }} />
+                                                                ) : (
+                                                                    <Copy size={13} color="rgba(255,255,255,0.4)" style={{ flexShrink: 0 }} />
+                                                                )}
+                                                            </div>
+                                                            
+                                                            <AnimatePresence mode="wait">
+                                                                {isCopied ? (
+                                                                    <motion.div 
+                                                                        key="copied"
+                                                                        initial={{ opacity: 0, y: 3, scale: 0.95 }}
+                                                                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                                                                        exit={{ opacity: 0, y: -3, scale: 0.95 }}
+                                                                        style={{ 
+                                                                            fontSize: '9px', 
+                                                                            fontWeight: '900', 
+                                                                            color: 'var(--secondary)', 
+                                                                            marginTop: '4px',
+                                                                            letterSpacing: '0.5px' 
+                                                                        }}
+                                                                    >
+                                                                        ¡COPIADO CON ÉXITO!
+                                                                    </motion.div>
+                                                                ) : (
+                                                                    <motion.div 
+                                                                        key="copy"
+                                                                        initial={{ opacity: 0 }}
+                                                                        animate={{ opacity: 1 }}
+                                                                        exit={{ opacity: 0 }}
+                                                                        style={{ 
+                                                                            fontSize: '9px', 
+                                                                            fontWeight: '800', 
+                                                                            color: 'rgba(255,255,255,0.3)', 
+                                                                            marginTop: '4px', 
+                                                                            letterSpacing: '0.5px' 
+                                                                        }}
+                                                                    >
+                                                                        TOCA PARA COPIAR
+                                                                    </motion.div>
+                                                                )}
+                                                            </AnimatePresence>
+                                                        </div>
+                                                    );
+                                                })}
                                             </div>
                                         )}
                                     </div>
