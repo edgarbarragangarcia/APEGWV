@@ -363,7 +363,7 @@ const TournamentRegistration: React.FC = () => {
                         background: 'var(--primary)'
                     }}>
                         {/* Hero Image Container */}
-                        <div style={{ position: 'relative', height: isMobile ? '65vh' : '40vh', minHeight: '400px' }}>
+                        <div style={{ position: 'relative', height: isMobile ? '52vh' : '40vh', minHeight: isMobile ? '350px' : '400px' }}>
                         <img
                             src={tournament.image_url || 'https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?q=80&w=2000'}
                             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
@@ -378,7 +378,7 @@ const TournamentRegistration: React.FC = () => {
                         {/* Float elements for depth */}
 
 
-                        <div style={{ position: 'absolute', bottom: isMobile ? '80px' : '50px', left: '0', width: '100%', padding: '0 30px' }}>
+                        <div style={{ position: 'absolute', bottom: isMobile ? '45px' : '50px', left: '0', width: '100%', padding: '0 30px' }}>
                             <div style={{ opacity: 1 }}>
                                 <h1 style={{ 
                                     fontSize: isMobile ? '36px' : '56px', 
@@ -479,13 +479,13 @@ const TournamentRegistration: React.FC = () => {
                     </div> {/* End of Hero Image Container */}
 
 
-                    <div style={{ padding: isMobile ? '30px' : '0 30px', marginTop: isMobile ? '20px' : '-20px', position: 'relative', zIndex: 20 }}>
+                    <div style={{ padding: isMobile ? '0 30px' : '0 30px', marginTop: isMobile ? '10px' : '-20px', position: 'relative', zIndex: 20 }}>
                         {/* Quick Info Grid */}
                         <div style={{ 
                             display: 'grid', 
                             gridTemplateColumns: isMobile ? '1fr 1fr' : '1fr 1fr', 
                             gap: isMobile ? '15px' : '15px', 
-                            marginBottom: '40px' 
+                            marginBottom: isMobile ? '10px' : '40px' 
                         }}>
                             {[
                                 { icon: <Calendar />, label: 'FECHA', value: new Date(tournament.date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC' }) },
