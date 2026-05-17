@@ -449,7 +449,7 @@ const TournamentRegistration: React.FC = () => {
                             minHeight: isMobile ? 'auto' : '400px',
                             paddingTop: isMobile ? '50px' : '0',
                             paddingBottom: isMobile ? '35px' : '0',
-                            overflow: 'hidden'
+                            overflow: isMobile ? 'visible' : 'hidden'
                         }}>
                         <img
                             src={tournament.image_url || 'https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?q=80&w=2000'}
