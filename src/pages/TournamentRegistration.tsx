@@ -184,17 +184,10 @@ const TournamentRegistration: React.FC = () => {
     const handleRegister = async () => {
         if (isRegistered || !tournament) return;
         const validatePlayer = (player: typeof player1, roleLabel: string, isCompanion: boolean = false) => {
-            // 1. Name & Surname check
+            // 1. Name check
             const name = player.name.trim();
             if (!name) {
                 return `El nombre del ${roleLabel} es obligatorio.`;
-            }
-            const nameParts = name.split(/\s+/).filter(Boolean);
-            if (nameParts.length < 2) {
-                return `El nombre del ${roleLabel} debe incluir al menos Nombre y Apellido (ej. Edgar Barragan).`;
-            }
-            if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(name)) {
-                return `El nombre del ${roleLabel} solo debe contener letras y espacios.`;
             }
 
             // 2. Email check
@@ -202,18 +195,11 @@ const TournamentRegistration: React.FC = () => {
             if (!email) {
                 return `El correo electrónico del ${roleLabel} es obligatorio.`;
             }
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(email)) {
-                return `El correo electrónico del ${roleLabel} no es válido. Debe contener '@' y un dominio válido (ej. usuario@dominio.com).`;
-            }
 
-            // 3. Phone check (Exactly 10 digits)
+            // 3. Phone check
             const phone = player.phone.trim();
             if (!phone) {
                 return `El teléfono del ${roleLabel} es obligatorio.`;
-            }
-            if (!/^\d{10}$/.test(phone)) {
-                return `El teléfono del ${roleLabel} debe tener exactamente 10 dígitos numéricos en Colombia (ej. 3123456789).`;
             }
 
             // 4. Golf-specific fields (Federation Code & Handicap) - skip if companion
@@ -222,17 +208,10 @@ const TournamentRegistration: React.FC = () => {
                 if (!handicap) {
                     return `El hándicap del ${roleLabel} es obligatorio.`;
                 }
-                const sanitizedHandicap = handicap.replace(',', '.');
-                if (isNaN(Number(sanitizedHandicap))) {
-                    return `El hándicap del ${roleLabel} debe ser un valor numérico (ej. 11 o 11.5).`;
-                }
 
                 const federationCode = player.federationCode.trim();
                 if (!federationCode) {
                     return `El ID de federación del ${roleLabel} es obligatorio.`;
-                }
-                if (!/^\d+$/.test(federationCode)) {
-                    return `El ID de federación del ${roleLabel} debe contener únicamente números.`;
                 }
             }
 
