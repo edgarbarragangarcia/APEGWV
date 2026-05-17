@@ -443,22 +443,45 @@ const TournamentRegistration: React.FC = () => {
                         background: 'var(--primary)'
                     }}>
                         {/* Hero Image Container */}
-                        <div style={{ position: 'relative', height: isMobile ? '52vh' : '40vh', minHeight: isMobile ? '350px' : '400px' }}>
+                        <div style={{ 
+                            position: 'relative', 
+                            height: isMobile ? 'auto' : '40vh', 
+                            minHeight: isMobile ? 'auto' : '400px',
+                            paddingTop: isMobile ? '50px' : '0',
+                            paddingBottom: isMobile ? '35px' : '0',
+                            overflow: 'hidden'
+                        }}>
                         <img
                             src={tournament.image_url || 'https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?q=80&w=2000'}
-                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                            style={{ 
+                                position: isMobile ? 'absolute' : 'static',
+                                top: 0, left: 0,
+                                width: '100%', height: '100%', 
+                                objectFit: 'cover',
+                                zIndex: 1
+                            }}
                             alt=""
                         />
                         <div style={{ 
                             position: 'absolute', 
-                            bottom: 0, left: 0, right: 0, height: '70%', 
-                            background: 'linear-gradient(to top, var(--primary) 0%, rgba(14,47,31,0.8) 40%, transparent 100%)' 
+                            bottom: 0, left: 0, right: 0, top: 0,
+                            background: isMobile 
+                                ? 'linear-gradient(to bottom, rgba(14,47,31,0.5) 0%, var(--primary) 90%)'
+                                : 'linear-gradient(to top, var(--primary) 0%, rgba(14,47,31,0.8) 40%, transparent 100%)',
+                            zIndex: 2
                         }} />
                         
                         {/* Float elements for depth */}
 
 
-                        <div style={{ position: 'absolute', bottom: isMobile ? '45px' : '50px', left: '0', width: '100%', padding: '0 30px' }}>
+                        <div style={{ 
+                            position: isMobile ? 'relative' : 'absolute', 
+                            bottom: isMobile ? 'auto' : '50px', 
+                            left: '0', 
+                            width: '100%', 
+                            padding: isMobile ? '0 20px' : '0 30px',
+                            zIndex: 3
+                        }}>
                             <div style={{ opacity: 1 }}>
                                 <h1 style={{ 
                                     fontSize: isMobile ? '20px' : '40px', 
@@ -824,9 +847,9 @@ const TournamentRegistration: React.FC = () => {
                                                     { icon: <HeartHandshake />, label: 'TELÉFONO', value: player1.phone, field: 'phone' }
                                                 ].map((input, i) => (
                                                     <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                                        <label style={{ fontSize: '9px', fontWeight: '900', color: 'var(--secondary)', marginLeft: '10px', letterSpacing: '1px' }}>{input.label}</label>
+                                                        <label style={{ fontSize: isMobile ? '8px' : '9px', fontWeight: '900', color: 'var(--secondary)', marginLeft: '10px', letterSpacing: '1px' }}>{input.label}</label>
                                                         <div className="glass" style={{ 
-                                                            padding: '15px 20px', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '15px',
+                                                            padding: isMobile ? '12px 16px' : '15px 20px', borderRadius: isMobile ? '16px' : '20px', display: 'flex', alignItems: 'center', gap: isMobile ? '8px' : '15px',
                                                             background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.05)',
                                                             transition: 'all 0.3s ease'
                                                         }}>
@@ -836,7 +859,7 @@ const TournamentRegistration: React.FC = () => {
                                                                 value={input.value}
                                                                 onChange={(e) => setPlayer1({ ...player1, [input.field]: e.target.value })}
                                                                 placeholder={`Ingresa tu ${input.label.toLowerCase()}`}
-                                                                style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none', fontSize: '15px', fontWeight: '600' }}
+                                                                style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none', fontSize: isMobile ? '13px' : '15px', fontWeight: '600' }}
                                                             />
                                                         </div>
                                                     </div>
@@ -884,40 +907,40 @@ const TournamentRegistration: React.FC = () => {
                                                                         </button>
                                                                     ))}
                                                                 </div>
-                                                                <div className="glass" style={{ padding: '15px 20px', borderRadius: '20px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                                                 <div className="glass" style={{ padding: isMobile ? '12px 16px' : '15px 20px', borderRadius: isMobile ? '16px' : '20px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
                                                                     <input
                                                                         type="text"
                                                                         placeholder="Nombre completo"
                                                                         value={player2.name}
                                                                         onChange={(e) => setPlayer2({ ...player2, name: e.target.value })}
-                                                                        style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none', fontSize: '14px' }}
+                                                                        style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none', fontSize: isMobile ? '12px' : '14px' }}
                                                                     />
                                                                 </div>
-                                                                <div className="glass" style={{ padding: '15px 20px', borderRadius: '20px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                                                <div className="glass" style={{ padding: isMobile ? '12px 16px' : '15px 20px', borderRadius: isMobile ? '16px' : '20px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
                                                                     <input
                                                                         type="email"
                                                                         placeholder="Correo electrónico"
                                                                         value={player2.email}
                                                                         onChange={(e) => setPlayer2({ ...player2, email: e.target.value })}
-                                                                        style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none', fontSize: '14px' }}
+                                                                        style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none', fontSize: isMobile ? '12px' : '14px' }}
                                                                     />
                                                                 </div>
-                                                                <div className="glass" style={{ padding: '15px 20px', borderRadius: '20px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                                                <div className="glass" style={{ padding: isMobile ? '12px 16px' : '15px 20px', borderRadius: isMobile ? '16px' : '20px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
                                                                     <input
                                                                         type="text"
                                                                         placeholder="Teléfono"
                                                                         value={player2.phone}
                                                                         onChange={(e) => setPlayer2({ ...player2, phone: e.target.value })}
-                                                                        style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none', fontSize: '14px' }}
+                                                                        style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none', fontSize: isMobile ? '12px' : '14px' }}
                                                                     />
                                                                 </div>
                                                                 {player2.type === 'player' && (
-                                                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
-                                                                        <div className="glass" style={{ padding: '15px 20px', borderRadius: '20px', background: 'rgba(255,255,255,0.05)' }}>
-                                                                            <input type="text" placeholder="Hándicap" value={player2.handicap} onChange={(e) => setPlayer2({ ...player2, handicap: e.target.value })} style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none', fontSize: '13px' }} />
+                                                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: isMobile ? '10px' : '15px' }}>
+                                                                        <div className="glass" style={{ padding: isMobile ? '12px 16px' : '15px 20px', borderRadius: isMobile ? '16px' : '20px', background: 'rgba(255,255,255,0.05)' }}>
+                                                                            <input type="text" placeholder="Hándicap" value={player2.handicap} onChange={(e) => setPlayer2({ ...player2, handicap: e.target.value })} style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none', fontSize: isMobile ? '11px' : '13px' }} />
                                                                         </div>
-                                                                        <div className="glass" style={{ padding: '15px 20px', borderRadius: '20px', background: 'rgba(255,255,255,0.05)' }}>
-                                                                            <input type="text" placeholder="Federación" value={player2.federationCode} onChange={(e) => setPlayer2({ ...player2, federationCode: e.target.value })} style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none', fontSize: '13px' }} />
+                                                                        <div className="glass" style={{ padding: isMobile ? '12px 16px' : '15px 20px', borderRadius: isMobile ? '16px' : '20px', background: 'rgba(255,255,255,0.05)' }}>
+                                                                            <input type="text" placeholder="Federación" value={player2.federationCode} onChange={(e) => setPlayer2({ ...player2, federationCode: e.target.value })} style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none', fontSize: isMobile ? '11px' : '13px' }} />
                                                                         </div>
                                                                     </div>
                                                                 )}
@@ -1011,9 +1034,9 @@ const TournamentRegistration: React.FC = () => {
                                     { icon: <HeartHandshake />, label: 'TELÉFONO', value: player1.phone, field: 'phone' }
                                 ].map((input, i) => (
                                     <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                        <label style={{ fontSize: '9px', fontWeight: '900', color: 'var(--secondary)', marginLeft: '10px', letterSpacing: '1px' }}>{input.label}</label>
+                                        <label style={{ fontSize: isMobile ? '8px' : '9px', fontWeight: '900', color: 'var(--secondary)', marginLeft: '10px', letterSpacing: '1px' }}>{input.label}</label>
                                         <div style={{ 
-                                            padding: '15px 20px', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '15px',
+                                            padding: isMobile ? '12px 16px' : '15px 20px', borderRadius: isMobile ? '16px' : '20px', display: 'flex', alignItems: 'center', gap: isMobile ? '8px' : '15px',
                                             background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.05)'
                                         }}>
                                             <div style={{ color: 'rgba(255,255,255,0.3)' }}>{React.cloneElement(input.icon as any, { size: 18 })}</div>
@@ -1022,7 +1045,7 @@ const TournamentRegistration: React.FC = () => {
                                                 value={input.value}
                                                 onChange={(e) => setPlayer1({ ...player1, [input.field]: e.target.value })}
                                                 placeholder={`Tu ${input.label.toLowerCase()}`}
-                                                style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none', fontSize: '15px', fontWeight: '600' }}
+                                                style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none', fontSize: isMobile ? '13px' : '15px', fontWeight: '600' }}
                                             />
                                         </div>
                                     </div>
@@ -1070,40 +1093,40 @@ const TournamentRegistration: React.FC = () => {
                                                         </button>
                                                     ))}
                                                 </div>
-                                                <div style={{ padding: '12px 15px', borderRadius: '15px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                                <div style={{ padding: '10px 12px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
                                                     <input
                                                         type="text"
                                                         placeholder="Nombre del invitado"
                                                         value={player2.name}
                                                         onChange={(e) => setPlayer2({ ...player2, name: e.target.value })}
-                                                        style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none', fontSize: '14px' }}
+                                                        style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none', fontSize: '12px' }}
                                                     />
                                                 </div>
-                                                <div style={{ padding: '12px 15px', borderRadius: '15px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                                <div style={{ padding: '10px 12px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
                                                     <input
                                                         type="email"
                                                         placeholder="Correo del invitado"
                                                         value={player2.email}
                                                         onChange={(e) => setPlayer2({ ...player2, email: e.target.value })}
-                                                        style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none', fontSize: '14px' }}
+                                                        style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none', fontSize: '12px' }}
                                                     />
                                                 </div>
-                                                <div style={{ padding: '12px 15px', borderRadius: '15px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                                <div style={{ padding: '10px 12px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
                                                     <input
                                                         type="text"
                                                         placeholder="Teléfono del invitado"
                                                         value={player2.phone}
                                                         onChange={(e) => setPlayer2({ ...player2, phone: e.target.value })}
-                                                        style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none', fontSize: '14px' }}
+                                                        style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none', fontSize: '12px' }}
                                                     />
                                                 </div>
                                                 {player2.type === 'player' && (
-                                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                                                        <div style={{ padding: '12px 15px', borderRadius: '15px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.05)' }}>
-                                                            <input type="text" placeholder="Hándicap" value={player2.handicap} onChange={(e) => setPlayer2({ ...player2, handicap: e.target.value })} style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none', fontSize: '13px' }} />
+                                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                                                        <div style={{ padding: '10px 12px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                                            <input type="text" placeholder="Hándicap" value={player2.handicap} onChange={(e) => setPlayer2({ ...player2, handicap: e.target.value })} style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none', fontSize: '11px' }} />
                                                         </div>
-                                                        <div style={{ padding: '12px 15px', borderRadius: '15px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.05)' }}>
-                                                            <input type="text" placeholder="Federación" value={player2.federationCode} onChange={(e) => setPlayer2({ ...player2, federationCode: e.target.value })} style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none', fontSize: '13px' }} />
+                                                        <div style={{ padding: '10px 12px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                                            <input type="text" placeholder="Federación" value={player2.federationCode} onChange={(e) => setPlayer2({ ...player2, federationCode: e.target.value })} style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none', fontSize: '11px' }} />
                                                         </div>
                                                     </div>
                                                 )}
