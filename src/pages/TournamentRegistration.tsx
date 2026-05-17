@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
     Calendar, MapPin, Trophy, ShieldCheck, HeartHandshake, 
     CheckCircle2, Loader2, Plus, X, Mail, BookOpen, 
-    Info, Star, Users, Flag
+    Star, Users, Flag
 } from 'lucide-react';
 import { supabase } from '../services/SupabaseManager';
 import { useAuth } from '../context/AuthContext';
@@ -521,7 +521,7 @@ const TournamentRegistration: React.FC = () => {
                             <div style={{ flex: 1.5 }}>
                                 {/* Tabs for detailed info */}
                                 <div style={{ display: 'flex', gap: '25px', borderBottom: '1px solid rgba(255,255,255,0.05)', marginBottom: '30px' }}>
-                                    {['info', 'rules', 'notes'].map((tab) => (
+                                    {['info', 'rules'].map((tab) => (
                                         <button
                                             key={tab}
                                             onClick={() => setActiveTab(tab as any)}
@@ -536,7 +536,7 @@ const TournamentRegistration: React.FC = () => {
                                                 textTransform: 'uppercase'
                                             }}
                                         >
-                                            {tab === 'info' ? 'DETALLES' : tab === 'rules' ? 'REGLAS' : 'NOTAS'}
+                                            {tab === 'info' ? 'DETALLES' : 'REGLAS'}
                                         </button>
                                     ))}
                                 </div>
@@ -585,17 +585,6 @@ const TournamentRegistration: React.FC = () => {
                                                         <p style={{ fontSize: '13px', lineHeight: '1.6', whiteSpace: 'pre-line' }}>{tournament.custom_rules}</p>
                                                     </div>
                                                 )}
-                                            </div>
-                                        )}
-
-                                        {activeTab === 'notes' && (
-                                            <div style={{ padding: '30px', background: 'rgba(255,255,255,0.02)', borderRadius: '30px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                                                <h4 style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px' }}>
-                                                    <Info size={18} color="var(--secondary)" /> NOTAS DEL ORGANIZADOR
-                                                </h4>
-                                                <p style={{ lineHeight: '1.8', color: 'rgba(255,255,255,0.7)', whiteSpace: 'pre-line' }}>
-                                                    {tournament.notes?.split('---PAYMENT_DATA---')[0] || "No hay notas adicionales para este torneo."}
-                                                </p>
                                             </div>
                                         )}
                                     </motion.div>
