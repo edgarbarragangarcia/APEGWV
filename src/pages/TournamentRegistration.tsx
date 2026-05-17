@@ -33,7 +33,15 @@ interface Tournament {
 const TournamentRegistration: React.FC = () => {
     const { idOrSlug } = useParams<{ idOrSlug: string }>();
     const navigate = useNavigate();
-    const { user } = useAuth();
+    const { user, loading: authLoading } = useAuth();
+
+    // Enforce authentication: Redirect to /auth if the user is not logged in
+    useEffect(() => {
+        if (!authLoading && !user) {
+            localStorage.setItem('authRedirect', window.location.pathname);
+            navigate('/auth', { replace: true });
+        }
+    }, [user, authLoading, navigate]);
 
     const [loading, setLoading] = useState(true);
     const [tournament, setTournament] = useState<Tournament | null>(null);
