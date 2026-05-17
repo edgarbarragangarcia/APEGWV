@@ -292,6 +292,7 @@ const TournamentManager: React.FC = () => {
     const [searchingProfiles, setSearchingProfiles] = useState(false);
     const [copied, setCopied] = useState(false);
     const [showNotes, setShowNotes] = useState(false);
+    const [registeredPlayerNames, setRegisteredPlayerNames] = useState<string[]>([]);
 
 
 
@@ -375,6 +376,55 @@ const TournamentManager: React.FC = () => {
         }, 300);
         return () => clearTimeout(timer);
     }, [guestSearchQuery]);
+
+    useEffect(() => {
+        if (!editingId) {
+            setRegisteredPlayerNames([]);
+            return;
+        }
+
+        const fetchRegistrations = async () => {
+            try {
+                const { data: regs, error } = await supabase
+                    .from('tournament_registrations')
+                    .select('player_name, user_id')
+                    .eq('tournament_id', editingId);
+
+                if (error) throw error;
+
+                if (regs) {
+                    const names: string[] = [];
+                    const userIds = regs.map((r: any) => r.user_id).filter(Boolean);
+                    let profilesMap: Record<string, string> = {};
+
+                    if (userIds.length > 0) {
+                        const { data: profiles } = await supabase
+                            .from('profiles')
+                            .select('id, full_name')
+                            .in('id', userIds);
+                        if (profiles) {
+                            profiles.forEach((p: any) => {
+                                profilesMap[p.id] = p.full_name || '';
+                            });
+                        }
+                    }
+
+                    regs.forEach((r: any) => {
+                        const name = r.player_name || (r.user_id ? profilesMap[r.user_id] : '');
+                        if (name) {
+                            names.push(name.trim().toLowerCase());
+                        }
+                    });
+
+                    setRegisteredPlayerNames(names);
+                }
+            } catch (err) {
+                console.error('Error fetching registered names for count:', err);
+            }
+        };
+
+        fetchRegistrations();
+    }, [editingId]);
 
 
 
@@ -1579,8 +1629,13 @@ const TournamentManager: React.FC = () => {
                                                                 const price = parseFloat(formData.price || '0');
                                                                 const paidCount = formData.paid_participants || 0;
                                                                 const registeredCount = formData.current_participants || 0;
-                                                                const guestsCount = formData.guests.length;
-                                                                const totalPlayers = registeredCount + guestsCount; // ALL players including guests
+                                                                // De-duplicate guests who have already registered
+                                                                const unregisteredGuests = formData.guests.filter(g => {
+                                                                    const name = (g.name || '').trim().toLowerCase();
+                                                                    return name && !registeredPlayerNames.includes(name);
+                                                                });
+                                                                const guestsCount = unregisteredGuests.length;
+                                                                const totalPlayers = registeredCount + guestsCount; // ALL players including guests (de-duplicated)
                                                                 const limit = parseInt(formData.participants_limit || '0');
                                                                 const projectedTotal = limit + guestsCount; // For meta projection
 
@@ -2272,7 +2327,10 @@ const TournamentManager: React.FC = () => {
                                                         fontSize: '11px',
                                                         fontWeight: '950'
                                                     }}>
-                                                        {(formData.current_participants || 0) + (formData.guests?.length || 0)}
+                                                        {(formData.current_participants || 0) + formData.guests.filter(g => {
+                                                            const name = (g.name || '').trim().toLowerCase();
+                                                            return name && !registeredPlayerNames.includes(name);
+                                                        }).length}
                                                     </div>
                                                 </motion.button>
                                                 <button
