@@ -553,7 +553,7 @@ const TournamentRegistration: React.FC = () => {
                                         {activeTab === 'info' && (
                                             <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
                                                 <div>
-                                                    <p style={{ fontSize: '16px', lineHeight: '1.8', color: 'rgba(255,255,255,0.7)', fontWeight: '400' }}>
+                                                    <p style={{ fontSize: '16px', lineHeight: '1.8', color: 'rgba(255,255,255,0.7)', fontWeight: '400', whiteSpace: 'pre-line' }}>
                                                         {tournament.description || "Únete a este prestigioso torneo donde la competitividad y la camaradería se encuentran en el campo. Una jornada diseñada para los amantes del golf que buscan excelencia en cada golpe."}
                                                     </p>
                                                 </div>
@@ -570,7 +570,7 @@ const TournamentRegistration: React.FC = () => {
                                                             border: '1px solid rgba(255,255,255,0.05)', display: 'flex', gap: '15px', alignItems: 'flex-start'
                                                         }}>
                                                             <div style={{ color: 'var(--secondary)', marginTop: '3px' }}><CheckCircle2 size={16} /></div>
-                                                            <p style={{ margin: 0, fontSize: '14px', color: 'rgba(255,255,255,0.8)', fontWeight: '500' }}>{rule}</p>
+                                                            <p style={{ margin: 0, fontSize: '14px', color: 'rgba(255,255,255,0.8)', fontWeight: '500', whiteSpace: 'pre-line' }}>{rule}</p>
                                                         </div>
                                                     ))
                                                 ) : (
@@ -582,7 +582,7 @@ const TournamentRegistration: React.FC = () => {
                                                 {tournament.custom_rules && (
                                                     <div style={{ marginTop: '20px', padding: '20px', background: 'rgba(163, 230, 53, 0.05)', borderRadius: '20px', border: '1px dashed rgba(163, 230, 53, 0.3)' }}>
                                                         <h5 style={{ color: 'var(--secondary)', marginBottom: '10px', fontSize: '12px' }}>REGLAS ADICIONALES</h5>
-                                                        <p style={{ fontSize: '13px', lineHeight: '1.6' }}>{tournament.custom_rules}</p>
+                                                        <p style={{ fontSize: '13px', lineHeight: '1.6', whiteSpace: 'pre-line' }}>{tournament.custom_rules}</p>
                                                     </div>
                                                 )}
                                             </div>
@@ -593,7 +593,7 @@ const TournamentRegistration: React.FC = () => {
                                                 <h4 style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px' }}>
                                                     <Info size={18} color="var(--secondary)" /> NOTAS DEL ORGANIZADOR
                                                 </h4>
-                                                <p style={{ lineHeight: '1.8', color: 'rgba(255,255,255,0.7)' }}>
+                                                <p style={{ lineHeight: '1.8', color: 'rgba(255,255,255,0.7)', whiteSpace: 'pre-line' }}>
                                                     {tournament.notes?.split('---PAYMENT_DATA---')[0] || "No hay notas adicionales para este torneo."}
                                                 </p>
                                             </div>

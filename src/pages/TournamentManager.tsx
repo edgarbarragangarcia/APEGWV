@@ -998,15 +998,27 @@ const TournamentManager: React.FC = () => {
                                                         <label style={{ fontSize: '11px', fontWeight: '800', marginBottom: '8px', display: 'block', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Descripción del Evento</label>
                                                         <textarea
                                                             value={formData.description}
-                                                            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                                            onChange={(e) => {
+                                                                setFormData({ ...formData, description: e.target.value });
+                                                                e.target.style.height = 'auto';
+                                                                e.target.style.height = `${e.target.scrollHeight}px`;
+                                                            }}
+                                                            ref={(el) => {
+                                                                if (el) {
+                                                                    el.style.height = 'auto';
+                                                                    el.style.height = `${el.scrollHeight}px`;
+                                                                }
+                                                            }}
                                                             className="form-input"
                                                             style={{
                                                                 background: 'rgba(255,255,255,0.03)',
                                                                 border: '1px solid rgba(255,255,255,0.1)',
                                                                 padding: '16px',
                                                                 fontSize: '15px',
-                                                                minHeight: '80px',
-                                                                resize: 'vertical'
+                                                                minHeight: '140px',
+                                                                lineHeight: '1.6',
+                                                                resize: 'none',
+                                                                overflowY: 'hidden'
                                                             }}
                                                             placeholder="Describe de qué trata el torneo..."
                                                         />
@@ -1201,12 +1213,25 @@ const TournamentManager: React.FC = () => {
                                                                     <div style={{ paddingTop: '15px' }}>
                                                                         <textarea
                                                                             value={formData.notes}
-                                                                            onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                                                                            onChange={(e) => {
+                                                                                setFormData({ ...formData, notes: e.target.value });
+                                                                                e.target.style.height = 'auto';
+                                                                                e.target.style.height = `${e.target.scrollHeight}px`;
+                                                                            }}
+                                                                            ref={(el) => {
+                                                                                if (el) {
+                                                                                    el.style.height = 'auto';
+                                                                                    el.style.height = `${el.scrollHeight}px`;
+                                                                                }
+                                                                            }}
                                                                             className="form-input"
                                                                             style={{
                                                                                 background: 'rgba(255,255,255,0.02)',
                                                                                 border: '1px solid rgba(255,255,255,0.05)',
-                                                                                minHeight: '100px'
+                                                                                minHeight: '100px',
+                                                                                lineHeight: '1.6',
+                                                                                resize: 'none',
+                                                                                overflowY: 'hidden'
                                                                             }}
                                                                             placeholder="Notas internas para el organizador..."
                                                                         />
@@ -1799,9 +1824,24 @@ const TournamentManager: React.FC = () => {
                                                                 <label style={{ fontSize: '12px', fontWeight: '800', marginBottom: '5px', display: 'block', color: 'var(--text-dim)' }}>Reglas Personalizadas</label>
                                                                 <textarea
                                                                     value={formData.custom_rules || ''}
-                                                                    onChange={(e) => setFormData({ ...formData, custom_rules: e.target.value })}
+                                                                    onChange={(e) => {
+                                                                        setFormData({ ...formData, custom_rules: e.target.value });
+                                                                        e.target.style.height = 'auto';
+                                                                        e.target.style.height = `${e.target.scrollHeight}px`;
+                                                                    }}
+                                                                    ref={(el) => {
+                                                                        if (el) {
+                                                                            el.style.height = 'auto';
+                                                                            el.style.height = `${el.scrollHeight}px`;
+                                                                        }
+                                                                    }}
                                                                     className="form-input"
-                                                                    rows={2}
+                                                                    style={{
+                                                                        minHeight: '80px',
+                                                                        lineHeight: '1.6',
+                                                                        resize: 'none',
+                                                                        overflowY: 'hidden'
+                                                                    }}
                                                                     placeholder="Reglas adicionales..."
                                                                 />
                                                             </div>
