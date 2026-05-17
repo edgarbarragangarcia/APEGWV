@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
     Calendar, MapPin, Trophy, ShieldCheck, HeartHandshake, 
     CheckCircle2, Loader2, Plus, X, Mail, BookOpen, 
-    Star, Users, Flag, Copy, Check
+    Star, Users, Flag, Copy, Check, ChevronDown, AlertCircle
 } from 'lucide-react';
 import { supabase } from '../services/SupabaseManager';
 import { useAuth } from '../context/AuthContext';
@@ -634,6 +634,26 @@ const TournamentRegistration: React.FC = () => {
                                                         </div>
                                                     );
                                                 })}
+                                                
+                                                <div style={{ 
+                                                    marginTop: '15px', 
+                                                    padding: '12px 15px', 
+                                                    background: 'rgba(255, 193, 7, 0.1)', 
+                                                    border: '1px solid rgba(255, 193, 7, 0.3)', 
+                                                    borderRadius: '15px', 
+                                                    width: '100%',
+                                                    display: 'flex',
+                                                    gap: '10px',
+                                                    alignItems: 'center',
+                                                    textAlign: 'left'
+                                                }}>
+                                                    <AlertCircle size={20} color="#ffc107" style={{ flexShrink: 0 }} />
+                                                    <p style={{ margin: 0, fontSize: '11px', color: 'rgba(255,255,255,0.9)', lineHeight: '1.4' }}>
+                                                        <strong style={{ color: '#ffc107' }}>IMPORTANTE:</strong><br/>
+                                                        Una vez realices el pago, por favor envía el comprobante al correo <strong>amorporelgof@gmail.com</strong>
+                                                    </p>
+                                                </div>
+
                                             </div>
                                         )}
                                     </div>
@@ -677,8 +697,25 @@ const TournamentRegistration: React.FC = () => {
                         )}
                     </div> {/* End of Hero Image Container */}
 
+                    {isMobile && !isFlipped && (
+                        <motion.div
+                            animate={{ y: [0, 10, 0] }}
+                            transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+                            style={{
+                                display: 'flex',
+                                justifyContent: 'center',
+                                marginTop: '40px',
+                                marginBottom: '-20px',
+                                color: 'rgba(255,255,255,0.4)',
+                                zIndex: 20,
+                                position: 'relative'
+                            }}
+                        >
+                            <ChevronDown size={28} />
+                        </motion.div>
+                    )}
 
-                    <div style={{ padding: isMobile ? '0 30px' : '0 30px', marginTop: isMobile ? '55px' : '-20px', position: 'relative', zIndex: 20 }}>
+                    <div style={{ padding: isMobile ? '0 30px' : '0 30px', marginTop: isMobile ? '40px' : '-20px', position: 'relative', zIndex: 20 }}>
                         {/* Quick Info Grid */}
                         <div style={{ 
                             display: 'grid', 
