@@ -461,7 +461,7 @@ const TournamentRegistration: React.FC = () => {
                         <div style={{ position: 'absolute', bottom: isMobile ? '45px' : '50px', left: '0', width: '100%', padding: '0 30px' }}>
                             <div style={{ opacity: 1 }}>
                                 <h1 style={{ 
-                                    fontSize: isMobile ? '22px' : '44px', 
+                                    fontSize: isMobile ? '20px' : '40px', 
                                     fontWeight: '950', 
                                     margin: '0 0 10px 0', 
                                     color: 'white', 
