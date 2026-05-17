@@ -183,9 +183,81 @@ const TournamentRegistration: React.FC = () => {
 
     const handleRegister = async () => {
         if (isRegistered || !tournament) return;
-        if (!player1.name || !player1.email) {
-            alert('Por favor completa los campos del jugador principal.');
+        const validatePlayer = (player: typeof player1, roleLabel: string, isCompanion: boolean = false) => {
+            // 1. Name & Surname check
+            const name = player.name.trim();
+            if (!name) {
+                return `El nombre del ${roleLabel} es obligatorio.`;
+            }
+            const nameParts = name.split(/\s+/).filter(Boolean);
+            if (nameParts.length < 2) {
+                return `El nombre del ${roleLabel} debe incluir al menos Nombre y Apellido (ej. Edgar Barragan).`;
+            }
+            if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(name)) {
+                return `El nombre del ${roleLabel} solo debe contener letras y espacios.`;
+            }
+
+            // 2. Email check
+            const email = player.email.trim();
+            if (!email) {
+                return `El correo electrónico del ${roleLabel} es obligatorio.`;
+            }
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                return `El correo electrónico del ${roleLabel} no es válido. Debe contener '@' y un dominio válido (ej. usuario@dominio.com).`;
+            }
+
+            // 3. Phone check (Exactly 10 digits)
+            const phone = player.phone.trim();
+            if (!phone) {
+                return `El teléfono del ${roleLabel} es obligatorio.`;
+            }
+            if (!/^\d{10}$/.test(phone)) {
+                return `El teléfono del ${roleLabel} debe tener exactamente 10 dígitos numéricos en Colombia (ej. 3123456789).`;
+            }
+
+            // 4. Golf-specific fields (Federation Code & Handicap) - skip if companion
+            if (!isCompanion) {
+                const handicap = player.handicap.trim();
+                if (!handicap) {
+                    return `El hándicap del ${roleLabel} es obligatorio.`;
+                }
+                const sanitizedHandicap = handicap.replace(',', '.');
+                if (isNaN(Number(sanitizedHandicap))) {
+                    return `El hándicap del ${roleLabel} debe ser un valor numérico (ej. 11 o 11.5).`;
+                }
+
+                const federationCode = player.federationCode.trim();
+                if (!federationCode) {
+                    return `El ID de federación del ${roleLabel} es obligatorio.`;
+                }
+                if (!/^\d+$/.test(federationCode)) {
+                    return `El ID de federación del ${roleLabel} debe contener únicamente números.`;
+                }
+            }
+
+            return null;
+        };
+
+        // Validate player 1 (Primary Player)
+        const error1 = validatePlayer(player1, "Jugador Principal", false);
+        if (error1) {
+            alert(error1);
             return;
+        }
+
+        // Validate player 2 (Guest, if added)
+        if (addGuest) {
+            const isCompanion = player2.type === 'companion';
+            const error2 = validatePlayer(
+                player2 as any, 
+                isCompanion ? "Invitado (Acompañante)" : "Invitado (Jugador)", 
+                isCompanion
+            );
+            if (error2) {
+                alert(error2);
+                return;
+            }
         }
 
         setRegistering(true);
@@ -195,11 +267,11 @@ const TournamentRegistration: React.FC = () => {
                     tournament_id: tournament.id,
                     user_id: user?.id || null, 
                     registration_status: 'registered',
-                    player_name: player1.name,
-                    player_email: player1.email,
-                    player_phone: player1.phone,
-                    player_federation_code: player1.federationCode,
-                    player_handicap: player1.handicap ? parseFloat(player1.handicap) : null
+                    player_name: player1.name.trim(),
+                    player_email: player1.email.trim(),
+                    player_phone: player1.phone.trim(),
+                    player_federation_code: player1.federationCode.trim(),
+                    player_handicap: player1.handicap ? parseFloat(player1.handicap.trim().replace(',', '.')) : null
                 }
             ];
 
@@ -209,11 +281,11 @@ const TournamentRegistration: React.FC = () => {
                     tournament_id: tournament.id,
                     user_id: user?.id || null,
                     registration_status: 'registered',
-                    player_name: player2.name,
-                    player_email: player2.email,
-                    player_phone: player2.phone,
-                    player_federation_code: isCompanion ? `ACOMP:${player1.name}` : player2.federationCode,
-                    player_handicap: isCompanion ? null : (player2.handicap ? parseFloat(player2.handicap) : null)
+                    player_name: player2.name.trim(),
+                    player_email: player2.email.trim(),
+                    player_phone: player2.phone.trim(),
+                    player_federation_code: isCompanion ? `ACOMP:${player1.name.trim()}` : player2.federationCode.trim(),
+                    player_handicap: isCompanion ? null : (player2.handicap ? parseFloat(player2.handicap.trim().replace(',', '.')) : null)
                 });
             }
 
