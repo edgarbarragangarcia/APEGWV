@@ -1,6 +1,6 @@
 // Trigger redeploy: 2026-02-07T01:19:30
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import BottomNav from './components/BottomNav';
 import { OnboardingTour } from './components/OnboardingTour';
@@ -51,21 +51,9 @@ import { ToastProvider } from './context/ToastContext';
 const AppContent: React.FC = () => {
   const { session, loading } = useAuth();
   const location = useLocation();
-  const navigate = useNavigate();
   const isOnline = useOnlineStatus();
   const [showOnboarding, setShowOnboarding] = React.useState(false);
   const [showPermissionsOnboarding, setShowPermissionsOnboarding] = React.useState(false);
-
-  // Auto-redirect after login if there was a saved redirect path
-  React.useEffect(() => {
-    if (session) {
-      const redirectPath = localStorage.getItem('authRedirect');
-      if (redirectPath) {
-        localStorage.removeItem('authRedirect');
-        navigate(redirectPath, { replace: true });
-      }
-    }
-  }, [session, navigate]);
 
   // Check if permissions onboarding has been completed
   React.useEffect(() => {
