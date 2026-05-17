@@ -479,7 +479,7 @@ const TournamentRegistration: React.FC = () => {
                     </div> {/* End of Hero Image Container */}
 
 
-                    <div style={{ padding: isMobile ? '0 30px' : '0 30px', marginTop: isMobile ? '35px' : '-20px', position: 'relative', zIndex: 20 }}>
+                    <div style={{ padding: isMobile ? '0 30px' : '0 30px', marginTop: isMobile ? '55px' : '-20px', position: 'relative', zIndex: 20 }}>
                         {/* Quick Info Grid */}
                         <div style={{ 
                             display: 'grid', 
@@ -496,21 +496,21 @@ const TournamentRegistration: React.FC = () => {
                                     className="glass"
                                     whileHover={{ 
                                         y: -5, 
-                                        boxShadow: '0 20px 45px rgba(0, 0, 0, 0.45), 0 0 15px rgba(163, 230, 53, 0.15)',
-                                        borderColor: 'rgba(163, 230, 53, 0.3)'
+                                        boxShadow: '0 20px 45px rgba(0, 0, 0, 0.45), 0 0 20px rgba(163, 230, 53, 0.25), inset 0 1px 1px rgba(255, 255, 255, 0.15), inset 0 0 0 1.5px rgba(163, 230, 53, 0.5)',
+                                        borderColor: 'rgba(163, 230, 53, 0.6)'
                                     }}
                                     whileTap={{ scale: 0.97 }}
                                     transition={{ type: 'spring', stiffness: 400, damping: 25 }}
                                     style={{ 
-                                        padding: isMobile ? '18px 20px' : '20px', 
+                                        padding: isMobile ? '24px 20px' : '25px', 
                                         borderRadius: isMobile ? '25px' : '25px', 
                                         display: 'flex', 
                                         flexDirection: 'column', 
                                         gap: '10px', 
                                         background: 'rgba(255,255,255,0.03)',
-                                        border: '1px solid rgba(255,255,255,0.08)',
+                                        border: '1px solid rgba(163, 230, 53, 0.15)',
                                         backdropFilter: 'blur(20px)',
-                                        boxShadow: '0 10px 30px rgba(0,0,0,0.2), inset 0 1px 1px rgba(255,255,255,0.05)',
+                                        boxShadow: '0 12px 35px rgba(0, 0, 0, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.1), inset 0 0 0 1px rgba(163, 230, 53, 0.05)',
                                         cursor: 'pointer'
                                     }}
                                 >
