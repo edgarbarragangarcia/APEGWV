@@ -148,7 +148,7 @@ const TournamentRegistration: React.FC = () => {
             try { 
                 const parsed = JSON.parse(jsonMatch[1]);
                 return parsed.map((p: any) => {
-                    let label = p.method === 'Llave BreB' ? 'LLAVE BREB' : 
+                    let label = p.method === 'Llave BreB' ? 'LLAVE Bre-B' : 
                                 p.method === 'Nequi' ? 'CELULAR NEQUI' : 
                                 (p.method === 'Daviplata' || p.method === 'DaviPlata') ? 'CELULAR DAVIPLATA' : 
                                 p.method === 'Bancolombia' ? 'CUENTA BANCARIA BANCOLOMBIA' :
@@ -177,7 +177,7 @@ const TournamentRegistration: React.FC = () => {
         return [{
             method,
             account,
-            label: method === 'Llave BreB' ? 'LLAVE BREB' : method === 'Nequi' ? 'CELULAR NEQUI' : 'CUENTA'
+            label: method === 'Llave BreB' ? 'LLAVE Bre-B' : method === 'Nequi' ? 'CELULAR NEQUI' : 'CUENTA'
         }];
     })();
 
@@ -649,8 +649,9 @@ const TournamentRegistration: React.FC = () => {
                                                 }}>
                                                     <AlertCircle size={20} color="#ffc107" style={{ flexShrink: 0 }} />
                                                     <p style={{ margin: 0, fontSize: '11px', color: 'rgba(255,255,255,0.9)', lineHeight: '1.4' }}>
-                                                        <strong style={{ color: '#ffc107' }}>IMPORTANTE:</strong><br/>
-                                                        Una vez realices el pago, por favor envía el comprobante al correo <strong>amorporelgof@gmail.com</strong>
+                                                        <strong style={{ color: '#ffc107' }}>Confirmación de inscripción y pago 📩</strong><br/>
+                                                        por favor enviar el comprobante de pago al correo:<br/>
+                                                        <strong>amorporelgolf@gmail.com</strong>
                                                     </p>
                                                 </div>
 
