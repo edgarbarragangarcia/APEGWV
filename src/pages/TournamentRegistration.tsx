@@ -387,12 +387,28 @@ const TournamentRegistration: React.FC = () => {
                                     color: 'white', 
                                     letterSpacing: '-2px',
                                     lineHeight: '1',
-                                    textShadow: '0 10px 20px rgba(0,0,0,0.5)'
+                                    textShadow: '0 10px 20px rgba(0,0,0,0.5)',
+                                    textAlign: isMobile ? 'center' : 'left'
                                 }}>
                                     {tournament.name}
                                 </h1>
-                                <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '20px', color: 'rgba(255,255,255,0.8)' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', fontWeight: '600' }}>
+                                <div style={{ 
+                                    display: 'flex', 
+                                    flexWrap: 'wrap', 
+                                    justifyContent: isMobile ? 'center' : 'flex-start',
+                                    alignItems: 'center', 
+                                    gap: '20px', 
+                                    color: 'rgba(255,255,255,0.8)' 
+                                }}>
+                                    <div style={{ 
+                                        display: 'flex', 
+                                        alignItems: 'center', 
+                                        justifyContent: isMobile ? 'center' : 'flex-start',
+                                        gap: '8px', 
+                                        fontSize: '14px', 
+                                        fontWeight: '600',
+                                        width: isMobile ? '100%' : 'auto'
+                                    }}>
                                         <MapPin size={18} color="var(--secondary)" /> {tournament.club}
                                     </div>
                                     {!isMobile && (
@@ -404,7 +420,7 @@ const TournamentRegistration: React.FC = () => {
 
                                 {isMobile && (
                                     <div style={{ 
-                                        marginTop: '25px', 
+                                        margin: '25px auto 0 auto', 
                                         padding: '20px', 
                                         borderRadius: '25px', 
                                         background: 'rgba(255,255,255,0.05)', 
@@ -412,9 +428,11 @@ const TournamentRegistration: React.FC = () => {
                                         backdropFilter: 'blur(10px)',
                                         display: 'flex',
                                         flexDirection: 'column',
+                                        alignItems: 'center',
                                         gap: '8px',
                                         width: 'fit-content',
-                                        minWidth: '350px'
+                                        minWidth: '350px',
+                                        textAlign: 'center'
                                     }}>
                                         <div style={{ fontSize: '10px', fontWeight: '900', color: 'var(--secondary)', letterSpacing: '1px' }}>VALOR INSCRIPCIÓN</div>
                                         <div style={{ fontSize: '24px', fontWeight: '950', color: 'white' }}>
@@ -427,10 +445,12 @@ const TournamentRegistration: React.FC = () => {
                                                 borderTop: '1px solid rgba(255,255,255,0.05)',
                                                 display: 'flex',
                                                 flexDirection: 'column',
-                                                gap: '12px'
+                                                gap: '12px',
+                                                width: '100%',
+                                                alignItems: 'center'
                                             }}>
                                                 {paymentMethods.map((pm: any, i: number) => (
-                                                    <div key={i}>
+                                                    <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
                                                         <div style={{ fontSize: '10px', fontWeight: '950', color: 'rgba(255,255,255,0.7)', letterSpacing: '1px', textTransform: 'uppercase' }}>{pm.label}</div>
                                                         <div style={{ fontSize:pm.account.length > 15 ? '12px' : '14px', fontWeight: '900', color: 'white', wordBreak: 'break-all' }}>{pm.account}</div>
                                                     </div>
