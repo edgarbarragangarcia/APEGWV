@@ -2561,6 +2561,7 @@ const TournamentManager: React.FC = () => {
                     confirmText={isDeleting ? 'Eliminando...' : 'Eliminar'}
                     cancelText="Cancelar"
                     type="danger"
+                    requireWordConfirm="eliminar"
                 />
             </AnimatePresence>
         </div>
@@ -2591,6 +2592,7 @@ const styles = {
         padding: '0 20px calc(var(--nav-height) + 20px) 20px',
         overflowY: 'auto' as 'auto',
         WebkitOverflowScrolling: 'touch' as 'touch',
+        overscrollBehaviorY: 'contain' as 'contain',
         gap: '15px'
     }
 };

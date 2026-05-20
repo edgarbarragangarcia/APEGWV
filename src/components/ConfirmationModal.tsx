@@ -12,6 +12,7 @@ interface ConfirmationModalProps {
     cancelText?: string;
     type?: 'danger' | 'warning' | 'info';
     isLoading?: boolean;
+    requireWordConfirm?: string;
 }
 
 const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
@@ -23,8 +24,16 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
     confirmText = 'Confirmar',
     cancelText = 'Cancelar',
     type = 'danger',
-    isLoading = false
+    isLoading = false,
+    requireWordConfirm
 }) => {
+    const [confirmWordInput, setConfirmWordInput] = React.useState('');
+
+    React.useEffect(() => {
+        if (isOpen) {
+            setConfirmWordInput('');
+        }
+    }, [isOpen]);
     const getColors = () => {
         switch (type) {
             case 'danger':
@@ -159,59 +168,98 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
                             {message}
                         </p>
 
+                        {requireWordConfirm && (
+                            <div style={{ marginBottom: '24px', textAlign: 'left' }}>
+                                <p style={{
+                                    fontSize: '12px',
+                                    color: 'rgba(255, 255, 255, 0.5)',
+                                    marginBottom: '8px',
+                                    textAlign: 'center',
+                                    fontWeight: '700'
+                                }}>
+                                    Escribe la palabra <strong style={{ color: colors.primary }}>"{requireWordConfirm}"</strong> para confirmar:
+                                </p>
+                                <input
+                                    type="text"
+                                    placeholder={`Escribe ${requireWordConfirm}`}
+                                    value={confirmWordInput}
+                                    onChange={(e) => setConfirmWordInput(e.target.value)}
+                                    style={{
+                                        width: '100%',
+                                        padding: '14px 16px',
+                                        background: 'rgba(0, 0, 0, 0.3)',
+                                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                                        borderRadius: '16px',
+                                        color: 'white',
+                                        fontSize: '15px',
+                                        textAlign: 'center',
+                                        outline: 'none',
+                                        boxSizing: 'border-box',
+                                        fontFamily: 'inherit'
+                                    }}
+                                />
+                            </div>
+                        )}
+
                         {/* Buttons */}
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                            <motion.button
-                                whileTap={{ scale: isLoading ? 1 : 0.95 }}
-                                onClick={!isLoading ? onConfirm : undefined}
-                                disabled={isLoading}
-                                style={{
-                                    width: '100%',
-                                    padding: '16px',
-                                    borderRadius: '16px',
-                                    border: 'none',
-                                    background: colors.primary,
-                                    color: type === 'danger' ? 'white' : 'var(--primary)',
-                                    fontWeight: '900',
-                                    fontSize: '15px',
-                                    cursor: isLoading ? 'not-allowed' : 'pointer',
-                                    boxShadow: `0 10px 20px ${colors.bg}`,
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    gap: '10px',
-                                    opacity: isLoading ? 0.8 : 1
-                                }}
-                            >
-                                {isLoading ? (
-                                    <>
-                                        <div className="spinner-small" style={{ borderColor: type === 'danger' ? 'white' : 'var(--primary)', borderTopColor: 'transparent' }} />
-                                        <span>Procesando...</span>
-                                    </>
-                                ) : (
-                                    confirmText
-                                )}
-                            </motion.button>
-                            <motion.button
-                                whileTap={{ scale: 0.95 }}
-                                onClick={onClose}
-                                disabled={isLoading}
-                                style={{
-                                    width: '100%',
-                                    padding: '16px',
-                                    borderRadius: '16px',
-                                    border: '1px solid rgba(255, 255, 255, 0.1)',
-                                    background: 'transparent',
-                                    color: 'white',
-                                    fontWeight: '700',
-                                    fontSize: '15px',
-                                    cursor: isLoading ? 'not-allowed' : 'pointer',
-                                    opacity: isLoading ? 0.5 : 1
-                                }}
-                            >
-                                {cancelText}
-                            </motion.button>
-                        </div>
+                        {(() => {
+                            const isConfirmDisabled = isLoading || (requireWordConfirm ? confirmWordInput.trim().toLowerCase() !== requireWordConfirm.toLowerCase() : false);
+                            return (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                    <motion.button
+                                        whileTap={{ scale: isConfirmDisabled ? 1 : 0.95 }}
+                                        onClick={!isConfirmDisabled ? onConfirm : undefined}
+                                        disabled={isConfirmDisabled}
+                                        style={{
+                                            width: '100%',
+                                            padding: '16px',
+                                            borderRadius: '16px',
+                                            border: 'none',
+                                            background: isConfirmDisabled ? 'rgba(255, 255, 255, 0.05)' : colors.primary,
+                                            color: isConfirmDisabled ? 'rgba(255,255,255,0.2)' : (type === 'danger' ? 'white' : 'var(--primary)'),
+                                            fontWeight: '900',
+                                            fontSize: '15px',
+                                            cursor: isConfirmDisabled ? 'not-allowed' : 'pointer',
+                                            boxShadow: isConfirmDisabled ? 'none' : `0 10px 20px ${colors.bg}`,
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            gap: '10px',
+                                            opacity: isConfirmDisabled ? 0.6 : 1,
+                                            transition: 'all 0.3s ease'
+                                        }}
+                                    >
+                                        {isLoading ? (
+                                            <>
+                                                <div className="spinner-small" style={{ borderColor: type === 'danger' ? 'white' : 'var(--primary)', borderTopColor: 'transparent' }} />
+                                                <span>Procesando...</span>
+                                            </>
+                                        ) : (
+                                            confirmText
+                                        )}
+                                    </motion.button>
+                                    <motion.button
+                                        whileTap={{ scale: 0.95 }}
+                                        onClick={onClose}
+                                        disabled={isLoading}
+                                        style={{
+                                            width: '100%',
+                                            padding: '16px',
+                                            borderRadius: '16px',
+                                            border: '1px solid rgba(255, 255, 255, 0.1)',
+                                            background: 'transparent',
+                                            color: 'white',
+                                            fontWeight: '700',
+                                            fontSize: '15px',
+                                            cursor: isLoading ? 'not-allowed' : 'pointer',
+                                            opacity: isLoading ? 0.5 : 1
+                                        }}
+                                    >
+                                        {cancelText}
+                                    </motion.button>
+                                </div>
+                            );
+                        })()}
                     </motion.div>
                 </div>
             )}

@@ -57,32 +57,26 @@ const TournamentParticipants: React.FC = () => {
             if (tournamentError) throw tournamentError;
             setTournamentName(tournament.name);
 
-            // 1. Fetch Registrations
+            // 1. Fetch Registrations with Profiles joined natively in a single fast query
             const { data: registrations, error: regError } = await (supabase
                 .from('tournament_registrations') as any)
-                .select('*')
+                .select(`
+                    *,
+                    profiles (
+                        id,
+                        full_name,
+                        avatar_url,
+                        handicap,
+                        email,
+                        phone,
+                        total_rounds,
+                        average_score,
+                        federation_code
+                    )
+                `)
                 .eq('tournament_id', id || '');
 
             if (regError) throw regError;
-
-            // 2. Fetch Profiles for the registered users
-            const userIds = (registrations || [])
-                .map((r: any) => r.user_id)
-                .filter(Boolean);
-
-            let profilesMap: Record<string, any> = {};
-            if (userIds.length > 0) {
-                const { data: profilesData } = await (supabase
-                    .from('profiles') as any)
-                    .select('id, full_name, avatar_url, handicap, email, phone, total_rounds, average_score, federation_code')
-                    .in('id', userIds);
-                
-                if (profilesData) {
-                    profilesData.forEach((p: any) => {
-                        profilesMap[p.id] = p;
-                    });
-                }
-            }
 
             const manualGuestEntries = tournament.guests ? tournament.guests.split('\n').filter(Boolean).map(g => {
                 const [name, code] = g.split('|');
@@ -90,7 +84,7 @@ const TournamentParticipants: React.FC = () => {
             }) : [];
 
             const registeredParticipants = (registrations || []).map((reg: any) => {
-                const profile = reg.user_id ? profilesMap[reg.user_id] : null;
+                const profile = reg.profiles || null;
                 const nameMatch = reg.player_name || profile?.full_name || 'Invitado';
 
                 const matchingGuest = manualGuestEntries.find(g =>
@@ -207,6 +201,7 @@ const TournamentParticipants: React.FC = () => {
 
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
+    const [confirmDeleteText, setConfirmDeleteText] = useState('');
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'warning' } | null>(null);
 
     const showToast = (message: string, type: 'success' | 'error' | 'warning' = 'success') => {
@@ -216,6 +211,7 @@ const TournamentParticipants: React.FC = () => {
 
     const handleDeleteSelected = async () => {
         if (selectedIds.length === 0) return;
+        setConfirmDeleteText('');
         setShowDeleteConfirm(true);
     };
 
@@ -451,48 +447,89 @@ const TournamentParticipants: React.FC = () => {
                                 <Trash2 size={32} color="#ef4444" />
                             </div>
                             <h2 style={{ fontSize: '20px', fontWeight: '900', color: 'white', marginBottom: '12px' }}>¿Confirmar Eliminación?</h2>
-                            <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '14px', lineHeight: '1.5', marginBottom: '30px' }}>
+                            <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '14px', lineHeight: '1.5', marginBottom: '20px' }}>
                                 Estás por eliminar <strong>{selectedIds.length}</strong> participante(s). Esta acción no se puede deshacer.
                             </p>
-                            <div style={{ display: 'flex', gap: '12px' }}>
-                                <button
-                                    onClick={() => setShowDeleteConfirm(false)}
+                            
+                            <div style={{ marginBottom: '24px', textAlign: 'left' }}>
+                                <p style={{
+                                    fontSize: '11px',
+                                    color: 'rgba(255, 255, 255, 0.4)',
+                                    marginBottom: '8px',
+                                    textAlign: 'center',
+                                    fontWeight: '800',
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.05em'
+                                }}>
+                                    Escribe la palabra <strong style={{ color: '#ef4444' }}>"eliminar"</strong> para confirmar:
+                                </p>
+                                <input
+                                    type="text"
+                                    placeholder="Escribe eliminar"
+                                    value={confirmDeleteText}
+                                    onChange={(e) => setConfirmDeleteText(e.target.value)}
                                     style={{
-                                        flex: 1,
-                                        padding: '15px',
-                                        borderRadius: '18px',
-                                        background: 'rgba(255,255,255,0.05)',
+                                        width: '100%',
+                                        padding: '14px 16px',
+                                        background: 'rgba(0, 0, 0, 0.3)',
+                                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                                        borderRadius: '16px',
                                         color: 'white',
-                                        border: '1px solid rgba(255,255,255,0.1)',
-                                        fontSize: '12px',
-                                        fontWeight: '800',
-                                        cursor: 'pointer'
+                                        fontSize: '15px',
+                                        textAlign: 'center',
+                                        outline: 'none',
+                                        boxSizing: 'border-box',
+                                        fontFamily: 'inherit'
                                     }}
-                                >
-                                    CANCELAR
-                                </button>
-                                <button
-                                    onClick={confirmDelete}
-                                    disabled={isDeleting}
-                                    style={{
-                                        flex: 1,
-                                        padding: '15px',
-                                        borderRadius: '18px',
-                                        background: '#ef4444',
-                                        color: 'white',
-                                        border: 'none',
-                                        fontSize: '12px',
-                                        fontWeight: '900',
-                                        cursor: 'pointer',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        gap: '8px'
-                                    }}
-                                >
-                                    {isDeleting ? '...' : 'ELIMINAR'}
-                                </button>
+                                />
                             </div>
+
+                            {(() => {
+                                const isConfirmDisabled = isDeleting || confirmDeleteText.trim().toLowerCase() !== 'eliminar';
+                                return (
+                                    <div style={{ display: 'flex', gap: '12px' }}>
+                                        <button
+                                            onClick={() => setShowDeleteConfirm(false)}
+                                            style={{
+                                                flex: 1,
+                                                padding: '15px',
+                                                borderRadius: '18px',
+                                                background: 'rgba(255,255,255,0.05)',
+                                                color: 'white',
+                                                border: '1px solid rgba(255,255,255,0.1)',
+                                                fontSize: '12px',
+                                                fontWeight: '800',
+                                                cursor: 'pointer'
+                                            }}
+                                        >
+                                            CANCELAR
+                                        </button>
+                                        <button
+                                            onClick={confirmDelete}
+                                            disabled={isConfirmDisabled}
+                                            style={{
+                                                flex: 1,
+                                                padding: '15px',
+                                                borderRadius: '18px',
+                                                background: isConfirmDisabled ? 'rgba(255, 255, 255, 0.05)' : '#ef4444',
+                                                color: isConfirmDisabled ? 'rgba(255,255,255,0.2)' : 'white',
+                                                border: isConfirmDisabled ? '1px solid rgba(255,255,255,0.05)' : 'none',
+                                                fontSize: '12px',
+                                                fontWeight: '900',
+                                                cursor: isConfirmDisabled ? 'not-allowed' : 'pointer',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                gap: '8px',
+                                                opacity: isConfirmDisabled ? 0.6 : 1,
+                                                transition: 'all 0.3s ease'
+                                            }}
+                                        >
+                                            {isDeleting ? '...' : 'ELIMINAR'}
+                                        </button>
+                                    </div>
+                                );
+                            })()}
                         </motion.div>
                     </motion.div>
                 )}
@@ -625,7 +662,7 @@ const TournamentParticipants: React.FC = () => {
                     </div>
                 )}
 
-                <div style={{ flex: 1, overflowY: 'auto' }}>
+                <div style={{ flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch', overscrollBehaviorY: 'contain' }}>
                     {loading ? (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                             {[1, 2, 3, 4].map(i => <Skeleton key={i} height="80px" borderRadius="24px" />)}
