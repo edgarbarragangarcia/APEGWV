@@ -4,7 +4,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
     Calendar, MapPin, Trophy, ShieldCheck, HeartHandshake, 
     CheckCircle2, Loader2, Plus, X, Mail, BookOpen, 
-    Star, Users, Flag, Copy, Check, ChevronDown, AlertCircle
+    Star, Users, Flag, Copy, Check, ChevronDown, AlertCircle,
+    IdCard
 } from 'lucide-react';
 import { supabase } from '../services/SupabaseManager';
 import { useAuth } from '../context/AuthContext';
@@ -58,7 +59,8 @@ const TournamentRegistration: React.FC = () => {
         email: '',
         phone: '',
         federationCode: '',
-        handicap: ''
+        handicap: '',
+        document: ''
     });
     const [player2, setPlayer2] = useState({
         name: '',
@@ -66,6 +68,7 @@ const TournamentRegistration: React.FC = () => {
         phone: '',
         federationCode: '',
         handicap: '',
+        document: '',
         type: 'player' as 'player' | 'companion'
     });
 
@@ -117,7 +120,8 @@ const TournamentRegistration: React.FC = () => {
                         email: profile.email || '',
                         phone: profile.phone || '',
                         federationCode: profile.federation_code || '',
-                        handicap: profile.handicap?.toString() || ''
+                        handicap: profile.handicap?.toString() || '',
+                        document: ''
                     });
                 }
 
@@ -202,7 +206,13 @@ const TournamentRegistration: React.FC = () => {
                 return `El teléfono del ${roleLabel} es obligatorio.`;
             }
 
-            // 4. Golf-specific fields (Federation Code & Handicap) - skip if companion
+            // 4. Document / ID check
+            const document = player.document?.trim();
+            if (!document) {
+                return `La cédula o ID del ${roleLabel} es obligatoria.`;
+            }
+
+            // 5. Golf-specific fields (Federation Code & Handicap) - skip if companion
             if (!isCompanion) {
                 const handicap = player.handicap.trim();
                 if (!handicap) {
@@ -250,7 +260,8 @@ const TournamentRegistration: React.FC = () => {
                     player_email: player1.email.trim(),
                     player_phone: player1.phone.trim(),
                     player_federation_code: player1.federationCode.trim(),
-                    player_handicap: player1.handicap ? parseFloat(player1.handicap.trim().replace(',', '.')) : null
+                    player_handicap: player1.handicap ? parseFloat(player1.handicap.trim().replace(',', '.')) : null,
+                    player_document: player1.document.trim()
                 }
             ];
 
@@ -264,7 +275,8 @@ const TournamentRegistration: React.FC = () => {
                     player_email: player2.email.trim(),
                     player_phone: player2.phone.trim(),
                     player_federation_code: isCompanion ? `ACOMP:${player1.name.trim()}` : player2.federationCode.trim(),
-                    player_handicap: isCompanion ? null : (player2.handicap ? parseFloat(player2.handicap.trim().replace(',', '.')) : null)
+                    player_handicap: isCompanion ? null : (player2.handicap ? parseFloat(player2.handicap.trim().replace(',', '.')) : null),
+                    player_document: player2.document.trim()
                 });
             }
 
@@ -368,7 +380,8 @@ const TournamentRegistration: React.FC = () => {
                                             email: '',
                                             phone: '',
                                             federationCode: '',
-                                            handicap: ''
+                                            handicap: '',
+                                            document: ''
                                         });
                                         setPlayer2({
                                             name: '',
@@ -376,6 +389,7 @@ const TournamentRegistration: React.FC = () => {
                                             phone: '',
                                             federationCode: '',
                                             handicap: '',
+                                            document: '',
                                             type: 'player'
                                         });
                                         setAddGuest(false);
@@ -859,6 +873,7 @@ const TournamentRegistration: React.FC = () => {
                                                 {[
                                                     { icon: <Users />, label: 'NOMBRE COMPLETO', value: player1.name, field: 'name' },
                                                     { icon: <Mail />, label: 'CORREO ELECTRÓNICO', value: player1.email, field: 'email' },
+                                                    { icon: <IdCard />, label: 'CÉDULA / DOCUMENTO DE IDENTIDAD', value: player1.document, field: 'document' },
                                                     { icon: <ShieldCheck />, label: 'HÁNDICAP', value: player1.handicap, field: 'handicap', half: true },
                                                     { icon: <Star />, label: 'ID FEDERACIÓN', value: player1.federationCode, field: 'federationCode', half: true },
                                                     { icon: <HeartHandshake />, label: 'TELÉFONO', value: player1.phone, field: 'phone' }
@@ -948,6 +963,15 @@ const TournamentRegistration: React.FC = () => {
                                                                         placeholder="Teléfono"
                                                                         value={player2.phone}
                                                                         onChange={(e) => setPlayer2({ ...player2, phone: e.target.value })}
+                                                                        style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none', fontSize: isMobile ? '12px' : '14px' }}
+                                                                    />
+                                                                </div>
+                                                                <div className="glass" style={{ padding: isMobile ? '12px 16px' : '15px 20px', borderRadius: isMobile ? '16px' : '20px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                                                    <input
+                                                                        type="text"
+                                                                        placeholder="Cédula o documento de identidad"
+                                                                        value={player2.document}
+                                                                        onChange={(e) => setPlayer2({ ...player2, document: e.target.value })}
                                                                         style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none', fontSize: isMobile ? '12px' : '14px' }}
                                                                     />
                                                                 </div>
@@ -1046,6 +1070,7 @@ const TournamentRegistration: React.FC = () => {
                                 {[
                                     { icon: <Users />, label: 'NOMBRE COMPLETO', value: player1.name, field: 'name' },
                                     { icon: <Mail />, label: 'CORREO ELECTRÓNICO', value: player1.email, field: 'email' },
+                                    { icon: <IdCard />, label: 'CÉDULA / DOCUMENTO DE IDENTIDAD', value: player1.document, field: 'document' },
                                     { icon: <ShieldCheck />, label: 'HÁNDICAP', value: player1.handicap, field: 'handicap' },
                                     { icon: <Star />, label: 'ID FEDERACIÓN', value: player1.federationCode, field: 'federationCode' },
                                     { icon: <HeartHandshake />, label: 'TELÉFONO', value: player1.phone, field: 'phone' }
@@ -1134,6 +1159,15 @@ const TournamentRegistration: React.FC = () => {
                                                         placeholder="Teléfono del invitado"
                                                         value={player2.phone}
                                                         onChange={(e) => setPlayer2({ ...player2, phone: e.target.value })}
+                                                        style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none', fontSize: '12px' }}
+                                                    />
+                                                </div>
+                                                <div style={{ padding: '10px 12px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                                    <input
+                                                        type="text"
+                                                        placeholder="Cédula o ID del invitado"
+                                                        value={player2.document}
+                                                        onChange={(e) => setPlayer2({ ...player2, document: e.target.value })}
                                                         style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none', fontSize: '12px' }}
                                                     />
                                                 </div>

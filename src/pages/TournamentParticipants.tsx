@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../services/SupabaseManager';
-import { User, Trophy, Users, Search, CheckCircle2, Clock, Mail, CheckSquare, Square, Download, Trash2 } from 'lucide-react';
+import { User, Trophy, Users, Search, CheckCircle2, Clock, Mail, CheckSquare, Square, Download, Trash2, IdCard } from 'lucide-react';
 import Skeleton from '../components/Skeleton';
 import PageHero from '../components/PageHero';
 import PageHeader from '../components/PageHeader';
@@ -23,6 +23,7 @@ interface Participant {
     is_guest?: boolean;
     is_companion?: boolean;
     registered_by?: string | null;
+    document?: string | null;
 }
 
 const TournamentParticipants: React.FC = () => {
@@ -116,7 +117,8 @@ const TournamentParticipants: React.FC = () => {
                     payment_date: reg.payment_date,
                     is_guest: finalIsGuest,
                     is_companion: isCompanion,
-                    registered_by: registeredBy
+                    registered_by: registeredBy,
+                    document: reg.player_document || null
                 };
             });
 
@@ -333,7 +335,7 @@ const TournamentParticipants: React.FC = () => {
             return;
         }
 
-        const headers = ['Nombre', 'Email', 'Teléfono', 'Handicap', 'Federación', 'Estado', 'Fecha Pago', 'Invitado'];
+        const headers = ['Nombre', 'Email', 'Teléfono', 'Handicap', 'Federación', 'Documento/Cédula', 'Estado', 'Fecha Pago', 'Invitado'];
         const csvContent = [
             "\ufeff" + headers.join(','), // Add BOM for Excel UTF-8 support
             ...targetParticipants.map(p => [
@@ -342,6 +344,7 @@ const TournamentParticipants: React.FC = () => {
                 `"${(p.phone || '').replace(/"/g, '""')}"`,
                 p.handicap ?? '',
                 `"${(p.federation_code || '').replace(/"/g, '""')}"`,
+                `"${(p.document || '').replace(/"/g, '""')}"`,
                 `"${(p.registration_status || '').replace(/"/g, '""')}"`,
                 p.payment_date ? `"${new Date(p.payment_date).toLocaleDateString()}"` : '',
                 p.is_guest ? 'SI' : 'NO'
@@ -684,6 +687,17 @@ const TournamentParticipants: React.FC = () => {
                                             <p style={{ color: 'white', fontSize: '14px', fontWeight: '600' }}>{selectedParticipant.phone || 'No disponible'}</p>
                                         </div>
                                     </div>
+                                    {selectedParticipant.document && (
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                            <div style={{ width: '36px', height: '36px', borderRadius: '12px', background: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                <IdCard size={16} color="var(--secondary)" />
+                                            </div>
+                                            <div>
+                                                <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.3)', marginBottom: '1px', fontWeight: '700' }}>DOCUMENTO / CÉDULA</p>
+                                                <p style={{ color: 'white', fontSize: '14px', fontWeight: '600' }}>{selectedParticipant.document}</p>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 
