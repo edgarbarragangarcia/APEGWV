@@ -317,8 +317,7 @@ const TournamentManager: React.FC = () => {
         budget_items: [
             { id: '1', label: 'Costo Op. por Jugador', amount: '', type: 'per_player' as const, category: 'expense' },
             { id: '2', label: 'Bolsa de Premios', amount: '', type: 'fixed' as const, category: 'expense' },
-            { id: '3', label: 'Otros Gastos', amount: '', type: 'fixed' as const, category: 'expense' },
-            { id: '4', label: 'Administración de mensajes', amount: '', type: 'fixed' as const, category: 'expense' }
+            { id: '3', label: 'Otros Gastos', amount: '', type: 'fixed' as const, category: 'expense' }
         ] as BudgetItem[],
         rules: [] as string[],
         custom_rules: '',
@@ -655,8 +654,7 @@ const TournamentManager: React.FC = () => {
             budget_items: [
                 { id: '1', label: 'Costo Op. por Jugador', amount: '', type: 'per_player' as const, category: 'expense' },
                 { id: '2', label: 'Bolsa de Premios', amount: '', type: 'fixed' as const, category: 'expense' },
-                { id: '3', label: 'Otros Gastos', amount: '', type: 'fixed' as const, category: 'expense' },
-                { id: '4', label: 'Administración de mensajes', amount: '', type: 'fixed' as const, category: 'expense' }
+                { id: '3', label: 'Otros Gastos', amount: '', type: 'fixed' as const, category: 'expense' }
             ],
             rules: [],
             custom_rules: '',
@@ -696,8 +694,7 @@ const TournamentManager: React.FC = () => {
                     : [
                         { id: '1', label: 'Costo Op. por Jugador', amount: (tournament.budget_per_player || '').toString(), type: 'per_player', category: 'expense' },
                         { id: '2', label: 'Bolsa de Premios', amount: (tournament.budget_prizes || '').toString(), type: 'fixed', category: 'expense' },
-                        { id: '3', label: 'Otros Gastos', amount: (tournament.budget_operational || '').toString(), type: 'fixed', category: 'expense' },
-                        { id: '4', label: 'Administración de mensajes', amount: '', type: 'fixed', category: 'expense' }
+                        { id: '3', label: 'Otros Gastos', amount: (tournament.budget_operational || '').toString(), type: 'fixed', category: 'expense' }
                     ],
             rules: tournament.rules || [],
             custom_rules: tournament.custom_rules || '',
@@ -1545,7 +1542,7 @@ const TournamentManager: React.FC = () => {
 
                                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                                                             {formData.budget_items.map((item, idx) => {
-                                                                const isDefaultItem = ['1', '2', '3', '4'].includes(item.id);
+                                                                const isDefaultItem = ['1', '2', '3'].includes(item.id);
                                                                 return (
                                                                     <div key={item.id} style={{ display: 'flex', flexDirection: 'column', gap: '10px', background: 'rgba(255,255,255,0.02)', padding: '16px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
                                                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
