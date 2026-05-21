@@ -283,6 +283,7 @@ const TournamentManager: React.FC = () => {
     const [showBasicInfo, setShowBasicInfo] = useState(false);
     const [showBudgetSection, setShowBudgetSection] = useState(false);
     const [showRubrosList, setShowRubrosList] = useState(false);
+    const [showMessagesAdmin, setShowMessagesAdmin] = useState(false);
     const [showAccountingSection, setShowAccountingSection] = useState(false);
     const [showRulesSection, setShowRulesSection] = useState(false);
     const [showSponsorsSection, setShowSponsorsSection] = useState(false);
@@ -1644,6 +1645,34 @@ const TournamentManager: React.FC = () => {
                                                                 )
                                                             })}
                                                         </div>
+                                                                    </motion.div>
+                                                                )}
+                                                            </AnimatePresence>
+                                                        </div>
+
+                                                        <div style={{ marginTop: '15px', padding: '14px', background: 'rgba(163, 230, 53, 0.03)', borderRadius: '15px', border: '1px solid rgba(163, 230, 53, 0.08)' }}>
+                                                            <div
+                                                                style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}
+                                                                onClick={() => setShowMessagesAdmin(!showMessagesAdmin)}
+                                                            >
+                                                                <div style={{ fontSize: '10px', fontWeight: '900', color: 'var(--secondary)', textTransform: 'uppercase', letterSpacing: '0.1em', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                                                    <span>💬</span> Administración de mensajes
+                                                                </div>
+                                                                <div style={{ display: 'flex', alignItems: 'center' }}>
+                                                                    {showMessagesAdmin ? <ChevronUp size={18} color="var(--secondary)" /> : <ChevronDown size={18} color="var(--secondary)" />}
+                                                                </div>
+                                                            </div>
+                                                            <AnimatePresence>
+                                                                {showMessagesAdmin && (
+                                                                    <motion.div
+                                                                        initial={{ height: 0, opacity: 0 }}
+                                                                        animate={{ height: 'auto', opacity: 1 }}
+                                                                        exit={{ height: 0, opacity: 0 }}
+                                                                        style={{ overflow: 'hidden' }}
+                                                                    >
+                                                                        <div style={{ padding: '15px', color: 'rgba(255,255,255,0.5)', fontSize: '12px', textAlign: 'center' }}>
+                                                                            Sección en construcción
+                                                                        </div>
                                                                     </motion.div>
                                                                 )}
                                                             </AnimatePresence>
