@@ -282,6 +282,7 @@ const TournamentManager: React.FC = () => {
     // Collapsible sections state
     const [showBasicInfo, setShowBasicInfo] = useState(false);
     const [showBudgetSection, setShowBudgetSection] = useState(false);
+    const [showRubrosList, setShowRubrosList] = useState(false);
     const [showAccountingSection, setShowAccountingSection] = useState(false);
     const [showRulesSection, setShowRulesSection] = useState(false);
     const [showSponsorsSection, setShowSponsorsSection] = useState(false);
@@ -1487,9 +1488,29 @@ const TournamentManager: React.FC = () => {
                                                         exit={{ height: 0, opacity: 0 }}
                                                         style={{ overflow: 'hidden' }}
                                                     >
-                                                        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '15px', marginTop: '15px' }}>
-                                                            <button
-                                                                type="button"
+                                                        <div style={{ marginTop: '15px', padding: '14px', background: 'rgba(255,255,255,0.02)', borderRadius: '15px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                                            <div
+                                                                style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}
+                                                                onClick={() => setShowRubrosList(!showRubrosList)}
+                                                            >
+                                                                <div style={{ fontSize: '11px', fontWeight: '800', color: 'white', display: 'flex', alignItems: 'center', gap: '6px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                                                    Rubros
+                                                                </div>
+                                                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                                    {showRubrosList ? <ChevronUp size={18} color="var(--text-dim)" /> : <ChevronDown size={18} color="var(--text-dim)" />}
+                                                                </div>
+                                                            </div>
+                                                            <AnimatePresence>
+                                                                {showRubrosList && (
+                                                                    <motion.div
+                                                                        initial={{ height: 0, opacity: 0 }}
+                                                                        animate={{ height: 'auto', opacity: 1 }}
+                                                                        exit={{ height: 0, opacity: 0 }}
+                                                                        style={{ overflow: 'hidden' }}
+                                                                    >
+                                                                        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '15px', marginTop: '15px' }}>
+                                                                            <button
+                                                                                type="button"
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
                                                                     const newItem: BudgetItem = {
@@ -1622,6 +1643,10 @@ const TournamentManager: React.FC = () => {
                                                                     </div>
                                                                 )
                                                             })}
+                                                        </div>
+                                                                    </motion.div>
+                                                                )}
+                                                            </AnimatePresence>
                                                         </div>
 
                                                         <div style={{ marginTop: '20px', paddingTop: '15px', borderTop: '1px dotted rgba(255,255,255,0.1)', display: 'flex', flexDirection: 'column', gap: '15px' }}>
