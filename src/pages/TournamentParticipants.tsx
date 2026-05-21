@@ -555,7 +555,13 @@ const TournamentParticipants: React.FC = () => {
                 <PageHeader
                     noMargin
                     title={tournamentName || 'Participantes'}
-                    onBack={() => navigate('/my-events', { state: { restoreTournamentId: id } })}
+                    onBack={() => {
+                        if (selectedParticipant) {
+                            setSelectedParticipant(null);
+                        } else {
+                            navigate('/my-events', { state: { restoreTournamentId: id } });
+                        }
+                    }}
                     rightElement={
                         <button
                             onClick={downloadExcel}
