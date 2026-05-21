@@ -38,6 +38,7 @@ const TournamentParticipants: React.FC = () => {
     const [copiedEmails, setCopiedEmails] = useState(false);
     const [statusFilter, setStatusFilter] = useState<'all' | 'paid' | 'registered' | 'guests' | 'companions'>('all');
     const [selectedIds, setSelectedIds] = useState<string[]>([]);
+    const [tournamentMessages, setTournamentMessages] = useState<{paid: string, unpaid: string}>({paid: '', unpaid: ''});
 
     useEffect(() => {
         if (id) {
@@ -50,12 +51,19 @@ const TournamentParticipants: React.FC = () => {
         try {
             const { data: tournament, error: tournamentError } = await supabase
                 .from('tournaments')
-                .select('name, guests')
+                .select('name, guests, notes')
                 .eq('id', id || '')
                 .single();
 
             if (tournamentError) throw tournamentError;
             setTournamentName(tournament.name);
+
+            const match = (tournament.notes || '').match(/---MESSAGES_JSON---\n([\s\S]*?)(?:\n\n|$)/);
+            if (match) {
+                try {
+                    setTournamentMessages(JSON.parse(match[1]));
+                } catch(e){}
+            }
 
             // 1. Fetch Registrations with Profiles joined natively in a single fast query
             const { data: registrations, error: regError } = await (supabase
@@ -760,6 +768,57 @@ const TournamentParticipants: React.FC = () => {
                                     </div>
                                 </div>
                             )}
+
+                            {/* Botón Enviar Mensaje */}
+                            <button
+                                onClick={() => {
+                                    const isPaid = selectedParticipant.registration_status === 'paid' || selectedParticipant.registration_status === 'Confirmado';
+                                    let template = isPaid ? tournamentMessages.paid : tournamentMessages.unpaid;
+                                    
+                                    if (!template) {
+                                        template = isPaid 
+                                            ? `¡Hola {nombre}! Hemos recibido tu pago.`
+                                            : `¡Hola {nombre}! Te recordamos realizar el pago para asegurar tu cupo.`;
+                                    }
+
+                                    let body = template;
+                                    if (body.match(/{nombre}|\[nombre\]/gi)) {
+                                        body = body.replace(/{nombre}|\[nombre\]/gi, selectedParticipant.full_name || '');
+                                    } else {
+                                        body = `¡Hola ${selectedParticipant.full_name}!\n\n${body}`;
+                                    }
+                                    
+                                    const mailtoUrl = `mailto:${selectedParticipant.email || ''}?subject=Información Torneo: ${tournamentName}&body=${encodeURIComponent(body)}`;
+                                    
+                                    const link = document.createElement('a');
+                                    link.href = mailtoUrl;
+                                    link.target = '_blank';
+                                    document.body.appendChild(link);
+                                    link.click();
+                                    document.body.removeChild(link);
+                                }}
+                                style={{
+                                    width: '100%',
+                                    marginTop: '10px',
+                                    padding: '16px',
+                                    borderRadius: '20px',
+                                    background: 'var(--secondary)',
+                                    color: '#0E2F1F',
+                                    fontSize: '14px',
+                                    fontWeight: '900',
+                                    border: 'none',
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '8px',
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.5px',
+                                    boxShadow: '0 4px 15px rgba(163, 230, 53, 0.3)'
+                                }}
+                            >
+                                <Mail size={18} /> Enviar Mensaje
+                            </button>
                         </div>
                     ) : participants.length === 0 ? (
                         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.2)', minHeight: '300px' }}>
