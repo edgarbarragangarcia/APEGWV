@@ -788,7 +788,14 @@ const TournamentParticipants: React.FC = () => {
                                         body = `¡Hola ${selectedParticipant.full_name}!\n\n${body}`;
                                     }
                                     
-                                    const mailtoUrl = `mailto:${selectedParticipant.email || ''}?subject=Información Torneo: ${tournamentName}&body=${encodeURIComponent(body)}`;
+                                    // Fix line breaks for mailto (Gmail expects \r\n to preserve spaces/newlines properly)
+                                    body = body.replace(/\n/g, '\r\n');
+                                    
+                                    const subject = isPaid 
+                                        ? `CONFIRMACIÓN DE PAGO - ${tournamentName}`
+                                        : `RECORDATORIO DE PAGO - ${tournamentName}`;
+                                    
+                                    const mailtoUrl = `mailto:${selectedParticipant.email || ''}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
                                     
                                     const link = document.createElement('a');
                                     link.href = mailtoUrl;
