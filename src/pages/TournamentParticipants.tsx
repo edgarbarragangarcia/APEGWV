@@ -86,7 +86,7 @@ const TournamentParticipants: React.FC = () => {
 
             if (regError) throw regError;
 
-            const manualGuestEntries = tournament.guests ? tournament.guests.split('\n').filter(Boolean).map(g => {
+            const manualGuestEntries = tournament.guests ? tournament.guests.split('\n').filter(Boolean).map((g: string) => {
                 const [name, code] = g.split('|');
                 return { name: name?.trim() || '', code: code?.trim() || '' };
             }) : [];
@@ -95,7 +95,7 @@ const TournamentParticipants: React.FC = () => {
                 const profile = reg.profiles || null;
                 const nameMatch = reg.player_name || profile?.full_name || 'Invitado';
 
-                const matchingGuest = manualGuestEntries.find(g =>
+                const matchingGuest = manualGuestEntries.find((g: {name: string, code: string}) =>
                     g.name.toLowerCase() === nameMatch.trim().toLowerCase()
                 );
                 const isSpecialGuest = !!matchingGuest;
