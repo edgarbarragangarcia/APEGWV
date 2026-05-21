@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../services/SupabaseManager';
-import { User, Trophy, Users, Search, CheckCircle2, Clock, Mail, CheckSquare, Square, Download, Trash2, IdCard } from 'lucide-react';
+import { User, Trophy, Users, Search, CheckCircle2, Clock, Mail, CheckSquare, Square, Download, Trash2, IdCard, Calendar } from 'lucide-react';
 import Skeleton from '../components/Skeleton';
 import PageHero from '../components/PageHero';
 import PageHeader from '../components/PageHeader';
@@ -24,6 +24,7 @@ interface Participant {
     is_companion?: boolean;
     registered_by?: string | null;
     document?: string | null;
+    registration_date?: string | null;
 }
 
 const TournamentParticipants: React.FC = () => {
@@ -120,7 +121,8 @@ const TournamentParticipants: React.FC = () => {
                     is_guest: finalIsGuest,
                     is_companion: isCompanion,
                     registered_by: registeredBy,
-                    document: reg.player_document || null
+                    document: reg.player_document || null,
+                    registration_date: reg.created_at || null
                 };
             });
 
@@ -139,7 +141,8 @@ const TournamentParticipants: React.FC = () => {
                     average_score: null,
                     federation_code: g.code,
                     payment_date: null,
-                    is_guest: true
+                    is_guest: true,
+                    registration_date: null
                 }));
 
             setParticipants([...registeredParticipants, ...manualGuestParticipants]);
@@ -189,6 +192,10 @@ const TournamentParticipants: React.FC = () => {
             (statusFilter === 'companions' && p.is_companion);
 
         return matchesSearch && matchesStatus;
+    }).sort((a, b) => {
+        const dateA = a.registration_date ? new Date(a.registration_date).getTime() : 0;
+        const dateB = b.registration_date ? new Date(b.registration_date).getTime() : 0;
+        return dateB - dateA;
     });
 
     const handleSelectParticipant = (id: string, e?: React.MouseEvent) => {
@@ -740,6 +747,25 @@ const TournamentParticipants: React.FC = () => {
                                             <div>
                                                 <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.3)', marginBottom: '1px', fontWeight: '700' }}>DOCUMENTO / CÉDULA</p>
                                                 <p style={{ color: 'white', fontSize: '14px', fontWeight: '600' }}>{selectedParticipant.document}</p>
+                                            </div>
+                                        </div>
+                                    )}
+                                    {selectedParticipant.registration_date && (
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                            <div style={{ width: '36px', height: '36px', borderRadius: '12px', background: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                <Calendar size={16} color="var(--secondary)" />
+                                            </div>
+                                            <div>
+                                                <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.3)', marginBottom: '1px', fontWeight: '700' }}>FECHA DE INSCRIPCIÓN</p>
+                                                <p style={{ color: 'white', fontSize: '14px', fontWeight: '600' }}>
+                                                    {new Date(selectedParticipant.registration_date).toLocaleDateString('es-ES', {
+                                                        day: '2-digit',
+                                                        month: 'long',
+                                                        year: 'numeric',
+                                                        hour: '2-digit',
+                                                        minute: '2-digit'
+                                                    })}
+                                                </p>
                                             </div>
                                         </div>
                                     )}
