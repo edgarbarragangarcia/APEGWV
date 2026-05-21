@@ -36,6 +36,8 @@ interface Tournament {
     prizes?: string | null;
     guests?: string | null;
     finances?: BudgetItem[];
+    message_paid?: string | null;
+    message_unpaid?: string | null;
 }
 
 
@@ -331,6 +333,8 @@ const TournamentManager: React.FC = () => {
         payment_phone: '',
         payment_key: '',
         payment_methods: [{ id: '1', method: 'Nequi', account: '', bankName: '', accountType: '' }] as { id: string, method: string, account: string, bankName?: string, accountType?: string }[],
+        message_paid: '',
+        message_unpaid: '',
         notes: ''
     });
 
@@ -552,7 +556,7 @@ const TournamentManager: React.FC = () => {
                         sponsors: formData.sponsors.map(s => s.name).filter(Boolean).join('\n'),
                         prizes: formData.prizes.map(p => p.name).filter(Boolean).join('\n'),
                         guests: formData.guests.map(g => `${g.name}|${g.federation_code || ''}`).filter(Boolean).join('\n'),
-                        notes: `${formData.notes}\n\n---PAYMENTS_JSON---\n${JSON.stringify(formData.payment_methods)}`,
+                        notes: `${formData.notes}\n\n---PAYMENTS_JSON---\n${JSON.stringify(formData.payment_methods)}\n\n---MESSAGES_JSON---\n${JSON.stringify({ paid: formData.message_paid, unpaid: formData.message_unpaid })}`,
                         approval_status: tournaments.find(t => t.id === editingId)?.approval_status || 'pending',
                         updated_at: new Date().toISOString()
                     })
@@ -579,7 +583,7 @@ const TournamentManager: React.FC = () => {
                         sponsors: formData.sponsors.map(s => s.name).filter(Boolean).join('\n'),
                         prizes: formData.prizes.map(p => p.name).filter(Boolean).join('\n'),
                         guests: formData.guests.map(g => `${g.name}|${g.federation_code || ''}`).filter(Boolean).join('\n'),
-                        notes: `${formData.notes}\n\n---PAYMENT_DATA---\nMETHOD:${formData.payment_method}\nPHONE:${formData.payment_phone}\nKEY:${formData.payment_key}`,
+                        notes: `${formData.notes}\n\n---PAYMENTS_JSON---\n${JSON.stringify(formData.payment_methods)}\n\n---MESSAGES_JSON---\n${JSON.stringify({ paid: formData.message_paid, unpaid: formData.message_unpaid })}`,
                         creator_id: user.id,
                         approval_status: isAdmin ? 'approved' : 'pending'
                     } as any])
@@ -668,6 +672,8 @@ const TournamentManager: React.FC = () => {
             payment_phone: '',
             payment_key: '',
             payment_methods: [{ id: '1', method: 'Nequi', account: '' }],
+            message_paid: '',
+            message_unpaid: '',
             notes: ''
         });
         setEditingId(null);
@@ -727,7 +733,17 @@ const TournamentManager: React.FC = () => {
             payment_method: 'Nequi',
             payment_phone: '',
             payment_key: '',
-            notes: (tournament.notes || '').split('\n\n---PAYMENT_DATA---')[0].split('\n\n---PAYMENTS_JSON---')[0].trim()
+            message_paid: (() => {
+                const match = (tournament.notes || '').match(/---MESSAGES_JSON---\n([\s\S]*?)(?:\n\n|$)/);
+                if (match) { try { return JSON.parse(match[1]).paid || ''; } catch(e){} }
+                return '';
+            })(),
+            message_unpaid: (() => {
+                const match = (tournament.notes || '').match(/---MESSAGES_JSON---\n([\s\S]*?)(?:\n\n|$)/);
+                if (match) { try { return JSON.parse(match[1]).unpaid || ''; } catch(e){} }
+                return '';
+            })(),
+            notes: (tournament.notes || '').split('\n\n---PAYMENT_DATA---')[0].split('\n\n---PAYMENTS_JSON---')[0].split('\n\n---MESSAGES_JSON---')[0].trim()
         });
         setEditingId(tournament.id);
         setShowForm(true);
@@ -1670,8 +1686,25 @@ const TournamentManager: React.FC = () => {
                                                                         exit={{ height: 0, opacity: 0 }}
                                                                         style={{ overflow: 'hidden' }}
                                                                     >
-                                                                        <div style={{ padding: '15px', color: 'rgba(255,255,255,0.5)', fontSize: '12px', textAlign: 'center' }}>
-                                                                            Sección en construcción
+                                                                        <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                                                                            <div className="form-group" style={{ margin: 0 }}>
+                                                                                <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-dim)', marginBottom: '8px', display: 'block' }}>Mensaje para quienes han pagado</label>
+                                                                                <textarea
+                                                                                    value={formData.message_paid || ''}
+                                                                                    onChange={(e) => setFormData({ ...formData, message_paid: e.target.value })}
+                                                                                    placeholder="Ej: ¡Gracias por tu pago! Aquí tienes los detalles..."
+                                                                                    style={{ width: '100%', height: '80px', padding: '12px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', resize: 'vertical', fontSize: '14px' }}
+                                                                                />
+                                                                            </div>
+                                                                            <div className="form-group" style={{ margin: 0 }}>
+                                                                                <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-dim)', marginBottom: '8px', display: 'block' }}>Mensaje para quienes NO han pagado</label>
+                                                                                <textarea
+                                                                                    value={formData.message_unpaid || ''}
+                                                                                    onChange={(e) => setFormData({ ...formData, message_unpaid: e.target.value })}
+                                                                                    placeholder="Ej: Recuerda realizar el pago para asegurar tu cupo..."
+                                                                                    style={{ width: '100%', height: '80px', padding: '12px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', resize: 'vertical', fontSize: '14px' }}
+                                                                                />
+                                                                            </div>
                                                                         </div>
                                                                     </motion.div>
                                                                 )}
