@@ -153,7 +153,7 @@ const TournamentRegistration: React.FC = () => {
                 const parsed = JSON.parse(jsonMatch[1]);
                 return parsed.map((p: any) => {
                     let label = p.method === 'Llave BreB' ? 'LLAVE Bre-B' : 
-                                p.method === 'Nequi' ? 'CELULAR NEQUI' : 
+                                p.method === 'Nequi' ? 'NEQUI' : 
                                 (p.method === 'Daviplata' || p.method === 'DaviPlata') ? 'CELULAR DAVIPLATA' : 
                                 p.method === 'Bancolombia' ? 'CUENTA BANCARIA BANCOLOMBIA' :
                                 p.method === 'Cuenta de Ahorros' ? 'CUENTA DE AHORROS' :
@@ -181,7 +181,7 @@ const TournamentRegistration: React.FC = () => {
         return [{
             method,
             account,
-            label: method === 'Llave BreB' ? 'LLAVE Bre-B' : method === 'Nequi' ? 'CELULAR NEQUI' : 'CUENTA'
+            label: method === 'Llave BreB' ? 'LLAVE Bre-B' : method === 'Nequi' ? 'NEQUI' : 'CUENTA'
         }];
     })();
 
