@@ -1488,16 +1488,16 @@ const TournamentManager: React.FC = () => {
                                                         exit={{ height: 0, opacity: 0 }}
                                                         style={{ overflow: 'hidden' }}
                                                     >
-                                                        <div style={{ marginTop: '15px', padding: '14px', background: 'rgba(255,255,255,0.02)', borderRadius: '15px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                                        <div style={{ marginTop: '15px', padding: '14px', background: 'rgba(163, 230, 53, 0.03)', borderRadius: '15px', border: '1px solid rgba(163, 230, 53, 0.08)' }}>
                                                             <div
                                                                 style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}
                                                                 onClick={() => setShowRubrosList(!showRubrosList)}
                                                             >
-                                                                <div style={{ fontSize: '11px', fontWeight: '800', color: 'white', display: 'flex', alignItems: 'center', gap: '6px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                                                                    Rubros
+                                                                <div style={{ fontSize: '10px', fontWeight: '900', color: 'var(--secondary)', textTransform: 'uppercase', letterSpacing: '0.1em', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                                                    <span>📋</span> Rubros
                                                                 </div>
-                                                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                                                    {showRubrosList ? <ChevronUp size={18} color="var(--text-dim)" /> : <ChevronDown size={18} color="var(--text-dim)" />}
+                                                                <div style={{ display: 'flex', alignItems: 'center' }}>
+                                                                    {showRubrosList ? <ChevronUp size={18} color="var(--secondary)" /> : <ChevronDown size={18} color="var(--secondary)" />}
                                                                 </div>
                                                             </div>
                                                             <AnimatePresence>
