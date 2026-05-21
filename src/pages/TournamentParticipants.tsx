@@ -49,8 +49,8 @@ const TournamentParticipants: React.FC = () => {
     const fetchData = async () => {
         setLoading(true);
         try {
-            const { data: tournament, error: tournamentError } = await supabase
-                .from('tournaments')
+            const { data: tournament, error: tournamentError } = await (supabase
+                .from('tournaments') as any)
                 .select('name, guests, notes')
                 .eq('id', id || '')
                 .single();
