@@ -441,7 +441,7 @@ const TournamentRegistration: React.FC = () => {
                             height: isMobile ? 'auto' : '40vh', 
                             minHeight: isMobile ? 'auto' : '400px',
                             paddingTop: isMobile ? '10px' : '0',
-                            paddingBottom: isMobile ? '20px' : '0',
+                            paddingBottom: isMobile ? '50px' : '0',
                             overflow: isMobile ? 'visible' : 'hidden'
                         }}>
                         <img
@@ -661,7 +661,16 @@ const TournamentRegistration: React.FC = () => {
                         {isMobile && !isFlipped && (
                             <motion.button
                                 initial={{ opacity: 0, scale: 0.8, x: '-50%' }}
-                                animate={{ opacity: 1, scale: 1, x: '-50%' }}
+                                animate={{ 
+                                    opacity: 1, 
+                                    scale: [1, 1.05, 1], 
+                                    x: '-50%' 
+                                }}
+                                transition={{ 
+                                    opacity: { duration: 0.3 },
+                                    scale: { repeat: Infinity, duration: 1.5, ease: "easeInOut" }
+                                }}
+                                whileTap={{ scale: 0.95, x: '-50%' }}
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     setIsFlipped(true);
