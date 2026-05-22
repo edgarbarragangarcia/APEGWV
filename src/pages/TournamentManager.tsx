@@ -930,7 +930,7 @@ const TournamentManager: React.FC = () => {
                     -webkit-appearance: none;
                 }
             `}</style>
-            {!showForm && <PageHero opacity={0.75} />}
+            <PageHero opacity={0.75} />
             <div style={styles.headerArea}>
                 <PageHeader
                     noMargin
@@ -2679,7 +2679,7 @@ const styles = {
         padding: '0 20px calc(var(--nav-height) + 20px) 20px',
         overflowY: 'auto' as 'auto',
         WebkitOverflowScrolling: 'touch' as 'touch',
-        overscrollBehaviorY: 'contain' as 'contain',
+        touchAction: 'pan-y' as 'pan-y',
         gap: '15px'
     }
 };
