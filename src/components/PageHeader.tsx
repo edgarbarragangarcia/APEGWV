@@ -27,7 +27,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({
     return (
         <header style={{
             display: 'flex',
-            alignItems: 'center',
+            alignItems: 'flex-start',
             gap: '15px',
             marginTop: noMargin ? '0' : '0',
             marginBottom: noMargin ? '0px' : '15px',
@@ -49,7 +49,8 @@ const PageHeader: React.FC<PageHeaderProps> = ({
                         color: 'white',
                         cursor: 'pointer',
                         flexShrink: 0,
-                        transition: 'all 0.2s ease'
+                        transition: 'all 0.2s ease',
+                        marginTop: '2px'
                     }}
                     className="hover-scale"
                 >
