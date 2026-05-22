@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../services/SupabaseManager';
-import { User, Trophy, Users, Search, CheckCircle2, Clock, Mail, CheckSquare, Square, Download, Trash2, IdCard, Calendar, X } from 'lucide-react';
+import { User, Trophy, Users, Search, CheckCircle2, Clock, Mail, CheckSquare, Square, Download, Trash2, IdCard, Calendar } from 'lucide-react';
 import Skeleton from '../components/Skeleton';
 import PageHero from '../components/PageHero';
 import PageHeader from '../components/PageHeader';
