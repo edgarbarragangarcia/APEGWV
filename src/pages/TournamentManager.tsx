@@ -961,7 +961,7 @@ const TournamentManager: React.FC = () => {
                             style={{ width: '100%', paddingBottom: '30px', paddingTop: '20px' }}
                         >
 
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                                 {/* Basic Information Section */}
                                 <div style={{ marginTop: '0px', padding: '10px 15px', background: 'rgba(255,255,255,0.03)', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)' }}>
                                     <div
@@ -1481,7 +1481,7 @@ const TournamentManager: React.FC = () => {
                                 </div>
 
                                 {/* Budget Section */}
-                                        <div style={{ marginTop: '10px', padding: '10px 15px', background: 'rgba(255,255,255,0.03)', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                        <div style={{ marginTop: '0px', padding: '10px 15px', background: 'rgba(255,255,255,0.03)', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)' }}>
                                             <div
                                                 style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}
                                                 onClick={() => setShowBudgetSection(!showBudgetSection)}
@@ -1970,7 +1970,7 @@ const TournamentManager: React.FC = () => {
                                             </AnimatePresence>
                                         </div>
 
-                                        <div style={{ marginTop: '10px', padding: '10px 15px', background: 'rgba(255,255,255,0.03)', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                        <div style={{ marginTop: '0px', padding: '10px 15px', background: 'rgba(255,255,255,0.03)', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)' }}>
                                             <div
                                                 style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}
                                                 onClick={() => setShowRulesSection(!showRulesSection)}
@@ -2040,7 +2040,7 @@ const TournamentManager: React.FC = () => {
                                             </AnimatePresence>
                                         </div>
 
-                                        <div style={{ marginTop: '10px', padding: '10px 15px', background: 'rgba(255,255,255,0.03)', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                        <div style={{ marginTop: '0px', padding: '10px 15px', background: 'rgba(255,255,255,0.03)', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)' }}>
                                             <div
                                                 style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}
                                                 onClick={() => setShowSponsorsSection(!showSponsorsSection)}
@@ -2119,7 +2119,7 @@ const TournamentManager: React.FC = () => {
                                             </AnimatePresence>
                                         </div>
 
-                                        <div style={{ marginTop: '10px', padding: '10px 15px', background: 'rgba(255,255,255,0.03)', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                        <div style={{ marginTop: '0px', padding: '10px 15px', background: 'rgba(255,255,255,0.03)', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)' }}>
                                             <div
                                                 style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}
                                                 onClick={() => setShowPrizesSection(!showPrizesSection)}
@@ -2198,7 +2198,7 @@ const TournamentManager: React.FC = () => {
                                             </AnimatePresence>
                                         </div>
 
-                                        <div style={{ marginTop: '10px', padding: '10px 15px', background: 'rgba(255,255,255,0.03)', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                        <div style={{ marginTop: '0px', padding: '10px 15px', background: 'rgba(255,255,255,0.03)', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)' }}>
                                             <div
                                                 style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}
                                                 onClick={() => setShowGuestsSection(!showGuestsSection)}
