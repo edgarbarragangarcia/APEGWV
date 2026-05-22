@@ -1264,7 +1264,7 @@ const styles = {
     headerArea: {
         flexShrink: 0,
         position: 'relative' as 'relative',
-        zIndex: 10,
+        zIndex: 50,
         background: 'transparent',
         padding: '0 20px',
         paddingTop: 'calc(var(--header-offset-top) - 20px)'
