@@ -364,7 +364,7 @@ const TournamentGroups: React.FC = () => {
                             position: 'fixed', inset: 0, zIndex: 5000,
                             background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)',
                             display: 'flex', flexDirection: 'column',
-                            padding: '20px', paddingTop: 'max(env(safe-area-inset-top), 60px)'
+                            padding: '20px', paddingTop: 'calc(var(--header-offset-top) + 20px)'
                         }}
                     >
                         <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '20px' }}>
@@ -446,7 +446,6 @@ const TournamentGroups: React.FC = () => {
             <div style={styles.headerArea}>
                 <PageHeader
                     noMargin
-                    backIcon={X}
                     title="Organizar Grupos"
                     onBack={() => navigate(`/my-events/${id}/participants`)}
                     rightElement={
@@ -663,7 +662,7 @@ const TournamentGroups: React.FC = () => {
 const styles: { [key: string]: React.CSSProperties } = {
     pageContainer: {
         position: 'fixed', inset: 0, background: 'var(--primary)',
-        display: 'flex', flexDirection: 'column', overflow: 'hidden', zIndex: 2000
+        display: 'flex', flexDirection: 'column', overflow: 'hidden', zIndex: 900
     },
     headerArea: {
         flexShrink: 0, position: 'relative', zIndex: 10,
