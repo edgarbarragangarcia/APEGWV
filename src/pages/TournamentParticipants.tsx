@@ -590,7 +590,6 @@ const TournamentParticipants: React.FC = () => {
             <div style={styles.headerArea}>
                 <PageHeader
                     noMargin
-                    backIcon={X}
                     title={selectedParticipant ? (selectedParticipant.is_guest ? 'Detalle Invitado' : 'Detalle Participante') : (tournamentName || 'Participantes')}
                     onBack={() => {
                         if (selectedParticipant) {
@@ -1109,7 +1108,7 @@ const styles = {
         position: 'fixed' as 'fixed', inset: 0,
         background: 'var(--primary)',
         display: 'flex', flexDirection: 'column' as 'column',
-        overflow: 'hidden', zIndex: 2000
+        overflow: 'hidden', zIndex: 900
     },
     headerArea: {
         flexShrink: 0,

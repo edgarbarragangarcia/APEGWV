@@ -405,7 +405,7 @@ const TournamentGroups: React.FC = () => {
                             />
                         </div>
 
-                        <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <div style={{ flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch', touchAction: 'pan-y', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                             {filteredUnassigned.length === 0 ? (
                                 <p style={{ textAlign: 'center', color: 'rgba(255,255,255,0.4)', marginTop: '40px' }}>
                                     No hay jugadores disponibles
@@ -446,6 +446,7 @@ const TournamentGroups: React.FC = () => {
             <div style={styles.headerArea}>
                 <PageHeader
                     noMargin
+                    backIcon={X}
                     title="Organizar Grupos"
                     onBack={() => navigate(`/my-events/${id}/participants`)}
                     rightElement={
@@ -490,7 +491,7 @@ const TournamentGroups: React.FC = () => {
                         {[1, 2, 3].map(i => <Skeleton key={i} height="120px" borderRadius="24px" />)}
                     </div>
                 ) : (
-                    <div style={{ flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch', overscrollBehaviorY: 'contain', paddingBottom: '100px' }}>
+                    <div style={{ flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch', touchAction: 'pan-y', paddingBottom: '100px' }}>
                         {/* Stats Bar */}
                         <div style={{
                             display: 'grid', gridTemplateColumns: '1fr 1fr 1fr',
@@ -662,7 +663,7 @@ const TournamentGroups: React.FC = () => {
 const styles: { [key: string]: React.CSSProperties } = {
     pageContainer: {
         position: 'fixed', inset: 0, background: 'var(--primary)',
-        display: 'flex', flexDirection: 'column', overflow: 'hidden', zIndex: 900
+        display: 'flex', flexDirection: 'column', overflow: 'hidden', zIndex: 2000
     },
     headerArea: {
         flexShrink: 0, position: 'relative', zIndex: 10,
