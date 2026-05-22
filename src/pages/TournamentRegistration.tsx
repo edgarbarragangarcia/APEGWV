@@ -630,7 +630,7 @@ const TournamentRegistration: React.FC = () => {
                                                 
                                                 <div style={{ 
                                                     marginTop: '20px', 
-                                                    padding: '20px 20px', 
+                                                    padding: '16px 18px', 
                                                     background: 'rgba(255, 193, 7, 0.15)', 
                                                     border: '2px solid rgba(255, 193, 7, 0.5)', 
                                                     borderRadius: '20px', 
@@ -642,11 +642,11 @@ const TournamentRegistration: React.FC = () => {
                                                     textAlign: 'center',
                                                     boxShadow: '0 10px 30px rgba(255, 193, 7, 0.1)'
                                                 }}>
-                                                    <AlertCircle size={32} color="#ffc107" style={{ flexShrink: 0, marginBottom: '5px' }} />
-                                                    <p style={{ margin: 0, fontSize: '15px', color: 'rgba(255,255,255,0.95)', lineHeight: '1.6' }}>
-                                                        <strong style={{ color: '#ffc107', fontSize: '18px', display: 'block', marginBottom: '8px', letterSpacing: '0.5px' }}>Confirmación de inscripción y pago 📩</strong>
+                                                    <AlertCircle size={28} color="#ffc107" style={{ flexShrink: 0, marginBottom: '5px' }} />
+                                                    <p style={{ margin: 0, fontSize: '14px', color: 'rgba(255,255,255,0.95)', lineHeight: '1.6' }}>
+                                                        <strong style={{ color: '#ffc107', fontSize: '16px', display: 'block', marginBottom: '8px', letterSpacing: '0.5px' }}>Confirmación de inscripción y pago 📩</strong>
                                                         Por favor enviar el comprobante de pago al correo:<br/>
-                                                        <strong style={{ fontSize: '20px', display: 'block', marginTop: '10px', color: 'white', wordBreak: 'break-all', letterSpacing: '1px' }}>amorporelgolf@gmail.com</strong>
+                                                        <strong style={{ fontSize: '18px', display: 'block', marginTop: '10px', color: 'white', wordBreak: 'break-all', letterSpacing: '1px' }}>amorporelgolf@gmail.com</strong>
                                                     </p>
                                                 </div>
 
