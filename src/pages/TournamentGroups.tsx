@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../services/SupabaseManager';
-import { Plus, Trash2, Save, Download, GripVertical, UserPlus, X, Clock, ChevronDown, ChevronUp } from 'lucide-react';
+import { Plus, Trash2, Save, Download, UserPlus, X, Clock, ChevronDown, ChevronUp, Search } from 'lucide-react';
 import Skeleton from '../components/Skeleton';
 import PageHero from '../components/PageHero';
 import PageHeader from '../components/PageHeader';
@@ -36,10 +36,11 @@ const TournamentGroups: React.FC = () => {
     const [participants, setParticipants] = useState<GroupParticipant[]>([]);
     const [groups, setGroups] = useState<TournamentGroup[]>([]);
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'warning' } | null>(null);
-    const [draggedParticipant, setDraggedParticipant] = useState<string | null>(null);
-    const [dragOverTarget, setDragOverTarget] = useState<string | null>(null);
-    const [showUnassigned, setShowUnassigned] = useState(true);
     const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
+    
+    // Modal states
+    const [activeGroupForAdd, setActiveGroupForAdd] = useState<string | null>(null);
+    const [searchQuery, setSearchQuery] = useState('');
 
     const showToast = (message: string, type: 'success' | 'error' | 'warning' = 'success') => {
         setToast({ message, type });
@@ -62,7 +63,6 @@ const TournamentGroups: React.FC = () => {
             if (tournamentError) throw tournamentError;
             setTournamentName(tournament.name);
 
-            // Fetch participants
             const { data: registrations, error: regError } = await (supabase
                 .from('tournament_registrations') as any)
                 .select(`
@@ -126,7 +126,6 @@ const TournamentGroups: React.FC = () => {
             const allParticipants = [...registeredParticipants, ...manualGuestParticipants];
             setParticipants(allParticipants);
 
-            // Load saved groups
             if (tournament.groups && Array.isArray(tournament.groups) && tournament.groups.length > 0) {
                 setGroups(tournament.groups);
             }
@@ -144,6 +143,10 @@ const TournamentGroups: React.FC = () => {
 
     const assignedParticipantIds = groups.flatMap(g => g.participants);
     const unassignedParticipants = participants.filter(p => !assignedParticipantIds.includes(p.id));
+    
+    const filteredUnassigned = unassignedParticipants.filter(p => 
+        p.full_name?.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
     const addGroup = () => {
         const newGroup: TournamentGroup = {
@@ -168,13 +171,14 @@ const TournamentGroups: React.FC = () => {
     };
 
     const addParticipantToGroup = (groupId: string, participantId: string) => {
-        // Remove from any other group first
         setGroups(prev => prev.map(g => ({
             ...g,
             participants: g.id === groupId
                 ? [...g.participants.filter(pid => pid !== participantId), participantId]
                 : g.participants.filter(pid => pid !== participantId)
         })));
+        setActiveGroupForAdd(null);
+        setSearchQuery('');
     };
 
     const removeParticipantFromGroup = (groupId: string, participantId: string) => {
@@ -183,47 +187,6 @@ const TournamentGroups: React.FC = () => {
                 ? { ...g, participants: g.participants.filter(pid => pid !== participantId) }
                 : g
         ));
-    };
-
-    const handleDragStart = (participantId: string) => {
-        setDraggedParticipant(participantId);
-    };
-
-    const handleDragOver = (e: React.DragEvent, targetId: string) => {
-        e.preventDefault();
-        e.dataTransfer.dropEffect = 'move';
-        setDragOverTarget(targetId);
-    };
-
-    const handleDragLeave = () => {
-        setDragOverTarget(null);
-    };
-
-    const handleDrop = (e: React.DragEvent, groupId: string) => {
-        e.preventDefault();
-        if (draggedParticipant) {
-            addParticipantToGroup(groupId, draggedParticipant);
-        }
-        setDraggedParticipant(null);
-        setDragOverTarget(null);
-    };
-
-    const handleDropUnassigned = (e: React.DragEvent) => {
-        e.preventDefault();
-        if (draggedParticipant) {
-            // Remove from all groups
-            setGroups(prev => prev.map(g => ({
-                ...g,
-                participants: g.participants.filter(pid => pid !== draggedParticipant)
-            })));
-        }
-        setDraggedParticipant(null);
-        setDragOverTarget(null);
-    };
-
-    const handleDragEnd = () => {
-        setDraggedParticipant(null);
-        setDragOverTarget(null);
     };
 
     const saveGroups = async () => {
@@ -288,33 +251,26 @@ const TournamentGroups: React.FC = () => {
         });
     };
 
-    const participantCard = (p: GroupParticipant, groupId?: string, isDragging?: boolean) => (
+    const participantCard = (p: GroupParticipant, groupId?: string, onClickAction?: () => void) => (
         <motion.div
             key={p.id}
             layout
             initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: isDragging ? 0.5 : 1, scale: 1 }}
+            animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            draggable
-            onDragStart={() => handleDragStart(p.id)}
-            onDragEnd={handleDragEnd}
+            onClick={onClickAction}
             style={{
                 display: 'flex',
                 alignItems: 'center',
                 gap: '10px',
                 padding: '10px 12px',
-                background: draggedParticipant === p.id ? 'rgba(163, 230, 53, 0.08)' : 'rgba(255,255,255,0.02)',
+                background: 'rgba(255,255,255,0.02)',
                 borderRadius: '16px',
-                border: `1px solid ${draggedParticipant === p.id ? 'rgba(163, 230, 53, 0.3)' : 'rgba(255,255,255,0.04)'}`,
-                cursor: 'grab',
+                border: '1px solid rgba(255,255,255,0.04)',
+                cursor: onClickAction ? 'pointer' : 'default',
                 transition: 'all 0.2s ease',
-                userSelect: 'none' as const,
-                WebkitUserSelect: 'none' as const,
-                touchAction: 'none' as const
             }}
         >
-            <GripVertical size={14} color="rgba(255,255,255,0.2)" style={{ flexShrink: 0 }} />
-
             <div style={{
                 width: '36px', height: '36px', borderRadius: '12px',
                 overflow: 'hidden', background: 'rgba(255,255,255,0.03)',
@@ -362,7 +318,7 @@ const TournamentGroups: React.FC = () => {
                 </div>
             </div>
 
-            {groupId && (
+            {groupId && !onClickAction && (
                 <motion.button
                     whileTap={{ scale: 0.85 }}
                     onClick={(e) => {
@@ -380,11 +336,87 @@ const TournamentGroups: React.FC = () => {
                     <X size={12} strokeWidth={3} />
                 </motion.button>
             )}
+            
+            {onClickAction && (
+                <div style={{
+                    width: '28px', height: '28px', borderRadius: '9px',
+                    background: 'rgba(163, 230, 53, 0.1)',
+                    border: '1px solid rgba(163, 230, 53, 0.2)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    flexShrink: 0, color: 'var(--secondary)'
+                }}>
+                    <Plus size={14} strokeWidth={3} />
+                </div>
+            )}
         </motion.div>
     );
 
     return (
         <div className="animate-fade" style={styles.pageContainer}>
+            {/* Modal for selecting a player */}
+            <AnimatePresence>
+                {activeGroupForAdd && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        style={{
+                            position: 'fixed', inset: 0, zIndex: 5000,
+                            background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)',
+                            display: 'flex', flexDirection: 'column',
+                            padding: '20px', paddingTop: 'env(safe-area-inset-top, 40px)'
+                        }}
+                    >
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+                            <div>
+                                <h3 style={{ color: 'white', margin: 0, fontSize: '20px', fontWeight: '900' }}>Añadir Jugador</h3>
+                                <p style={{ color: 'rgba(255,255,255,0.5)', margin: 0, fontSize: '12px' }}>
+                                    {groups.find(g => g.id === activeGroupForAdd)?.name}
+                                </p>
+                            </div>
+                            <button
+                                onClick={() => {
+                                    setActiveGroupForAdd(null);
+                                    setSearchQuery('');
+                                }}
+                                style={{
+                                    width: '40px', height: '40px', borderRadius: '12px',
+                                    background: 'rgba(255,255,255,0.1)', border: 'none',
+                                    color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center'
+                                }}
+                            >
+                                <X size={20} />
+                            </button>
+                        </div>
+                        
+                        <div style={{ position: 'relative', marginBottom: '20px' }}>
+                            <Search style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,0.4)' }} size={18} />
+                            <input
+                                type="text"
+                                placeholder="Buscar jugador..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                style={{
+                                    width: '100%', padding: '14px 16px 14px 45px',
+                                    background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
+                                    borderRadius: '16px', color: 'white', fontSize: '14px', outline: 'none'
+                                }}
+                            />
+                        </div>
+
+                        <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            {filteredUnassigned.length === 0 ? (
+                                <p style={{ textAlign: 'center', color: 'rgba(255,255,255,0.4)', marginTop: '40px' }}>
+                                    No hay jugadores disponibles
+                                </p>
+                            ) : (
+                                filteredUnassigned.map(p => participantCard(p, undefined, () => addParticipantToGroup(activeGroupForAdd, p.id)))
+                            )}
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
             {/* Toast Notification */}
             <AnimatePresence>
                 {toast && (
@@ -394,29 +426,13 @@ const TournamentGroups: React.FC = () => {
                         exit={{ opacity: 0, y: -30 }}
                         onClick={() => setToast(null)}
                         style={{
-                            position: 'fixed',
-                            top: '20px',
-                            left: '50%',
-                            transform: 'translateX(-50%)',
-                            zIndex: 4000,
-                            padding: '14px 24px',
-                            borderRadius: '18px',
-                            background: toast.type === 'success' ? 'rgba(163, 230, 53, 0.15)'
-                                : toast.type === 'error' ? 'rgba(239, 68, 68, 0.15)'
-                                    : 'rgba(251, 191, 36, 0.15)',
-                            border: `1px solid ${toast.type === 'success' ? 'rgba(163, 230, 53, 0.3)'
-                                : toast.type === 'error' ? 'rgba(239, 68, 68, 0.3)'
-                                    : 'rgba(251, 191, 36, 0.3)'}`,
-                            color: toast.type === 'success' ? 'var(--secondary)'
-                                : toast.type === 'error' ? '#ef4444'
-                                    : '#fbbf24',
-                            fontSize: '13px',
-                            fontWeight: '800',
-                            backdropFilter: 'blur(20px)',
-                            boxShadow: '0 10px 30px rgba(0,0,0,0.3)',
-                            maxWidth: '90%',
-                            textAlign: 'center' as const,
-                            cursor: 'pointer'
+                            position: 'fixed', top: '20px', left: '50%', transform: 'translateX(-50%)',
+                            zIndex: 4000, padding: '14px 24px', borderRadius: '18px',
+                            background: toast.type === 'success' ? 'rgba(163, 230, 53, 0.15)' : toast.type === 'error' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(251, 191, 36, 0.15)',
+                            border: `1px solid ${toast.type === 'success' ? 'rgba(163, 230, 53, 0.3)' : toast.type === 'error' ? 'rgba(239, 68, 68, 0.3)' : 'rgba(251, 191, 36, 0.3)'}`,
+                            color: toast.type === 'success' ? 'var(--secondary)' : toast.type === 'error' ? '#ef4444' : '#fbbf24',
+                            fontSize: '13px', fontWeight: '800', backdropFilter: 'blur(20px)',
+                            boxShadow: '0 10px 30px rgba(0,0,0,0.3)', maxWidth: '90%', textAlign: 'center', cursor: 'pointer'
                         }}
                     >
                         {toast.message}
@@ -441,12 +457,8 @@ const TournamentGroups: React.FC = () => {
                                     color: 'var(--secondary)',
                                     padding: '8px 10px',
                                     borderRadius: '12px',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '5px',
-                                    fontSize: '10px',
-                                    fontWeight: '900',
-                                    cursor: 'pointer'
+                                    display: 'flex', alignItems: 'center', gap: '5px',
+                                    fontSize: '10px', fontWeight: '900', cursor: 'pointer'
                                 }}
                             >
                                 <Download size={13} />
@@ -457,16 +469,10 @@ const TournamentGroups: React.FC = () => {
                                 disabled={saving}
                                 style={{
                                     background: saving ? 'rgba(163, 230, 53, 0.3)' : 'var(--secondary)',
-                                    border: 'none',
-                                    color: 'var(--primary)',
-                                    padding: '8px 14px',
-                                    borderRadius: '12px',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '5px',
-                                    fontSize: '10px',
-                                    fontWeight: '900',
-                                    cursor: saving ? 'not-allowed' : 'pointer',
+                                    border: 'none', color: 'var(--primary)',
+                                    padding: '8px 14px', borderRadius: '12px',
+                                    display: 'flex', alignItems: 'center', gap: '5px',
+                                    fontSize: '10px', fontWeight: '900', cursor: saving ? 'not-allowed' : 'pointer',
                                     boxShadow: '0 4px 12px rgba(163, 230, 53, 0.2)'
                                 }}
                             >
@@ -486,11 +492,8 @@ const TournamentGroups: React.FC = () => {
                     <div style={{ flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch', overscrollBehaviorY: 'contain', paddingBottom: '100px' }}>
                         {/* Stats Bar */}
                         <div style={{
-                            display: 'grid',
-                            gridTemplateColumns: '1fr 1fr 1fr',
-                            gap: '8px',
-                            marginBottom: '18px',
-                            marginTop: '5px'
+                            display: 'grid', gridTemplateColumns: '1fr 1fr 1fr',
+                            gap: '8px', marginBottom: '18px', marginTop: '5px'
                         }}>
                             <div style={styles.statCard}>
                                 <p style={styles.statLabel}>JUGADORES</p>
@@ -508,70 +511,8 @@ const TournamentGroups: React.FC = () => {
                             </div>
                         </div>
 
-                        {/* Unassigned Participants */}
-                        <div
-                            onDragOver={(e) => handleDragOver(e, 'unassigned')}
-                            onDragLeave={handleDragLeave}
-                            onDrop={handleDropUnassigned}
-                            style={{
-                                marginBottom: '18px',
-                                background: dragOverTarget === 'unassigned' ? 'rgba(251, 191, 36, 0.05)' : 'transparent',
-                                borderRadius: '24px',
-                                border: dragOverTarget === 'unassigned' ? '2px dashed rgba(251, 191, 36, 0.3)' : '2px dashed transparent',
-                                transition: 'all 0.2s ease',
-                                padding: dragOverTarget === 'unassigned' ? '4px' : '0'
-                            }}
-                        >
-                            <button
-                                onClick={() => setShowUnassigned(!showUnassigned)}
-                                style={{
-                                    width: '100%',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'space-between',
-                                    padding: '14px 16px',
-                                    background: 'rgba(251, 191, 36, 0.06)',
-                                    borderRadius: '18px',
-                                    border: '1px solid rgba(251, 191, 36, 0.1)',
-                                    cursor: 'pointer',
-                                    color: '#fbbf24',
-                                    marginBottom: showUnassigned ? '10px' : '0'
-                                }}
-                            >
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                    <UserPlus size={16} />
-                                    <span style={{ fontSize: '12px', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                                        Sin Asignar ({unassignedParticipants.length})
-                                    </span>
-                                </div>
-                                {showUnassigned ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                            </button>
-
-                            <AnimatePresence>
-                                {showUnassigned && (
-                                    <motion.div
-                                        initial={{ height: 0, opacity: 0 }}
-                                        animate={{ height: 'auto', opacity: 1 }}
-                                        exit={{ height: 0, opacity: 0 }}
-                                        style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column', gap: '6px' }}
-                                    >
-                                        {unassignedParticipants.length === 0 ? (
-                                            <p style={{
-                                                textAlign: 'center', color: 'rgba(255,255,255,0.2)',
-                                                fontSize: '12px', fontWeight: '700', padding: '15px'
-                                            }}>
-                                                ✓ Todos los jugadores están asignados
-                                            </p>
-                                        ) : (
-                                            unassignedParticipants.map(p => participantCard(p))
-                                        )}
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
-                        </div>
-
-                        {/* Groups */}
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                        {/* Groups List */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                             {groups.map((group, groupIndex) => (
                                 <motion.div
                                     key={group.id}
@@ -580,28 +521,18 @@ const TournamentGroups: React.FC = () => {
                                     animate={{ opacity: 1, y: 0 }}
                                     exit={{ opacity: 0, y: -20 }}
                                     transition={{ delay: groupIndex * 0.05 }}
-                                    onDragOver={(e) => handleDragOver(e, group.id)}
-                                    onDragLeave={handleDragLeave}
-                                    onDrop={(e) => handleDrop(e, group.id)}
                                     style={{
-                                        background: dragOverTarget === group.id
-                                            ? 'rgba(163, 230, 53, 0.04)'
-                                            : 'rgba(10, 31, 25, 0.6)',
+                                        background: 'rgba(10, 31, 25, 0.6)',
                                         borderRadius: '24px',
-                                        border: dragOverTarget === group.id
-                                            ? '2px dashed rgba(163, 230, 53, 0.4)'
-                                            : '1px solid rgba(255,255,255,0.04)',
+                                        border: '1px solid rgba(255,255,255,0.04)',
                                         overflow: 'hidden',
                                         backdropFilter: 'blur(20px)',
-                                        boxShadow: '0 8px 30px rgba(0,0,0,0.15)',
-                                        transition: 'border 0.2s ease, background 0.2s ease'
+                                        boxShadow: '0 8px 30px rgba(0,0,0,0.15)'
                                     }}
                                 >
                                     {/* Group Header */}
                                     <div style={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: '10px',
+                                        display: 'flex', alignItems: 'center', gap: '10px',
                                         padding: '14px 16px',
                                         borderBottom: collapsedGroups.has(group.id) ? 'none' : '1px solid rgba(255,255,255,0.04)'
                                     }}>
@@ -622,15 +553,9 @@ const TournamentGroups: React.FC = () => {
                                                 value={group.name}
                                                 onChange={(e) => updateGroupName(group.id, e.target.value)}
                                                 style={{
-                                                    background: 'transparent',
-                                                    border: 'none',
-                                                    color: 'white',
-                                                    fontSize: '14px',
-                                                    fontWeight: '900',
-                                                    padding: 0, margin: 0,
-                                                    width: '100%',
-                                                    outline: 'none',
-                                                    fontFamily: 'inherit'
+                                                    background: 'transparent', border: 'none', color: 'white',
+                                                    fontSize: '14px', fontWeight: '900', padding: 0, margin: 0,
+                                                    width: '100%', outline: 'none', fontFamily: 'inherit'
                                                 }}
                                             />
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
@@ -641,27 +566,18 @@ const TournamentGroups: React.FC = () => {
                                                     onChange={(e) => updateGroupTeeTime(group.id, e.target.value)}
                                                     placeholder="Hora"
                                                     style={{
-                                                        background: 'transparent',
-                                                        border: 'none',
-                                                        color: 'rgba(255,255,255,0.5)',
-                                                        fontSize: '11px',
-                                                        fontWeight: '700',
-                                                        padding: 0, margin: 0,
-                                                        outline: 'none',
-                                                        fontFamily: 'inherit',
-                                                        colorScheme: 'dark'
+                                                        background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.5)',
+                                                        fontSize: '11px', fontWeight: '700', padding: 0, margin: 0,
+                                                        outline: 'none', fontFamily: 'inherit', colorScheme: 'dark'
                                                     }}
                                                 />
                                             </div>
                                         </div>
 
                                         <span style={{
-                                            fontSize: '10px', fontWeight: '900',
-                                            color: 'rgba(255,255,255,0.3)',
-                                            background: 'rgba(255,255,255,0.03)',
-                                            padding: '4px 8px',
-                                            borderRadius: '8px',
-                                            border: '1px solid rgba(255,255,255,0.05)'
+                                            fontSize: '10px', fontWeight: '900', color: 'rgba(255,255,255,0.3)',
+                                            background: 'rgba(255,255,255,0.03)', padding: '4px 8px',
+                                            borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)'
                                         }}>
                                             {group.participants.length}
                                         </span>
@@ -669,10 +585,8 @@ const TournamentGroups: React.FC = () => {
                                         <button
                                             onClick={() => toggleGroupCollapse(group.id)}
                                             style={{
-                                                background: 'rgba(255,255,255,0.03)',
-                                                border: '1px solid rgba(255,255,255,0.06)',
-                                                borderRadius: '9px',
-                                                width: '28px', height: '28px',
+                                                background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)',
+                                                borderRadius: '9px', width: '28px', height: '28px',
                                                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                                                 cursor: 'pointer', color: 'rgba(255,255,255,0.4)'
                                             }}
@@ -684,10 +598,8 @@ const TournamentGroups: React.FC = () => {
                                             whileTap={{ scale: 0.85 }}
                                             onClick={() => removeGroup(group.id)}
                                             style={{
-                                                background: 'rgba(239, 68, 68, 0.08)',
-                                                border: '1px solid rgba(239, 68, 68, 0.12)',
-                                                borderRadius: '9px',
-                                                width: '28px', height: '28px',
+                                                background: 'rgba(239, 68, 68, 0.08)', border: '1px solid rgba(239, 68, 68, 0.12)',
+                                                borderRadius: '9px', width: '28px', height: '28px',
                                                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                                                 cursor: 'pointer', color: '#ef4444'
                                             }}
@@ -698,34 +610,26 @@ const TournamentGroups: React.FC = () => {
 
                                     {/* Group Body */}
                                     {!collapsedGroups.has(group.id) && (
-                                        <div style={{ padding: '10px 14px 14px', display: 'flex', flexDirection: 'column', gap: '6px', minHeight: '60px' }}>
-                                            <AnimatePresence>
-                                                {group.participants.length === 0 ? (
-                                                    <motion.div
-                                                        initial={{ opacity: 0 }}
-                                                        animate={{ opacity: 1 }}
-                                                        style={{
-                                                            display: 'flex',
-                                                            alignItems: 'center',
-                                                            justifyContent: 'center',
-                                                            height: '60px',
-                                                            borderRadius: '14px',
-                                                            border: '1px dashed rgba(255,255,255,0.08)',
-                                                            color: 'rgba(255,255,255,0.15)',
-                                                            fontSize: '11px',
-                                                            fontWeight: '700'
-                                                        }}
-                                                    >
-                                                        Arrastra jugadores aquí
-                                                    </motion.div>
-                                                ) : (
-                                                    group.participants.map(pId => {
-                                                        const p = getParticipantById(pId);
-                                                        if (!p) return null;
-                                                        return participantCard(p, group.id, draggedParticipant === pId);
-                                                    })
-                                                )}
-                                            </AnimatePresence>
+                                        <div style={{ padding: '10px 14px 14px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                            {group.participants.map(pId => {
+                                                const p = getParticipantById(pId);
+                                                if (!p) return null;
+                                                return participantCard(p, group.id);
+                                            })}
+                                            
+                                            <motion.button
+                                                whileTap={{ scale: 0.97 }}
+                                                onClick={() => setActiveGroupForAdd(group.id)}
+                                                style={{
+                                                    width: '100%', padding: '12px', borderRadius: '14px',
+                                                    background: 'rgba(255,255,255,0.02)', border: '1px dashed rgba(255,255,255,0.1)',
+                                                    color: 'rgba(255,255,255,0.4)', fontSize: '12px', fontWeight: '800',
+                                                    cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                                                    marginTop: group.participants.length > 0 ? '4px' : '0'
+                                                }}
+                                            >
+                                                <UserPlus size={16} /> Añadir Jugador
+                                            </motion.button>
                                         </div>
                                     )}
                                 </motion.div>
@@ -736,22 +640,12 @@ const TournamentGroups: React.FC = () => {
                                 whileTap={{ scale: 0.97 }}
                                 onClick={addGroup}
                                 style={{
-                                    width: '100%',
-                                    padding: '18px',
-                                    borderRadius: '22px',
-                                    background: 'rgba(163, 230, 53, 0.04)',
-                                    border: '2px dashed rgba(163, 230, 53, 0.15)',
-                                    color: 'var(--secondary)',
-                                    fontSize: '13px',
-                                    fontWeight: '900',
-                                    cursor: 'pointer',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    gap: '10px',
-                                    textTransform: 'uppercase',
-                                    letterSpacing: '0.05em',
-                                    transition: 'all 0.2s ease'
+                                    width: '100%', padding: '18px', borderRadius: '22px',
+                                    background: 'rgba(163, 230, 53, 0.04)', border: '2px dashed rgba(163, 230, 53, 0.15)',
+                                    color: 'var(--secondary)', fontSize: '13px', fontWeight: '900',
+                                    cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    gap: '10px', textTransform: 'uppercase', letterSpacing: '0.05em',
+                                    transition: 'all 0.2s ease', marginTop: '10px'
                                 }}
                             >
                                 <Plus size={18} strokeWidth={3} /> Agregar Grupo
@@ -766,52 +660,27 @@ const TournamentGroups: React.FC = () => {
 
 const styles: { [key: string]: React.CSSProperties } = {
     pageContainer: {
-        position: 'fixed',
-        inset: 0,
-        background: 'var(--primary)',
-        display: 'flex',
-        flexDirection: 'column',
-        overflow: 'hidden',
-        zIndex: 900
+        position: 'fixed', inset: 0, background: 'var(--primary)',
+        display: 'flex', flexDirection: 'column', overflow: 'hidden', zIndex: 900
     },
     headerArea: {
-        flexShrink: 0,
-        position: 'relative',
-        zIndex: 10,
-        background: 'transparent',
-        padding: '0 20px',
-        paddingTop: 'var(--header-offset-top)'
+        flexShrink: 0, position: 'relative', zIndex: 10,
+        background: 'transparent', padding: '0 20px', paddingTop: 'var(--header-offset-top)'
     },
     contentContainer: {
-        flex: 1,
-        position: 'relative',
-        zIndex: 10,
-        display: 'flex',
-        flexDirection: 'column',
-        padding: '0 20px',
-        overflow: 'hidden'
+        flex: 1, position: 'relative', zIndex: 10,
+        display: 'flex', flexDirection: 'column', padding: '0 20px', overflow: 'hidden'
     },
     statCard: {
-        background: 'rgba(255,255,255,0.02)',
-        borderRadius: '16px',
-        padding: '12px',
-        textAlign: 'center' as const,
-        border: '1px solid rgba(255,255,255,0.04)'
+        background: 'rgba(255,255,255,0.02)', borderRadius: '16px',
+        padding: '12px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.04)'
     },
     statLabel: {
-        fontSize: '9px',
-        fontWeight: '900',
-        color: 'rgba(255,255,255,0.3)',
-        margin: 0,
-        textTransform: 'uppercase' as const,
-        letterSpacing: '0.08em',
-        marginBottom: '4px'
+        fontSize: '9px', fontWeight: '900', color: 'rgba(255,255,255,0.3)',
+        margin: 0, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '4px'
     },
     statValue: {
-        fontSize: '20px',
-        fontWeight: '950',
-        color: 'var(--secondary)',
-        margin: 0
+        fontSize: '20px', fontWeight: '950', color: 'var(--secondary)', margin: 0
     }
 };
 

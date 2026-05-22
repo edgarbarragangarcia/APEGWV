@@ -563,7 +563,7 @@ const TournamentParticipants: React.FC = () => {
                         }
                     }}
                     rightElement={
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-end' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-end', marginBottom: '8px' }}>
                             <button
                                 onClick={downloadExcel}
                                 style={{
