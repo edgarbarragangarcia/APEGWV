@@ -40,6 +40,7 @@ const TournamentParticipants: React.FC = () => {
     const [statusFilter, setStatusFilter] = useState<'all' | 'paid' | 'registered' | 'guests' | 'companions'>('all');
     const [selectedIds, setSelectedIds] = useState<string[]>([]);
     const [tournamentMessages, setTournamentMessages] = useState<{paid: string, unpaid: string}>({paid: '', unpaid: ''});
+    const [showDownloadMenu, setShowDownloadMenu] = useState(false);
 
     useEffect(() => {
         if (id) {
@@ -684,9 +685,10 @@ const TournamentParticipants: React.FC = () => {
                     }}
                     rightElement={!selectedParticipant ? (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-end', marginBottom: '8px' }}>
-                            <div style={{ display: 'flex', gap: '8px' }}>
+                            <div style={{ position: 'relative' }}>
                                 <button
-                                    onClick={downloadExcel}
+                                    onClick={() => setShowDownloadMenu(!showDownloadMenu)}
+                                    onBlur={() => setTimeout(() => setShowDownloadMenu(false), 200)}
                                     style={{
                                         background: 'rgba(163, 230, 53, 0.1)',
                                         border: '1px solid rgba(163, 230, 53, 0.2)',
@@ -701,26 +703,68 @@ const TournamentParticipants: React.FC = () => {
                                         cursor: 'pointer'
                                     }}
                                 >
-                                    <Download size={14} /> EXCEL
+                                    <Download size={14} /> DESCARGAR
                                 </button>
-                                <button
-                                    onClick={downloadPDF}
-                                    style={{
-                                        background: 'rgba(239, 68, 68, 0.1)',
-                                        border: '1px solid rgba(239, 68, 68, 0.2)',
-                                        color: '#ef4444',
-                                        padding: '8px 12px',
+                                {showDownloadMenu && (
+                                    <div style={{
+                                        position: 'absolute',
+                                        top: '100%',
+                                        right: 0,
+                                        marginTop: '5px',
+                                        background: 'rgba(20, 20, 20, 0.95)',
+                                        border: '1px solid rgba(255,255,255,0.1)',
                                         borderRadius: '12px',
+                                        padding: '5px',
                                         display: 'flex',
-                                        alignItems: 'center',
-                                        gap: '6px',
-                                        fontSize: '11px',
-                                        fontWeight: '900',
-                                        cursor: 'pointer'
-                                    }}
-                                >
-                                    <Download size={14} /> PDF
-                                </button>
+                                        flexDirection: 'column',
+                                        gap: '5px',
+                                        zIndex: 1000,
+                                        backdropFilter: 'blur(10px)',
+                                        boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
+                                        minWidth: '120px'
+                                    }}>
+                                        <button
+                                            onClick={downloadExcel}
+                                            style={{
+                                                background: 'rgba(163, 230, 53, 0.05)',
+                                                border: 'none',
+                                                color: 'var(--secondary)',
+                                                padding: '10px 12px',
+                                                borderRadius: '8px',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '8px',
+                                                fontSize: '11px',
+                                                fontWeight: '900',
+                                                cursor: 'pointer',
+                                                textAlign: 'left',
+                                                width: '100%'
+                                            }}
+                                        >
+                                            <Download size={14} /> EXCEL
+                                        </button>
+                                        <button
+                                            onClick={downloadPDF}
+                                            style={{
+                                                background: 'rgba(239, 68, 68, 0.05)',
+                                                border: 'none',
+                                                color: '#ef4444',
+                                                padding: '10px 12px',
+                                                borderRadius: '8px',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '8px',
+                                                fontSize: '11px',
+                                                fontWeight: '900',
+                                                cursor: 'pointer',
+                                                textAlign: 'left',
+                                                width: '100%'
+                                            }}
+                                        >
+                                            <Download size={14} /> PDF
+                                        </button>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     ) : null}
