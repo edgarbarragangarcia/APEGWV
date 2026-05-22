@@ -96,10 +96,10 @@ const TournamentParticipants: React.FC = () => {
                 const profile = reg.profiles || null;
                 const nameMatch = reg.player_name || profile?.full_name || 'Invitado';
 
-                const matchingGuest = manualGuestEntries.find((g: {name: string, code: string}) =>
+                const matchingGuest = manualGuestEntries.find((g: { name: string, code: string }) =>
                     g.name.toLowerCase() === nameMatch.trim().toLowerCase()
                 );
-                const isSpecialGuest = !!matchingGuest;
+                const isSpecialGuest = !!matchingGuest || reg.registration_status === 'Invitado';
                 const fedCode = reg.player_federation_code || '';
                 const isCompanion = fedCode.startsWith('ACOMP:') || (!reg.player_handicap && !fedCode && !isSpecialGuest);
                 const registeredBy = fedCode.startsWith('ACOMP:') ? fedCode.replace('ACOMP:', '') : null;
@@ -150,6 +150,42 @@ const TournamentParticipants: React.FC = () => {
             console.error('Error fetching data:', err);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const changeParticipantStatus = async (participantId: string, newStatus: string) => {
+        if (participantId.startsWith('manual-guest-')) return;
+        const now = new Date().toISOString();
+        try {
+            const { error } = await supabase
+                .from('tournament_registrations')
+                .update({
+                    registration_status: newStatus,
+                    payment_date: newStatus === 'paid' ? now : null
+                })
+                .eq('id', participantId);
+            if (error) throw error;
+            
+            setParticipants(prev => prev.map(p =>
+                p.id === participantId ? { 
+                    ...p, 
+                    registration_status: newStatus, 
+                    payment_date: newStatus === 'paid' ? now : null,
+                    is_guest: newStatus === 'Invitado' ? true : p.is_guest 
+                } : p
+            ));
+            
+            if (selectedParticipant && selectedParticipant.id === participantId) {
+                setSelectedParticipant(prev => prev ? { 
+                    ...prev, 
+                    registration_status: newStatus, 
+                    payment_date: newStatus === 'paid' ? now : null,
+                    is_guest: newStatus === 'Invitado' ? true : prev.is_guest
+                } : null);
+            }
+        } catch (err) {
+            console.error('Error updating status:', err);
+            alert('Error al actualizar el estado');
         }
     };
 
@@ -820,6 +856,42 @@ const TournamentParticipants: React.FC = () => {
                                     </div>
                                 </div>
                             )}
+
+                            <div className="glass" style={{ padding: '20px', borderRadius: '24px', marginBottom: '15px', background: 'rgba(255, 255, 255, 0.02)', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
+                                <h4 style={{ fontSize: '11px', fontWeight: '900', color: 'rgba(255,255,255,0.4)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '1px' }}>Cambiar Condición</h4>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
+                                    <button
+                                        onClick={() => changeParticipantStatus(selectedParticipant.id, 'registered')}
+                                        style={{
+                                            padding: '10px', borderRadius: '12px', fontSize: '11px', fontWeight: '800',
+                                            background: (selectedParticipant.registration_status === 'registered' || selectedParticipant.registration_status === 'Pendiente') ? 'rgba(251, 191, 36, 0.15)' : 'rgba(255,255,255,0.03)',
+                                            color: (selectedParticipant.registration_status === 'registered' || selectedParticipant.registration_status === 'Pendiente') ? '#fbbf24' : 'rgba(255,255,255,0.4)',
+                                            border: `1px solid ${(selectedParticipant.registration_status === 'registered' || selectedParticipant.registration_status === 'Pendiente') ? 'rgba(251, 191, 36, 0.3)' : 'rgba(255,255,255,0.05)'}`,
+                                            cursor: 'pointer'
+                                        }}
+                                    >Pendiente</button>
+                                    <button
+                                        onClick={() => changeParticipantStatus(selectedParticipant.id, 'paid')}
+                                        style={{
+                                            padding: '10px', borderRadius: '12px', fontSize: '11px', fontWeight: '800',
+                                            background: (selectedParticipant.registration_status === 'paid' || selectedParticipant.registration_status === 'Confirmado') ? 'rgba(163, 230, 53, 0.15)' : 'rgba(255,255,255,0.03)',
+                                            color: (selectedParticipant.registration_status === 'paid' || selectedParticipant.registration_status === 'Confirmado') ? 'var(--secondary)' : 'rgba(255,255,255,0.4)',
+                                            border: `1px solid ${(selectedParticipant.registration_status === 'paid' || selectedParticipant.registration_status === 'Confirmado') ? 'rgba(163, 230, 53, 0.3)' : 'rgba(255,255,255,0.05)'}`,
+                                            cursor: 'pointer'
+                                        }}
+                                    >Pagado</button>
+                                    <button
+                                        onClick={() => changeParticipantStatus(selectedParticipant.id, 'Invitado')}
+                                        style={{
+                                            padding: '10px', borderRadius: '12px', fontSize: '11px', fontWeight: '800',
+                                            background: selectedParticipant.registration_status === 'Invitado' ? 'rgba(56, 189, 248, 0.15)' : 'rgba(255,255,255,0.03)',
+                                            color: selectedParticipant.registration_status === 'Invitado' ? '#38bdf8' : 'rgba(255,255,255,0.4)',
+                                            border: `1px solid ${selectedParticipant.registration_status === 'Invitado' ? 'rgba(56, 189, 248, 0.3)' : 'rgba(255,255,255,0.05)'}`,
+                                            cursor: 'pointer'
+                                        }}
+                                    >Invitado</button>
+                                </div>
+                            </div>
 
                             {/* Botón Enviar Mensaje */}
                             <button
