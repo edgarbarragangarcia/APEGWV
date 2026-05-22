@@ -372,7 +372,35 @@ const TournamentParticipants: React.FC = () => {
         document.body.removeChild(link);
     };
 
-    const downloadExcel = () => {
+    const triggerDownload = async (blob: Blob, fileName: string) => {
+        try {
+            if (navigator.share) {
+                const file = new File([blob], fileName, { type: blob.type });
+                if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                    await navigator.share({
+                        files: [file],
+                        title: fileName,
+                    });
+                    return;
+                }
+            }
+        } catch (error) {
+            console.log('Share failed or cancelled:', error);
+        }
+        
+        // Fallback for desktop or when share is not available/fails
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', fileName);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+    };
+
+    const downloadExcel = async () => {
         const targetParticipants = selectedIds.length > 0 
             ? participants.filter(p => selectedIds.includes(p.id))
             : participants;
@@ -399,14 +427,70 @@ const TournamentParticipants: React.FC = () => {
         ].join('\n');
 
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement('a');
-        const url = URL.createObjectURL(blob);
-        link.setAttribute('href', url);
-        link.setAttribute('download', `participantes_${tournamentName.replace(/\s+/g, '_')}.csv`);
-        link.style.visibility = 'hidden';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        await triggerDownload(blob, `participantes_${tournamentName.replace(/\s+/g, '_')}.csv`);
+    };
+
+    const downloadPDF = async () => {
+        const targetParticipants = selectedIds.length > 0 
+            ? participants.filter(p => selectedIds.includes(p.id))
+            : participants;
+
+        if (targetParticipants.length === 0) {
+            showToast('No hay participantes para descargar', 'warning');
+            return;
+        }
+
+        try {
+            if (!(window as any).jspdf) {
+                await new Promise((resolve, reject) => {
+                    const script = document.createElement('script');
+                    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+                    script.onload = resolve;
+                    script.onerror = reject;
+                    document.head.appendChild(script);
+                });
+                await new Promise((resolve, reject) => {
+                    const script = document.createElement('script');
+                    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js';
+                    script.onload = resolve;
+                    script.onerror = reject;
+                    document.head.appendChild(script);
+                });
+            }
+
+            const { jsPDF } = (window as any).jspdf;
+            const doc = new jsPDF('landscape');
+            
+            doc.setFontSize(18);
+            doc.text(`Participantes - ${tournamentName}`, 14, 22);
+            
+            const headers = [['Nombre', 'Email', 'Teléfono', 'HCP', 'Federación', 'Cédula', 'Estado', 'Invitado']];
+            const data = targetParticipants.map(p => [
+                p.full_name || '',
+                p.email || '',
+                p.phone || '',
+                p.handicap !== null ? String(p.handicap) : '',
+                p.federation_code || '',
+                p.document || '',
+                p.registration_status === 'registered' ? 'Registrado' : (p.registration_status || ''),
+                p.is_guest ? 'SI' : 'NO'
+            ]);
+
+            (doc as any).autoTable({
+                head: headers,
+                body: data,
+                startY: 30,
+                theme: 'striped',
+                headStyles: { fillColor: [14, 47, 31] },
+                styles: { fontSize: 9 }
+            });
+
+            const pdfBlob = doc.output('blob');
+            await triggerDownload(pdfBlob, `participantes_${tournamentName.replace(/\s+/g, '_')}.pdf`);
+        } catch (err) {
+            console.error('Error generating PDF:', err);
+            showToast('Error al generar el PDF. Verifica tu conexión.', 'error');
+        }
     };
 
     const isAllFilteredSelected = filteredParticipants.length > 0 && filteredParticipants.every(p => selectedIds.includes(p.id));
@@ -600,24 +684,44 @@ const TournamentParticipants: React.FC = () => {
                     }}
                     rightElement={!selectedParticipant ? (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-end', marginBottom: '8px' }}>
-                            <button
-                                onClick={downloadExcel}
-                                style={{
-                                    background: 'rgba(163, 230, 53, 0.1)',
-                                    border: '1px solid rgba(163, 230, 53, 0.2)',
-                                    color: 'var(--secondary)',
-                                    padding: '8px 12px',
-                                    borderRadius: '12px',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '6px',
-                                    fontSize: '11px',
-                                    fontWeight: '900',
-                                    cursor: 'pointer'
-                                }}
-                            >
-                                <Download size={14} /> EXCEL
-                            </button>
+                            <div style={{ display: 'flex', gap: '8px' }}>
+                                <button
+                                    onClick={downloadExcel}
+                                    style={{
+                                        background: 'rgba(163, 230, 53, 0.1)',
+                                        border: '1px solid rgba(163, 230, 53, 0.2)',
+                                        color: 'var(--secondary)',
+                                        padding: '8px 12px',
+                                        borderRadius: '12px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '6px',
+                                        fontSize: '11px',
+                                        fontWeight: '900',
+                                        cursor: 'pointer'
+                                    }}
+                                >
+                                    <Download size={14} /> EXCEL
+                                </button>
+                                <button
+                                    onClick={downloadPDF}
+                                    style={{
+                                        background: 'rgba(239, 68, 68, 0.1)',
+                                        border: '1px solid rgba(239, 68, 68, 0.2)',
+                                        color: '#ef4444',
+                                        padding: '8px 12px',
+                                        borderRadius: '12px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '6px',
+                                        fontSize: '11px',
+                                        fontWeight: '900',
+                                        cursor: 'pointer'
+                                    }}
+                                >
+                                    <Download size={14} /> PDF
+                                </button>
+                            </div>
                             <button
                                 onClick={() => navigate(`/my-events/${id}/groups`)}
                                 style={{
