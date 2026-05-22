@@ -42,6 +42,7 @@ import { useOnlineStatus } from './hooks/useOnlineStatus';
 import OfflineOverlay from './components/OfflineOverlay';
 import MercadoPagoCallback from './pages/MercadoPagoCallback';
 import TournamentRegistration from './pages/TournamentRegistration';
+import TournamentGroups from './pages/TournamentGroups';
 
 
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -176,6 +177,7 @@ const AppContent: React.FC = () => {
               <Route path="/my-store" element={<MyStore />} />
               <Route path="/my-events" element={<TournamentManager />} />
               <Route path="/my-events/:id/participants" element={<TournamentParticipants />} />
+              <Route path="/my-events/:id/groups" element={<TournamentGroups />} />
               <Route path="/profile/edit" element={<EditProfile />} />
               <Route path="/profile/stats" element={<EditStats />} />
               <Route path="/rounds" element={<RoundHistory />} />
