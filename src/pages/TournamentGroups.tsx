@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../services/SupabaseManager';
-import { Users, Plus, Trash2, Save, Download, GripVertical, UserPlus, X, Clock, ChevronDown, ChevronUp } from 'lucide-react';
+import { Plus, Trash2, Save, Download, GripVertical, UserPlus, X, Clock, ChevronDown, ChevronUp } from 'lucide-react';
 import Skeleton from '../components/Skeleton';
 import PageHero from '../components/PageHero';
 import PageHeader from '../components/PageHeader';
