@@ -685,7 +685,7 @@ const TournamentParticipants: React.FC = () => {
                     }}
                 />
                 {!selectedParticipant && (
-                    <div style={{ marginTop: '12px', display: 'flex', justifyContent: 'flex-start' }}>
+                    <div style={{ marginTop: '12px', display: 'flex', justifyContent: 'center' }}>
                         <div style={{ position: 'relative' }}>
                             <button
                                 onClick={() => setShowDownloadMenu(!showDownloadMenu)}
@@ -1267,7 +1267,7 @@ const styles = {
         zIndex: 10,
         background: 'transparent',
         padding: '0 20px',
-        paddingTop: 'var(--header-offset-top)'
+        paddingTop: 'calc(var(--header-offset-top) - 20px)'
     },
     contentContainer: {
         flex: 1,
