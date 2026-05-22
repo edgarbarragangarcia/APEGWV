@@ -631,8 +631,8 @@ const TournamentRegistration: React.FC = () => {
                                                 <div style={{ 
                                                     marginTop: '20px', 
                                                     padding: '16px 18px', 
-                                                    background: 'rgba(255, 193, 7, 0.15)', 
-                                                    border: '2px solid rgba(255, 193, 7, 0.5)', 
+                                                    background: 'rgba(239, 68, 68, 0.15)', 
+                                                    border: '2px solid rgba(239, 68, 68, 0.5)', 
                                                     borderRadius: '20px', 
                                                     width: '100%',
                                                     display: 'flex',
@@ -640,11 +640,11 @@ const TournamentRegistration: React.FC = () => {
                                                     gap: '12px',
                                                     alignItems: 'center',
                                                     textAlign: 'center',
-                                                    boxShadow: '0 10px 30px rgba(255, 193, 7, 0.1)'
+                                                    boxShadow: '0 10px 30px rgba(239, 68, 68, 0.15)'
                                                 }}>
-                                                    <AlertCircle size={28} color="#ffc107" style={{ flexShrink: 0, marginBottom: '5px' }} />
+                                                    <AlertCircle size={28} color="#ef4444" style={{ flexShrink: 0, marginBottom: '5px' }} />
                                                     <p style={{ margin: 0, fontSize: '14px', color: 'rgba(255,255,255,0.95)', lineHeight: '1.6' }}>
-                                                        <strong style={{ color: '#ffc107', fontSize: '16px', display: 'block', marginBottom: '8px', letterSpacing: '0.5px' }}>Confirmación de inscripción y pago 📩</strong>
+                                                        <strong style={{ color: '#ef4444', fontSize: '16px', display: 'block', marginBottom: '8px', letterSpacing: '0.5px' }}>Confirmación de inscripción y pago 📩</strong>
                                                         Por favor enviar el comprobante de pago al correo:<br/>
                                                         <strong style={{ fontSize: '18px', display: 'block', marginTop: '10px', color: 'white', wordBreak: 'break-all', letterSpacing: '1px' }}>amorporelgolf@gmail.com</strong>
                                                     </p>
