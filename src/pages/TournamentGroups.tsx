@@ -364,16 +364,10 @@ const TournamentGroups: React.FC = () => {
                             position: 'fixed', inset: 0, zIndex: 5000,
                             background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)',
                             display: 'flex', flexDirection: 'column',
-                            padding: '20px', paddingTop: 'env(safe-area-inset-top, 40px)'
+                            padding: '20px', paddingTop: 'max(env(safe-area-inset-top), 60px)'
                         }}
                     >
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
-                            <div>
-                                <h3 style={{ color: 'white', margin: 0, fontSize: '20px', fontWeight: '900' }}>Añadir Jugador</h3>
-                                <p style={{ color: 'rgba(255,255,255,0.5)', margin: 0, fontSize: '12px' }}>
-                                    {groups.find(g => g.id === activeGroupForAdd)?.name}
-                                </p>
-                            </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '20px' }}>
                             <button
                                 onClick={() => {
                                     setActiveGroupForAdd(null);
@@ -382,11 +376,18 @@ const TournamentGroups: React.FC = () => {
                                 style={{
                                     width: '40px', height: '40px', borderRadius: '12px',
                                     background: 'rgba(255,255,255,0.1)', border: 'none',
-                                    color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center'
+                                    color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    cursor: 'pointer'
                                 }}
                             >
                                 <X size={20} />
                             </button>
+                            <div>
+                                <h3 style={{ color: 'white', margin: 0, fontSize: '20px', fontWeight: '900' }}>Añadir Jugador</h3>
+                                <p style={{ color: 'rgba(255,255,255,0.5)', margin: 0, fontSize: '12px' }}>
+                                    {groups.find(g => g.id === activeGroupForAdd)?.name}
+                                </p>
+                            </div>
                         </div>
                         
                         <div style={{ position: 'relative', marginBottom: '20px' }}>
