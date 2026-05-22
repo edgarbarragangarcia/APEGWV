@@ -810,27 +810,6 @@ const TournamentParticipants: React.FC = () => {
                             msOverflowStyle: 'none',
                             scrollbarWidth: 'none'
                         }}>
-                            <button
-                                onClick={() => navigate(`/my-events/${id}/groups`)}
-                                style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '8px',
-                                    padding: '10px 18px',
-                                    borderRadius: '16px',
-                                    background: 'rgba(56, 189, 248, 0.1)',
-                                    color: '#38bdf8',
-                                    border: '1px solid rgba(56, 189, 248, 0.2)',
-                                    fontSize: '12px',
-                                    fontWeight: '800',
-                                    whiteSpace: 'nowrap',
-                                    transition: 'all 0.3s ease',
-                                    cursor: 'pointer',
-                                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-                                }}
-                            >
-                                <Users size={14} /> GRUPOS
-                            </button>
                             {[
                                 { id: 'all', label: 'Todos', icon: <Users size={14} /> },
                                 { id: 'paid', label: 'Pagos', icon: <CheckCircle2 size={14} /> },
@@ -861,6 +840,27 @@ const TournamentParticipants: React.FC = () => {
                                     {filter.icon} {filter.label}
                                 </button>
                             ))}
+                            <button
+                                onClick={() => navigate(`/my-events/${id}/groups`)}
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '8px',
+                                    padding: '10px 18px',
+                                    borderRadius: '16px',
+                                    background: 'rgba(56, 189, 248, 0.1)',
+                                    color: '#38bdf8',
+                                    border: '1px solid rgba(56, 189, 248, 0.2)',
+                                    fontSize: '12px',
+                                    fontWeight: '800',
+                                    whiteSpace: 'nowrap',
+                                    transition: 'all 0.3s ease',
+                                    cursor: 'pointer',
+                                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                                }}
+                            >
+                                <Users size={14} /> GRUPOS
+                            </button>
                         </div>
 
                         <button
