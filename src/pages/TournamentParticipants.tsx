@@ -412,23 +412,37 @@ const TournamentParticipants: React.FC = () => {
         }
 
         const headers = ['Nombre', 'Email', 'Teléfono', 'Handicap', 'Federación', 'Documento/Cédula', 'Estado', 'Fecha Pago', 'Invitado'];
-        const csvContent = [
-            "\ufeff" + headers.join(','), // Add BOM for Excel UTF-8 support
-            ...targetParticipants.map(p => [
-                `"${(p.full_name || '').replace(/"/g, '""')}"`,
-                `"${(p.email || '').replace(/"/g, '""')}"`,
-                `"${(p.phone || '').replace(/"/g, '""')}"`,
-                p.handicap ?? '',
-                `"${(p.federation_code || '').replace(/"/g, '""')}"`,
-                `"${(p.document || '').replace(/"/g, '""')}"`,
-                `"${(p.registration_status || '').replace(/"/g, '""')}"`,
-                p.payment_date ? `"${new Date(p.payment_date).toLocaleDateString()}"` : '',
-                p.is_guest ? 'SI' : 'NO'
-            ].join(','))
-        ].join('\n');
+        
+        const rows = targetParticipants.map(p => [
+            p.full_name || '',
+            p.email || '',
+            p.phone || '',
+            p.handicap ?? '',
+            p.federation_code || '',
+            p.document || '',
+            p.registration_status || '',
+            p.payment_date ? new Date(p.payment_date).toLocaleDateString() : '',
+            p.is_guest ? 'SI' : 'NO'
+        ]);
 
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        await triggerDownload(blob, `participantes_${tournamentName.replace(/\s+/g, '_')}.csv`);
+        const tableHtml = `
+            <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+            <head><meta charset="utf-8"></head>
+            <body>
+                <table border="1">
+                    <thead>
+                        <tr>${headers.map(h => `<th style="background-color: #f2f2f2;">${h}</th>`).join('')}</tr>
+                    </thead>
+                    <tbody>
+                        ${rows.map(row => `<tr>${row.map(cell => `<td>${cell}</td>`).join('')}</tr>`).join('')}
+                    </tbody>
+                </table>
+            </body>
+            </html>
+        `;
+
+        const blob = new Blob([tableHtml], { type: 'application/vnd.ms-excel' });
+        await triggerDownload(blob, `participantes_${tournamentName.replace(/\s+/g, '_')}.xls`);
     };
 
     const downloadPDF = async () => {
