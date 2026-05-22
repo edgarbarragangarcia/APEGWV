@@ -448,40 +448,40 @@ const TournamentGroups: React.FC = () => {
                     noMargin
                     title="Organizar Grupos"
                     onBack={() => navigate(`/my-events/${id}/participants`)}
-                    rightElement={
-                        <div style={{ display: 'flex', gap: '8px' }}>
-                            <button
-                                onClick={downloadGroupsExcel}
-                                style={{
-                                    background: 'rgba(163, 230, 53, 0.1)',
-                                    border: '1px solid rgba(163, 230, 53, 0.2)',
-                                    color: 'var(--secondary)',
-                                    padding: '8px 10px',
-                                    borderRadius: '12px',
-                                    display: 'flex', alignItems: 'center', gap: '5px',
-                                    fontSize: '10px', fontWeight: '900', cursor: 'pointer'
-                                }}
-                            >
-                                <Download size={13} />
-                            </button>
-                            <motion.button
-                                whileTap={{ scale: 0.95 }}
-                                onClick={saveGroups}
-                                disabled={saving}
-                                style={{
-                                    background: saving ? 'rgba(163, 230, 53, 0.3)' : 'var(--secondary)',
-                                    border: 'none', color: 'var(--primary)',
-                                    padding: '8px 14px', borderRadius: '12px',
-                                    display: 'flex', alignItems: 'center', gap: '5px',
-                                    fontSize: '10px', fontWeight: '900', cursor: saving ? 'not-allowed' : 'pointer',
-                                    boxShadow: '0 4px 12px rgba(163, 230, 53, 0.2)'
-                                }}
-                            >
-                                <Save size={13} /> {saving ? '...' : 'GUARDAR'}
-                            </motion.button>
-                        </div>
-                    }
                 />
+                <div style={{ marginTop: '12px', display: 'flex', justifyContent: 'flex-start' }}>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                        <button
+                            onClick={downloadGroupsExcel}
+                            style={{
+                                background: 'rgba(163, 230, 53, 0.1)',
+                                border: '1px solid rgba(163, 230, 53, 0.2)',
+                                color: 'var(--secondary)',
+                                padding: '8px 10px',
+                                borderRadius: '12px',
+                                display: 'flex', alignItems: 'center', gap: '5px',
+                                fontSize: '10px', fontWeight: '900', cursor: 'pointer'
+                            }}
+                        >
+                            <Download size={13} />
+                        </button>
+                        <motion.button
+                            whileTap={{ scale: 0.95 }}
+                            onClick={saveGroups}
+                            disabled={saving}
+                            style={{
+                                background: saving ? 'rgba(163, 230, 53, 0.3)' : 'var(--secondary)',
+                                border: 'none', color: 'var(--primary)',
+                                padding: '8px 14px', borderRadius: '12px',
+                                display: 'flex', alignItems: 'center', gap: '5px',
+                                fontSize: '10px', fontWeight: '900', cursor: saving ? 'not-allowed' : 'pointer',
+                                boxShadow: '0 4px 12px rgba(163, 230, 53, 0.2)'
+                            }}
+                        >
+                            <Save size={13} /> {saving ? '...' : 'GUARDAR'}
+                        </motion.button>
+                    </div>
+                </div>
             </div>
 
             <div style={styles.contentContainer}>
