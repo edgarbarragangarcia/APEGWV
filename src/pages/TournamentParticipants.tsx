@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../services/SupabaseManager';
-import { User, Trophy, Users, Search, CheckCircle2, Clock, Mail, CheckSquare, Square, Download, Trash2, IdCard, Calendar } from 'lucide-react';
+import { User, Trophy, Users, Search, CheckCircle2, Clock, Mail, CheckSquare, Square, Download, Trash2, IdCard, Calendar, X } from 'lucide-react';
 import Skeleton from '../components/Skeleton';
 import PageHero from '../components/PageHero';
 import PageHeader from '../components/PageHeader';
@@ -590,7 +590,8 @@ const TournamentParticipants: React.FC = () => {
             <div style={styles.headerArea}>
                 <PageHeader
                     noMargin
-                    title={tournamentName || 'Participantes'}
+                    backIcon={X}
+                    title={selectedParticipant ? (selectedParticipant.is_guest ? 'Detalle Invitado' : 'Detalle Participante') : (tournamentName || 'Participantes')}
                     onBack={() => {
                         if (selectedParticipant) {
                             setSelectedParticipant(null);
@@ -598,7 +599,7 @@ const TournamentParticipants: React.FC = () => {
                             navigate('/my-events', { state: { restoreTournamentId: id } });
                         }
                     }}
-                    rightElement={
+                    rightElement={!selectedParticipant ? (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-end', marginBottom: '8px' }}>
                             <button
                                 onClick={downloadExcel}
@@ -637,7 +638,7 @@ const TournamentParticipants: React.FC = () => {
                                 <Users size={14} /> GRUPOS
                             </button>
                         </div>
-                    }
+                    ) : null}
                 />
             </div>
 
@@ -739,7 +740,7 @@ const TournamentParticipants: React.FC = () => {
                     </div>
                 )}
 
-                <div style={{ flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch', overscrollBehaviorY: 'contain' }}>
+                <div style={{ flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch', touchAction: 'pan-y' }}>
                     {loading ? (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                             {[1, 2, 3, 4].map(i => <Skeleton key={i} height="80px" borderRadius="24px" />)}
@@ -1108,7 +1109,7 @@ const styles = {
         position: 'fixed' as 'fixed', inset: 0,
         background: 'var(--primary)',
         display: 'flex', flexDirection: 'column' as 'column',
-        overflow: 'hidden', zIndex: 900
+        overflow: 'hidden', zIndex: 2000
     },
     headerArea: {
         flexShrink: 0,

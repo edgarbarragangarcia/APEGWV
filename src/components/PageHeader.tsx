@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, LucideIcon } from 'lucide-react';
 
 interface PageHeaderProps {
     title: string;
@@ -9,6 +9,7 @@ interface PageHeaderProps {
     rightElement?: React.ReactNode;
     showBack?: boolean;
     noMargin?: boolean;
+    backIcon?: LucideIcon;
 }
 
 const PageHeader: React.FC<PageHeaderProps> = ({
@@ -17,7 +18,8 @@ const PageHeader: React.FC<PageHeaderProps> = ({
     onBack,
     rightElement,
     showBack = true,
-    noMargin = false
+    noMargin = false,
+    backIcon: BackIcon = ArrowLeft
 }) => {
     const navigate = useNavigate();
     const handleBack = onBack || (() => navigate(-1));
@@ -51,7 +53,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({
                     }}
                     className="hover-scale"
                 >
-                    <ArrowLeft size={20} />
+                    <BackIcon size={20} />
                 </button>
             )}
             <div style={{ flex: 1 }}>
