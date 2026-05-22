@@ -449,7 +449,7 @@ const TournamentGroups: React.FC = () => {
                     title="Organizar Grupos"
                     onBack={() => navigate(`/my-events/${id}/participants`)}
                 />
-                <div style={{ marginTop: '12px', display: 'flex', justifyContent: 'flex-start' }}>
+                <div style={{ marginTop: '12px', display: 'flex', justifyContent: 'center' }}>
                     <div style={{ display: 'flex', gap: '8px' }}>
                         <button
                             onClick={downloadGroupsExcel}
@@ -666,7 +666,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     },
     headerArea: {
         flexShrink: 0, position: 'relative', zIndex: 10,
-        background: 'transparent', padding: '0 20px', paddingTop: 'var(--header-offset-top)'
+        background: 'transparent', padding: '0 20px', paddingTop: 'calc(var(--header-offset-top) - 20px)'
     },
     contentContainer: {
         flex: 1, position: 'relative', zIndex: 10,
