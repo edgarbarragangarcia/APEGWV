@@ -440,8 +440,8 @@ const TournamentRegistration: React.FC = () => {
                             position: 'relative', 
                             height: isMobile ? 'auto' : '40vh', 
                             minHeight: isMobile ? 'auto' : '400px',
-                            paddingTop: isMobile ? '50px' : '0',
-                            paddingBottom: isMobile ? '35px' : '0',
+                            paddingTop: isMobile ? '10px' : '0',
+                            paddingBottom: isMobile ? '20px' : '0',
                             overflow: isMobile ? 'visible' : 'hidden'
                         }}>
                         <img
@@ -479,7 +479,7 @@ const TournamentRegistration: React.FC = () => {
                                 <h1 style={{ 
                                     fontSize: isMobile ? '26px' : '42px', 
                                     fontWeight: '950', 
-                                    margin: '0 0 12px 0', 
+                                    margin: '0 0 4px 0', 
                                     color: 'white', 
                                     letterSpacing: isMobile ? '-0.5px' : '-1.5px',
                                     lineHeight: '1.2',
@@ -517,7 +517,7 @@ const TournamentRegistration: React.FC = () => {
                                 {isMobile && (
                                     <div style={{ 
                                         margin: '5px auto 0 auto', 
-                                        padding: '20px', 
+                                        padding: '12px 20px', 
                                         borderRadius: '25px', 
                                         background: 'rgba(255,255,255,0.05)', 
                                         border: '1px solid rgba(255,255,255,0.1)', 
@@ -536,8 +536,8 @@ const TournamentRegistration: React.FC = () => {
                                         </div>
                                         {paymentMethods.length > 0 && (
                                             <div style={{ 
-                                                marginTop: '10px', 
-                                                paddingTop: '10px', 
+                                                marginTop: '5px', 
+                                                paddingTop: '5px', 
                                                 borderTop: '1px solid rgba(255,255,255,0.05)',
                                                 display: 'flex',
                                                 flexDirection: 'column',
@@ -629,8 +629,8 @@ const TournamentRegistration: React.FC = () => {
                                                 })}
                                                 
                                                 <div style={{ 
-                                                    marginTop: '20px', 
-                                                    padding: '16px 18px', 
+                                                    marginTop: '12px', 
+                                                    padding: '12px 14px', 
                                                     background: 'rgba(239, 68, 68, 0.15)', 
                                                     border: '2px solid rgba(239, 68, 68, 0.5)', 
                                                     borderRadius: '20px', 
