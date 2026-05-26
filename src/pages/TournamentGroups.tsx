@@ -666,7 +666,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     },
     headerArea: {
         flexShrink: 0, position: 'relative', zIndex: 50,
-        background: 'transparent', padding: '0 20px', paddingTop: 'calc(var(--header-offset-top) - 20px)'
+        background: 'transparent', padding: '0 20px', paddingTop: 'var(--header-offset-top)'
     },
     contentContainer: {
         flex: 1, position: 'relative', zIndex: 10,

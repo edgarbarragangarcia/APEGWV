@@ -137,23 +137,24 @@ const Profile: React.FC = () => {
 
                 {/* Account Info Accordion - Compact */}
                 <div style={{ marginBottom: '10px' }}>
-                    <button
+                    <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
                         onClick={() => setShowInfo(!showInfo)}
-                        className="glass"
                         style={styles.menuButton}
                     >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
                             <div style={styles.iconBox}>
-                                <Shield size={14} strokeWidth={3} />
+                                <Shield size={18} strokeWidth={2.5} color="var(--primary)" />
                             </div>
                             <span style={styles.menuText}>Información de la Cuenta</span>
                         </div>
                         <ChevronRight
-                            size={16}
-                            color="var(--secondary)"
+                            size={18}
+                            color="var(--text-dim)"
                             style={{ transform: showInfo ? 'rotate(90deg)' : 'none', transition: 'transform 0.3s ease' }}
                         />
-                    </button>
+                    </motion.button>
 
                     {showInfo && (
                         <motion.div
@@ -213,13 +214,20 @@ const Profile: React.FC = () => {
 // --- Sub Components ---
 
 const MenuButton = ({ icon: Icon, label, onClick }: any) => (
-    <button onClick={onClick} className="glass" style={styles.menuButton}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <Icon size={18} color="var(--secondary)" />
+    <motion.button 
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
+        onClick={onClick} 
+        style={styles.menuButton}
+    >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+            <div style={styles.iconBox}>
+                <Icon size={18} color="var(--primary)" />
+            </div>
             <span style={styles.menuText}>{label}</span>
         </div>
-        <ChevronRight size={16} color="var(--text-dim)" />
-    </button>
+        <ChevronRight size={18} color="var(--text-dim)" />
+    </motion.button>
 );
 
 const InfoRow = ({ icon: Icon, text }: any) => (
@@ -321,16 +329,27 @@ const styles = {
         gap: '8px', flex: 1 // Distribute space
     },
     menuButton: {
-        padding: '12px 16px', // Compact padding
+        padding: '14px 18px',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        width: '100%', background: 'rgba(255,255,255,0.05)',
-        border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px'
+        width: '100%', 
+        background: 'rgba(255,255,255,0.02)',
+        border: '1px solid rgba(255,255,255,0.05)', 
+        borderRadius: '20px',
+        cursor: 'pointer',
+        boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
+        backdropFilter: 'blur(10px)',
     },
     iconBox: {
-        background: 'var(--secondary)', padding: '5px', borderRadius: '6px', color: 'var(--primary)'
+        background: 'linear-gradient(135deg, var(--secondary) 0%, #7cc42b 100%)',
+        padding: '8px', 
+        borderRadius: '12px', 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center',
+        boxShadow: '0 4px 10px rgba(163, 230, 53, 0.2)'
     },
     menuText: {
-        fontWeight: '700', fontSize: '14px', color: 'white'
+        fontWeight: '800', fontSize: '15px', color: 'white', letterSpacing: '-0.2px'
     },
     infoBox: {
         marginTop: '5px', padding: '10px', background: 'rgba(0,0,0,0.2)',
