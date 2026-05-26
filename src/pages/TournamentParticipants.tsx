@@ -910,7 +910,7 @@ const TournamentParticipants: React.FC = () => {
                             {[1, 2, 3, 4].map(i => <Skeleton key={i} height="80px" borderRadius="24px" />)}
                         </div>
                     ) : selectedParticipant ? (
-                        <div className="animate-fade-in" style={{ flex: 1, display: 'flex', flexDirection: 'column', paddingTop: '20px' }}>
+                        <div className="animate-fade-in" style={{ flex: 1, display: 'flex', flexDirection: 'column', paddingTop: '20px', paddingBottom: 'calc(90px + env(safe-area-inset-bottom))' }}>
                             {/* Detail View remains similar but we ensure it matches premium style */}
                             <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '25px', textAlign: 'left' }}>
                                 <div style={{ width: '85px', height: '85px', borderRadius: '25px', overflow: 'hidden', border: '3px solid var(--secondary)', boxShadow: '0 10px 20px rgba(0,0,0,0.2)', flexShrink: 0 }}>
@@ -1250,7 +1250,7 @@ const TournamentParticipants: React.FC = () => {
                                 </motion.div>
                             ))}
 
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 10px 40px', opacity: 0.5 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 10px calc(90px + env(safe-area-inset-bottom))', opacity: 0.5 }}>
                                 <p style={{ fontSize: '11px', fontWeight: '800', color: 'white' }}>
                                     {filteredParticipants.length} en esta lista
                                 </p>
