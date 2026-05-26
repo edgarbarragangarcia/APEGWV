@@ -6,7 +6,6 @@ import { useAuth } from '../context/AuthContext';
 import { supabase } from '../services/SupabaseManager';
 import PageHeader from '../components/PageHeader';
 import PageHero from '../components/PageHero';
-import Card from '../components/Card';
 import { useToast } from '../context/ToastContext';
 import ConfirmationModal from '../components/ConfirmationModal';
 
