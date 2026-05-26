@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, useAnimation, AnimatePresence } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../services/SupabaseManager';
-import { Plus, Trophy, Trash2, Calendar, Loader2, Users, User, ChevronLeft, MapPin, Settings, ChevronDown, ChevronUp, Minus, ShieldCheck, HeartHandshake, Copy, CheckCircle2, Image as ImageIcon, X } from 'lucide-react';
+import { Plus, Trophy, Trash2, Calendar, Loader2, Users, User, ChevronLeft, MapPin, Settings, ChevronDown, ChevronUp, Minus, ShieldCheck, HeartHandshake, Copy, CheckCircle2, Image as ImageIcon, X, MessageCircle } from 'lucide-react';
 import Skeleton from '../components/Skeleton';
 import PageHero from '../components/PageHero';
 import PageHeader from '../components/PageHeader';
@@ -1666,51 +1666,6 @@ const TournamentManager: React.FC = () => {
                                                             </AnimatePresence>
                                                         </div>
 
-                                                        <div style={{ marginTop: '15px', padding: '14px', background: 'rgba(163, 230, 53, 0.03)', borderRadius: '15px', border: '1px solid rgba(163, 230, 53, 0.08)' }}>
-                                                            <div
-                                                                style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}
-                                                                onClick={() => setShowMessagesAdmin(!showMessagesAdmin)}
-                                                            >
-                                                                <div style={{ fontSize: '10px', fontWeight: '900', color: 'var(--secondary)', textTransform: 'uppercase', letterSpacing: '0.1em', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                                                    <span>💬</span> Administración de mensajes
-                                                                </div>
-                                                                <div style={{ display: 'flex', alignItems: 'center' }}>
-                                                                    {showMessagesAdmin ? <ChevronUp size={18} color="var(--secondary)" /> : <ChevronDown size={18} color="var(--secondary)" />}
-                                                                </div>
-                                                            </div>
-                                                            <AnimatePresence>
-                                                                {showMessagesAdmin && (
-                                                                    <motion.div
-                                                                        initial={{ height: 0, opacity: 0 }}
-                                                                        animate={{ height: 'auto', opacity: 1 }}
-                                                                        exit={{ height: 0, opacity: 0 }}
-                                                                        style={{ overflow: 'hidden' }}
-                                                                    >
-                                                                        <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                                                                            <div className="form-group" style={{ margin: 0 }}>
-                                                                                <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-dim)', marginBottom: '8px', display: 'block' }}>Mensaje para quienes han pagado</label>
-                                                                                <textarea
-                                                                                    value={formData.message_paid || ''}
-                                                                                    onChange={(e) => setFormData({ ...formData, message_paid: e.target.value })}
-                                                                                    placeholder="Ej: ¡Gracias por tu pago! Aquí tienes los detalles..."
-                                                                                    style={{ width: '100%', height: '80px', padding: '12px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', resize: 'vertical', fontSize: '14px' }}
-                                                                                />
-                                                                            </div>
-                                                                            <div className="form-group" style={{ margin: 0 }}>
-                                                                                <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-dim)', marginBottom: '8px', display: 'block' }}>Mensaje para quienes NO han pagado</label>
-                                                                                <textarea
-                                                                                    value={formData.message_unpaid || ''}
-                                                                                    onChange={(e) => setFormData({ ...formData, message_unpaid: e.target.value })}
-                                                                                    placeholder="Ej: Recuerda realizar el pago para asegurar tu cupo..."
-                                                                                    style={{ width: '100%', height: '80px', padding: '12px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', resize: 'vertical', fontSize: '14px' }}
-                                                                                />
-                                                                            </div>
-                                                                        </div>
-                                                                    </motion.div>
-                                                                )}
-                                                            </AnimatePresence>
-                                                        </div>
-
                                                         <div style={{ marginTop: '20px', paddingTop: '15px', borderTop: '1px dotted rgba(255,255,255,0.1)', display: 'flex', flexDirection: 'column', gap: '15px' }}>
                                                             {(() => {
                                                                 const price = parseFloat(formData.price || '0');
@@ -1964,6 +1919,56 @@ const TournamentManager: React.FC = () => {
                                                                     </>
                                                                 );
                                                             })()}
+                                                        </div>
+                                                    </motion.div>
+                                                )}
+                                            </AnimatePresence>
+                                        </div>
+
+                                        {/* Messages Administration Section */}
+                                        <div style={{ marginTop: '0px', padding: '10px 15px', background: 'rgba(255,255,255,0.03)', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                            <div
+                                                style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}
+                                                onClick={() => setShowMessagesAdmin(!showMessagesAdmin)}
+                                            >
+                                                <h3 style={{ fontSize: '14px', fontWeight: '900', color: 'var(--secondary)', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
+                                                    <div style={{ width: '20px', height: '20px', borderRadius: '6px', background: 'var(--secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                        <MessageCircle size={12} color="var(--primary)" />
+                                                    </div>
+                                                    Administración de Mensajes
+                                                </h3>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                    {showMessagesAdmin ? <ChevronUp size={20} color="var(--text-dim)" /> : <ChevronDown size={20} color="var(--text-dim)" />}
+                                                </div>
+                                            </div>
+
+                                            <AnimatePresence>
+                                                {showMessagesAdmin && (
+                                                    <motion.div
+                                                        initial={{ height: 0, opacity: 0 }}
+                                                        animate={{ height: 'auto', opacity: 1 }}
+                                                        exit={{ height: 0, opacity: 0 }}
+                                                        style={{ overflow: 'hidden' }}
+                                                    >
+                                                        <div style={{ padding: '20px 0', display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                                                            <div className="form-group" style={{ margin: 0 }}>
+                                                                <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-dim)', marginBottom: '8px', display: 'block' }}>Mensaje para quienes han pagado</label>
+                                                                <textarea
+                                                                    value={formData.message_paid || ''}
+                                                                    onChange={(e) => setFormData({ ...formData, message_paid: e.target.value })}
+                                                                    placeholder="Ej: ¡Gracias por tu pago! Aquí tienes los detalles..."
+                                                                    style={{ width: '100%', height: '80px', padding: '12px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', resize: 'vertical', fontSize: '14px' }}
+                                                                />
+                                                            </div>
+                                                            <div className="form-group" style={{ margin: 0 }}>
+                                                                <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-dim)', marginBottom: '8px', display: 'block' }}>Mensaje para quienes NO han pagado</label>
+                                                                <textarea
+                                                                    value={formData.message_unpaid || ''}
+                                                                    onChange={(e) => setFormData({ ...formData, message_unpaid: e.target.value })}
+                                                                    placeholder="Ej: Recuerda realizar el pago para asegurar tu cupo..."
+                                                                    style={{ width: '100%', height: '80px', padding: '12px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', resize: 'vertical', fontSize: '14px' }}
+                                                                />
+                                                            </div>
                                                         </div>
                                                     </motion.div>
                                                 )}
