@@ -325,14 +325,15 @@ const FriendSelection: React.FC = () => {
                 }}>
                     {/* Botón Agregar Grupo - Apple Elite Style Compact */}
                     <motion.button
-                        whileTap={{ scale: 0.96 }}
+                        whileHover="hover"
+                        whileTap="tap"
                         onClick={() => navigate('/create-group')}
                         style={{
                             width: '100%',
-                            background: 'rgba(255, 255, 255, 0.03)',
-                            backdropFilter: 'blur(20px)',
-                            WebkitBackdropFilter: 'blur(20px)',
-                            border: '1px solid rgba(255, 255, 255, 0.08)',
+                            background: 'rgba(255, 255, 255, 0.02)',
+                            backdropFilter: 'blur(10px)',
+                            WebkitBackdropFilter: 'blur(10px)',
+                            border: '1px solid rgba(255, 255, 255, 0.05)',
                             borderRadius: '20px',
                             padding: '10px 16px',
                             display: 'flex',
@@ -341,22 +342,29 @@ const FriendSelection: React.FC = () => {
                             cursor: 'pointer',
                             color: 'var(--secondary)',
                             WebkitTapHighlightColor: 'transparent',
-                            boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                            boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
+                            textAlign: 'left'
                         }}
+                        variants={{ hover: { scale: 1.02 }, tap: { scale: 0.96 } }}
                     >
-                        <div style={{
-                            width: '36px',
-                            height: '36px',
-                            borderRadius: '12px',
-                            background: 'var(--secondary)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            boxShadow: '0 2px 8px rgba(163, 230, 53, 0.3)',
-                            flexShrink: 0
-                        }}>
+                        <motion.div
+                            animate={{ y: [0, -3, 0] }}
+                            transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}
+                            variants={{ hover: { scale: 1.15, rotate: 10 }, tap: { scale: 0.9, rotate: -10 } }}
+                            style={{
+                                width: '36px',
+                                height: '36px',
+                                borderRadius: '12px',
+                                background: 'linear-gradient(135deg, var(--secondary) 0%, #7cc42b 100%)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                boxShadow: '0 4px 10px rgba(163, 230, 53, 0.2)',
+                                flexShrink: 0
+                            }}
+                        >
                             <Plus size={18} color="var(--primary)" strokeWidth={3} />
-                        </div>
+                        </motion.div>
                         <div style={{ textAlign: 'left' }}>
                             <span style={{ display: 'block', fontSize: '15px', fontWeight: '900', letterSpacing: '-0.3px', color: '#fff' }}>Nuevo Grupo</span>
                             <span style={{ display: 'block', fontSize: '10px', color: 'rgba(255,255,255,0.3)', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.2px' }}>Crear partida</span>
@@ -368,42 +376,48 @@ const FriendSelection: React.FC = () => {
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                             <h4 style={{ fontSize: '14px', fontWeight: '800', color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '1px', marginLeft: '5px' }}>
                                 Tus Grupos
-                            </h4>
-
-                            {savedGroups.map(group => (
+                            </h4>                             {savedGroups.map(group => (
                                 <motion.div
                                     key={group.id}
-                                    whileTap={{ scale: 0.96 }}
+                                    whileHover="hover"
+                                    whileTap="tap"
                                     onClick={() => handleGroupClick(group)}
+                                    variants={{ hover: { scale: 1.01 }, tap: { scale: 0.99 } }}
                                     style={{
-                                        background: 'rgba(255, 255, 255, 0.03)',
+                                        background: 'rgba(255, 255, 255, 0.02)',
                                         backdropFilter: 'blur(10px)',
                                         WebkitBackdropFilter: 'blur(10px)',
                                         borderRadius: '20px',
                                         padding: '12px 16px',
-                                        border: '1px solid rgba(255, 255, 255, 0.06)',
+                                        border: '1px solid rgba(255, 255, 255, 0.05)',
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'space-between',
                                         cursor: 'pointer',
                                         position: 'relative',
-                                        boxShadow: '0 4px 15px rgba(0,0,0,0.05)'
+                                        boxShadow: '0 4px 15px rgba(0,0,0,0.1)'
                                     }}
                                 >
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                        <div style={{
-                                            width: '38px',
-                                            height: '38px',
-                                            borderRadius: '12px',
-                                            background: 'rgba(255, 255, 255, 0.04)',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            color: 'var(--secondary)',
-                                            border: '1px solid rgba(255, 255, 255, 0.06)'
-                                        }}>
+                                        <motion.div
+                                            animate={{ y: [0, -3, 0] }}
+                                            transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}
+                                            variants={{ hover: { scale: 1.15, rotate: 10 }, tap: { scale: 0.9, rotate: -10 } }}
+                                            style={{
+                                                width: '38px',
+                                                height: '38px',
+                                                borderRadius: '12px',
+                                                background: 'linear-gradient(135deg, var(--secondary) 0%, #7cc42b 100%)',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                color: 'var(--primary)',
+                                                boxShadow: '0 4px 10px rgba(163, 230, 53, 0.2)',
+                                                flexShrink: 0
+                                            }}
+                                        >
                                             <Users size={18} strokeWidth={2.5} />
-                                        </div>
+                                        </motion.div>
                                         <div>
                                             <h3 style={{ fontSize: '15px', fontWeight: '900', color: '#fff', marginBottom: '0px', letterSpacing: '-0.4px' }}>
                                                 {group.name}
@@ -463,7 +477,13 @@ const FriendSelection: React.FC = () => {
                                                 <Trash2 size={16} />
                                             </button>
                                         </div>
-                                        <ChevronRight size={20} color="rgba(255,255,255,0.2)" />
+                                        <motion.div
+                                            variants={{ hover: { x: 5 } }}
+                                            transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                                            style={{ display: 'flex', alignItems: 'center' }}
+                                        >
+                                            <ChevronRight size={20} color="rgba(255,255,255,0.4)" />
+                                        </motion.div>
                                     </div>
                                 </motion.div>
                             ))}

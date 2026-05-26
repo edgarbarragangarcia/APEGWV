@@ -460,7 +460,9 @@ const SwingAnalysis: React.FC = () => {
             }}>
                 {/* Upload CTA */}
                 <motion.div
-                    whileTap={{ scale: 0.98 }}
+                    whileHover="hover"
+                    whileTap="tap"
+                    variants={{ hover: { scale: 1.02 }, tap: { scale: 0.98 } }}
                     onClick={() => setShowUploadModal(true)}
                     style={{
                         background: 'linear-gradient(135deg, rgba(163, 230, 53, 0.15) 0%, rgba(20, 45, 30, 0.6) 100%)',
@@ -468,23 +470,36 @@ const SwingAnalysis: React.FC = () => {
                         padding: '20px',
                         border: '1px solid rgba(163, 230, 53, 0.25)',
                         cursor: 'pointer',
-                        display: 'flex', alignItems: 'center', gap: '16px'
+                        display: 'flex', alignItems: 'center', gap: '16px',
+                        boxShadow: '0 10px 30px rgba(0,0,0,0.1)'
                     }}
                 >
-                    <div style={{
-                        width: '50px', height: '50px', borderRadius: '16px',
-                        background: 'rgba(163, 230, 53, 0.2)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
-                    }}>
-                        <Upload size={24} color="var(--secondary)" />
-                    </div>
+                    <motion.div
+                        animate={{ y: [0, -3, 0] }}
+                        transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}
+                        variants={{ hover: { scale: 1.15, rotate: 10 }, tap: { scale: 0.9, rotate: -10 } }}
+                        style={{
+                            width: '50px', height: '50px', borderRadius: '16px',
+                            background: 'linear-gradient(135deg, var(--secondary) 0%, #7cc42b 100%)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                            boxShadow: '0 4px 10px rgba(163, 230, 53, 0.2)'
+                        }}
+                    >
+                        <Upload size={24} color="var(--primary)" />
+                    </motion.div>
                     <div style={{ flex: 1 }}>
                         <h3 style={{ fontSize: '15px', fontWeight: '900', color: 'white', margin: '0 0 4px' }}>Analizar Nuevo Swing</h3>
                         <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', margin: 0, lineHeight: 1.3 }}>
                             Sube un video y nuestra IA analizará postura, velocidad y técnica
                         </p>
                     </div>
-                    <ChevronRight size={18} color="var(--secondary)" />
+                    <motion.div
+                        variants={{ hover: { x: 5 } }}
+                        transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                        style={{ display: 'flex', alignItems: 'center' }}
+                    >
+                        <ChevronRight size={18} color="var(--secondary)" />
+                    </motion.div>
                 </motion.div>
 
                 {/* Recent Analyses */}
@@ -970,26 +985,44 @@ const ModernTechnicalCard = ({ title, content, icon, color }: { title: string; c
     return (
         <motion.div
             onClick={() => setIsOpen(!isOpen)}
+            whileHover="hover"
+            whileTap="tap"
+            variants={{ hover: { scale: 1.015 }, tap: { scale: 0.985 } }}
             style={{
-                background: 'rgba(255,255,255,0.03)',
+                background: 'rgba(255,255,255,0.02)',
+                backdropFilter: 'blur(10px)',
                 borderRadius: '16px',
                 border: '1px solid rgba(255,255,255,0.05)',
                 overflow: 'hidden',
-                cursor: 'pointer'
+                cursor: 'pointer',
+                boxShadow: '0 4px 15px rgba(0,0,0,0.1)'
             }}
         >
             <div style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div style={{
-                    width: '32px', height: '32px', borderRadius: '10px',
-                    background: `${color}15`, display: 'flex', alignItems: 'center',
-                    justifyContent: 'center', color: color
-                }}>
+                <motion.div
+                    animate={{ y: [0, -2, 0] }}
+                    transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}
+                    variants={{ hover: { scale: 1.15, rotate: 10 }, tap: { scale: 0.9, rotate: -10 } }}
+                    style={{
+                        width: '32px', height: '32px', borderRadius: '10px',
+                        background: `linear-gradient(135deg, ${color} 0%, rgba(255,255,255,0.05) 100%)`, display: 'flex', alignItems: 'center',
+                        justifyContent: 'center', color: 'var(--primary)',
+                        boxShadow: `0 4px 10px ${color}20`
+                    }}
+                >
                     {icon}
-                </div>
+                </motion.div>
                 <div style={{ flex: 1 }}>
                     <p style={{ fontSize: '12px', fontWeight: '800', color: 'white', margin: 0 }}>{title}</p>
                 </div>
-                <ChevronRight size={16} color="rgba(255,255,255,0.3)" style={{ transform: isOpen ? 'rotate(90deg)' : 'none', transition: 'transform 0.3s' }} />
+                <motion.div
+                    animate={{ rotate: isOpen ? 90 : 0 }}
+                    transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                    variants={{ hover: { x: 4 } }}
+                    style={{ display: 'flex', alignItems: 'center' }}
+                >
+                    <ChevronRight size={16} color="rgba(255,255,255,0.4)" />
+                </motion.div>
             </div>
             <AnimatePresence>
                 {isOpen && (

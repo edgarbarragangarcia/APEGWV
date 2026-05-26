@@ -83,7 +83,9 @@ const NotificationsPage: React.FC = () => {
             y: 0,
             scale: 1,
             transition: { type: 'spring' as const, damping: 15, stiffness: 100 }
-        }
+        },
+        hover: { scale: 1.015 },
+        tap: { scale: 0.985 }
     };
 
     const handleInviteAction = async (notifId: string, groupId: string, action: 'accepted' | 'declined') => {
@@ -275,6 +277,8 @@ const NotificationsPage: React.FC = () => {
                                         variants={itemVariants}
                                         layout
                                         exit={{ opacity: 0, x: 50, scale: 0.9 }}
+                                        whileHover="hover"
+                                        whileTap="tap"
                                         onClick={() => {
                                             markAsRead(notif.id);
                                             if (notif.link) navigate(notif.link);
@@ -313,20 +317,25 @@ const NotificationsPage: React.FC = () => {
                                             )}
 
                                             {/* Icon Container */}
-                                            <div style={{
-                                                width: '54px',
-                                                height: '54px',
-                                                borderRadius: '18px',
-                                                background: iconStyle.bg,
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                flexShrink: 0,
-                                                boxShadow: `0 8px 20px ${iconStyle.glow}`,
-                                                border: '1px solid rgba(255,255,255,0.05)'
-                                            }}>
+                                            <motion.div
+                                                animate={{ y: [0, -3, 0] }}
+                                                transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}
+                                                variants={{ hover: { scale: 1.15, rotate: 10 }, tap: { scale: 0.9, rotate: -10 } }}
+                                                style={{
+                                                    width: '54px',
+                                                    height: '54px',
+                                                    borderRadius: '18px',
+                                                    background: iconStyle.bg,
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    flexShrink: 0,
+                                                    boxShadow: `0 8px 20px ${iconStyle.glow}`,
+                                                    border: '1px solid rgba(255,255,255,0.05)'
+                                                }}
+                                            >
                                                 {iconStyle.icon}
-                                            </div>
+                                            </motion.div>
 
                                             {/* Content */}
                                             <div style={{ flex: 1 }}>
@@ -441,7 +450,14 @@ const NotificationsPage: React.FC = () => {
                                                             textTransform: 'uppercase',
                                                             letterSpacing: '0.5px'
                                                         }}>
-                                                            Detalles <ChevronRight size={14} />
+                                                            Detalles 
+                                                            <motion.div
+                                                                variants={{ hover: { x: 4 } }}
+                                                                transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                                                                style={{ display: 'flex', alignItems: 'center' }}
+                                                            >
+                                                                <ChevronRight size={14} />
+                                                            </motion.div>
                                                         </div>
                                                     )}
                                                 </div>
