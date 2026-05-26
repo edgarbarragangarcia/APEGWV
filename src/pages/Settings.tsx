@@ -4,6 +4,7 @@ import { Geolocation } from '@capacitor/geolocation';
 import { Camera } from '@capacitor/camera';
 import { App } from '@capacitor/app';
 import { Capacitor } from '@capacitor/core';
+import { motion } from 'framer-motion';
 import {
     ShieldCheck,
     CheckCircle2,
@@ -203,14 +204,37 @@ const Settings: React.FC = () => {
 
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                             {/* GPS */}
-                            <div className="glass" style={{ padding: '20px' }}>
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.4 }}
+                                style={{
+                                    padding: '20px',
+                                    background: 'rgba(255,255,255,0.02)',
+                                    border: '1px solid rgba(255,255,255,0.05)',
+                                    borderRadius: '20px',
+                                    backdropFilter: 'blur(10px)',
+                                    boxShadow: '0 4px 20px rgba(0,0,0,0.15)'
+                                }}
+                            >
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '15px' }}>
-                                    <div style={{ display: 'flex', gap: '15px' }}>
-                                        <div style={{ background: 'rgba(163, 230, 53, 0.1)', padding: '10px', borderRadius: '12px' }}>
-                                            <LocateFixed size={24} color="var(--secondary)" />
-                                        </div>
+                                    <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+                                        <motion.div
+                                            animate={{ y: [0, -4, 0] }}
+                                            transition={{ repeat: Infinity, duration: 2.8, ease: 'easeInOut' }}
+                                            whileHover={{ scale: 1.2, rotate: 12 }}
+                                            style={{
+                                                background: 'linear-gradient(135deg, var(--secondary) 0%, #7cc42b 100%)',
+                                                padding: '10px',
+                                                borderRadius: '14px',
+                                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                boxShadow: '0 4px 12px rgba(163, 230, 53, 0.25)'
+                                            }}
+                                        >
+                                            <LocateFixed size={22} color="var(--primary)" />
+                                        </motion.div>
                                         <div>
-                                            <h3 style={{ fontSize: '16px', marginBottom: '2px' }}>Ubicación (GPS)</h3>
+                                            <h3 style={{ fontSize: '16px', fontWeight: '800', marginBottom: '2px', letterSpacing: '-0.2px' }}>Ubicación (GPS)</h3>
                                             <p style={{ fontSize: '12px', color: 'var(--text-dim)', maxWidth: '200px' }}>
                                                 Necesario para medir distancias al green y ordenar campos cercanos.
                                             </p>
@@ -218,29 +242,57 @@ const Settings: React.FC = () => {
                                     </div>
                                     <StatusBadge status={gpsStatus} />
                                 </div>
-                                <button
+                                <motion.button
+                                    whileHover={{ scale: 1.02 }}
+                                    whileTap={{ scale: 0.97 }}
                                     onClick={handleRequestGps}
-                                    className="glass"
                                     style={{
-                                        width: '100%', padding: '12px',
-                                        background: gpsStatus === 'granted' ? 'rgba(163, 230, 53, 0.1)' : 'var(--secondary)',
+                                        width: '100%', padding: '13px',
+                                        background: gpsStatus === 'granted' ? 'rgba(163, 230, 53, 0.1)' : 'linear-gradient(135deg, var(--secondary) 0%, #7cc42b 100%)',
                                         color: gpsStatus === 'granted' ? 'var(--secondary)' : 'var(--primary)',
-                                        fontWeight: '700', borderRadius: '12px', opacity: (isRequesting === 'gps') ? 0.7 : 1
+                                        fontWeight: '900', borderRadius: '14px',
+                                        opacity: (isRequesting === 'gps') ? 0.7 : 1,
+                                        border: gpsStatus === 'granted' ? '1px solid rgba(163,230,53,0.2)' : 'none',
+                                        cursor: 'pointer', fontSize: '13px', letterSpacing: '0.5px',
+                                        boxShadow: gpsStatus !== 'granted' ? '0 6px 16px rgba(163,230,53,0.2)' : 'none'
                                     }}
                                 >
-                                    {isRequesting === 'gps' ? 'SOLICITANDO...' : gpsStatus === 'granted' ? 'PERMISO CONCEDIDO' : 'SOLICITAR PERMISO'}
-                                </button>
-                            </div>
+                                    {isRequesting === 'gps' ? 'SOLICITANDO...' : gpsStatus === 'granted' ? 'PERMISO CONCEDIDO ✓' : 'SOLICITAR PERMISO'}
+                                </motion.button>
+                            </motion.div>
 
                             {/* Camera */}
-                            <div className="glass" style={{ padding: '20px' }}>
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.4, delay: 0.1 }}
+                                style={{
+                                    padding: '20px',
+                                    background: 'rgba(255,255,255,0.02)',
+                                    border: '1px solid rgba(255,255,255,0.05)',
+                                    borderRadius: '20px',
+                                    backdropFilter: 'blur(10px)',
+                                    boxShadow: '0 4px 20px rgba(0,0,0,0.15)'
+                                }}
+                            >
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '15px' }}>
-                                    <div style={{ display: 'flex', gap: '15px' }}>
-                                        <div style={{ background: 'rgba(163, 230, 53, 0.1)', padding: '10px', borderRadius: '12px' }}>
-                                            <CameraIcon size={24} color="var(--secondary)" />
-                                        </div>
+                                    <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+                                        <motion.div
+                                            animate={{ y: [0, -4, 0] }}
+                                            transition={{ repeat: Infinity, duration: 3.2, ease: 'easeInOut', delay: 0.5 }}
+                                            whileHover={{ scale: 1.2, rotate: -12 }}
+                                            style={{
+                                                background: 'linear-gradient(135deg, var(--secondary) 0%, #7cc42b 100%)',
+                                                padding: '10px',
+                                                borderRadius: '14px',
+                                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                boxShadow: '0 4px 12px rgba(163, 230, 53, 0.25)'
+                                            }}
+                                        >
+                                            <CameraIcon size={22} color="var(--primary)" />
+                                        </motion.div>
                                         <div>
-                                            <h3 style={{ fontSize: '16px', marginBottom: '2px' }}>Cámara</h3>
+                                            <h3 style={{ fontSize: '16px', fontWeight: '800', marginBottom: '2px', letterSpacing: '-0.2px' }}>Cámara</h3>
                                             <p style={{ fontSize: '12px', color: 'var(--text-dim)', maxWidth: '200px' }}>
                                                 Para fotos de perfil y subir productos al Marketplace.
                                             </p>
@@ -248,19 +300,24 @@ const Settings: React.FC = () => {
                                     </div>
                                     <StatusBadge status={cameraStatus} />
                                 </div>
-                                <button
+                                <motion.button
+                                    whileHover={{ scale: 1.02 }}
+                                    whileTap={{ scale: 0.97 }}
                                     onClick={handleRequestCamera}
-                                    className="glass"
                                     style={{
-                                        width: '100%', padding: '12px',
-                                        background: cameraStatus === 'granted' ? 'rgba(163, 230, 53, 0.1)' : 'var(--secondary)',
+                                        width: '100%', padding: '13px',
+                                        background: cameraStatus === 'granted' ? 'rgba(163, 230, 53, 0.1)' : 'linear-gradient(135deg, var(--secondary) 0%, #7cc42b 100%)',
                                         color: cameraStatus === 'granted' ? 'var(--secondary)' : 'var(--primary)',
-                                        fontWeight: '700', borderRadius: '12px', opacity: (isRequesting === 'camera') ? 0.7 : 1
+                                        fontWeight: '900', borderRadius: '14px',
+                                        opacity: (isRequesting === 'camera') ? 0.7 : 1,
+                                        border: cameraStatus === 'granted' ? '1px solid rgba(163,230,53,0.2)' : 'none',
+                                        cursor: 'pointer', fontSize: '13px', letterSpacing: '0.5px',
+                                        boxShadow: cameraStatus !== 'granted' ? '0 6px 16px rgba(163,230,53,0.2)' : 'none'
                                     }}
                                 >
-                                    {isRequesting === 'camera' ? 'SOLICITANDO...' : cameraStatus === 'granted' ? 'PERMISO CONCEDIDO' : 'SOLICITAR PERMISO'}
-                                </button>
-                            </div>
+                                    {isRequesting === 'camera' ? 'SOLICITANDO...' : cameraStatus === 'granted' ? 'PERMISO CONCEDIDO ✓' : 'SOLICITAR PERMISO'}
+                                </motion.button>
+                            </motion.div>
                         </div>
                     </section>
                 </div>
