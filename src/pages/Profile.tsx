@@ -138,22 +138,33 @@ const Profile: React.FC = () => {
                 {/* Account Info Accordion - Compact */}
                 <div style={{ marginBottom: '10px' }}>
                     <motion.button
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
+                        whileHover="hover"
+                        whileTap="tap"
                         onClick={() => setShowInfo(!showInfo)}
                         style={styles.menuButton}
+                        variants={{ hover: { scale: 1.02 }, tap: { scale: 0.96 } }}
                     >
                         <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                            <div style={styles.iconBox}>
+                            <motion.div 
+                                style={styles.iconBox}
+                                animate={{ y: [0, -3, 0] }}
+                                transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}
+                                variants={{
+                                    hover: { scale: 1.15, rotate: 10, transition: { type: "spring", stiffness: 300 } },
+                                    tap: { scale: 0.9, rotate: -10 }
+                                }}
+                            >
                                 <Shield size={18} strokeWidth={2.5} color="var(--primary)" />
-                            </div>
+                            </motion.div>
                             <span style={styles.menuText}>Información de la Cuenta</span>
                         </div>
-                        <ChevronRight
-                            size={18}
-                            color="var(--text-dim)"
-                            style={{ transform: showInfo ? 'rotate(90deg)' : 'none', transition: 'transform 0.3s ease' }}
-                        />
+                        <motion.div variants={{ hover: { x: 5 }, tap: { x: 10 } }}>
+                            <ChevronRight
+                                size={18}
+                                color="var(--text-dim)"
+                                style={{ transform: showInfo ? 'rotate(90deg)' : 'none', transition: 'transform 0.3s ease' }}
+                            />
+                        </motion.div>
                     </motion.button>
 
                     {showInfo && (
@@ -215,18 +226,29 @@ const Profile: React.FC = () => {
 
 const MenuButton = ({ icon: Icon, label, onClick }: any) => (
     <motion.button 
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
+        whileHover="hover"
+        whileTap="tap"
         onClick={onClick} 
         style={styles.menuButton}
+        variants={{ hover: { scale: 1.02 }, tap: { scale: 0.96 } }}
     >
         <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-            <div style={styles.iconBox}>
+            <motion.div 
+                style={styles.iconBox}
+                animate={{ y: [0, -3, 0] }}
+                transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}
+                variants={{
+                    hover: { scale: 1.15, rotate: 10, transition: { type: "spring", stiffness: 300 } },
+                    tap: { scale: 0.9, rotate: -10 }
+                }}
+            >
                 <Icon size={18} color="var(--primary)" />
-            </div>
+            </motion.div>
             <span style={styles.menuText}>{label}</span>
         </div>
-        <ChevronRight size={18} color="var(--text-dim)" />
+        <motion.div variants={{ hover: { x: 5 }, tap: { x: 10 } }}>
+            <ChevronRight size={18} color="var(--text-dim)" />
+        </motion.div>
     </motion.button>
 );
 
