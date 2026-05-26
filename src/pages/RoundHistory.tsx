@@ -236,40 +236,61 @@ const RoundHistory: React.FC = () => {
                                         borderRadius: '20px',
                                         border: '1px solid rgba(255,255,255,0.08)'
                                     }}
-                                    whileTap={{ cursor: 'grabbing' }}
+                                    whileHover="hover"
+                                    whileTap="tap"
+                                    variants={{ hover: { scale: 1.01 }, tap: { scale: 0.99 } }}
                                 >
                                     <Card
                                         style={{
                                             cursor: 'pointer',
                                             marginBottom: 0,
-                                            background: 'rgba(255,b255,b255,0.02)',
+                                            background: 'rgba(255,255,255,0.02)',
                                             backdropFilter: 'none',
                                             border: 'none',
                                             borderRadius: '20px'
                                         }}
                                         onClick={() => navigate(`/rounds/${round.id}`)}
                                     >
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                            <div style={{ flex: 1 }}>
-                                                <h3 style={{ fontSize: '16px', marginBottom: '5px' }}>{round.course_name}</h3>
-                                                <p style={{ fontSize: '13px', color: 'var(--text-dim)', marginBottom: '10px' }}>
-                                                    {round.course_location} • {new Date(round.date_played).toLocaleDateString('es-ES', {
-                                                        day: 'numeric',
-                                                        month: 'short',
-                                                        year: 'numeric'
-                                                    })}
-                                                </p>
-                                                <div style={{ display: 'flex', gap: '15px', fontSize: '13px' }}>
-                                                    <div>
-                                                        <span style={{ color: 'var(--text-dim)' }}>Score: </span>
-                                                        <span style={{ fontWeight: '700', color: 'var(--secondary)' }}>{round.total_score}</span>
-                                                    </div>
-                                                    {round.first_nine_score && round.second_nine_score && (
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '15px' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '15px', flex: 1 }}>
+                                                <motion.div
+                                                    animate={{ y: [0, -3, 0] }}
+                                                    transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}
+                                                    variants={{ hover: { scale: 1.15, rotate: 10 }, tap: { scale: 0.9, rotate: -10 } }}
+                                                    style={{
+                                                        background: 'linear-gradient(135deg, var(--secondary) 0%, #7cc42b 100%)',
+                                                        padding: '10px',
+                                                        borderRadius: '12px',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        boxShadow: '0 4px 10px rgba(163, 230, 53, 0.2)',
+                                                        flexShrink: 0
+                                                    }}
+                                                >
+                                                    <Calendar size={18} color="var(--primary)" />
+                                                </motion.div>
+                                                <div style={{ flex: 1 }}>
+                                                    <h3 style={{ fontSize: '16px', marginBottom: '5px' }}>{round.course_name}</h3>
+                                                    <p style={{ fontSize: '13px', color: 'var(--text-dim)', marginBottom: '10px' }}>
+                                                        {round.course_location} • {new Date(round.date_played).toLocaleDateString('es-ES', {
+                                                            day: 'numeric',
+                                                            month: 'short',
+                                                            year: 'numeric'
+                                                        })}
+                                                    </p>
+                                                    <div style={{ display: 'flex', gap: '15px', fontSize: '13px' }}>
                                                         <div>
-                                                            <span style={{ color: 'var(--text-dim)' }}>Vueltas: </span>
-                                                            <span style={{ fontWeight: '600' }}>{round.first_nine_score} / {round.second_nine_score}</span>
+                                                            <span style={{ color: 'var(--text-dim)' }}>Score: </span>
+                                                            <span style={{ fontWeight: '700', color: 'var(--secondary)' }}>{round.total_score}</span>
                                                         </div>
-                                                    )}
+                                                        {round.first_nine_score && round.second_nine_score && (
+                                                            <div>
+                                                                <span style={{ color: 'var(--text-dim)' }}>Vueltas: </span>
+                                                                <span style={{ fontWeight: '600' }}>{round.first_nine_score} / {round.second_nine_score}</span>
+                                                            </div>
+                                                        )}
+                                                    </div>
                                                 </div>
                                             </div>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -284,7 +305,13 @@ const RoundHistory: React.FC = () => {
                                                         Completada
                                                     </div>
                                                 )}
-                                                <ChevronRight size={20} color="var(--text-dim)" />
+                                                <motion.div
+                                                    variants={{ hover: { x: 5 } }}
+                                                    transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                                                    style={{ display: 'flex', alignItems: 'center' }}
+                                                >
+                                                    <ChevronRight size={20} color="var(--text-dim)" />
+                                                </motion.div>
                                             </div>
                                         </div>
                                     </Card>

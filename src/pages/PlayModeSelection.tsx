@@ -409,7 +409,9 @@ const PlayModeSelection: React.FC = () => {
                             {modes.map((mode) => (
                                 <motion.div
                                     key={mode.id}
-                                    whileTap={{ scale: 0.97 }}
+                                    whileHover="hover"
+                                    whileTap="tap"
+                                    variants={{ hover: { scale: 1.03 }, tap: { scale: 0.97 } }}
                                     onClick={() => {
                                         console.log('Navigating to:', mode.path);
                                         navigate(mode.path);
@@ -424,7 +426,7 @@ const PlayModeSelection: React.FC = () => {
                                         alignItems: 'stretch',
                                         cursor: 'pointer',
                                         transition: 'background 0.3s ease',
-                                        height: '90px',
+                                        height: '100px',
                                     }}
                                 >
                                     <div style={{
@@ -446,29 +448,34 @@ const PlayModeSelection: React.FC = () => {
                                         display: 'flex',
                                         flexDirection: 'column',
                                         justifyContent: 'center',
-                                        padding: '10px'
+                                        padding: '12px'
                                     }}>
                                         <div style={{
                                             display: 'flex',
                                             flexDirection: 'column',
                                             gap: '8px'
                                         }}>
-                                            <div style={{
-                                                width: '32px',
-                                                height: '32px',
-                                                borderRadius: '10px',
-                                                background: `rgba(255,255,255,0.05)`,
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                color: mode.color,
-                                                border: '1px solid rgba(255,255,255,0.08)'
-                                            }}>
-                                                <mode.icon size={16} />
-                                            </div>
+                                            <motion.div
+                                                animate={{ y: [0, -2, 0] }}
+                                                transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}
+                                                variants={{ hover: { scale: 1.15, rotate: 10 }, tap: { scale: 0.9, rotate: -10 } }}
+                                                style={{
+                                                    width: '36px',
+                                                    height: '36px',
+                                                    borderRadius: '12px',
+                                                    background: `linear-gradient(135deg, ${mode.color} 0%, rgba(255,255,255,0.1) 100%)`,
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    color: 'var(--primary)',
+                                                    boxShadow: `0 4px 10px rgba(0,0,0,0.2)`
+                                                }}
+                                            >
+                                                <mode.icon size={18} />
+                                            </motion.div>
                                             <div>
                                                 <h3 style={{ fontSize: '13px', fontWeight: '900', color: '#fff', marginBottom: '2px' }}>{mode.title}</h3>
-                                                <p style={{ fontSize: '9px', color: 'rgba(255,255,255,0.3)', fontWeight: '600', lineHeight: 1 }}>{mode.id === 'individual' ? 'Juega solo' : 'Con amigos'}</p>
+                                                <p style={{ fontSize: '9px', color: 'rgba(255,255,255,0.4)', fontWeight: '600', lineHeight: 1 }}>{mode.id === 'individual' ? 'Juega solo' : 'Con amigos'}</p>
                                             </div>
                                         </div>
                                     </div>
@@ -570,7 +577,9 @@ const PlayModeSelection: React.FC = () => {
                                 {recentRounds.map((round) => (
                                     <motion.div
                                         key={round.id}
-                                        whileTap={{ scale: 0.98 }}
+                                        whileHover="hover"
+                                        whileTap="tap"
+                                        variants={{ hover: { scale: 1.02 }, tap: { scale: 0.98 } }}
                                         onClick={() => navigate(`/rounds/${round.id}`)}
                                         style={{
                                             display: 'flex',
@@ -583,13 +592,32 @@ const PlayModeSelection: React.FC = () => {
                                             cursor: 'pointer'
                                         }}
                                     >
-                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                                            <span style={{ fontSize: '15px', fontWeight: '800', color: 'white' }}>{round.course_name || 'Campo desconocido'}</span>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', fontWeight: '600' }}>{new Date(round.date_played).toLocaleDateString()}</span>
-                                                {round.status === 'completed' && (
-                                                    <span style={{ fontSize: '10px', background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', padding: '2px 6px', borderRadius: '4px', fontWeight: '700' }}>FINALIZADO</span>
-                                                )}
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1 }}>
+                                            <motion.div
+                                                animate={{ y: [0, -3, 0] }}
+                                                transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}
+                                                variants={{ hover: { scale: 1.15, rotate: 10 }, tap: { scale: 0.9, rotate: -10 } }}
+                                                style={{
+                                                    background: 'linear-gradient(135deg, var(--secondary) 0%, #7cc42b 100%)',
+                                                    padding: '10px',
+                                                    borderRadius: '12px',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    boxShadow: '0 4px 10px rgba(163, 230, 53, 0.2)',
+                                                    flexShrink: 0
+                                                }}
+                                            >
+                                                <History size={18} color="var(--primary)" />
+                                            </motion.div>
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                                <span style={{ fontSize: '15px', fontWeight: '800', color: 'white' }}>{round.course_name || 'Campo desconocido'}</span>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                    <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', fontWeight: '600' }}>{new Date(round.date_played).toLocaleDateString()}</span>
+                                                    {round.status === 'completed' && (
+                                                        <span style={{ fontSize: '10px', background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', padding: '2px 6px', borderRadius: '4px', fontWeight: '700' }}>FINALIZADO</span>
+                                                    )}
+                                                </div>
                                             </div>
                                         </div>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -622,7 +650,13 @@ const PlayModeSelection: React.FC = () => {
                                                 <Trash2 size={14} />
                                             </motion.button>
 
-                                            <ChevronRight size={18} color="rgba(255,255,255,0.2)" />
+                                            <motion.div
+                                                variants={{ hover: { x: 5 } }}
+                                                transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                                                style={{ display: 'flex', alignItems: 'center' }}
+                                            >
+                                                <ChevronRight size={18} color="rgba(255,255,255,0.2)" />
+                                            </motion.div>
                                         </div>
                                     </motion.div>
                                 ))}
@@ -726,23 +760,43 @@ const PlayModeSelection: React.FC = () => {
 
 
 const HubListButton = ({ icon: Icon, title, subtitle, onClick, badge }: any) => (
-    <motion.div
-        whileTap={{ scale: 0.98 }}
+    <motion.button
+        whileHover="hover"
+        whileTap="tap"
         onClick={onClick}
         style={{
-            background: 'rgba(255,255,255,0.03)',
-            borderRadius: '16px',
-            padding: '8px 14px',
+            width: '100%',
+            background: 'rgba(255,255,255,0.02)',
+            backdropFilter: 'blur(10px)',
+            borderRadius: '20px',
+            padding: '10px 16px',
             border: '1px solid rgba(255,255,255,0.05)',
+            boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
             display: 'flex',
             alignItems: 'center',
-            gap: '10px',
-            cursor: 'pointer'
+            gap: '12px',
+            cursor: 'pointer',
+            textAlign: 'left'
         }}
+        variants={{ hover: { scale: 1.02 }, tap: { scale: 0.96 } }}
     >
-        <div style={{ padding: '6px', borderRadius: '8px', background: 'rgba(255,255,255,0.05)' }}>
-            <Icon size={16} color="rgba(255,255,255,0.6)" />
-        </div>
+        <motion.div
+            animate={{ y: [0, -2, 0] }}
+            transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}
+            variants={{ hover: { scale: 1.15, rotate: 10 }, tap: { scale: 0.9, rotate: -10 } }}
+            style={{
+                background: 'linear-gradient(135deg, var(--secondary) 0%, #7cc42b 100%)',
+                padding: '8px',
+                borderRadius: '12px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 4px 10px rgba(163, 230, 53, 0.2)',
+                flexShrink: 0
+            }}
+        >
+            <Icon size={16} color="var(--primary)" />
+        </motion.div>
         <div style={{ flex: 1 }}>
             <h4 style={{ fontSize: '13px', fontWeight: '800', color: 'white', margin: 0 }}>{title}</h4>
             <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', margin: 0 }}>{subtitle}</p>
@@ -752,8 +806,14 @@ const HubListButton = ({ icon: Icon, title, subtitle, onClick, badge }: any) => 
                 {badge}
             </span>
         )}
-        <ChevronRight size={16} color="rgba(255,255,255,0.2)" />
-    </motion.div>
+        <motion.div
+            variants={{ hover: { x: 5 } }}
+            transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+            style={{ display: 'flex', alignItems: 'center' }}
+        >
+            <ChevronRight size={16} color="rgba(255,255,255,0.4)" />
+        </motion.div>
+    </motion.button>
 );
 
 export default PlayModeSelection;

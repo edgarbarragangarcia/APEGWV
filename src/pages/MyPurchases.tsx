@@ -258,12 +258,20 @@ const MyPurchases: React.FC = () => {
                             >
                                 {myOrders.length > 0 ? (
                                     myOrders.map((order, idx) => (
-                                        <Card key={order.id || idx} style={{
-                                            padding: '16px',
-                                            background: 'rgba(255,255,255,0.03)',
-                                            border: '1px solid rgba(255,255,255,0.05)',
-                                            borderRadius: '24px'
-                                        }}>
+                                        <motion.div
+                                            key={order.id || idx}
+                                            whileHover="hover"
+                                            whileTap="tap"
+                                            variants={{ hover: { scale: 1.01 }, tap: { scale: 0.99 } }}
+                                            style={{
+                                                padding: '16px',
+                                                background: 'rgba(255,255,255,0.02)',
+                                                backdropFilter: 'blur(10px)',
+                                                border: '1px solid rgba(255,255,255,0.05)',
+                                                borderRadius: '24px',
+                                                boxShadow: '0 4px 15px rgba(0,0,0,0.1)'
+                                            }}
+                                        >
                                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
                                                 <span style={{
                                                     background: order.status === 'shipped' ? '#10b981' : '#f59e0b',
@@ -281,13 +289,26 @@ const MyPurchases: React.FC = () => {
                                                 </span>
                                             </div>
                                             <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-                                                <div style={{ width: '50px', height: '50px', borderRadius: '12px', overflow: 'hidden', background: 'rgba(255,255,255,0.05)' }}>
+                                                <motion.div
+                                                    animate={{ y: [0, -3, 0] }}
+                                                    transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}
+                                                    variants={{ hover: { scale: 1.15, rotate: 3 }, tap: { scale: 0.9, rotate: -3 } }}
+                                                    style={{
+                                                        width: '50px',
+                                                        height: '50px',
+                                                        borderRadius: '12px',
+                                                        overflow: 'hidden',
+                                                        background: 'rgba(255,255,255,0.05)',
+                                                        flexShrink: 0,
+                                                        boxShadow: '0 4px 10px rgba(0,0,0,0.2)'
+                                                    }}
+                                                >
                                                     <img
                                                         src={order.product?.image_url}
                                                         alt=""
                                                         style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                                     />
-                                                </div>
+                                                </motion.div>
                                                 <div style={{ flex: 1 }}>
                                                     <h4 style={{ fontSize: '15px', fontWeight: '800', color: 'white', marginBottom: '2px' }}>{order.product?.name}</h4>
                                                     <div style={{ fontSize: '14px', fontWeight: '900', color: 'var(--secondary)' }}>
@@ -316,10 +337,16 @@ const MyPurchases: React.FC = () => {
                                                     >
                                                         <Trash2 size={16} />
                                                     </motion.button>
-                                                    <ChevronRight size={18} color="rgba(255,255,255,0.2)" />
+                                                    <motion.div
+                                                        variants={{ hover: { x: 5 } }}
+                                                        transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                                                        style={{ display: 'flex', alignItems: 'center' }}
+                                                    >
+                                                        <ChevronRight size={18} color="rgba(255,255,255,0.4)" />
+                                                    </motion.div>
                                                 </div>
                                             </div>
-                                        </Card>
+                                        </motion.div>
                                     ))
                                 ) : (
                                     <div style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--text-dim)' }}>
@@ -338,15 +365,20 @@ const MyPurchases: React.FC = () => {
                             >
                                 {myOffers.length > 0 ? (
                                     myOffers.map((offer, idx) => (
-                                        <Card
+                                        <motion.div
                                             key={offer.id || idx}
                                             onClick={() => setSelectedOffer(offer)}
+                                            whileHover="hover"
+                                            whileTap="tap"
+                                            variants={{ hover: { scale: 1.01 }, tap: { scale: 0.99 } }}
                                             style={{
                                                 padding: '16px',
-                                                background: 'rgba(255,255,255,0.03)',
+                                                background: 'rgba(255,255,255,0.02)',
+                                                backdropFilter: 'blur(10px)',
                                                 border: '1px solid rgba(255,255,255,0.05)',
                                                 borderRadius: '24px',
-                                                cursor: 'pointer'
+                                                cursor: 'pointer',
+                                                boxShadow: '0 4px 15px rgba(0,0,0,0.1)'
                                             }}
                                         >
                                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
@@ -366,13 +398,26 @@ const MyPurchases: React.FC = () => {
                                                 </span>
                                             </div>
                                             <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-                                                <div style={{ width: '50px', height: '50px', borderRadius: '12px', overflow: 'hidden', background: 'rgba(255,255,255,0.05)' }}>
+                                                <motion.div
+                                                    animate={{ y: [0, -3, 0] }}
+                                                    transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}
+                                                    variants={{ hover: { scale: 1.15, rotate: 3 }, tap: { scale: 0.9, rotate: -3 } }}
+                                                    style={{
+                                                        width: '50px',
+                                                        height: '50px',
+                                                        borderRadius: '12px',
+                                                        overflow: 'hidden',
+                                                        background: 'rgba(255,255,255,0.05)',
+                                                        flexShrink: 0,
+                                                        boxShadow: '0 4px 10px rgba(0,0,0,0.2)'
+                                                    }}
+                                                >
                                                     <img
                                                         src={offer.product?.image_url}
                                                         alt=""
                                                         style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                                     />
-                                                </div>
+                                                </motion.div>
                                                 <div style={{ flex: 1 }}>
                                                     <h4 style={{ fontSize: '15px', fontWeight: '800', color: 'white', marginBottom: '2px' }}>{offer.product?.name}</h4>
                                                     <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -404,10 +449,16 @@ const MyPurchases: React.FC = () => {
                                                     >
                                                         <Trash2 size={16} />
                                                     </motion.button>
-                                                    <ChevronRight size={18} color="rgba(255,255,255,0.2)" />
+                                                    <motion.div
+                                                        variants={{ hover: { x: 5 } }}
+                                                        transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                                                        style={{ display: 'flex', alignItems: 'center' }}
+                                                    >
+                                                        <ChevronRight size={18} color="rgba(255,255,255,0.4)" />
+                                                    </motion.div>
                                                 </div>
                                             </div>
-                                        </Card>
+                                        </motion.div>
                                     ))
                                 ) : (
                                     <div style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--text-dim)' }}>
