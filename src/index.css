@@ -358,6 +358,7 @@ button:active {
   filter: blur(60px);
   opacity: 0.4;
   animation: float-orb 15s infinite ease-in-out;
+  pointer-events: none;
 }
 
 .orb-1 {
@@ -414,6 +415,7 @@ button:active {
   -webkit-mask-image: radial-gradient(circle at center, black 40%, transparent 100%);
   opacity: 0.5;
   z-index: 0;
+  pointer-events: none;
 }
 
 @keyframes border-run {

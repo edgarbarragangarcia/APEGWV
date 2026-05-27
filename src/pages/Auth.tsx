@@ -209,7 +209,7 @@ const Auth: React.FC = () => {
                     {/* Form Container */}
                     <div style={{ minHeight: isLogin ? '200px' : '360px', display: 'flex', flexDirection: 'column', transition: 'min-height 0.4s cubic-bezier(0.4, 0, 0.2, 1)' }}>
                         <form onSubmit={handleAuth} style={{ display: 'flex', flexDirection: 'column', gap: '12px', flex: 1 }}>
-                            <AnimatePresence mode="popLayout">
+                            <AnimatePresence>
                                 {!isLogin && (
                                     <motion.div
                                         key="register-fields"
