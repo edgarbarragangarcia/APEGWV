@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../services/SupabaseManager';
-import { Mail, Lock, User, Loader2, Phone, Award, Hash, Trophy, Eye, EyeOff } from 'lucide-react';
+import { Mail, Lock, User, Loader2, ArrowRight, Phone, Award, Hash, Trophy, Eye, EyeOff } from 'lucide-react';
+
 
 const Auth: React.FC = () => {
     const [isLogin, setIsLogin] = useState(true);
@@ -16,14 +17,15 @@ const Auth: React.FC = () => {
         phone: ''
     });
     const [showPassword, setShowPassword] = useState(false);
-    const [rememberMe, setRememberMe] = useState(false);
 
     const handleAuth = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
         setError(null);
 
+        // --- SOLUCIÓN RADICAL: Si es LOCALHOST, usar FETCH PROXY de inmediato ---
         if (import.meta.env.DEV && isLogin) {
+            console.log('--- MODO DE RESILIENCIA ACTIVADO: Usando bypass de red ---');
             try {
                 const { manualLogin } = await import('../services/SupabaseManager');
                 const authData = await manualLogin(formData.email, formData.password);
@@ -34,7 +36,7 @@ const Auth: React.FC = () => {
                         refresh_token: authData.refresh_token
                     });
                     if (sessionError) throw sessionError;
-                    return; 
+                    return; // ÉXITO TOTAL
                 }
             } catch (err: any) {
                 console.error('Fallo en Bypass:', err);
@@ -45,6 +47,7 @@ const Auth: React.FC = () => {
             return;
         }
 
+        // Si no es dev o es registro, usar flujo normal (con timeout)
         const authPromise = isLogin
             ? supabase.auth.signInWithPassword({
                 email: formData.email,
@@ -64,7 +67,7 @@ const Auth: React.FC = () => {
             });
 
         const timeoutPromise = new Promise((_, reject) =>
-            setTimeout(() => reject(new Error('La conexión está tardando demasiado.')), 10000)
+            setTimeout(() => reject(new Error('La conexión está tardando demasiado. Revisa tu conexión o extensiones del navegador.')), 10000)
         );
 
         try {
@@ -74,6 +77,9 @@ const Auth: React.FC = () => {
                 setError('¡Registro exitoso! Por favor revisa tu correo para confirmar.');
             }
         } catch (err: any) {
+            console.error('Auth Error:', err);
+
+            // Manejo especial para usuario ya registrado
             if (!isLogin && err.message?.toLowerCase().includes('already registered')) {
                 setError('Este correo ya tiene una cuenta. Cambiando a Inicio de Sesión...');
                 setTimeout(() => {
@@ -83,190 +89,431 @@ const Auth: React.FC = () => {
                 return;
             }
 
+            // BYPASS LOGIC: Si es un timeout o error de conexión, intentar login directo
             if (isLogin && (err.message.includes('tardando') || err.message.includes('timeout') || err.message.includes('bloqueadas'))) {
+                console.log('--- INICIANDO BYPASS DE SEGURIDAD (DIRECT FETCH) ---');
                 try {
                     const { manualLogin } = await import('../services/SupabaseManager');
                     const authData = await manualLogin(formData.email, formData.password);
 
                     if (authData.access_token) {
+                        console.log('--- BYPASS EXITOSO ---');
                         const { error: sessionError } = await supabase.auth.setSession({
                             access_token: authData.access_token,
                             refresh_token: authData.refresh_token
                         });
                         if (sessionError) throw sessionError;
-                        return; 
+                        return; // Éxito, el AuthProvider detectará el cambio
                     }
                 } catch (bypassErr: any) {
+                    console.error('Bypass failed:', bypassErr);
                     setError(`Error crítico: ${bypassErr.message}. Tu navegador bloquea toda conexión a la base de datos.`);
                 }
             } else {
-                setError(err.message || 'Error de conexión.');
+                setError(err.message || 'Error de conexión. Las peticiones están siendo bloqueadas por tu navegador.');
             }
         } finally {
             setLoading(false);
         }
     };
 
+
+    const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+        const { currentTarget, clientX, clientY } = e;
+        const { left, top } = currentTarget.getBoundingClientRect();
+        currentTarget.style.setProperty('--mouse-x', `${clientX - left}px`);
+        currentTarget.style.setProperty('--mouse-y', `${clientY - top}px`);
+    };
+
     return (
-        <div style={{
-            minHeight: '100dvh',
-            width: '100%',
-            position: 'relative',
-            display: 'flex',
-            flexDirection: 'column',
-            backgroundColor: '#FAFAFA',
-            fontFamily: '"Outfit", sans-serif',
-            overflow: 'hidden',
-        }}>
-            <svg width="100%" height="auto" viewBox="0 0 375 280" fill="none" xmlns="http://www.w3.org/2000/svg" style={{position: 'absolute', top: 0, left: 0, zIndex: 0, width: '100%', maxWidth: '500px'}}>
-                <path d="M0 0H280C280 0 250 60 180 80C110 100 130 160 80 210C40 250 20 280 0 280V0Z" fill="url(#paint_wave)"/>
-                <defs>
-                    <linearGradient id="paint_wave" x1="0" y1="0" x2="200" y2="280" gradientUnits="userSpaceOnUse">
-                        <stop stopColor="#A3E635"/>
-                        <stop offset="1" stopColor="#10b981"/>
-                    </linearGradient>
-                </defs>
-            </svg>
-
+        <>
+            <div className="modern-auth-bg" />
             <div style={{
-                position: 'absolute',
-                bottom: 0,
-                left: 0,
+                minHeight: '100dvh',
                 width: '100%',
-                height: '30%',
-                background: 'linear-gradient(to top, rgba(163, 230, 53, 0.15), transparent)',
-                zIndex: 0,
-                pointerEvents: 'none'
-            }} />
-
-            <div style={{
                 position: 'relative',
-                zIndex: 1,
                 display: 'flex',
                 flexDirection: 'column',
-                flex: 1,
-                padding: '40px 32px',
-                width: '100%',
-                maxWidth: '480px',
-                margin: '0 auto'
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '24px',
+                fontFamily: '"Outfit", sans-serif',
+                overflow: 'hidden',
+                zIndex: 1
             }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '60px' }}>
-                    <div style={{ width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <Trophy size={32} color="#0E2F1F" />
-                    </div>
-                </div>
+                {/* Elegant Background Grid & Orbs */}
+                <div className="grid-overlay" />
+                <div className="auth-orb orb-1" />
+                <div className="auth-orb orb-2" />
 
-                <motion.div
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.5 }}
-                    style={{ marginBottom: '40px' }}
+            <motion.div
+                initial={{ opacity: 0, y: 40 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                style={{
+                    width: '100%',
+                    maxWidth: '420px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    zIndex: 10
+                }}
+            >
+                {/* Logo Area */}
+                <motion.div 
+                    initial={{ scale: 0.9, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ delay: 0.2, duration: 0.8, ease: "easeOut" }}
+                    style={{ marginBottom: '32px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}
                 >
-                    <h1 style={{ fontSize: '36px', fontWeight: '800', color: '#0E2F1F', margin: 0, letterSpacing: '-1px' }}>
-                        {isLogin ? 'Iniciar Sesión' : 'Crear Cuenta'}
-                    </h1>
+                    <div style={{
+                        width: '56px',
+                        height: '56px',
+                        borderRadius: '18px',
+                        background: 'linear-gradient(135deg, var(--secondary) 0%, #10b981 100%)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        marginBottom: '16px',
+                        boxShadow: '0 12px 24px rgba(163, 230, 53, 0.3), inset 0 2px 4px rgba(255,255,255,0.4)'
+                    }}>
+                        <Trophy size={28} color="#0E2F1F" />
+                    </div>
+                    <h2 style={{
+                        fontSize: '15px',
+                        fontWeight: '500',
+                        color: 'white',
+                        letterSpacing: '6px',
+                        textTransform: 'uppercase',
+                        margin: 0
+                    }}>APEG</h2>
                 </motion.div>
 
-                <form onSubmit={handleAuth} style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
-                    <AnimatePresence>
-                        {!isLogin && (
-                            <motion.div
-                                key="register-fields"
-                                initial={{ opacity: 0, height: 0 }}
-                                animate={{ opacity: 1, height: 'auto' }}
-                                exit={{ opacity: 0, height: 0 }}
-                                style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}
+                {/* Glass Card Container */}
+                <div 
+                    className="spotlight-card"
+                    onMouseMove={handleMouseMove}
+                    style={{
+                        background: 'rgba(20, 20, 20, 0.4)',
+                        backdropFilter: 'blur(30px)',
+                        WebkitBackdropFilter: 'blur(30px)',
+                        border: '1px solid rgba(255, 255, 255, 0.08)',
+                        borderRadius: '32px',
+                        padding: '40px 32px',
+                        width: '100%',
+                        boxShadow: '0 30px 60px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
+                    }}
+                >
+                    <div className="noise-overlay" />
+                    
+                    <div className="spotlight-content">
+                        <div style={{ textAlign: 'center', marginBottom: '36px' }}>
+                        <h1 style={{
+                            color: 'white',
+                            fontSize: '28px',
+                            fontWeight: '300',
+                            letterSpacing: '-0.5px',
+                            marginBottom: '8px'
+                        }}>
+                            {isLogin ? 'Bienvenido' : 'Crear perfil'}
+                        </h1>
+                        <p style={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '14px', fontWeight: '300' }}>
+                            {isLogin ? 'Accede a tu portal exclusivo' : 'Únete a la élite del golf'}
+                        </p>
+                    </div>
+
+                    {/* Form Container */}
+                    <div style={{ minHeight: isLogin ? '200px' : '360px', display: 'flex', flexDirection: 'column', transition: 'min-height 0.4s cubic-bezier(0.4, 0, 0.2, 1)' }}>
+                        <form onSubmit={handleAuth} style={{ display: 'flex', flexDirection: 'column', gap: '12px', flex: 1 }}>
+                            <AnimatePresence>
+                                {!isLogin && (
+                                    <motion.div
+                                        key="register-fields"
+                                        initial={{ opacity: 0, y: -10, scale: 0.98 }}
+                                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                                        exit={{ opacity: 0, y: -10, scale: 0.98 }}
+                                        transition={{ duration: 0.3 }}
+                                        style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}
+                                    >
+                                        <div style={{ position: 'relative' }}>
+                                            <User size={18} color="rgba(255,255,255,0.4)" style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)' }} />
+                                            <input
+                                                id="full-name"
+                                                name="name"
+                                                autoComplete="name"
+                                                type="text"
+                                                placeholder="Nombre Completo"
+                                                required={!isLogin}
+                                                value={formData.fullName}
+                                                onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                                                style={inputStyle}
+                                                onFocus={handleFocus}
+                                                onBlur={handleBlur}
+                                            />
+                                        </div>
+
+                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                                            <div style={{ position: 'relative' }}>
+                                                <Award size={18} color="rgba(255,255,255,0.4)" style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)' }} />
+                                                <input
+                                                    id="handicap"
+                                                    name="handicap"
+                                                    type="number"
+                                                    placeholder="Hándicap"
+                                                    required={!isLogin}
+                                                    value={formData.handicap}
+                                                    onChange={(e) => setFormData({ ...formData, handicap: e.target.value })}
+                                                    style={inputStyle}
+                                                    onFocus={handleFocus}
+                                                    onBlur={handleBlur}
+                                                />
+                                            </div>
+                                            <div style={{ position: 'relative' }}>
+                                                <Hash size={18} color="rgba(255,255,255,0.4)" style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)' }} />
+                                                <input
+                                                    type="text"
+                                                    placeholder="Código Fed."
+                                                    required={!isLogin}
+                                                    value={formData.federationCode}
+                                                    onChange={(e) => setFormData({ ...formData, federationCode: e.target.value })}
+                                                    style={inputStyle}
+                                                    onFocus={handleFocus}
+                                                    onBlur={handleBlur}
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div style={{ position: 'relative' }}>
+                                            <Phone size={18} color="rgba(255,255,255,0.4)" style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)' }} />
+                                            <input
+                                                id="phone"
+                                                name="tel"
+                                                autoComplete="tel"
+                                                type="tel"
+                                                placeholder="Teléfono Celular"
+                                                required={!isLogin}
+                                                value={formData.phone}
+                                                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                                                style={inputStyle}
+                                                onFocus={handleFocus}
+                                                onBlur={handleBlur}
+                                            />
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+
+                            <div style={{ position: 'relative' }}>
+                                <Mail size={18} color="rgba(255,255,255,0.4)" style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)' }} />
+                                <input
+                                    id="email"
+                                    type="email"
+                                    name="email"
+                                    autoComplete="username"
+                                    placeholder="Correo Electrónico"
+                                    required
+                                    value={formData.email}
+                                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                    style={inputStyle}
+                                    onFocus={handleFocus}
+                                    onBlur={handleBlur}
+                                />
+                            </div>
+
+                            <div style={{ position: 'relative' }}>
+                                <Lock size={18} color="rgba(255,255,255,0.4)" style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)' }} />
+                                <input
+                                    id="password"
+                                    type={showPassword ? "text" : "password"}
+                                    name="password"
+                                    autoComplete={isLogin ? "current-password" : "new-password"}
+                                    placeholder="Contraseña"
+                                    required
+                                    value={formData.password}
+                                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                                    style={inputStyle}
+                                    onFocus={handleFocus}
+                                    onBlur={handleBlur}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    style={{
+                                        position: 'absolute',
+                                        right: '16px',
+                                        top: '50%',
+                                        transform: 'translateY(-50%)',
+                                        background: 'none',
+                                        border: 'none',
+                                        color: 'rgba(255,255,255,0.4)',
+                                        cursor: 'pointer',
+                                        padding: '4px',
+                                        display: 'flex',
+                                        alignItems: 'center'
+                                    }}
+                                >
+                                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                </button>
+                            </div>
+
+                            {error && (
+                                <motion.div
+                                    initial={{ opacity: 0, height: 0 }}
+                                    animate={{ opacity: 1, height: 'auto' }}
+                                    style={{
+                                        fontSize: '12px',
+                                        color: error.includes('exitoso') ? '#A3E635' : '#ef4444',
+                                        textAlign: 'center',
+                                        background: error.includes('exitoso') ? 'rgba(163, 230, 53, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                                        border: error.includes('exitoso') ? '1px solid rgba(163, 230, 53, 0.2)' : '1px solid rgba(239, 68, 68, 0.2)',
+                                        padding: '10px',
+                                        borderRadius: '12px',
+                                        marginTop: '4px'
+                                    }}
+                                >
+                                    {error}
+                                </motion.div>
+                            )}
+
+                            <div style={{ marginTop: '16px' }}>
+                                <motion.button
+                                    whileHover={{ scale: 1.02 }}
+                                    whileTap={{ scale: 0.98 }}
+                                    type="submit"
+                                    disabled={loading}
+                                    style={{
+                                        width: '100%',
+                                        padding: '16px',
+                                        borderRadius: '16px',
+                                        background: 'linear-gradient(135deg, var(--secondary) 0%, #10b981 100%)',
+                                        color: '#0E2F1F',
+                                        border: 'none',
+                                        fontSize: '14px',
+                                        fontWeight: '600',
+                                        letterSpacing: '1px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        gap: '12px',
+                                        cursor: loading ? 'default' : 'pointer',
+                                        boxShadow: '0 12px 24px rgba(163, 230, 53, 0.25)',
+                                        opacity: loading ? 0.8 : 1,
+                                    }}
+                                >
+                                    {loading ? <Loader2 className="animate-spin" size={20} /> : (
+                                        <>
+                                            {isLogin ? 'ENTRAR' : 'REGISTRARME'}
+                                            <ArrowRight size={18} />
+                                        </>
+                                    )}
+                                </motion.button>
+                            </div>
+                        </form>
+                    </div>
+
+                    {/* Footer Interactions */}
+                    <div style={{ marginTop: '32px', display: 'flex', flexDirection: 'column', gap: '24px', alignItems: 'center' }}>
+                        <button
+                            onClick={() => setIsLogin(!isLogin)}
+                            style={{
+                                background: 'none',
+                                border: 'none',
+                                color: 'rgba(255,255,255,0.6)',
+                                fontSize: '13px',
+                                fontWeight: '300',
+                                cursor: 'pointer'
+                            }}
+                        >
+                            {isLogin ? (
+                                <span>¿Nuevo en APEG? <span style={{ color: 'var(--secondary)', fontWeight: '500', marginLeft: '4px' }}>Crea tu cuenta</span></span>
+                            ) : (
+                                <span>¿Ya eres socio? <span style={{ color: 'var(--secondary)', fontWeight: '500', marginLeft: '4px' }}>Inicia sesión</span></span>
+                            )}
+                        </button>
+
+                        <div style={{ display: 'flex', alignItems: 'center', width: '100%', gap: '16px' }}>
+                            <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.06)' }} />
+                            <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1px' }}>o ingresa con</span>
+                            <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.06)' }} />
+                        </div>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', width: '100%', gap: '12px' }}>
+                            <motion.button
+                                whileHover={{ scale: 1.01, backgroundColor: 'rgba(255, 255, 255, 0.08)' }}
+                                whileTap={{ scale: 0.99 }}
+                                disabled={true}
+                                style={{
+                                    width: '100%',
+                                    padding: '14px',
+                                    background: 'rgba(255, 255, 255, 0.04)',
+                                    color: 'white',
+                                    borderRadius: '16px',
+                                    border: '1px solid rgba(255, 255, 255, 0.08)',
+                                    fontSize: '13px',
+                                    fontWeight: '400',
+                                    cursor: 'not-allowed',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '12px',
+                                    opacity: 0.5
+                                }}
                             >
-                                <div style={{ position: 'relative', marginBottom: '24px' }}>
-                                    <User size={18} color="#10b981" style={{ position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)' }} />
-                                    <input type="text" placeholder="Nombre Completo" required={!isLogin} value={formData.fullName} onChange={(e) => setFormData({ ...formData, fullName: e.target.value })} style={inputStyle} />
-                                </div>
-                                <div style={{ display: 'flex', gap: '16px', marginBottom: '24px' }}>
-                                    <div style={{ position: 'relative', flex: 1 }}>
-                                        <Award size={18} color="#10b981" style={{ position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)' }} />
-                                        <input type="number" placeholder="Hándicap" required={!isLogin} value={formData.handicap} onChange={(e) => setFormData({ ...formData, handicap: e.target.value })} style={inputStyle} />
-                                    </div>
-                                    <div style={{ position: 'relative', flex: 1 }}>
-                                        <Hash size={18} color="#10b981" style={{ position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)' }} />
-                                        <input type="text" placeholder="Cód. Fed." required={!isLogin} value={formData.federationCode} onChange={(e) => setFormData({ ...formData, federationCode: e.target.value })} style={inputStyle} />
-                                    </div>
-                                </div>
-                                <div style={{ position: 'relative', marginBottom: '24px' }}>
-                                    <Phone size={18} color="#10b981" style={{ position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)' }} />
-                                    <input type="tel" placeholder="Teléfono" required={!isLogin} value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} style={inputStyle} />
-                                </div>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
-
-                    <div style={{ position: 'relative', marginBottom: '24px' }}>
-                        <Mail size={18} color="#10b981" style={{ position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)' }} />
-                        <input type="email" placeholder="Correo Electrónico" required value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} style={inputStyle} />
+                                <svg width="20" height="20" viewBox="0 0 24 24">
+                                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
+                                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
+                                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
+                                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
+                                </svg>
+                                <span>Google</span>
+                            </motion.button>
+                        </div>
                     </div>
-
-                    <div style={{ position: 'relative', marginBottom: '24px' }}>
-                        <Lock size={18} color="#10b981" style={{ position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)' }} />
-                        <input type={showPassword ? "text" : "password"} placeholder="Contraseña" required value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} style={inputStyle} />
-                        <button type="button" onClick={() => setShowPassword(!showPassword)} style={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: '#10b981', cursor: 'pointer', padding: '4px' }}>
-                            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                        </button>
-                    </div>
-
-                    <AnimatePresence>
-                        {isLogin && (
-                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
-                                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
-                                    <input type="checkbox" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} style={{ accentColor: '#10b981', width: '16px', height: '16px' }} />
-                                    <span style={{ fontSize: '13px', color: '#666', fontWeight: '500' }}>Recordarme</span>
-                                </label>
-                                <button type="button" style={{ fontSize: '13px', color: '#666', fontWeight: '500', background: 'none', border: 'none', cursor: 'pointer' }}>¿Olvidaste tu contraseña?</button>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
-
-                    {!isLogin && <div style={{ height: '32px' }} />}
-
-                    {error && <div style={{ fontSize: '13px', color: error.includes('exitoso') ? '#10b981' : '#ef4444', marginBottom: '16px', textAlign: 'center' }}>{error}</div>}
-
-                    <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} type="submit" disabled={loading} style={{ width: '100%', padding: '16px', borderRadius: '12px', background: '#10b981', color: 'white', border: 'none', fontSize: '16px', fontWeight: '600', letterSpacing: '1px', cursor: loading ? 'default' : 'pointer', boxShadow: '0 8px 16px rgba(16, 185, 129, 0.25)', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                        {loading ? <Loader2 className="animate-spin" size={24} /> : (isLogin ? 'ENTRAR' : 'REGISTRARSE')}
-                    </motion.button>
-                </form>
-
-                <div style={{ marginTop: 'auto', paddingTop: '40px', textAlign: 'center' }}>
-                    <p style={{ fontSize: '14px', color: '#666', fontWeight: '500' }}>
-                        {isLogin ? '¿No tienes una cuenta?' : '¿Ya tienes una cuenta?'} {' '}
-                        <button onClick={() => setIsLogin(!isLogin)} style={{ background: 'none', border: 'none', color: '#10b981', fontWeight: '700', fontSize: '14px', cursor: 'pointer', padding: 0 }}>
-                            {isLogin ? 'Regístrate' : 'Inicia Sesión'}
-                        </button>
-                    </p>
                 </div>
-            </div>
+                </div>
+
+                <p style={{
+                    marginTop: '32px',
+                    color: 'rgba(255,255,255,0.2)',
+                    fontSize: '11px',
+                    textAlign: 'center',
+                    letterSpacing: '2px',
+                    textTransform: 'uppercase'
+                }}>
+                    © 2026 APEG
+                </p>
+            </motion.div>
         </div>
+        </>
     );
 };
 
+// Extracted styles and handlers
 const inputStyle: React.CSSProperties = {
     width: '100%',
-    padding: '12px 12px 12px 32px',
-    border: 'none',
-    borderBottom: '1.5px solid rgba(16, 185, 129, 0.3)',
-    background: 'transparent',
-    color: '#0E2F1F',
-    fontSize: '15px',
-    fontWeight: '500',
+    padding: '16px 16px 16px 48px',
+    borderRadius: '16px',
+    border: '1px solid rgba(255, 255, 255, 0.08)',
+    background: 'rgba(0, 0, 0, 0.2)',
+    color: 'white',
+    fontSize: '14px',
+    fontWeight: '300',
     outline: 'none',
-    transition: 'border-color 0.3s ease',
+    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+    boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.1)'
 };
 
-const AuthWithStyles = () => (
-    <>
-        <style>{`
-            input::placeholder { color: rgba(14, 47, 31, 0.4); font-weight: 400; }
-            input:focus { border-bottom-color: #10b981 !important; }
-        `}</style>
-        <Auth />
-    </>
-);
+const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+    e.target.style.borderColor = 'rgba(163, 230, 53, 0.4)';
+    e.target.style.background = 'rgba(0, 0, 0, 0.4)';
+    e.target.style.boxShadow = '0 0 0 4px rgba(163, 230, 53, 0.05), inset 0 2px 4px rgba(0,0,0,0.1)';
+};
 
-export default AuthWithStyles;
+const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    e.target.style.borderColor = 'rgba(255, 255, 255, 0.08)';
+    e.target.style.background = 'rgba(0, 0, 0, 0.2)';
+    e.target.style.boxShadow = 'inset 0 2px 4px rgba(0,0,0,0.1)';
+};
+
+export default Auth;
+
