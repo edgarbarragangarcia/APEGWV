@@ -126,7 +126,7 @@ const Auth: React.FC = () => {
 
 
     return (
-        <div style={{
+        <div className="modern-auth-bg" style={{
             minHeight: '100dvh',
             width: '100%',
             position: 'relative',
@@ -134,168 +134,100 @@ const Auth: React.FC = () => {
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            padding: '20px 0',
+            padding: '24px',
             fontFamily: '"Outfit", sans-serif',
-            overflow: 'hidden',
-            background: '#06120c'
+            overflow: 'hidden'
         }}>
-            {/* Animated Background Blobs */}
-            <motion.div
-                animate={{
-                    x: [-100, 100, -100],
-                    y: [-50, 80, -50],
-                    scale: [1, 1.3, 1],
-                }}
-                transition={{
-                    duration: 15,
-                    repeat: Infinity,
-                    ease: "easeInOut"
-                }}
-                style={{
-                    position: 'absolute',
-                    top: '-10%',
-                    right: '-10%',
-                    width: '400px',
-                    height: '400px',
-                    background: 'radial-gradient(circle, rgba(163, 230, 53, 0.1) 0%, transparent 70%)',
-                    zIndex: 0,
-                    pointerEvents: 'none',
-                    filter: 'blur(50px)'
-                }}
-            />
+            {/* Elegant Background Grid & Orbs */}
+            <div className="grid-overlay" />
+            <div className="auth-orb orb-1" />
+            <div className="auth-orb orb-2" />
 
             <motion.div
-                animate={{
-                    x: [80, -80, 80],
-                    y: [100, -50, 100],
-                    scale: [1.3, 1, 1.3],
-                }}
-                transition={{
-                    duration: 20,
-                    repeat: Infinity,
-                    ease: "easeInOut"
-                }}
-                style={{
-                    position: 'absolute',
-                    bottom: '-15%',
-                    left: '-10%',
-                    width: '500px',
-                    height: '500px',
-                    background: 'radial-gradient(circle, rgba(16, 185, 129, 0.08) 0%, transparent 70%)',
-                    zIndex: 0,
-                    pointerEvents: 'none',
-                    filter: 'blur(60px)'
-                }}
-            />
-
-            <motion.div
-                initial={{ opacity: 0, y: 30 }}
+                initial={{ opacity: 0, y: 40 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, ease: "easeOut" }}
+                transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
                 style={{
-                    width: '92%',
-                    maxWidth: 'var(--app-max-width)',
+                    width: '100%',
+                    maxWidth: '420px',
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
                     zIndex: 10
                 }}
             >
+                {/* Logo Area */}
+                <motion.div 
+                    initial={{ scale: 0.9, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ delay: 0.2, duration: 0.8, ease: "easeOut" }}
+                    style={{ marginBottom: '32px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}
+                >
+                    <div style={{
+                        width: '56px',
+                        height: '56px',
+                        borderRadius: '18px',
+                        background: 'linear-gradient(135deg, var(--secondary) 0%, #10b981 100%)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        marginBottom: '16px',
+                        boxShadow: '0 12px 24px rgba(163, 230, 53, 0.3), inset 0 2px 4px rgba(255,255,255,0.4)'
+                    }}>
+                        <Trophy size={28} color="#0E2F1F" />
+                    </div>
+                    <h2 style={{
+                        fontSize: '15px',
+                        fontWeight: '500',
+                        color: 'white',
+                        letterSpacing: '6px',
+                        textTransform: 'uppercase',
+                        margin: 0
+                    }}>APEG</h2>
+                </motion.div>
+
                 {/* Glass Card Container */}
                 <div style={{
-                    background: 'rgba(255, 255, 255, 0.05)',
-                    backdropFilter: 'blur(20px)',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
-                    borderRadius: '24px',
-                    padding: '18px',
+                    background: 'rgba(20, 20, 20, 0.4)',
+                    backdropFilter: 'blur(30px)',
+                    WebkitBackdropFilter: 'blur(30px)',
+                    border: '1px solid rgba(255, 255, 255, 0.08)',
+                    borderRadius: '32px',
+                    padding: '40px 32px',
                     width: '100%',
-                    boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
+                    boxShadow: '0 30px 60px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
                 }}>
 
-                    {/* App Description */}
-                    <div style={{ textAlign: 'center', marginBottom: '24px', marginTop: '10px' }}>
-                        <h2 style={{
-                            fontSize: '22px',
-                            fontWeight: '800',
-                            background: 'linear-gradient(135deg, #fff 0%, #ccc 100%)',
-                            WebkitBackgroundClip: 'text',
-                            WebkitTextFillColor: 'transparent',
-                            marginBottom: '8px',
-                            letterSpacing: '0.5px'
-                        }}>APEG GOLF</h2>
-
-                        <p style={{
-                            fontSize: '13px',
-                            color: 'rgba(255,255,255,0.8)',
-                            maxWidth: '280px',
-                            margin: '0 auto 16px auto',
-                            lineHeight: '1.5',
-                            fontWeight: '400'
-                        }}>
-                            La plataforma definitiva para gestionar tu vida como golfista profesional y amateur.
-                        </p>
-
-                        <div style={{
-                            display: 'flex',
-                            justifyContent: 'center',
-                            gap: '8px',
-                            flexWrap: 'wrap',
-                            marginBottom: '4px'
-                        }}>
-                            {features.map((item, i) => (
-                                <div key={i} style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '6px',
-                                    padding: '6px 12px',
-                                    background: 'rgba(163, 230, 53, 0.08)',
-                                    border: '1px solid rgba(163, 230, 53, 0.15)',
-                                    borderRadius: '16px',
-                                    transition: 'all 0.2s ease'
-                                }}>
-                                    <item.icon size={12} color="#A3E635" strokeWidth={2.5} />
-                                    <span style={{
-                                        fontSize: '11px',
-                                        fontWeight: '600',
-                                        color: '#A3E635',
-                                        letterSpacing: '0.3px'
-                                    }}>
-                                        {item.label}
-                                    </span>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                    <div style={{ textAlign: 'center', marginBottom: '15px' }}>
+                    <div style={{ textAlign: 'center', marginBottom: '36px' }}>
                         <h1 style={{
                             color: 'white',
-                            fontSize: '20px',
-                            fontWeight: '700',
+                            fontSize: '28px',
+                            fontWeight: '300',
                             letterSpacing: '-0.5px',
-                            marginBottom: '2px'
+                            marginBottom: '8px'
                         }}>
-                            {isLogin ? 'Bienvenido de nuevo' : 'Crea tu perfil'}
+                            {isLogin ? 'Bienvenido' : 'Crear perfil'}
                         </h1>
-                        <p style={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '12px' }}>
-                            {isLogin ? 'Accede a tu cuenta de golf' : 'Forma parte de la comunidad apeg'}
+                        <p style={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '14px', fontWeight: '300' }}>
+                            {isLogin ? 'Accede a tu portal exclusivo' : 'Únete a la élite del golf'}
                         </p>
                     </div>
 
                     {/* Form Container */}
-                    <div style={{ minHeight: isLogin ? '200px' : '320px', display: 'flex', flexDirection: 'column', transition: 'min-height 0.3s ease' }}>
-                        <form onSubmit={handleAuth} style={{ display: 'flex', flexDirection: 'column', gap: '8px', flex: 1 }}>
+                    <div style={{ minHeight: isLogin ? '200px' : '360px', display: 'flex', flexDirection: 'column', transition: 'min-height 0.4s cubic-bezier(0.4, 0, 0.2, 1)' }}>
+                        <form onSubmit={handleAuth} style={{ display: 'flex', flexDirection: 'column', gap: '12px', flex: 1 }}>
                             <AnimatePresence mode="popLayout">
                                 {!isLogin && (
                                     <motion.div
                                         key="register-fields"
-                                        initial={{ opacity: 0, scale: 0.95 }}
-                                        animate={{ opacity: 1, scale: 1 }}
-                                        exit={{ opacity: 0, scale: 0.95 }}
-                                        transition={{ duration: 0.2 }}
-                                        style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}
+                                        initial={{ opacity: 0, y: -10, scale: 0.98 }}
+                                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                                        exit={{ opacity: 0, y: -10, scale: 0.98 }}
+                                        transition={{ duration: 0.3 }}
+                                        style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}
                                     >
                                         <div style={{ position: 'relative' }}>
-                                            <User size={16} color="rgba(255,255,255,0.6)" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
+                                            <User size={18} color="rgba(255,255,255,0.4)" style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)' }} />
                                             <input
                                                 id="full-name"
                                                 name="name"
@@ -311,9 +243,9 @@ const Auth: React.FC = () => {
                                             />
                                         </div>
 
-                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                                             <div style={{ position: 'relative' }}>
-                                                <Award size={16} color="rgba(255,255,255,0.6)" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
+                                                <Award size={18} color="rgba(255,255,255,0.4)" style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)' }} />
                                                 <input
                                                     id="handicap"
                                                     name="handicap"
@@ -328,7 +260,7 @@ const Auth: React.FC = () => {
                                                 />
                                             </div>
                                             <div style={{ position: 'relative' }}>
-                                                <Hash size={16} color="rgba(255,255,255,0.6)" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
+                                                <Hash size={18} color="rgba(255,255,255,0.4)" style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)' }} />
                                                 <input
                                                     type="text"
                                                     placeholder="Código Fed."
@@ -343,7 +275,7 @@ const Auth: React.FC = () => {
                                         </div>
 
                                         <div style={{ position: 'relative' }}>
-                                            <Phone size={16} color="rgba(255,255,255,0.6)" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
+                                            <Phone size={18} color="rgba(255,255,255,0.4)" style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)' }} />
                                             <input
                                                 id="phone"
                                                 name="tel"
@@ -363,7 +295,7 @@ const Auth: React.FC = () => {
                             </AnimatePresence>
 
                             <div style={{ position: 'relative' }}>
-                                <Mail size={16} color="rgba(255,255,255,0.6)" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
+                                <Mail size={18} color="rgba(255,255,255,0.4)" style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)' }} />
                                 <input
                                     id="email"
                                     type="email"
@@ -380,7 +312,7 @@ const Auth: React.FC = () => {
                             </div>
 
                             <div style={{ position: 'relative' }}>
-                                <Lock size={16} color="rgba(255,255,255,0.6)" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
+                                <Lock size={18} color="rgba(255,255,255,0.4)" style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)' }} />
                                 <input
                                     id="password"
                                     type={showPassword ? "text" : "password"}
@@ -399,7 +331,7 @@ const Auth: React.FC = () => {
                                     onClick={() => setShowPassword(!showPassword)}
                                     style={{
                                         position: 'absolute',
-                                        right: '12px',
+                                        right: '16px',
                                         top: '50%',
                                         transform: 'translateY(-50%)',
                                         background: 'none',
@@ -411,7 +343,7 @@ const Auth: React.FC = () => {
                                         alignItems: 'center'
                                     }}
                                 >
-                                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                 </button>
                             </div>
 
@@ -420,43 +352,49 @@ const Auth: React.FC = () => {
                                     initial={{ opacity: 0, height: 0 }}
                                     animate={{ opacity: 1, height: 'auto' }}
                                     style={{
-                                        fontSize: '11px',
-                                        color: error.includes('exitoso') ? '#4ade80' : '#f87171',
+                                        fontSize: '12px',
+                                        color: error.includes('exitoso') ? '#A3E635' : '#ef4444',
                                         textAlign: 'center',
-                                        background: 'rgba(0,0,0,0.2)',
-                                        padding: '5px',
-                                        borderRadius: '8px'
+                                        background: error.includes('exitoso') ? 'rgba(163, 230, 53, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                                        border: error.includes('exitoso') ? '1px solid rgba(163, 230, 53, 0.2)' : '1px solid rgba(239, 68, 68, 0.2)',
+                                        padding: '10px',
+                                        borderRadius: '12px',
+                                        marginTop: '4px'
                                     }}
                                 >
                                     {error}
                                 </motion.div>
                             )}
 
-                            <div style={{ marginTop: '5px' }}>
+                            <div style={{ marginTop: '16px' }}>
                                 <motion.button
                                     whileHover={{ scale: 1.02 }}
                                     whileTap={{ scale: 0.98 }}
                                     type="submit"
                                     disabled={loading}
-                                    className="btn-primary"
                                     style={{
-                                        color: '#0f3923', // Keep the dark text color for this specific button as it was part of the original design on top of the gradient? Or should I strictly follow the new class which has primary text color? 
-                                        // The new class has `color: var(--primary)` which is dark green #0E2F1F.
-                                        // The original design had `#0f3923`. It's very similar.
-                                        // The new class is: color: var(--primary);
-                                        // Let's use the class fully.
-                                        // However, motion.button might need explicit styled props if I want to override or just className.
-                                        // Since I'm using className, I should remove the style prop EXCEPT for what's not in the class.
-                                        // But wait, the previous style had specific shadows.
-                                        // The class has shadows.
-                                        // I will remove the entire style prop and rely on the class.
-                                        // EXCEPT, wait. motion components accept style.
+                                        width: '100%',
+                                        padding: '16px',
+                                        borderRadius: '16px',
+                                        background: 'linear-gradient(135deg, var(--secondary) 0%, #10b981 100%)',
+                                        color: '#0E2F1F',
+                                        border: 'none',
+                                        fontSize: '14px',
+                                        fontWeight: '600',
+                                        letterSpacing: '1px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        gap: '12px',
+                                        cursor: loading ? 'default' : 'pointer',
+                                        boxShadow: '0 12px 24px rgba(163, 230, 53, 0.25)',
+                                        opacity: loading ? 0.8 : 1,
                                     }}
                                 >
-                                    {loading ? <Loader2 className="animate-spin" size={18} /> : (
+                                    {loading ? <Loader2 className="animate-spin" size={20} /> : (
                                         <>
                                             {isLogin ? 'ENTRAR' : 'REGISTRARME'}
-                                            <ArrowRight size={16} />
+                                            <ArrowRight size={18} />
                                         </>
                                     )}
                                 </motion.button>
@@ -465,67 +403,72 @@ const Auth: React.FC = () => {
                     </div>
 
                     {/* Footer Interactions */}
-                    <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'center' }}>
+                    <div style={{ marginTop: '32px', display: 'flex', flexDirection: 'column', gap: '24px', alignItems: 'center' }}>
                         <button
                             onClick={() => setIsLogin(!isLogin)}
                             style={{
                                 background: 'none',
                                 border: 'none',
-                                color: 'rgba(255,255,255,0.7)',
-                                fontSize: '12px',
+                                color: 'rgba(255,255,255,0.6)',
+                                fontSize: '13px',
+                                fontWeight: '300',
                                 cursor: 'pointer'
                             }}
                         >
                             {isLogin ? (
-                                <span>¿Nuevo en APEG? <span style={{ color: 'var(--secondary)', fontWeight: '600' }}>Crea tu cuenta</span></span>
+                                <span>¿Nuevo en APEG? <span style={{ color: 'var(--secondary)', fontWeight: '500', marginLeft: '4px' }}>Crea tu cuenta</span></span>
                             ) : (
-                                <span>¿Ya eres socio? <span style={{ color: 'var(--secondary)', fontWeight: '600' }}>Inicia sesión</span></span>
+                                <span>¿Ya eres socio? <span style={{ color: 'var(--secondary)', fontWeight: '500', marginLeft: '4px' }}>Inicia sesión</span></span>
                             )}
                         </button>
 
-                        <div style={{ width: '100%', height: '1px', background: 'rgba(255,255,255,0.1)' }} />
+                        <div style={{ display: 'flex', alignItems: 'center', width: '100%', gap: '16px' }}>
+                            <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.06)' }} />
+                            <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1px' }}>o ingresa con</span>
+                            <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.06)' }} />
+                        </div>
 
-                        <div style={{ display: 'flex', flexDirection: 'column', width: '100%', gap: '8px' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', width: '100%', gap: '12px' }}>
                             <motion.button
-                                whileHover={{ scale: 1.01 }}
+                                whileHover={{ scale: 1.01, backgroundColor: 'rgba(255, 255, 255, 0.08)' }}
                                 whileTap={{ scale: 0.99 }}
                                 disabled={true}
                                 style={{
                                     width: '100%',
-                                    padding: '10px',
-                                    background: 'rgba(255, 255, 255, 0.08)',
+                                    padding: '14px',
+                                    background: 'rgba(255, 255, 255, 0.04)',
                                     color: 'white',
-                                    borderRadius: '10px',
-                                    border: '1px solid rgba(255, 255, 255, 0.1)',
-                                    fontSize: '12px',
-                                    fontWeight: '500',
+                                    borderRadius: '16px',
+                                    border: '1px solid rgba(255, 255, 255, 0.08)',
+                                    fontSize: '13px',
+                                    fontWeight: '400',
                                     cursor: 'not-allowed',
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
-                                    gap: '8px',
-                                    opacity: 0.6
+                                    gap: '12px',
+                                    opacity: 0.5
                                 }}
                             >
-                                <svg width="18" height="18" viewBox="0 0 24 24">
+                                <svg width="20" height="20" viewBox="0 0 24 24">
                                     <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
                                     <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
                                     <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
                                     <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
                                 </svg>
-                                <span>Iniciar con Google</span>
+                                <span>Google</span>
                             </motion.button>
-
                         </div>
                     </div>
                 </div>
 
                 <p style={{
-                    marginTop: '12px',
-                    color: 'rgba(255,255,255,0.3)',
-                    fontSize: '9px',
+                    marginTop: '32px',
+                    color: 'rgba(255,255,255,0.2)',
+                    fontSize: '11px',
                     textAlign: 'center',
-                    letterSpacing: '1px'
+                    letterSpacing: '2px',
+                    textTransform: 'uppercase'
                 }}>
                     © 2026 APEG
                 </p>
@@ -537,23 +480,28 @@ const Auth: React.FC = () => {
 // Extracted styles and handlers
 const inputStyle: React.CSSProperties = {
     width: '100%',
-    padding: '12px 12px 12px 40px',
-    borderRadius: '12px',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
+    padding: '16px 16px 16px 48px',
+    borderRadius: '16px',
+    border: '1px solid rgba(255, 255, 255, 0.08)',
     background: 'rgba(0, 0, 0, 0.2)',
     color: 'white',
-    fontSize: '13px',
-    fontWeight: '400',
+    fontSize: '14px',
+    fontWeight: '300',
     outline: 'none',
-    transition: 'all 0.3s ease'
+    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+    boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.1)'
 };
 
 const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
-    e.target.style.borderColor = 'var(--secondary)';
+    e.target.style.borderColor = 'rgba(163, 230, 53, 0.4)';
+    e.target.style.background = 'rgba(0, 0, 0, 0.4)';
+    e.target.style.boxShadow = '0 0 0 4px rgba(163, 230, 53, 0.05), inset 0 2px 4px rgba(0,0,0,0.1)';
 };
 
 const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-    e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+    e.target.style.borderColor = 'rgba(255, 255, 255, 0.08)';
+    e.target.style.background = 'rgba(0, 0, 0, 0.2)';
+    e.target.style.boxShadow = 'inset 0 2px 4px rgba(0,0,0,0.1)';
 };
 
 export default Auth;
