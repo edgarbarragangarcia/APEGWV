@@ -118,6 +118,13 @@ const Auth: React.FC = () => {
     };
 
 
+    const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+        const { currentTarget, clientX, clientY } = e;
+        const { left, top } = currentTarget.getBoundingClientRect();
+        currentTarget.style.setProperty('--mouse-x', `${clientX - left}px`);
+        currentTarget.style.setProperty('--mouse-y', `${clientY - top}px`);
+    };
+
     return (
         <>
             <div className="modern-auth-bg" />
@@ -183,18 +190,24 @@ const Auth: React.FC = () => {
                 </motion.div>
 
                 {/* Glass Card Container */}
-                <div style={{
-                    background: 'rgba(20, 20, 20, 0.4)',
-                    backdropFilter: 'blur(30px)',
-                    WebkitBackdropFilter: 'blur(30px)',
-                    border: '1px solid rgba(255, 255, 255, 0.08)',
-                    borderRadius: '32px',
-                    padding: '40px 32px',
-                    width: '100%',
-                    boxShadow: '0 30px 60px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
-                }}>
-
-                    <div style={{ textAlign: 'center', marginBottom: '36px' }}>
+                <div 
+                    className="spotlight-card"
+                    onMouseMove={handleMouseMove}
+                    style={{
+                        background: 'rgba(20, 20, 20, 0.4)',
+                        backdropFilter: 'blur(30px)',
+                        WebkitBackdropFilter: 'blur(30px)',
+                        border: '1px solid rgba(255, 255, 255, 0.08)',
+                        borderRadius: '32px',
+                        padding: '40px 32px',
+                        width: '100%',
+                        boxShadow: '0 30px 60px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
+                    }}
+                >
+                    <div className="noise-overlay" />
+                    
+                    <div className="spotlight-content">
+                        <div style={{ textAlign: 'center', marginBottom: '36px' }}>
                         <h1 style={{
                             color: 'white',
                             fontSize: '28px',
@@ -456,6 +469,7 @@ const Auth: React.FC = () => {
                             </motion.button>
                         </div>
                     </div>
+                </div>
                 </div>
 
                 <p style={{
