@@ -119,22 +119,25 @@ const Auth: React.FC = () => {
 
 
     return (
-        <div className="modern-auth-bg" style={{
-            minHeight: '100dvh',
-            width: '100%',
-            position: 'relative',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '24px',
-            fontFamily: '"Outfit", sans-serif',
-            overflow: 'hidden'
-        }}>
-            {/* Elegant Background Grid & Orbs */}
-            <div className="grid-overlay" />
-            <div className="auth-orb orb-1" />
-            <div className="auth-orb orb-2" />
+        <>
+            <div className="modern-auth-bg" />
+            <div style={{
+                minHeight: '100dvh',
+                width: '100%',
+                position: 'relative',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '24px',
+                fontFamily: '"Outfit", sans-serif',
+                overflow: 'hidden',
+                zIndex: 1
+            }}>
+                {/* Elegant Background Grid & Orbs */}
+                <div className="grid-overlay" />
+                <div className="auth-orb orb-1" />
+                <div className="auth-orb orb-2" />
 
             <motion.div
                 initial={{ opacity: 0, y: 40 }}
@@ -467,6 +470,7 @@ const Auth: React.FC = () => {
                 </p>
             </motion.div>
         </div>
+        </>
     );
 };
 
