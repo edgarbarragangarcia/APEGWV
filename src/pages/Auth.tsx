@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../services/SupabaseManager';
-import { Mail, Lock, User, Loader2, ArrowRight, Phone, Award, Hash, Trophy, Eye, EyeOff } from 'lucide-react';
+import { Mail, Lock, User, Loader2, ArrowRight, Phone, Award, Hash, Eye, EyeOff } from 'lucide-react';
 
 
 const Auth: React.FC = () => {
