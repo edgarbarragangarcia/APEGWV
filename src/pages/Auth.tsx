@@ -167,17 +167,23 @@ const Auth: React.FC = () => {
                     style={{ marginBottom: '32px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}
                 >
                     <div style={{
-                        width: '56px',
-                        height: '56px',
-                        borderRadius: '18px',
-                        background: 'linear-gradient(135deg, var(--secondary) 0%, #10b981 100%)',
+                        width: '72px',
+                        height: '72px',
+                        borderRadius: '50%',
+                        background: '#ffffff',
+                        border: '4px solid #a3e635',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         marginBottom: '16px',
-                        boxShadow: '0 12px 24px rgba(163, 230, 53, 0.3), inset 0 2px 4px rgba(255,255,255,0.4)'
+                        boxShadow: '0 0 32px rgba(163, 230, 53, 0.6), inset 0 4px 8px rgba(0,0,0,0.05)'
                     }}>
-                        <Trophy size={28} color="#0E2F1F" />
+                        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <ellipse cx="12" cy="18" rx="8" ry="3.5" fill="#0A364D" />
+                            <ellipse cx="12" cy="18" rx="2.5" ry="1.2" fill="#ffffff" />
+                            <rect x="11.2" y="5" width="1.6" height="13" fill="#0A364D" />
+                            <path d="M12.8 5 L18 5.5 C19.5 5.7 19.5 9.3 18 9.5 L12.8 10 V5 Z" fill="#0A364D" />
+                        </svg>
                     </div>
                     <h2 style={{
                         fontSize: '15px',
