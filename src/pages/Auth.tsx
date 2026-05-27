@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../services/SupabaseManager';
-import { Mail, Lock, User, Loader2, ArrowRight, Phone, Award, Hash, Trophy, Activity, Zap, Users, Eye, EyeOff } from 'lucide-react';
+import { Mail, Lock, User, Loader2, ArrowRight, Phone, Award, Hash, Trophy, Eye, EyeOff } from 'lucide-react';
 
 
 const Auth: React.FC = () => {
@@ -17,13 +17,6 @@ const Auth: React.FC = () => {
         phone: ''
     });
     const [showPassword, setShowPassword] = useState(false);
-
-    const features = [
-        { icon: Trophy, label: 'Torneos' },
-        { icon: Activity, label: 'Hándicap' },
-        { icon: Zap, label: 'Resultados' },
-        { icon: Users, label: 'Comunidad' }
-    ];
 
     const handleAuth = async (e: React.FormEvent) => {
         e.preventDefault();
