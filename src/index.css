@@ -31,12 +31,15 @@
 
 body {
   font-family: var(--font-main);
-  background-color: #0e2f1f;
-  /* Match auth background for notch */
+  background-color: #050a07;
+  background-image: url('/auth-bg.png');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
   color: var(--text-main);
   line-height: 1.6;
   overflow-x: hidden;
-  -webkit-font-smoothing: antialiased;
   position: relative;
   width: 100%;
   overscroll-behavior: none;
@@ -331,34 +334,7 @@ button:active {
   }
 }
 
-/* Modern Premium Auth Background - Glass Green Aesthetic */
-.modern-auth-bg {
-  position: fixed;
-  inset: 0;
-  background-color: #050a07;
-  background-image: url('/auth-bg.png');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  z-index: -2;
-  overflow: hidden;
-}
 
-/* Optional subtle pulse to make it feel alive */
-.modern-auth-bg::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: rgba(0,0,0,0.2);
-  z-index: -1;
-  pointer-events: none;
-  animation: bg-pulse 10s ease-in-out infinite alternate;
-}
-
-@keyframes bg-pulse {
-  0% { opacity: 0; }
-  100% { opacity: 0.3; }
-}
 
 .grid-overlay {
   position: absolute;

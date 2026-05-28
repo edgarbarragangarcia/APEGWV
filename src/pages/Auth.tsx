@@ -127,7 +127,6 @@ const Auth: React.FC = () => {
 
     return (
         <>
-            <div className="modern-auth-bg" />
             <div style={{
                 minHeight: '100dvh',
                 width: '100%',
