@@ -134,7 +134,7 @@ const Auth: React.FC = () => {
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                padding: '60px 24px 40px 24px',
+                padding: 'calc(env(safe-area-inset-top) + 40px) 24px calc(env(safe-area-inset-bottom) + 40px) 24px',
                 fontFamily: '"Outfit", sans-serif',
                 overflowY: 'auto',
                 overflowX: 'hidden',
@@ -142,6 +142,9 @@ const Auth: React.FC = () => {
             }}>
                 {/* Elegant Background Grid & Orbs */}
                 <div className="grid-overlay" />
+
+                {/* Top spacer for vertical centering */}
+                <div style={{ flex: 1, minHeight: '10px' }} />
 
             <motion.div
                 initial={{ opacity: 0, y: 40 }}
@@ -153,7 +156,6 @@ const Auth: React.FC = () => {
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
-                    margin: 'auto 0',
                     zIndex: 10
                 }}
             >
@@ -451,6 +453,9 @@ const Auth: React.FC = () => {
                     © 2026 APEG
                 </p>
             </motion.div>
+            
+            {/* Bottom spacer for vertical centering */}
+            <div style={{ flex: 1, minHeight: '10px' }} />
         </div>
         </>
     );
