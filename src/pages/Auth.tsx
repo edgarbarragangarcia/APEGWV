@@ -143,8 +143,6 @@ const Auth: React.FC = () => {
             }}>
                 {/* Elegant Background Grid & Orbs */}
                 <div className="grid-overlay" />
-                <div className="auth-orb orb-1" />
-                <div className="auth-orb orb-2" />
 
             <motion.div
                 initial={{ opacity: 0, y: 40 }}
