@@ -134,10 +134,10 @@ const Auth: React.FC = () => {
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                justifyContent: 'center',
-                padding: '24px',
+                padding: '60px 24px 40px 24px',
                 fontFamily: '"Outfit", sans-serif',
-                overflow: 'hidden',
+                overflowY: 'auto',
+                overflowX: 'hidden',
                 zIndex: 1
             }}>
                 {/* Elegant Background Grid & Orbs */}
@@ -153,6 +153,7 @@ const Auth: React.FC = () => {
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
+                    margin: 'auto 0',
                     zIndex: 10
                 }}
             >
