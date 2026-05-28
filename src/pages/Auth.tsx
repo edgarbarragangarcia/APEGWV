@@ -126,7 +126,19 @@ const Auth: React.FC = () => {
     };
 
     return (
-        <>
+        <div style={{ position: 'relative', width: '100%', minHeight: '100dvh', backgroundColor: '#050a07' }}>
+            {/* Fixed Background exclusively for Auth */}
+            <div style={{
+                position: 'fixed',
+                inset: 0,
+                backgroundImage: "url('/auth-bg.png')",
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat',
+                zIndex: 0
+            }} />
+            
+            {/* Main Auth Content Container */}
             <div style={{
                 minHeight: '100dvh',
                 width: '100%',
@@ -457,7 +469,7 @@ const Auth: React.FC = () => {
             {/* Bottom spacer for vertical centering */}
             <div style={{ flex: 1, minHeight: '10px' }} />
         </div>
-        </>
+        </div>
     );
 };
 

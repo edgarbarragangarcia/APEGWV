@@ -31,11 +31,7 @@
 
 body {
   font-family: var(--font-main);
-  background-color: #050a07;
-  background-image: url('/auth-bg.png');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
+  background-color: #0e2f1f;
   color: var(--text-main);
   line-height: 1.6;
   overflow-x: hidden;
