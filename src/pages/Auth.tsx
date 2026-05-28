@@ -158,6 +158,42 @@ const Auth: React.FC = () => {
             >
 
 
+                {/* App Description Area */}
+                <motion.div 
+                    initial={{ scale: 0.95, opacity: 0, y: -20 }}
+                    animate={{ scale: 1, opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2, duration: 0.8, ease: "easeOut" }}
+                    style={{ 
+                        marginBottom: '40px', 
+                        display: 'flex', 
+                        flexDirection: 'column', 
+                        alignItems: 'center',
+                        textAlign: 'center',
+                        padding: '0 20px'
+                    }}
+                >
+                    <h2 style={{
+                        fontSize: '28px',
+                        fontWeight: '700',
+                        color: 'white',
+                        letterSpacing: '-0.5px',
+                        marginBottom: '12px',
+                        lineHeight: '1.2'
+                    }}>
+                        Comunidad <span style={{ color: '#a3e635' }}>APEG</span>
+                    </h2>
+                    <p style={{
+                        color: 'rgba(255, 255, 255, 0.7)',
+                        fontSize: '15px',
+                        fontWeight: '300',
+                        lineHeight: '1.6',
+                        maxWidth: '320px',
+                        margin: 0
+                    }}>
+                        El portal exclusivo para llevar tu juego al siguiente nivel. Gestiona tus rondas, compite y conéctate.
+                    </p>
+                </motion.div>
+
                 {/* Glass Card Container */}
                 <div 
                     className="spotlight-card"
