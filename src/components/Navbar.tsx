@@ -17,7 +17,7 @@ const Navbar: React.FC = () => {
         '/', '/green-fee', '/tournaments', '/profile', '/round', '/play-mode',
         '/friend-selection', '/create-group', '/select-course', '/my-store',
         '/my-reservations', '/settings', '/rounds', '/cart', '/checkout',
-        '/my-events', '/my-coupons', '/notifications'
+        '/my-events', '/my-coupons', '/notifications', '/community'
     ];
     const isCategoryPage = location.pathname.includes('/category/');
     const isTransparentNavbar = isCategoryPage || transparentRoutes.some(route =>
