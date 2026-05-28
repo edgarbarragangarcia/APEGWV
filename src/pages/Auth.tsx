@@ -156,41 +156,7 @@ const Auth: React.FC = () => {
                     zIndex: 10
                 }}
             >
-                {/* Logo Area */}
-                <motion.div 
-                    initial={{ scale: 0.9, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{ delay: 0.2, duration: 0.8, ease: "easeOut" }}
-                    style={{ marginBottom: '32px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}
-                >
-                    <div style={{
-                        width: '72px',
-                        height: '72px',
-                        borderRadius: '50%',
-                        background: '#ffffff',
-                        border: '4px solid #a3e635',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        marginBottom: '16px',
-                        boxShadow: '0 0 32px rgba(163, 230, 53, 0.6), inset 0 4px 8px rgba(0,0,0,0.05)'
-                    }}>
-                        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <ellipse cx="12" cy="18" rx="8" ry="3.5" fill="#0A364D" />
-                            <ellipse cx="12" cy="18" rx="2.5" ry="1.2" fill="#ffffff" />
-                            <rect x="11.2" y="5" width="1.6" height="13" fill="#0A364D" />
-                            <path d="M12.8 5 L18 5.5 C19.5 5.7 19.5 9.3 18 9.5 L12.8 10 V5 Z" fill="#0A364D" />
-                        </svg>
-                    </div>
-                    <h2 style={{
-                        fontSize: '15px',
-                        fontWeight: '500',
-                        color: 'white',
-                        letterSpacing: '6px',
-                        textTransform: 'uppercase',
-                        margin: 0
-                    }}>APEG</h2>
-                </motion.div>
+
 
                 {/* Glass Card Container */}
                 <div 
