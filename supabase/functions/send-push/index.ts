@@ -5,7 +5,7 @@ import * as jwt from "https://deno.land/x/djwt@v2.8/mod.ts";
 
 const apnsKeyId = Deno.env.get("APNS_KEY_ID") || "";
 const apnsTeamId = Deno.env.get("APNS_TEAM_ID") || "";
-const apnsBundleId = Deno.env.get("APNS_BUNDLE_ID") || "com.antigravity.APEGWV"; // Reemplaza con tu Bundle ID real si es diferente
+const apnsBundleId = Deno.env.get("APNS_BUNDLE_ID") || "openview.APEGWV"; // Reemplaza con tu Bundle ID real si es diferente
 const apnsAuthKeyBase64 = Deno.env.get("APNS_AUTH_KEY_BASE64") || "";
 const isProduction = Deno.env.get("APNS_IS_PRODUCTION") === "true";
 
