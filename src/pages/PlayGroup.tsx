@@ -113,6 +113,7 @@ const PlayGroup: React.FC = () => {
     };
 
     const handleSelectPlayer = (participant: GroupParticipant) => {
+        localStorage.setItem('play_group_selected_participant', participant.id);
         if (!session) {
             localStorage.setItem('play_group_redirect', window.location.pathname);
             navigate('/auth');
