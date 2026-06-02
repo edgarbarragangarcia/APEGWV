@@ -115,19 +115,19 @@ const PlayGroup: React.FC = () => {
     const handleSelectPlayer = async (participant: GroupParticipant) => {
         localStorage.setItem('play_group_selected_participant', participant.id);
 
+        let validGroupId: string | undefined = groupId;
         // Validate UUID
         const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
         if (!uuidRegex.test(groupId!)) {
-            alert('Este grupo usa un formato antiguo. Pídele al organizador que borre este grupo y lo vuelva a crear para generar un link compatible.');
-            return;
+            validGroupId = undefined;
         }
 
-        if (session) {
+        if (session && validGroupId) {
             try {
                 // Attempt to create game_groups row
                 const { error: groupError } = await supabase
                     .from('game_groups' as any)
-                    .insert([{ id: groupId, course_id: 'club-militar', status: 'active', created_by: session.user.id }]);
+                    .insert([{ id: validGroupId, course_id: 'club-militar', status: 'active', created_by: session.user.id }]);
                 
                 // Ignore unique_violation if the group is already created by another player
                 if (groupError && groupError.code !== '23505') {
@@ -137,7 +137,7 @@ const PlayGroup: React.FC = () => {
                 // Attempt to add this user as a group member
                 const { error: memberError } = await supabase
                     .from('group_members' as any)
-                    .insert([{ group_id: groupId, user_id: session.user.id, status: 'accepted' }]);
+                    .insert([{ group_id: validGroupId, user_id: session.user.id, status: 'accepted' }]);
 
                 if (memberError && memberError.code !== '23505') {
                     console.error('Error adding group member:', memberError);
