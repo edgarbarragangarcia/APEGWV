@@ -147,15 +147,16 @@ const AppContent: React.FC = () => {
         inset: 0
       }}
     >
-      {session && !isRegistrationPage && !isPlayGroup && <Navbar />}
+      {session && !isRegistrationPage && !isPlayGroup && !isRoundPage && <Navbar />}
 
       <main
         className={`${session && !isFixedPage ? "page-content container" : ""} ${isRoundPage || isNotificationsPage || isRoundDetail ? 'round-page-content' : ''} `}
-        style={(!session && !isRegistrationPage && !isPlayGroup) ? { flex: 1, overflowX: 'hidden', overflowY: 'auto', display: 'flex', flexDirection: 'column', width: '100%', padding: 0, margin: 0, position: 'relative' } : { flex: 1, overflow: (isRegistrationPage || isPlayGroup) ? 'auto' : (isFixedPage ? 'hidden' : 'auto'), position: 'relative' }}
+        style={(!session && !isRegistrationPage && !isPlayGroup && !isRoundPage) ? { flex: 1, overflowX: 'hidden', overflowY: 'auto', display: 'flex', flexDirection: 'column', width: '100%', padding: 0, margin: 0, position: 'relative' } : { flex: 1, overflow: (isRegistrationPage || isPlayGroup) ? 'auto' : (isFixedPage ? 'hidden' : 'auto'), position: 'relative' }}
       >
         <Routes>
           <Route path="/tournament-register/:idOrSlug" element={<TournamentRegistration />} />
           <Route path="/play-group/:tournamentId/:groupId" element={<PlayGroup />} />
+          <Route path="/round" element={<Round />} />
           {!session ? (
             <>
               <Route path="/auth" element={<Auth />} />
@@ -201,7 +202,7 @@ const AppContent: React.FC = () => {
         </Routes>
       </main>
 
-      {session && !isRegistrationPage && !isPlayGroup && <BottomNav />}
+      {session && !isRegistrationPage && !isPlayGroup && !isRoundPage && <BottomNav />}
 
       {showOnboarding && session && !isRegistrationPage && !isPlayGroup && (
         <OnboardingTour
