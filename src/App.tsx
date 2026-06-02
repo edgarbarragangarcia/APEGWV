@@ -155,7 +155,7 @@ const AppContent: React.FC = () => {
       >
         <Routes>
           <Route path="/tournament-register/:idOrSlug" element={<TournamentRegistration />} />
-          <Route path="/play-group/:tournamentId/:groupId" element={<PlayGroup />} />
+          <Route path="/play-group/:groupSlug" element={<PlayGroup />} />
           <Route path="/round" element={<Round />} />
           {!session ? (
             <>

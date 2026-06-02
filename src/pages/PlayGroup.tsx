@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { supabase } from '../services/SupabaseManager';
-import { useAuth } from '../context/AuthContext';
 import { Navigation, Loader2, User } from 'lucide-react';
 import PageHero from '../components/PageHero';
 
@@ -14,42 +13,57 @@ interface GroupParticipant {
 }
 
 const PlayGroup: React.FC = () => {
-    const { tournamentId, groupId } = useParams<{ tournamentId: string, groupId: string }>();
+    const { groupSlug } = useParams<{ groupSlug: string }>();
     const navigate = useNavigate();
-    const { session } = useAuth();
 
     const [loading, setLoading] = useState(true);
     const [tournamentName, setTournamentName] = useState('');
     const [groupName, setGroupName] = useState('');
+    const [groupId, setGroupId] = useState('');
     const [startHole, setStartHole] = useState<number>(1);
     const [participants, setParticipants] = useState<GroupParticipant[]>([]);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        if (tournamentId && groupId) {
-            fetchGroupData();
+        if (groupSlug) {
+            fetchGroupBySlug();
         }
-    }, [tournamentId, groupId]);
+    }, [groupSlug]);
 
-    const fetchGroupData = async () => {
+    const fetchGroupBySlug = async () => {
         setLoading(true);
         try {
-            const { data: tournament, error: tournamentError } = await (supabase
+            // Search all tournaments for a group with this slug
+            const { data: tournaments, error: tError } = await (supabase
                 .from('tournaments') as any)
-                .select('name, guests, groups')
-                .eq('id', tournamentId || '')
-                .single();
+                .select('id, name, guests, groups');
 
-            if (tournamentError) throw tournamentError;
-            setTournamentName(tournament.name);
+            if (tError) throw tError;
 
-            const group = tournament.groups?.find((g: any) => g.id === groupId);
-            if (!group) {
+            let foundTournament: any = null;
+            let foundGroup: any = null;
+
+            for (const t of (tournaments || [])) {
+                if (t.groups && Array.isArray(t.groups)) {
+                    const g = t.groups.find((gr: any) => gr.slug === groupSlug);
+                    if (g) {
+                        foundTournament = t;
+                        foundGroup = g;
+                        break;
+                    }
+                }
+            }
+
+            if (!foundTournament || !foundGroup) {
                 throw new Error('Grupo no encontrado');
             }
-            setGroupName(group.name);
-            setStartHole(group.start_hole || 1);
 
+            setTournamentName(foundTournament.name);
+            setGroupName(foundGroup.name);
+            setGroupId(foundGroup.id);
+            setStartHole(foundGroup.start_hole || 1);
+
+            // Fetch registrations for this tournament
             const { data: registrations, error: regError } = await (supabase
                 .from('tournament_registrations') as any)
                 .select(`
@@ -61,20 +75,20 @@ const PlayGroup: React.FC = () => {
                         handicap
                     )
                 `)
-                .eq('tournament_id', tournamentId || '');
+                .eq('tournament_id', foundTournament.id);
 
             if (regError) throw regError;
 
-            const manualGuestEntries = tournament.guests ? tournament.guests.split('\n').filter(Boolean).map((g: string) => {
+            const manualGuestEntries = foundTournament.guests ? foundTournament.guests.split('\n').filter(Boolean).map((g: string) => {
                 const [name, code] = g.split('|');
                 return { name: name?.trim() || '', code: code?.trim() || '' };
             }) : [];
 
             const groupParticipantsData: GroupParticipant[] = [];
 
-            // Add registered
+            // Add registered participants
             registrations?.forEach((reg: any) => {
-                if (group.participants.includes(reg.id)) {
+                if (foundGroup.participants.includes(reg.id)) {
                     const profile = reg.profiles || null;
                     const nameMatch = reg.player_name || profile?.full_name || 'Invitado';
                     groupParticipantsData.push({
@@ -86,8 +100,8 @@ const PlayGroup: React.FC = () => {
                 }
             });
 
-            // Add guests
-            group.participants.forEach((pid: string) => {
+            // Add manual guests
+            foundGroup.participants.forEach((pid: string) => {
                 if (pid.startsWith('manual-guest-')) {
                     const index = parseInt(pid.replace('manual-guest-', ''));
                     const guest = manualGuestEntries[index];
@@ -112,49 +126,18 @@ const PlayGroup: React.FC = () => {
         }
     };
 
-    const handleSelectPlayer = async (participant: GroupParticipant) => {
+    const handleSelectPlayer = (participant: GroupParticipant) => {
         localStorage.setItem('play_group_selected_participant', participant.id);
-
-        let validGroupId: string | undefined = groupId;
-        // Validate UUID
-        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-        if (!uuidRegex.test(groupId!)) {
-            validGroupId = undefined;
-        }
-
-        if (session && validGroupId) {
-            try {
-                // Attempt to create game_groups row
-                const { error: groupError } = await supabase
-                    .from('game_groups' as any)
-                    .insert([{ id: validGroupId, course_id: 'club-militar', status: 'active', created_by: session.user.id }]);
-                
-                // Ignore unique_violation if the group is already created by another player
-                if (groupError && groupError.code !== '23505') {
-                    console.error('Error creating game group:', groupError);
-                }
-
-                // Attempt to add this user as a group member
-                const { error: memberError } = await supabase
-                    .from('group_members' as any)
-                    .insert([{ group_id: validGroupId, user_id: session.user.id, status: 'accepted' }]);
-
-                if (memberError && memberError.code !== '23505') {
-                    console.error('Error adding group member:', memberError);
-                }
-            } catch (err) {
-                console.error('Error in handleSelectPlayer Supabase inserts:', err);
-            }
-        }
+        localStorage.setItem('play_group_selected_name', participant.full_name);
 
         // Configuration for the round
-        localStorage.setItem('round_course', 'club-militar');
+        localStorage.setItem('round_course', JSON.stringify({ id: 'club-militar', club: 'Club Militar de Golf', name: 'Club Militar de Golf', city: 'Sopó', lat: 4.8897, lon: -73.9483 }));
         localStorage.setItem('round_current_hole', startHole.toString());
-        localStorage.setItem('round_group_id', groupId!);
+        localStorage.setItem('round_group_id', groupId);
 
         navigate('/round', { 
             state: { 
-                course: { id: 'club-militar', club: 'Club Militar de Golf', city: 'Sopó' }, 
+                course: { id: 'club-militar', club: 'Club Militar de Golf', name: 'Club Militar de Golf', city: 'Sopó', lat: 4.8897, lon: -73.9483 }, 
                 groupId: groupId 
             } 
         });

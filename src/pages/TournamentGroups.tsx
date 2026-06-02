@@ -24,6 +24,7 @@ interface TournamentGroup {
     name: string;
     tee_time: string;
     start_hole?: number;
+    slug?: string;
     participants: string[]; // array of participant IDs
 }
 
@@ -149,11 +150,19 @@ const TournamentGroups: React.FC = () => {
         p.full_name?.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
+    const generateSlug = () => {
+        const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+        let slug = '';
+        for (let i = 0; i < 6; i++) slug += chars[Math.floor(Math.random() * chars.length)];
+        return slug;
+    };
+
     const addGroup = () => {
         const newGroup: TournamentGroup = {
             id: crypto.randomUUID(),
             name: `Grupo ${groups.length + 1}`,
             tee_time: '',
+            slug: generateSlug(),
             participants: []
         };
         setGroups(prev => [...prev, newGroup]);
@@ -176,7 +185,12 @@ const TournamentGroups: React.FC = () => {
     };
 
     const copyGroupLink = (groupId: string) => {
-        const link = `${window.location.origin}/play-group/${id}/${groupId}`;
+        const group = groups.find(g => g.id === groupId);
+        if (!group?.slug) {
+            showToast('Guarda los grupos primero para generar el link', 'warning');
+            return;
+        }
+        const link = `${window.location.origin}/play-group/${group.slug}`;
         navigator.clipboard.writeText(link)
             .then(() => showToast('Link copiado al portapapeles', 'success'))
             .catch(() => showToast('Error al copiar link', 'error'));
