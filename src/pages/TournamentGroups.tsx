@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../services/SupabaseManager';
-import { Plus, Trash2, Save, Download, UserPlus, X, Clock, ChevronDown, ChevronUp, Search } from 'lucide-react';
+import { Plus, Trash2, Save, Download, UserPlus, X, Clock, ChevronDown, ChevronUp, Search, Share2 } from 'lucide-react';
 import Skeleton from '../components/Skeleton';
 import PageHero from '../components/PageHero';
 import PageHeader from '../components/PageHeader';
@@ -23,6 +23,7 @@ interface TournamentGroup {
     id: string;
     name: string;
     tee_time: string;
+    start_hole?: number;
     participants: string[]; // array of participant IDs
 }
 
@@ -168,6 +169,17 @@ const TournamentGroups: React.FC = () => {
 
     const updateGroupTeeTime = (groupId: string, teeTime: string) => {
         setGroups(prev => prev.map(g => g.id === groupId ? { ...g, tee_time: teeTime } : g));
+    };
+
+    const updateGroupStartHole = (groupId: string, startHole: number) => {
+        setGroups(prev => prev.map(g => g.id === groupId ? { ...g, start_hole: startHole } : g));
+    };
+
+    const copyGroupLink = (groupId: string) => {
+        const link = `${window.location.origin}/play-group/${id}/${groupId}`;
+        navigator.clipboard.writeText(link)
+            .then(() => showToast('Link copiado al portapapeles', 'success'))
+            .catch(() => showToast('Error al copiar link', 'error'));
     };
 
     const addParticipantToGroup = (groupId: string, participantId: string) => {
@@ -569,7 +581,23 @@ const TournamentGroups: React.FC = () => {
                                                     style={{
                                                         background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.5)',
                                                         fontSize: '11px', fontWeight: '700', padding: 0, margin: 0,
-                                                        outline: 'none', fontFamily: 'inherit', colorScheme: 'dark'
+                                                        outline: 'none', fontFamily: 'inherit', colorScheme: 'dark',
+                                                        width: '60px'
+                                                    }}
+                                                />
+                                                <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: '10px' }}>|</span>
+                                                <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '10px', fontWeight: '800' }}>Hoyo:</span>
+                                                <input
+                                                    type="number"
+                                                    min="1"
+                                                    max="18"
+                                                    value={group.start_hole || ''}
+                                                    onChange={(e) => updateGroupStartHole(group.id, parseInt(e.target.value) || 1)}
+                                                    placeholder="1"
+                                                    style={{
+                                                        background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.5)',
+                                                        fontSize: '11px', fontWeight: '700', padding: 0, margin: 0,
+                                                        outline: 'none', fontFamily: 'inherit', width: '30px'
                                                     }}
                                                 />
                                             </div>
@@ -594,6 +622,20 @@ const TournamentGroups: React.FC = () => {
                                         >
                                             {collapsedGroups.has(group.id) ? <ChevronDown size={14} /> : <ChevronUp size={14} />}
                                         </button>
+
+                                        <motion.button
+                                            whileTap={{ scale: 0.85 }}
+                                            onClick={() => copyGroupLink(group.id)}
+                                            style={{
+                                                background: 'rgba(163, 230, 53, 0.08)', border: '1px solid rgba(163, 230, 53, 0.12)',
+                                                borderRadius: '9px', width: '28px', height: '28px',
+                                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                cursor: 'pointer', color: 'var(--secondary)'
+                                            }}
+                                            title="Copiar Link de Juego"
+                                        >
+                                            <Share2 size={12} />
+                                        </motion.button>
 
                                         <motion.button
                                             whileTap={{ scale: 0.85 }}

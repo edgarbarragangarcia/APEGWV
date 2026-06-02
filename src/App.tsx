@@ -43,6 +43,7 @@ import OfflineOverlay from './components/OfflineOverlay';
 import MercadoPagoCallback from './pages/MercadoPagoCallback';
 import TournamentRegistration from './pages/TournamentRegistration';
 import TournamentGroups from './pages/TournamentGroups';
+import PlayGroup from './pages/PlayGroup';
 
 
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -131,7 +132,8 @@ const AppContent: React.FC = () => {
   const isRoundDetail = location.pathname.startsWith('/rounds/');
   const isRegistrationPage = location.pathname.startsWith('/tournament-register/');
   const isEventsPage = location.pathname === '/my-events' || location.pathname.includes('/my-events/');
-  const isFixedPage = isRoundPage || isNotificationsPage || isPlayFlow || isRoundDetail || isRegistrationPage || isEventsPage;
+  const isPlayGroup = location.pathname.startsWith('/play-group/');
+  const isFixedPage = isRoundPage || isNotificationsPage || isPlayFlow || isRoundDetail || isRegistrationPage || isEventsPage || isPlayGroup;
 
   return (
     <div
@@ -145,14 +147,15 @@ const AppContent: React.FC = () => {
         inset: 0
       }}
     >
-      {session && !isRegistrationPage && <Navbar />}
+      {session && !isRegistrationPage && !isPlayGroup && <Navbar />}
 
       <main
         className={`${session && !isFixedPage ? "page-content container" : ""} ${isRoundPage || isNotificationsPage || isRoundDetail ? 'round-page-content' : ''} `}
-        style={(!session && !isRegistrationPage) ? { flex: 1, overflowX: 'hidden', overflowY: 'auto', display: 'flex', flexDirection: 'column', width: '100%', padding: 0, margin: 0, position: 'relative' } : { flex: 1, overflow: isRegistrationPage ? 'auto' : (isFixedPage ? 'hidden' : 'auto'), position: 'relative' }}
+        style={(!session && !isRegistrationPage && !isPlayGroup) ? { flex: 1, overflowX: 'hidden', overflowY: 'auto', display: 'flex', flexDirection: 'column', width: '100%', padding: 0, margin: 0, position: 'relative' } : { flex: 1, overflow: (isRegistrationPage || isPlayGroup) ? 'auto' : (isFixedPage ? 'hidden' : 'auto'), position: 'relative' }}
       >
         <Routes>
           <Route path="/tournament-register/:idOrSlug" element={<TournamentRegistration />} />
+          <Route path="/play-group/:tournamentId/:groupId" element={<PlayGroup />} />
           {!session ? (
             <>
               <Route path="/auth" element={<Auth />} />
@@ -198,9 +201,9 @@ const AppContent: React.FC = () => {
         </Routes>
       </main>
 
-      {session && !isRegistrationPage && <BottomNav />}
+      {session && !isRegistrationPage && !isPlayGroup && <BottomNav />}
 
-      {showOnboarding && session && !isRegistrationPage && (
+      {showOnboarding && session && !isRegistrationPage && !isPlayGroup && (
         <OnboardingTour
           userId={session.user.id}
           onComplete={() => setShowOnboarding(false)}
@@ -209,7 +212,7 @@ const AppContent: React.FC = () => {
 
       <OfflineOverlay isOnline={isOnline} />
 
-      {showPermissionsOnboarding && session && !isRegistrationPage && (
+      {showPermissionsOnboarding && session && !isRegistrationPage && !isPlayGroup && (
         <PermissionsOnboarding
           onComplete={() => setShowPermissionsOnboarding(false)}
         />
