@@ -112,7 +112,7 @@ const PlayGroup: React.FC = () => {
         }
     };
 
-    const handleSelectPlayer = (participant: GroupParticipant) => {
+    const handleSelectPlayer = async (participant: GroupParticipant) => {
         localStorage.setItem('play_group_selected_participant', participant.id);
         if (!session) {
             localStorage.setItem('play_group_redirect', window.location.pathname);
@@ -120,17 +120,48 @@ const PlayGroup: React.FC = () => {
             return;
         }
 
-        // Configuration for the round
-        localStorage.setItem('round_course', 'club-militar');
-        localStorage.setItem('round_current_hole', startHole.toString());
-        localStorage.setItem('round_group_id', groupId!);
+        // Validate UUID
+        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+        if (!uuidRegex.test(groupId!)) {
+            alert('Este grupo usa un formato antiguo. Pídele al organizador que borre este grupo y lo vuelva a crear para generar un link compatible.');
+            return;
+        }
 
-        navigate('/round', { 
-            state: { 
-                course: { id: 'club-militar', club: 'Club Militar de Golf', city: 'Sopó' }, 
-                groupId: groupId 
-            } 
-        });
+        try {
+            // Attempt to create game_groups row
+            const { error: groupError } = await supabase
+                .from('game_groups' as any)
+                .insert([{ id: groupId, course_id: 'club-militar', status: 'active', created_by: session.user.id }]);
+            
+            // Ignore unique_violation if the group is already created by another player
+            if (groupError && groupError.code !== '23505') {
+                console.error('Error creating game group:', groupError);
+            }
+
+            // Attempt to add this user as a group member
+            const { error: memberError } = await supabase
+                .from('group_members' as any)
+                .insert([{ group_id: groupId, user_id: session.user.id, status: 'accepted' }]);
+
+            if (memberError && memberError.code !== '23505') {
+                console.error('Error adding group member:', memberError);
+            }
+
+            // Configuration for the round
+            localStorage.setItem('round_course', 'club-militar');
+            localStorage.setItem('round_current_hole', startHole.toString());
+            localStorage.setItem('round_group_id', groupId!);
+
+            navigate('/round', { 
+                state: { 
+                    course: { id: 'club-militar', club: 'Club Militar de Golf', city: 'Sopó' }, 
+                    groupId: groupId 
+                } 
+            });
+        } catch (err) {
+            console.error('Error in handleSelectPlayer:', err);
+            alert('Error al inicializar la partida. Intenta nuevamente.');
+        }
     };
 
     return (

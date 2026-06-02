@@ -151,7 +151,7 @@ const TournamentGroups: React.FC = () => {
 
     const addGroup = () => {
         const newGroup: TournamentGroup = {
-            id: `group-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+            id: crypto.randomUUID(),
             name: `Grupo ${groups.length + 1}`,
             tee_time: '',
             participants: []
