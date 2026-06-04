@@ -122,7 +122,7 @@ const Round: React.FC = () => {
         localStorage.removeItem('round_group_id');
     };
 
-    const [participantName, setParticipantName] = React.useState<string | null>(() => {
+    const [participantName] = React.useState<string | null>(() => {
         return localStorage.getItem('play_group_selected_name') || null;
     });
     
