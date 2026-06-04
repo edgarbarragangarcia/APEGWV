@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../services/SupabaseManager';
-import { Trophy, ChevronLeft, Loader2, RefreshCw } from 'lucide-react';
+import { Trophy, ChevronLeft, Loader2, RefreshCw, ChevronDown, ChevronUp } from 'lucide-react';
 import PageHero from '../components/PageHero';
 
 interface LeaderboardEntry {
@@ -431,7 +431,7 @@ const TournamentLeaderboard: React.FC = () => {
                         {/* Table Header */}
                         <div style={{ 
                             display: 'grid', 
-                            gridTemplateColumns: '50px 1fr 60px 60px', 
+                            gridTemplateColumns: '50px 1fr 60px 60px 30px', 
                             background: '#04100c',
                             borderBottom: '2px solid rgba(255,255,255,0.2)',
                             fontSize: '11px',
@@ -443,7 +443,8 @@ const TournamentLeaderboard: React.FC = () => {
                             <div style={{ padding: '12px 10px', textAlign: 'center', borderRight: '1px solid rgba(255,255,255,0.1)' }}>POS</div>
                             <div style={{ padding: '12px 15px', borderRight: '1px solid rgba(255,255,255,0.1)' }}>JUGADOR</div>
                             <div style={{ padding: '12px 10px', textAlign: 'center', borderRight: '1px solid rgba(255,255,255,0.1)' }}>SCORE</div>
-                            <div style={{ padding: '12px 10px', textAlign: 'center' }}>THRU</div>
+                            <div style={{ padding: '12px 5px', textAlign: 'center' }}>THRU</div>
+                            <div style={{ padding: '12px 5px' }}></div>
                         </div>
 
                         {/* Table Body */}
@@ -473,7 +474,7 @@ const TournamentLeaderboard: React.FC = () => {
                                                 onClick={() => setExpandedUserId(prev => prev === entry.user_id ? null : entry.user_id)}
                                                 style={{ 
                                                     display: 'grid', 
-                                                    gridTemplateColumns: '50px 1fr 60px 60px', 
+                                                    gridTemplateColumns: '50px 1fr 60px 60px 30px', 
                                                     background: rowBg,
                                                     borderBottom: '1px solid rgba(255,255,255,0.1)',
                                                     alignItems: 'stretch',
@@ -551,7 +552,8 @@ const TournamentLeaderboard: React.FC = () => {
                                                     display: 'flex', 
                                                     alignItems: 'center', 
                                                     justifyContent: 'center',
-                                                    padding: '12px 5px'
+                                                    padding: '12px 5px',
+                                                    borderRight: '1px solid rgba(255,255,255,0.1)'
                                                 }}>
                                                     <span style={{ 
                                                         color: entry.holes_played === 18 ? 'var(--secondary)' : 'white',
@@ -561,6 +563,17 @@ const TournamentLeaderboard: React.FC = () => {
                                                     }}>
                                                         {entry.holes_played === 18 ? 'F' : (entry.holes_played > 0 ? entry.holes_played : '-')}
                                                     </span>
+                                                </div>
+
+                                                {/* EXPAND ICON */}
+                                                <div style={{ 
+                                                    display: 'flex', 
+                                                    alignItems: 'center', 
+                                                    justifyContent: 'center',
+                                                    padding: '12px 0px',
+                                                    color: 'rgba(255,255,255,0.3)'
+                                                }}>
+                                                    {expandedUserId === entry.user_id ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                                                 </div>
                                             </motion.div>
 
