@@ -44,7 +44,7 @@ const TournamentLeaderboard: React.FC = () => {
             // 1. Fetch tournament by slug
             const { data: tournaments, error: tError } = await (supabase
                 .from('tournaments') as any)
-                .select('id, name, groups')
+                .select('id, name, groups, guests')
                 .eq('slug', slug || '');
 
             if (tError) throw tError;
@@ -98,20 +98,19 @@ const TournamentLeaderboard: React.FC = () => {
 
             if (regError) throw regError;
 
-            // map user_id -> name, avatar, handicap, group_name
+            // map reg.id -> name, avatar, handicap, group_name
             const usersMap: Record<string, any> = {};
             registrations?.forEach((reg: any) => {
-                if (reg.user_id) {
-                    const profile = reg.profiles || null;
-                    const nameMatch = reg.player_name || profile?.full_name || 'Jugador';
-                    usersMap[reg.user_id] = {
-                        reg_id: reg.id,
-                        full_name: nameMatch,
-                        avatar_url: profile?.avatar_url,
-                        handicap: reg.player_handicap ?? profile?.handicap,
-                        group_name: participantsMap[reg.id] || 'Sin Grupo'
-                    };
-                }
+                const profile = reg.profiles || null;
+                const nameMatch = reg.player_name || profile?.full_name || 'Jugador';
+                usersMap[reg.id] = {
+                    reg_id: reg.id,
+                    user_id: reg.user_id,
+                    full_name: nameMatch,
+                    avatar_url: profile?.avatar_url,
+                    handicap: reg.player_handicap ?? profile?.handicap,
+                    group_name: participantsMap[reg.id] || 'Sin Grupo'
+                };
             });
 
             // 3. Fetch rounds and hole scores for these groups
@@ -122,61 +121,79 @@ const TournamentLeaderboard: React.FC = () => {
 
             if (rError) throw rError;
 
-            const entries: LeaderboardEntry[] = [];
+            const entriesMap: Record<string, LeaderboardEntry> = {};
 
-            // 4. Calculate scores
-            rounds?.forEach((round: any) => {
-                if (!round.user_id || !usersMap[round.user_id]) return;
-
-                const holes = round.round_holes || [];
-                let totalStrokes = 0;
-                let relativeToPar = 0;
-                let holesPlayed = 0;
-
-                holes.forEach((h: any) => {
-                    if (h.score > 0) {
-                        totalStrokes += h.score;
-                        relativeToPar += (h.score - (h.par || 4));
-                        holesPlayed++;
-                    }
-                });
-
-                // Only include players who have started playing (or all, up to preference)
-                if (holesPlayed >= 0) {
-                    entries.push({
-                        user_id: round.user_id,
-                        full_name: usersMap[round.user_id].full_name,
-                        avatar_url: usersMap[round.user_id].avatar_url,
-                        handicap: usersMap[round.user_id].handicap,
-                        total_score: totalStrokes,
-                        score_relative_to_par: relativeToPar,
-                        holes_played: holesPlayed,
-                        position: 0,
-                        group_name: usersMap[round.user_id].group_name
-                    });
-                }
-            });
-
-            // If a registered player doesn't have a round yet, add them with 0 scores
+            // Initialize all registered users in the map
             Object.values(usersMap).forEach((user: any) => {
-                const hasRound = entries.some(e => e.user_id === Object.keys(usersMap).find(k => usersMap[k] === user));
-                if (!hasRound) {
-                    const userId = Object.keys(usersMap).find(k => usersMap[k] === user);
-                    if (userId) {
-                        entries.push({
-                            user_id: userId,
-                            full_name: user.full_name,
-                            avatar_url: user.avatar_url,
-                            handicap: user.handicap,
-                            total_score: 0,
-                            score_relative_to_par: 0,
-                            holes_played: 0,
-                            position: 0,
-                            group_name: user.group_name
-                        });
+                entriesMap[user.reg_id] = {
+                    user_id: user.reg_id, // Use reg_id as the unique key for the UI
+                    full_name: user.full_name,
+                    avatar_url: user.avatar_url,
+                    handicap: user.handicap,
+                    total_score: 0,
+                    score_relative_to_par: 0,
+                    holes_played: 0,
+                    position: 0,
+                    group_name: user.group_name
+                };
+            });
+
+            // Parse manual guests
+            const manualGuestEntries = tournament.guests ? tournament.guests.split('\n').filter(Boolean).map((g: string) => {
+                const [name, code] = g.split('|');
+                return { name: name?.trim() || '', code: code?.trim() || '' };
+            }) : [];
+
+            manualGuestEntries.forEach((g: any, index: number) => {
+                const guestId = `manual-guest-${index}`;
+                // Only add if they are not already in registered participants by name (similar to TournamentGroups logic)
+                const isAlreadyRegistered = Object.values(usersMap).some((u: any) => u.full_name?.trim().toLowerCase() === g.name.toLowerCase());
+                if (!isAlreadyRegistered) {
+                    entriesMap[guestId] = {
+                        user_id: guestId,
+                        full_name: g.name,
+                        avatar_url: null,
+                        handicap: null,
+                        total_score: 0,
+                        score_relative_to_par: 0,
+                        holes_played: 0,
+                        position: 0,
+                        group_name: participantsMap[guestId] || 'Sin Grupo'
+                    };
+                }
+            });
+
+            // 4. Calculate scores from rounds
+            rounds?.forEach((round: any) => {
+                if (!round.user_id) return;
+                
+                // Find the registration for this round. Match by user_id.
+                const matchingRegId = Object.keys(usersMap).find(regId => usersMap[regId].user_id === round.user_id);
+                
+                if (matchingRegId && entriesMap[matchingRegId]) {
+                    const holes = round.round_holes || [];
+                    let totalStrokes = 0;
+                    let relativeToPar = 0;
+                    let holesPlayed = 0;
+
+                    holes.forEach((h: any) => {
+                        if (h.score > 0) {
+                            totalStrokes += h.score;
+                            relativeToPar += (h.score - (h.par || 4));
+                            holesPlayed++;
+                        }
+                    });
+
+                    // Update the entry if they played holes
+                    if (holesPlayed > 0) {
+                        entriesMap[matchingRegId].total_score = totalStrokes;
+                        entriesMap[matchingRegId].score_relative_to_par = relativeToPar;
+                        entriesMap[matchingRegId].holes_played = holesPlayed;
                     }
                 }
             });
+
+            const entries = Object.values(entriesMap);
 
 
             // 5. Sort entries
