@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../services/SupabaseManager';
-import { Trophy, ChevronLeft, Loader2, ArrowUp, ArrowDown, Minus, RefreshCw } from 'lucide-react';
+import { Trophy, ChevronLeft, Loader2, RefreshCw } from 'lucide-react';
 import PageHero from '../components/PageHero';
 
 interface LeaderboardEntry {
