@@ -223,6 +223,7 @@ const Round: React.FC = () => {
                     .from('rounds')
                     .select('id, status, round_holes(score, par, hole_number)')
                     .eq('group_id', groupId)
+                    .neq('status', 'cancelled')
                     .or(`user_id.eq.${participantId},notes.eq.participant:${participantId}`)
                     .order('created_at', { ascending: false });
 

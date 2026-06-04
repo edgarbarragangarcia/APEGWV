@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../services/SupabaseManager';
 import { Trophy, ChevronLeft, Loader2, RefreshCw } from 'lucide-react';
 import PageHero from '../components/PageHero';
+import BottomNav from '../components/BottomNav';
 
 interface LeaderboardEntry {
     user_id: string;
@@ -119,8 +120,9 @@ const TournamentLeaderboard: React.FC = () => {
             // 3. Fetch rounds and hole scores for these groups
             const { data: rounds, error: rError } = await supabase
                 .from('rounds')
-                .select('id, user_id, group_id, notes, round_holes(score, par, hole_number)')
-                .in('group_id', groupIds);
+                .select('id, user_id, group_id, notes, status, round_holes(score, par, hole_number)')
+                .in('group_id', groupIds)
+                .neq('status', 'cancelled');
 
             if (rError) throw rError;
 
@@ -584,6 +586,10 @@ const TournamentLeaderboard: React.FC = () => {
                     </div>
                 )}
             </div>
+
+            <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 50 }}>
+                <BottomNav />
+            </div>
         </div>
     );
 };
@@ -595,7 +601,6 @@ const RenderScorecard: React.FC<{ entry: LeaderboardEntry }> = ({ entry }) => {
         holes: number[], 
         getValue: (hole: number) => any,
         totalVal: any,
-        isParRow = false,
         isScoreRow = false
     ) => {
         return (
@@ -702,8 +707,8 @@ const RenderScorecard: React.FC<{ entry: LeaderboardEntry }> = ({ entry }) => {
                 <div style={{ fontSize: '10px', fontWeight: '900', color: 'var(--secondary)', letterSpacing: '1px', marginBottom: '4px', textTransform: 'uppercase' }}>Ida (Front 9)</div>
                 <div style={{ border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', overflow: 'hidden' }}>
                     {renderRow('Hoyo', frontHoles, h => <span style={{ color: 'rgba(255,255,255,0.6)', fontWeight: '700' }}>{h}</span>, 'OUT')}
-                    {renderRow('Par', frontHoles, h => <span style={{ color: 'rgba(255,255,255,0.4)' }}>{entry.hole_pars[h] || 4}</span>, getOutPar(), true)}
-                    {renderRow('Golpe', frontHoles, h => formatScoreCell(h), getOutPlayed() > 0 ? getOutScore() : '-', false, true)}
+                    {renderRow('Par', frontHoles, h => <span style={{ color: 'rgba(255,255,255,0.4)' }}>{entry.hole_pars[h] || 4}</span>, getOutPar())}
+                    {renderRow('Golpe', frontHoles, h => formatScoreCell(h), getOutPlayed() > 0 ? getOutScore() : '-', true)}
                 </div>
             </div>
 
@@ -712,8 +717,8 @@ const RenderScorecard: React.FC<{ entry: LeaderboardEntry }> = ({ entry }) => {
                 <div style={{ fontSize: '10px', fontWeight: '900', color: 'var(--secondary)', letterSpacing: '1px', marginBottom: '4px', textTransform: 'uppercase' }}>Vuelta (Back 9)</div>
                 <div style={{ border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', overflow: 'hidden' }}>
                     {renderRow('Hoyo', backHoles, h => <span style={{ color: 'rgba(255,255,255,0.6)', fontWeight: '700' }}>{h}</span>, 'IN')}
-                    {renderRow('Par', backHoles, h => <span style={{ color: 'rgba(255,255,255,0.4)' }}>{entry.hole_pars[h] || 4}</span>, getInPar(), true)}
-                    {renderRow('Golpe', backHoles, h => formatScoreCell(h), getInPlayed() > 0 ? getInScore() : '-', false, true)}
+                    {renderRow('Par', backHoles, h => <span style={{ color: 'rgba(255,255,255,0.4)' }}>{entry.hole_pars[h] || 4}</span>, getInPar())}
+                    {renderRow('Golpe', backHoles, h => formatScoreCell(h), getInPlayed() > 0 ? getInScore() : '-', true)}
                 </div>
             </div>
 
