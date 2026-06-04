@@ -607,6 +607,7 @@ const TournamentLeaderboard: React.FC = () => {
                             </div>
                         </div>
                     </div>
+                    </div>
                 )}
             </div>
         </div>
