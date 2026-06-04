@@ -435,7 +435,11 @@ const Round: React.FC = () => {
         if (score === 0) return;
         try {
             const { data: { user } } = await supabase.auth.getUser();
-            if (!user) return;
+            
+            const effectiveUserId = user?.id || (participantId && !participantId.startsWith('manual-guest-') ? participantId : '00000000-0000-0000-0000-000000000000');
+            if (!effectiveUserId || (effectiveUserId === '00000000-0000-0000-0000-000000000000' && !participantId)) {
+                return;
+            }
 
             let currentRoundId = roundId;
 
@@ -443,7 +447,7 @@ const Round: React.FC = () => {
                 const { data: newRound, error: rErr } = await supabase
                     .from('rounds')
                     .insert([{
-                        user_id: user.id,
+                        user_id: effectiveUserId,
                         course_name: clubName,
                         course_location: course?.city || '',
                         status: 'in_progress',
@@ -550,8 +554,10 @@ const Round: React.FC = () => {
         setIsSaving(true);
         try {
             const { data: { user } } = await supabase.auth.getUser();
-            if (!user) {
-                alert('Debes iniciar sesión para finalizar la ronda');
+            const effectiveUserId = user?.id || (participantId && !participantId.startsWith('manual-guest-') ? participantId : '00000000-0000-0000-0000-000000000000');
+            
+            if (!effectiveUserId || (effectiveUserId === '00000000-0000-0000-0000-000000000000' && !participantId)) {
+                alert('Hubo un error al identificar al jugador.');
                 setIsSaving(false);
                 return;
             }
@@ -579,7 +585,7 @@ const Round: React.FC = () => {
                 const { data: round, error: roundError } = await supabase
                     .from('rounds')
                     .insert([{
-                        user_id: user.id,
+                        user_id: effectiveUserId,
                         course_name: clubName,
                         course_location: course?.city || '',
                         date_played: new Date().toISOString(),
