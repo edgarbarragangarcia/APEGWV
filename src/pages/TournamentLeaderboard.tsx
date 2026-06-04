@@ -401,7 +401,6 @@ const TournamentLeaderboard: React.FC = () => {
                         <p style={{ color: 'var(--text-dim)' }}>No hay jugadores registrados o grupos asignados para este torneo aún.</p>
                     </div>
                 ) : (
-                ) : (
                     <div style={{ 
                         background: '#0a1f19', // Solid classic dark green
                         borderRadius: '8px', 
