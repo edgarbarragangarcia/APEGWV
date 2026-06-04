@@ -13,8 +13,8 @@ interface LeaderboardEntry {
     total_score: number;
     score_relative_to_par: number;
     holes_played: number;
-    position: number;
-    previous_position?: number;
+    position: number | string;
+    previous_position?: number | string;
     group_name: string;
 }
 
@@ -204,6 +204,15 @@ const TournamentLeaderboard: React.FC = () => {
 
             // 5. Sort entries
             entries.sort((a, b) => {
+                // Players who haven't started go to the bottom
+                if (a.holes_played > 0 && b.holes_played === 0) return -1;
+                if (b.holes_played > 0 && a.holes_played === 0) return 1;
+                
+                // If both haven't started, sort alphabetically
+                if (a.holes_played === 0 && b.holes_played === 0) {
+                    return a.full_name.localeCompare(b.full_name);
+                }
+
                 // First by relative score
                 if (a.score_relative_to_par !== b.score_relative_to_par) {
                     return a.score_relative_to_par - b.score_relative_to_par;
@@ -212,20 +221,25 @@ const TournamentLeaderboard: React.FC = () => {
                 if (a.holes_played !== b.holes_played) {
                     return b.holes_played - a.holes_played; // descending
                 }
-                return 0;
+                
+                // Finally alphabetically
+                return a.full_name.localeCompare(b.full_name);
             });
 
             // 6. Assign positions with ties
             let currentPos = 1;
             for (let i = 0; i < entries.length; i++) {
-                if (i > 0 && 
+                if (entries[i].holes_played === 0) {
+                    entries[i].position = '-';
+                } else if (i > 0 && 
                     entries[i].score_relative_to_par === entries[i-1].score_relative_to_par && 
                     entries[i].holes_played === entries[i-1].holes_played) {
                     entries[i].position = entries[i-1].position;
+                    currentPos++;
                 } else {
                     entries[i].position = currentPos;
+                    currentPos++;
                 }
-                currentPos++;
             }
 
             // Calculate previous positions to show arrows (we could store this in state and compare)
