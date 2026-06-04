@@ -882,6 +882,13 @@ const Round: React.FC = () => {
                                         setStrokes(prev => ({ ...prev, [currentHole]: scoreValue }));
                                         syncHoleScore(currentHole, scoreValue);
                                         if (navigator.vibrate) navigator.vibrate(10);
+                                        
+                                        // Auto-avance al siguiente hoyo con un ligero retraso para ver la selección
+                                        if (currentHole < 18) {
+                                            setTimeout(() => {
+                                                setCurrentHole(prev => prev < 18 ? prev + 1 : prev);
+                                            }, 400);
+                                        }
                                     }}
                                     style={{
                                         width: '46px',
