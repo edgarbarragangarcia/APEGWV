@@ -16,6 +16,8 @@ interface LeaderboardEntry {
     position: number | string;
     previous_position?: number | string;
     group_name: string;
+    hole_scores: Record<number, number>;
+    hole_pars: Record<number, number>;
 }
 
 const TournamentLeaderboard: React.FC = () => {
@@ -28,6 +30,7 @@ const TournamentLeaderboard: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
     const [isRefreshing, setIsRefreshing] = useState(false);
+    const [expandedUserId, setExpandedUserId] = useState<string | null>(null);
 
     useEffect(() => {
         if (slug) {
@@ -134,7 +137,9 @@ const TournamentLeaderboard: React.FC = () => {
                     score_relative_to_par: 0,
                     holes_played: 0,
                     position: 0,
-                    group_name: user.group_name
+                    group_name: user.group_name,
+                    hole_scores: {},
+                    hole_pars: {}
                 };
             });
 
@@ -158,7 +163,9 @@ const TournamentLeaderboard: React.FC = () => {
                         score_relative_to_par: 0,
                         holes_played: 0,
                         position: 0,
-                        group_name: participantsMap[guestId] || 'Sin Grupo'
+                        group_name: participantsMap[guestId] || 'Sin Grupo',
+                        hole_scores: {},
+                        hole_pars: {}
                     };
                 }
             });
@@ -186,12 +193,16 @@ const TournamentLeaderboard: React.FC = () => {
                     let totalStrokes = 0;
                     let relativeToPar = 0;
                     let holesPlayed = 0;
+                    const scoresMap: Record<number, number> = {};
+                    const parsMap: Record<number, number> = {};
 
                     holes.forEach((h: any) => {
                         if (h.score > 0) {
                             totalStrokes += h.score;
                             relativeToPar += (h.score - (h.par || 4));
                             holesPlayed++;
+                            scoresMap[h.hole_number] = h.score;
+                            parsMap[h.hole_number] = h.par || 4;
                         }
                     });
 
@@ -200,6 +211,8 @@ const TournamentLeaderboard: React.FC = () => {
                         entriesMap[matchingRegId].total_score = totalStrokes;
                         entriesMap[matchingRegId].score_relative_to_par = relativeToPar;
                         entriesMap[matchingRegId].holes_played = holesPlayed;
+                        entriesMap[matchingRegId].hole_scores = scoresMap;
+                        entriesMap[matchingRegId].hole_pars = parsMap;
                     }
                 }
             });
@@ -448,112 +461,279 @@ const TournamentLeaderboard: React.FC = () => {
                                         posBg = '#FBBF24'; // Solid yellow
                                         posColor = '#000000'; // Black text
                                     }
-
-                                    return (
-                                        <motion.div
-                                            key={entry.user_id}
-                                            layout
-                                            initial={{ opacity: 0, y: 10 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            exit={{ opacity: 0 }}
-                                            transition={{ duration: 0.3 }}
-                                            style={{ 
-                                                display: 'grid', 
-                                                gridTemplateColumns: '50px 1fr 60px 60px', 
-                                                background: rowBg,
-                                                borderBottom: '1px solid rgba(255,255,255,0.1)',
-                                                alignItems: 'stretch'
-                                            }}
-                                        >
-                                            {/* POS */}
-                                            <div style={{ 
-                                                display: 'flex', 
-                                                alignItems: 'center', 
-                                                justifyContent: 'center', 
-                                                background: posBg,
-                                                borderRight: '1px solid rgba(255,255,255,0.1)',
-                                                padding: '12px 5px'
-                                            }}>
-                                                <span style={{ 
-                                                    fontSize: '16px', 
-                                                    fontWeight: '900', 
-                                                    color: posColor,
-                                                    fontFamily: 'monospace'
+                                     return (
+                                        <React.Fragment key={entry.user_id}>
+                                            <motion.div
+                                                layout
+                                                initial={{ opacity: 0, y: 10 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                exit={{ opacity: 0 }}
+                                                transition={{ duration: 0.3 }}
+                                                onClick={() => setExpandedUserId(prev => prev === entry.user_id ? null : entry.user_id)}
+                                                style={{ 
+                                                    display: 'grid', 
+                                                    gridTemplateColumns: '50px 1fr 60px 60px', 
+                                                    background: rowBg,
+                                                    borderBottom: '1px solid rgba(255,255,255,0.1)',
+                                                    alignItems: 'stretch',
+                                                    cursor: 'pointer'
+                                                }}
+                                            >
+                                                {/* POS */}
+                                                <div style={{ 
+                                                    display: 'flex', 
+                                                    alignItems: 'center', 
+                                                    justifyContent: 'center', 
+                                                    background: posBg,
+                                                    borderRight: '1px solid rgba(255,255,255,0.1)',
+                                                    padding: '12px 5px'
                                                 }}>
-                                                    {entry.position}
-                                                </span>
-                                            </div>
-
-                                            {/* PLAYER */}
-                                            <div style={{ 
-                                                display: 'flex', 
-                                                alignItems: 'center', 
-                                                padding: '12px 15px',
-                                                borderRight: '1px solid rgba(255,255,255,0.1)',
-                                                overflow: 'hidden'
-                                            }}>
-                                                <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
                                                     <span style={{ 
-                                                        fontSize: '15px', 
-                                                        fontWeight: '800', 
-                                                        color: 'white',
-                                                        whiteSpace: 'nowrap',
-                                                        overflow: 'hidden',
-                                                        textOverflow: 'ellipsis',
-                                                        textTransform: 'uppercase',
-                                                        letterSpacing: '0.5px'
+                                                        fontSize: '16px', 
+                                                        fontWeight: '900', 
+                                                        color: posColor,
+                                                        fontFamily: 'monospace'
                                                     }}>
-                                                        {entry.full_name}
+                                                        {entry.position}
                                                     </span>
-                                                    {entry.group_name !== 'Sin Grupo' && (
-                                                        <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.5)', fontWeight: '600', marginTop: '2px', textTransform: 'uppercase' }}>
-                                                            {entry.group_name} {entry.handicap !== null && `• HCP ${entry.handicap}`}
-                                                        </span>
-                                                    )}
                                                 </div>
-                                            </div>
 
-                                            {/* SCORE */}
-                                            <div style={{ 
-                                                display: 'flex', 
-                                                alignItems: 'center', 
-                                                justifyContent: 'center',
-                                                borderRight: '1px solid rgba(255,255,255,0.1)',
-                                                background: 'rgba(0,0,0,0.2)'
-                                            }}>
-                                                <span style={{ 
-                                                    fontSize: '18px', 
-                                                    fontWeight: '900',
-                                                    color: getScoreColor(entry.score_relative_to_par, entry.holes_played),
-                                                    fontFamily: 'monospace'
+                                                {/* PLAYER */}
+                                                <div style={{ 
+                                                    display: 'flex', 
+                                                    alignItems: 'center', 
+                                                    padding: '12px 15px',
+                                                    borderRight: '1px solid rgba(255,255,255,0.1)',
+                                                    overflow: 'hidden'
                                                 }}>
-                                                    {getScoreFormat(entry.score_relative_to_par, entry.holes_played)}
-                                                </span>
-                                            </div>
+                                                    <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                                                        <span style={{ 
+                                                            fontSize: '15px', 
+                                                            fontWeight: '800', 
+                                                            color: 'white',
+                                                            whiteSpace: 'nowrap',
+                                                            overflow: 'hidden',
+                                                            textOverflow: 'ellipsis',
+                                                            textTransform: 'uppercase',
+                                                            letterSpacing: '0.5px'
+                                                        }}>
+                                                            {entry.full_name}
+                                                        </span>
+                                                        {entry.group_name !== 'Sin Grupo' && (
+                                                            <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.5)', fontWeight: '600', marginTop: '2px', textTransform: 'uppercase' }}>
+                                                                {entry.group_name} {entry.handicap !== null && `• HCP ${entry.handicap}`}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </div>
 
-                                            {/* THRU */}
-                                            <div style={{ 
-                                                display: 'flex', 
-                                                alignItems: 'center', 
-                                                justifyContent: 'center',
-                                                padding: '12px 5px'
-                                            }}>
-                                                <span style={{ 
-                                                    color: entry.holes_played === 18 ? 'var(--secondary)' : 'white',
-                                                    fontSize: '14px', 
-                                                    fontWeight: '800',
-                                                    fontFamily: 'monospace'
+                                                {/* SCORE */}
+                                                <div style={{ 
+                                                    display: 'flex', 
+                                                    alignItems: 'center', 
+                                                    justifyContent: 'center',
+                                                    borderRight: '1px solid rgba(255,255,255,0.1)',
+                                                    background: 'rgba(0,0,0,0.2)'
                                                 }}>
-                                                    {entry.holes_played === 18 ? 'F' : (entry.holes_played > 0 ? entry.holes_played : '-')}
-                                                </span>
-                                            </div>
-                                        </motion.div>
+                                                    <span style={{ 
+                                                        fontSize: '18px', 
+                                                        fontWeight: '900',
+                                                        color: getScoreColor(entry.score_relative_to_par, entry.holes_played),
+                                                        fontFamily: 'monospace'
+                                                    }}>
+                                                        {getScoreFormat(entry.score_relative_to_par, entry.holes_played)}
+                                                    </span>
+                                                </div>
+
+                                                {/* THRU */}
+                                                <div style={{ 
+                                                    display: 'flex', 
+                                                    alignItems: 'center', 
+                                                    justifyContent: 'center',
+                                                    padding: '12px 5px'
+                                                }}>
+                                                    <span style={{ 
+                                                        color: entry.holes_played === 18 ? 'var(--secondary)' : 'white',
+                                                        fontSize: '14px', 
+                                                        fontWeight: '800',
+                                                        fontFamily: 'monospace'
+                                                    }}>
+                                                        {entry.holes_played === 18 ? 'F' : (entry.holes_played > 0 ? entry.holes_played : '-')}
+                                                    </span>
+                                                </div>
+                                            </motion.div>
+
+                                            <AnimatePresence>
+                                                {expandedUserId === entry.user_id && (
+                                                    <motion.div
+                                                        initial={{ height: 0, opacity: 0 }}
+                                                        animate={{ height: 'auto', opacity: 1 }}
+                                                        exit={{ height: 0, opacity: 0 }}
+                                                        transition={{ duration: 0.2 }}
+                                                        style={{ overflow: 'hidden', width: '100%' }}
+                                                    >
+                                                        <RenderScorecard entry={entry} />
+                                                    </motion.div>
+                                                )}
+                                            </AnimatePresence>
+                                        </React.Fragment>
                                     );
                                 })}
                             </AnimatePresence>
                         </div>
                     </div>
                 )}
+            </div>
+        </div>
+    );
+};
+
+// Render Scorecard detail view for individual player
+const RenderScorecard: React.FC<{ entry: LeaderboardEntry }> = ({ entry }) => {
+    const renderRow = (
+        label: string, 
+        holes: number[], 
+        getValue: (hole: number) => any,
+        totalVal: any,
+        isParRow = false,
+        isScoreRow = false
+    ) => {
+        return (
+            <div style={{
+                display: 'grid',
+                gridTemplateColumns: '50px repeat(9, 1fr) 45px',
+                borderBottom: '1px solid rgba(255,255,255,0.05)',
+                alignItems: 'center',
+                textAlign: 'center',
+                fontSize: '11px',
+                minHeight: '32px'
+            }}>
+                <div style={{ 
+                    padding: '6px 5px', 
+                    fontWeight: '800', 
+                    color: 'rgba(255,255,255,0.5)', 
+                    textAlign: 'left',
+                    fontSize: '9px',
+                    textTransform: 'uppercase'
+                }}>
+                    {label}
+                </div>
+                {holes.map(hole => {
+                    const val = getValue(hole);
+                    return (
+                        <div key={hole} style={{ padding: '4px 2px' }}>
+                            {val}
+                        </div>
+                    );
+                })}
+                <div style={{ 
+                    padding: '6px 5px', 
+                    fontWeight: '900', 
+                    color: isScoreRow ? 'var(--secondary)' : 'rgba(255,255,255,0.8)',
+                    background: 'rgba(255,255,255,0.02)'
+                }}>
+                    {totalVal}
+                </div>
+            </div>
+        );
+    };
+
+    const frontHoles = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+    const backHoles = [10, 11, 12, 13, 14, 15, 16, 17, 18];
+
+    // Compute OUT / IN totals
+    const getOutPar = () => frontHoles.reduce((acc, h) => acc + (entry.hole_pars[h] || 4), 0);
+    const getOutScore = () => frontHoles.reduce((acc, h) => {
+        const s = entry.hole_scores[h];
+        return acc + (s && s > 0 ? s : 0);
+    }, 0);
+    const getOutPlayed = () => frontHoles.filter(h => (entry.hole_scores[h] || 0) > 0).length;
+
+    const getInPar = () => backHoles.reduce((acc, h) => acc + (entry.hole_pars[h] || 4), 0);
+    const getInScore = () => backHoles.reduce((acc, h) => {
+        const s = entry.hole_scores[h];
+        return acc + (s && s > 0 ? s : 0);
+    }, 0);
+    const getInPlayed = () => backHoles.filter(h => (entry.hole_scores[h] || 0) > 0).length;
+
+    const totPar = getOutPar() + getInPar();
+    const totScore = (getOutPlayed() > 0 ? getOutScore() : 0) + (getInPlayed() > 0 ? getInScore() : 0);
+
+    const formatScoreCell = (hole: number) => {
+        const s = entry.hole_scores[hole];
+        const p = entry.hole_pars[hole] || 4;
+        if (!s || s === 0) return <span style={{ color: 'rgba(255,255,255,0.15)' }}>-</span>;
+
+        const diff = s - p;
+        if (diff < 0) {
+            // Under par (Red circle)
+            return (
+                <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '20px', height: '20px', borderRadius: '50%', border: '1.5px solid #ef4444', color: '#ef4444', fontWeight: '900', fontSize: '11px' }}>
+                    {s}
+                </div>
+            );
+        } else if (diff > 0) {
+            // Over par (Blue square)
+            return (
+                <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '20px', height: '20px', borderRadius: '4px', border: '1.5px solid #60a5fa', color: '#60a5fa', fontWeight: '900', fontSize: '11px' }}>
+                    {s}
+                </div>
+            );
+        } else {
+            // Even par
+            return <span style={{ color: 'white', fontWeight: '800' }}>{s}</span>;
+        }
+    };
+
+    return (
+        <div style={{
+            background: '#04100c',
+            borderTop: '1px dashed rgba(255, 255, 255, 0.1)',
+            padding: '10px 15px',
+            color: 'white',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '12px',
+            width: '100%',
+            overflowX: 'auto'
+        }}>
+            {/* Front 9 */}
+            <div style={{ minWidth: '320px' }}>
+                <div style={{ fontSize: '10px', fontWeight: '900', color: 'var(--secondary)', letterSpacing: '1px', marginBottom: '4px', textTransform: 'uppercase' }}>Ida (Front 9)</div>
+                <div style={{ border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', overflow: 'hidden' }}>
+                    {renderRow('Hoyo', frontHoles, h => <span style={{ color: 'rgba(255,255,255,0.6)', fontWeight: '700' }}>{h}</span>, 'OUT')}
+                    {renderRow('Par', frontHoles, h => <span style={{ color: 'rgba(255,255,255,0.4)' }}>{entry.hole_pars[h] || 4}</span>, getOutPar(), true)}
+                    {renderRow('Golpe', frontHoles, h => formatScoreCell(h), getOutPlayed() > 0 ? getOutScore() : '-', false, true)}
+                </div>
+            </div>
+
+            {/* Back 9 */}
+            <div style={{ minWidth: '320px' }}>
+                <div style={{ fontSize: '10px', fontWeight: '900', color: 'var(--secondary)', letterSpacing: '1px', marginBottom: '4px', textTransform: 'uppercase' }}>Vuelta (Back 9)</div>
+                <div style={{ border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', overflow: 'hidden' }}>
+                    {renderRow('Hoyo', backHoles, h => <span style={{ color: 'rgba(255,255,255,0.6)', fontWeight: '700' }}>{h}</span>, 'IN')}
+                    {renderRow('Par', backHoles, h => <span style={{ color: 'rgba(255,255,255,0.4)' }}>{entry.hole_pars[h] || 4}</span>, getInPar(), true)}
+                    {renderRow('Golpe', backHoles, h => formatScoreCell(h), getInPlayed() > 0 ? getInScore() : '-', false, true)}
+                </div>
+            </div>
+
+            {/* Total summary */}
+            <div style={{ 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                alignItems: 'center', 
+                background: 'rgba(255,255,255,0.02)', 
+                padding: '8px 12px', 
+                borderRadius: '8px',
+                border: '1px solid rgba(255,255,255,0.05)',
+                fontSize: '11px',
+                fontWeight: '700',
+                color: 'rgba(255,255,255,0.7)'
+            }}>
+                <span>TOTAL ACUMULADO</span>
+                <span style={{ fontSize: '12px', color: 'white' }}>
+                    Par <strong style={{ color: 'rgba(255,255,255,0.9)' }}>{totPar}</strong> • Golpes <strong style={{ color: 'var(--secondary)' }}>{totScore || '-'}</strong>
+                </span>
             </div>
         </div>
     );

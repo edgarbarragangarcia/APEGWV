@@ -94,6 +94,7 @@ const Round: React.FC = () => {
     const [groupMembers, setGroupMembers] = React.useState<any[]>([]);
     const [groupScores, setGroupScores] = React.useState<Record<string, number>>({});
     const [groupCurrentHoles, setGroupCurrentHoles] = React.useState<Record<string, number>>({});
+    const [groupHolesPlayed, setGroupHolesPlayed] = React.useState<Record<string, number>>({});
     const [isLeaderboardOpen, setIsLeaderboardOpen] = React.useState(false);
     const [currentUserId, setCurrentUserId] = React.useState<string | null>(null);
     const [loadingRound, setLoadingRound] = React.useState(false);
@@ -273,7 +274,7 @@ const Round: React.FC = () => {
                 // 1. Fetch rounds and hole scores for this group
                 const { data: rounds, error: rErr } = await supabase
                     .from('rounds')
-                    .select('id, user_id, notes, round_holes(score, hole_number)')
+                    .select('id, user_id, notes, round_holes(score, par, hole_number)')
                     .eq('group_id', groupId);
 
                 if (rErr) throw rErr;
@@ -315,6 +316,7 @@ const Round: React.FC = () => {
 
                 const scores: Record<string, number> = {};
                 const currentHoles: Record<string, number> = {};
+                const holesPlayedMap: Record<string, number> = {};
 
                 if (tournamentParticipants.length > 0) {
                     // Tournament mode: use registration IDs and notes matching
@@ -349,8 +351,20 @@ const Round: React.FC = () => {
                         }
 
                         if (matchKey) {
-                            const total = r.round_holes?.reduce((acc: number, h: any) => acc + (h.score || 0), 0) || 0;
-                            scores[matchKey] = total;
+                            let totalStrokes = 0;
+                            let relativeToPar = 0;
+                            let holesPlayed = 0;
+
+                            r.round_holes?.forEach((h: any) => {
+                                if (h.score > 0) {
+                                    totalStrokes += h.score;
+                                    relativeToPar += (h.score - (h.par || 4));
+                                    holesPlayed++;
+                                }
+                            });
+
+                            scores[matchKey] = relativeToPar;
+                            holesPlayedMap[matchKey] = holesPlayed;
 
                             if (r.round_holes && r.round_holes.length > 0) {
                                 const playedHoles = r.round_holes.map((h: any) => h.hole_number);
@@ -392,8 +406,20 @@ const Round: React.FC = () => {
                     setGroupMembers(enrichedMembers);
 
                     rounds?.forEach(r => {
-                        const total = r.round_holes?.reduce((acc: number, h: any) => acc + (h.score || 0), 0) || 0;
-                        scores[r.user_id] = total;
+                        let totalStrokes = 0;
+                        let relativeToPar = 0;
+                        let holesPlayed = 0;
+
+                        r.round_holes?.forEach((h: any) => {
+                            if (h.score > 0) {
+                                totalStrokes += h.score;
+                                relativeToPar += (h.score - (h.par || 4));
+                                holesPlayed++;
+                            }
+                        });
+
+                        scores[r.user_id] = relativeToPar;
+                        holesPlayedMap[r.user_id] = holesPlayed;
 
                         if (r.round_holes && r.round_holes.length > 0) {
                             const playedHoles = r.round_holes.map((h: any) => h.hole_number);
@@ -406,6 +432,7 @@ const Round: React.FC = () => {
 
                 setGroupScores(scores);
                 setGroupCurrentHoles(currentHoles);
+                setGroupHolesPlayed(holesPlayedMap);
             } catch (err) {
                 console.error('Error fetching group leaderboard:', err);
             }
@@ -1067,10 +1094,20 @@ const Round: React.FC = () => {
                                             </div>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                                                 <div style={{ textAlign: 'right' }}>
-                                                    <span style={{ fontSize: '14px', fontWeight: '900', color: score === 0 ? 'var(--text-dim)' : 'var(--secondary)' }}>
-                                                        {score || '--'}
+                                                    <span style={{ 
+                                                        fontSize: '14px', 
+                                                        fontWeight: '900', 
+                                                        color: (groupHolesPlayed[member.user_id] || 0) === 0 
+                                                            ? 'var(--text-dim)' 
+                                                            : (score < 0 ? '#ef4444' : score > 0 ? 'rgba(255,255,255,0.6)' : 'var(--secondary)')
+                                                    }}>
+                                                        {(groupHolesPlayed[member.user_id] || 0) === 0 
+                                                            ? '--' 
+                                                            : (score === 0 ? 'E' : (score > 0 ? `+${score}` : score))}
                                                     </span>
-                                                    <span style={{ fontSize: '8px', color: 'var(--text-dim)', marginLeft: '4px' }}>golpes</span>
+                                                    <span style={{ fontSize: '8px', color: 'var(--text-dim)', marginLeft: '4px' }}>
+                                                        {(groupHolesPlayed[member.user_id] || 0) === 0 ? 'golpes' : 'vs par'}
+                                                    </span>
                                                 </div>
                                             </div>
                                         </div>
