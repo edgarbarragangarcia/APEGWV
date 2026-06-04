@@ -44,7 +44,7 @@ import MercadoPagoCallback from './pages/MercadoPagoCallback';
 import TournamentRegistration from './pages/TournamentRegistration';
 import TournamentGroups from './pages/TournamentGroups';
 import PlayGroup from './pages/PlayGroup';
-
+import TournamentLeaderboard from './pages/TournamentLeaderboard';
 
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { QueryProvider } from './context/QueryProvider';
@@ -133,7 +133,8 @@ const AppContent: React.FC = () => {
   const isRegistrationPage = location.pathname.startsWith('/tournament-register/');
   const isEventsPage = location.pathname === '/my-events' || location.pathname.includes('/my-events/');
   const isPlayGroup = location.pathname.startsWith('/play-group/');
-  const isFixedPage = isRoundPage || isNotificationsPage || isPlayFlow || isRoundDetail || isRegistrationPage || isEventsPage || isPlayGroup;
+  const isLeaderboardPage = location.pathname.startsWith('/tournament-leaderboard/');
+  const isFixedPage = isRoundPage || isNotificationsPage || isPlayFlow || isRoundDetail || isRegistrationPage || isEventsPage || isPlayGroup || isLeaderboardPage;
 
   return (
     <div
@@ -147,13 +148,14 @@ const AppContent: React.FC = () => {
         inset: 0
       }}
     >
-      {session && !isRegistrationPage && !isPlayGroup && !isRoundPage && <Navbar />}
+      {session && !isRegistrationPage && !isPlayGroup && !isLeaderboardPage && !isRoundPage && <Navbar />}
 
       <main
         className={`${session && !isFixedPage ? "page-content container" : ""} ${isRoundPage || isNotificationsPage || isRoundDetail ? 'round-page-content' : ''} `}
-        style={(!session && !isRegistrationPage && !isPlayGroup && !isRoundPage) ? { flex: 1, overflowX: 'hidden', overflowY: 'auto', display: 'flex', flexDirection: 'column', width: '100%', padding: 0, margin: 0, position: 'relative' } : { flex: 1, overflow: (isRegistrationPage || isPlayGroup) ? 'auto' : (isFixedPage ? 'hidden' : 'auto'), position: 'relative' }}
+        style={(!session && !isRegistrationPage && !isPlayGroup && !isLeaderboardPage && !isRoundPage) ? { flex: 1, overflowX: 'hidden', overflowY: 'auto', display: 'flex', flexDirection: 'column', width: '100%', padding: 0, margin: 0, position: 'relative' } : { flex: 1, overflow: (isRegistrationPage || isPlayGroup || isLeaderboardPage) ? 'auto' : (isFixedPage ? 'hidden' : 'auto'), position: 'relative' }}
       >
         <Routes>
+          <Route path="/tournament-leaderboard/:slug" element={<TournamentLeaderboard />} />
           <Route path="/tournament-register/:idOrSlug" element={<TournamentRegistration />} />
           <Route path="/play-group/:groupSlug" element={<PlayGroup />} />
           <Route path="/play-group/:tournamentId/:groupId" element={<PlayGroup />} />

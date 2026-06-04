@@ -1473,6 +1473,67 @@ const TournamentManager: React.FC = () => {
                                                                     </p>
                                                                 </motion.div>
                                                             )}
+
+                                                            {editingId && (
+                                                                <motion.div
+                                                                    initial={{ opacity: 0, y: -10 }}
+                                                                    animate={{ opacity: 1, y: 0 }}
+                                                                    className="glass"
+                                                                    style={{
+                                                                        padding: '16px',
+                                                                        borderRadius: '20px',
+                                                                        background: 'rgba(255, 255, 255, 0.05)',
+                                                                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                                                                        marginTop: '10px'
+                                                                    }}
+                                                                >
+                                                                    <label style={{ fontSize: '10px', fontWeight: '950', color: 'white', display: 'block', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                                                        Link Público del Leaderboard (En Vivo)
+                                                                    </label>
+                                                                    <div style={{ display: 'flex', gap: '10px' }}>
+                                                                        <div style={{
+                                                                            flex: 1,
+                                                                            background: 'rgba(0,0,0,0.2)',
+                                                                            padding: '10px 14px',
+                                                                            borderRadius: '12px',
+                                                                            fontSize: '12px',
+                                                                            color: 'white',
+                                                                            overflow: 'hidden',
+                                                                            textOverflow: 'ellipsis',
+                                                                            whiteSpace: 'nowrap',
+                                                                            border: '1px solid rgba(255,255,255,0.05)',
+                                                                            fontFamily: 'monospace'
+                                                                        }}>
+                                                                            {`https://apegwv.vercel.app/tournament-leaderboard/${formData.slug || editingId}`}
+                                                                        </div>
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() => {
+                                                                                const url = `https://apegwv.vercel.app/tournament-leaderboard/${formData.slug || editingId}`;
+                                                                                navigator.clipboard.writeText(url);
+                                                                                setCopied(true);
+                                                                                setTimeout(() => setCopied(false), 2000);
+                                                                                if (navigator.vibrate) navigator.vibrate(50);
+                                                                            }}
+                                                                            style={{
+                                                                                width: '40px',
+                                                                                height: '40px',
+                                                                                borderRadius: '12px',
+                                                                                background: 'white',
+                                                                                color: 'var(--primary)',
+                                                                                display: 'flex',
+                                                                                alignItems: 'center',
+                                                                                justifyContent: 'center',
+                                                                                border: 'none',
+                                                                                cursor: 'pointer',
+                                                                                position: 'relative'
+                                                                            }}
+                                                                        >
+                                                                            <Copy size={18} />
+                                                                        </button>
+                                                                    </div>
+                                                                </motion.div>
+                                                            )}
                                                         
                                                     </div>
                                             </motion.div>
@@ -1911,6 +1972,68 @@ const TournamentManager: React.FC = () => {
                                                                                                     Si se inscriben {limit} jugadores pagando + {guestsCount} invitados
                                                                                                 </div>
                                                                                             </div>
+
+                                                                                            {/* LEADERBOARD LINK - Visible para torneos guardados */}
+                                                                                            {editingId && (
+                                                                                                <motion.div
+                                                                                                    initial={{ opacity: 0, y: -10 }}
+                                                                                                    animate={{ opacity: 1, y: 0 }}
+                                                                                                    className="glass"
+                                                                                                    style={{
+                                                                                                        padding: '16px',
+                                                                                                        borderRadius: '20px',
+                                                                                                        background: 'rgba(255, 255, 255, 0.05)',
+                                                                                                        border: '1px solid rgba(255, 255, 255, 0.1)',
+                                                                                                        marginBottom: '5px'
+                                                                                                    }}
+                                                                                                >
+                                                                                                    <label style={{ fontSize: '10px', fontWeight: '950', color: 'white', display: 'block', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                                                                                        Link Público del Leaderboard (En Vivo)
+                                                                                                    </label>
+                                                                                                    <div style={{ display: 'flex', gap: '10px' }}>
+                                                                                                        <div style={{
+                                                                                                            flex: 1,
+                                                                                                            background: 'rgba(0,0,0,0.2)',
+                                                                                                            padding: '10px 14px',
+                                                                                                            borderRadius: '12px',
+                                                                                                            fontSize: '12px',
+                                                                                                            color: 'white',
+                                                                                                            overflow: 'hidden',
+                                                                                                            textOverflow: 'ellipsis',
+                                                                                                            whiteSpace: 'nowrap',
+                                                                                                            border: '1px solid rgba(255,255,255,0.05)',
+                                                                                                            fontFamily: 'monospace'
+                                                                                                        }}>
+                                                                                                            {`https://apegwv.vercel.app/tournament-leaderboard/${formData.slug || editingId}`}
+                                                                                                        </div>
+                                                                                                        <button
+                                                                                                            type="button"
+                                                                                                            onClick={() => {
+                                                                                                                const url = `https://apegwv.vercel.app/tournament-leaderboard/${formData.slug || editingId}`;
+                                                                                                                navigator.clipboard.writeText(url);
+                                                                                                                setCopied(true);
+                                                                                                                setTimeout(() => setCopied(false), 2000);
+                                                                                                                if (navigator.vibrate) navigator.vibrate(50);
+                                                                                                            }}
+                                                                                                            style={{
+                                                                                                                width: '40px',
+                                                                                                                height: '40px',
+                                                                                                                borderRadius: '12px',
+                                                                                                                background: 'white',
+                                                                                                                color: 'var(--primary)',
+                                                                                                                display: 'flex',
+                                                                                                                alignItems: 'center',
+                                                                                                                justifyContent: 'center',
+                                                                                                                border: 'none',
+                                                                                                                cursor: 'pointer',
+                                                                                                                position: 'relative'
+                                                                                                            }}
+                                                                                                        >
+                                                                                                            <Copy size={20} />
+                                                                                                        </button>
+                                                                                                    </div>
+                                                                                                </motion.div>
+                                                                                            )}
                                                                                         </div>
                                                                                     </motion.div>
                                                                                 )}

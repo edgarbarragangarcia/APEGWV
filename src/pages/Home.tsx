@@ -20,7 +20,7 @@ const Home: React.FC = () => {
     const { warning } = useToast();
     const { id: productId } = useParams();
     const { data: profile } = useProfile();
-    const { data: featuredProducts = [], isLoading: featuredLoading } = useFeaturedProducts(); // No limit to fetch all
+    const { data: featuredProducts = [], isLoading: featuredLoading } = useFeaturedProducts(6); // Limit to 6 for performance
     const { data: tournaments = [] } = useUpcomingTournaments(3);
 
     const [activeTab, setActiveTab] = React.useState('Todo');
