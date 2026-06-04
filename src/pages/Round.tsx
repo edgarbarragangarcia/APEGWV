@@ -126,10 +126,34 @@ const Round: React.FC = () => {
         return localStorage.getItem('play_group_selected_name') || null;
     });
 
-    const [tournamentName] = React.useState<string | null>(() => {
+    const [tournamentName, setTournamentName] = React.useState<string | null>(() => {
         const stateName = location.state?.tournamentName;
         return stateName || localStorage.getItem('round_tournament_name') || null;
     });
+
+    React.useEffect(() => {
+        if (!tournamentName && groupId) {
+            const fetchTournament = async () => {
+                try {
+                    const { data: tournaments, error } = await (supabase.from('tournaments') as any).select('name, groups');
+                    if (error) return;
+                    for (const t of (tournaments || [])) {
+                        if (t.groups && Array.isArray(t.groups)) {
+                            const match = t.groups.find((g: any) => g.id === groupId);
+                            if (match) {
+                                setTournamentName(t.name);
+                                localStorage.setItem('round_tournament_name', t.name);
+                                break;
+                            }
+                        }
+                    }
+                } catch (e) {
+                    console.error('Error fetching tournament name', e);
+                }
+            };
+            fetchTournament();
+        }
+    }, [tournamentName, groupId]);
     
     React.useEffect(() => {
         supabase.auth.getUser().then(({ data }) => {
