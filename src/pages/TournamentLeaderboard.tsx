@@ -116,7 +116,7 @@ const TournamentLeaderboard: React.FC = () => {
             // 3. Fetch rounds and hole scores for these groups
             const { data: rounds, error: rError } = await supabase
                 .from('rounds')
-                .select('id, user_id, group_id, round_holes(score, par, hole_number)')
+                .select('id, user_id, group_id, notes, round_holes(score, par, hole_number)')
                 .in('group_id', groupIds);
 
             if (rError) throw rError;
@@ -165,10 +165,16 @@ const TournamentLeaderboard: React.FC = () => {
 
             // 4. Calculate scores from rounds
             rounds?.forEach((round: any) => {
-                if (!round.user_id) return;
-                
-                // Find the registration for this round. Match by user_id.
-                const matchingRegId = Object.keys(usersMap).find(regId => usersMap[regId].user_id === round.user_id);
+                let matchingRegId = null;
+
+                // Priority 1: Check if notes contain the participant ID (used for caddie/admin scoring)
+                if (round.notes && round.notes.startsWith('participant:')) {
+                    matchingRegId = round.notes.split(':')[1];
+                } 
+                // Priority 2: Match by user_id
+                else if (round.user_id) {
+                    matchingRegId = Object.keys(usersMap).find(regId => usersMap[regId].user_id === round.user_id);
+                }
                 
                 if (matchingRegId && entriesMap[matchingRegId]) {
                     const holes = round.round_holes || [];
@@ -184,8 +190,8 @@ const TournamentLeaderboard: React.FC = () => {
                         }
                     });
 
-                    // Update the entry if they played holes
-                    if (holesPlayed > 0) {
+                    // Update the entry if they played holes (we only take the max holes played if there are multiple rounds for some reason)
+                    if (holesPlayed > 0 && holesPlayed >= entriesMap[matchingRegId].holes_played) {
                         entriesMap[matchingRegId].total_score = totalStrokes;
                         entriesMap[matchingRegId].score_relative_to_par = relativeToPar;
                         entriesMap[matchingRegId].holes_played = holesPlayed;

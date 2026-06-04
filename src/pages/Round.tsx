@@ -96,6 +96,8 @@ const Round: React.FC = () => {
     const [groupCurrentHoles, setGroupCurrentHoles] = React.useState<Record<string, number>>({});
     const [isLeaderboardOpen, setIsLeaderboardOpen] = React.useState(false);
     const [currentUserId, setCurrentUserId] = React.useState<string | null>(null);
+    const [participantName, setParticipantName] = React.useState<string | null>(null);
+    const participantId = localStorage.getItem('play_group_selected_participant');
     const hasNavigatedRef = React.useRef(false);
     const realtimeTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -125,9 +127,35 @@ const Round: React.FC = () => {
         supabase.auth.getUser().then(({ data }) => {
             setCurrentUserId(data.user?.id || null);
         });
-    }, []);
 
-
+        // Fetch participant name to display who we are scoring for
+        const fetchParticipant = async () => {
+            if (!participantId) return;
+            if (participantId.startsWith('manual-guest-')) {
+                if (groupId) {
+                    const { data: group } = await supabase.from('game_groups' as any).select('guests').eq('id', groupId).maybeSingle();
+                    if (group?.guests) {
+                        const index = parseInt(participantId.split('-')[2]);
+                        const guests = group.guests.split('\n').filter(Boolean);
+                        if (guests[index]) {
+                            setParticipantName(guests[index].split('|')[0].trim());
+                            return;
+                        }
+                    }
+                }
+                setParticipantName('Invitado');
+            } else {
+                const { data: reg } = await supabase.from('tournament_registrations')
+                    .select('player_name, profiles(full_name)')
+                    .eq('id', participantId)
+                    .maybeSingle();
+                if (reg) {
+                    setParticipantName(reg.player_name || reg.profiles?.full_name || 'Jugador');
+                }
+            }
+        };
+        fetchParticipant();
+    }, [participantId, groupId]);
 
     const currentStrokes = strokes[currentHole] || 0;
 
@@ -420,7 +448,8 @@ const Round: React.FC = () => {
                         course_location: course?.city || '',
                         status: 'in_progress',
                         date_played: new Date().toISOString(),
-                        group_id: groupId
+                        group_id: groupId,
+                        notes: participantId ? `participant:${participantId}` : null
                     }])
                     .select()
                     .maybeSingle();
@@ -688,6 +717,11 @@ const Round: React.FC = () => {
                             })()}
                         </h1>
                         <p style={{ fontSize: '12px', color: 'var(--text-dim)' }}>{fieldName} • Par {course?.club.includes('Lagartos') && recorrido === 'Corea' ? 71 : 72}</p>
+                        {participantName && (
+                            <p style={{ fontSize: '10px', color: 'var(--secondary)', fontWeight: 'bold', marginTop: '2px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                Jugador: {participantName}
+                            </p>
+                        )}
                     </div>
                 </div>
                 <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
