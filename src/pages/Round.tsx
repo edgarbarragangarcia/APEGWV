@@ -96,7 +96,6 @@ const Round: React.FC = () => {
     const [groupCurrentHoles, setGroupCurrentHoles] = React.useState<Record<string, number>>({});
     const [isLeaderboardOpen, setIsLeaderboardOpen] = React.useState(false);
     const [currentUserId, setCurrentUserId] = React.useState<string | null>(null);
-    const [participantName, setParticipantName] = React.useState<string | null>(null);
     const participantId = localStorage.getItem('play_group_selected_participant');
     const hasNavigatedRef = React.useRef(false);
     const realtimeTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -123,39 +122,16 @@ const Round: React.FC = () => {
         localStorage.removeItem('round_group_id');
     };
 
+    const [participantName, setParticipantName] = React.useState<string | null>(() => {
+        return localStorage.getItem('play_group_selected_name') || null;
+    });
+    
     React.useEffect(() => {
         supabase.auth.getUser().then(({ data }) => {
             setCurrentUserId(data.user?.id || null);
         });
+    }, []);
 
-        // Fetch participant name to display who we are scoring for
-        const fetchParticipant = async () => {
-            if (!participantId) return;
-            if (participantId.startsWith('manual-guest-')) {
-                if (groupId) {
-                    const { data: group } = await supabase.from('game_groups' as any).select('guests').eq('id', groupId).maybeSingle();
-                    if ((group as any)?.guests) {
-                        const index = parseInt(participantId.split('-')[2]);
-                        const guests = (group as any).guests.split('\n').filter(Boolean);
-                        if (guests[index]) {
-                            setParticipantName(guests[index].split('|')[0].trim());
-                            return;
-                        }
-                    }
-                }
-                setParticipantName('Invitado');
-            } else {
-                const { data: reg } = await supabase.from('tournament_registrations')
-                    .select('player_name, profiles(full_name)')
-                    .eq('id', participantId)
-                    .maybeSingle();
-                if (reg) {
-                    setParticipantName(reg.player_name || reg.profiles?.full_name || 'Jugador');
-                }
-            }
-        };
-        fetchParticipant();
-    }, [participantId, groupId]);
 
     const currentStrokes = strokes[currentHole] || 0;
 
