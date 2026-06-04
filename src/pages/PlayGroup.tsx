@@ -165,11 +165,13 @@ const PlayGroup: React.FC = () => {
         localStorage.setItem('round_course', JSON.stringify({ id: 'club-militar', club: 'Club Militar de Golf', name: 'Club Militar de Golf', city: 'Sopó', lat: 4.8897, lon: -73.9483 }));
         localStorage.setItem('round_current_hole', startHole.toString());
         localStorage.setItem('round_group_id', resolvedGroupId);
+        localStorage.setItem('round_tournament_name', tournamentName);
 
         navigate('/round', { 
             state: { 
                 course: { id: 'club-militar', club: 'Club Militar de Golf', name: 'Club Militar de Golf', city: 'Sopó', lat: 4.8897, lon: -73.9483 }, 
-                groupId: resolvedGroupId 
+                groupId: resolvedGroupId,
+                tournamentName: tournamentName
             } 
         });
     };

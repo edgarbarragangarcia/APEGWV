@@ -125,6 +125,11 @@ const Round: React.FC = () => {
     const [participantName] = React.useState<string | null>(() => {
         return localStorage.getItem('play_group_selected_name') || null;
     });
+
+    const [tournamentName] = React.useState<string | null>(() => {
+        const stateName = location.state?.tournamentName;
+        return stateName || localStorage.getItem('round_tournament_name') || null;
+    });
     
     React.useEffect(() => {
         supabase.auth.getUser().then(({ data }) => {
@@ -685,22 +690,37 @@ const Round: React.FC = () => {
                         <History size={20} />
                     </div>
                     <div>
-                        <h1 style={{ fontSize: '18px', fontWeight: '900', color: 'white' }}>
-                            {(() => {
-                                const words = clubName.split(' ');
-                                if (words.length <= 1) return <span style={{ color: 'white' }}>{clubName}</span>;
-                                return (
-                                    <>
-                                        <span style={{ color: 'white' }}>{words[0]} </span>
-                                        <span style={{ color: 'var(--secondary)' }}>{words[1]}</span>
-                                        {words.length > 2 && <span style={{ color: 'white' }}> {words.slice(2).join(' ')}</span>}
-                                    </>
-                                );
-                            })()}
-                        </h1>
-                        <p style={{ fontSize: '12px', color: 'var(--text-dim)' }}>{fieldName} • Par {course?.club.includes('Lagartos') && recorrido === 'Corea' ? 71 : 72}</p>
+                        {tournamentName ? (
+                            <>
+                                <h1 style={{ fontSize: '18px', fontWeight: '900', color: 'white', lineHeight: '1.2' }}>
+                                    {tournamentName}
+                                </h1>
+                                <p style={{ fontSize: '11px', color: 'var(--text-dim)', marginTop: '2px' }}>
+                                    {clubName} • {fieldName} • Par {course?.club.includes('Lagartos') && recorrido === 'Corea' ? 71 : 72}
+                                </p>
+                            </>
+                        ) : (
+                            <>
+                                <h1 style={{ fontSize: '18px', fontWeight: '900', color: 'white' }}>
+                                    {(() => {
+                                        const words = clubName.split(' ');
+                                        if (words.length <= 1) return <span style={{ color: 'white' }}>{clubName}</span>;
+                                        return (
+                                            <>
+                                                <span style={{ color: 'white' }}>{words[0]} </span>
+                                                <span style={{ color: 'var(--secondary)' }}>{words[1]}</span>
+                                                {words.length > 2 && <span style={{ color: 'white' }}> {words.slice(2).join(' ')}</span>}
+                                            </>
+                                        );
+                                    })()}
+                                </h1>
+                                <p style={{ fontSize: '12px', color: 'var(--text-dim)' }}>
+                                    {fieldName} • Par {course?.club.includes('Lagartos') && recorrido === 'Corea' ? 71 : 72}
+                                </p>
+                            </>
+                        )}
                         {participantName && (
-                            <p style={{ fontSize: '10px', color: 'var(--secondary)', fontWeight: 'bold', marginTop: '2px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                            <p style={{ fontSize: '10px', color: 'var(--secondary)', fontWeight: 'bold', marginTop: '4px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                                 Jugador: {participantName}
                             </p>
                         )}
