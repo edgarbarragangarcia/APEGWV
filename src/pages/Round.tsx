@@ -218,60 +218,134 @@ const Round: React.FC = () => {
 
         const fetchGroupData = async () => {
             try {
-                // 1. Fetch group members (only user_ids, no join - FK points to auth.users not profiles)
-                const { data: members, error: mErr } = await supabase
-                    .from('group_members')
-                    .select('user_id')
-                    .eq('group_id', groupId);
-
-                if (mErr) throw mErr;
-
-                // 2. Manually fetch profiles for each member
-                const userIds = (members || []).map((m: any) => m.user_id);
-                let profilesMap: Record<string, any> = {};
-
-                if (userIds.length > 0) {
-                    const { data: profilesData } = await supabase
-                        .from('profiles')
-                        .select('id, full_name, avatar_url, handicap, average_score')
-                        .in('id', userIds);
-
-                    profilesMap = (profilesData || []).reduce((acc: any, p: any) => {
-                        acc[p.id] = p;
-                        return acc;
-                    }, {});
-                }
-
-                // 3. Merge members with their profiles
-                const enrichedMembers = (members || []).map((m: any) => ({
-                    ...m,
-                    profiles: profilesMap[m.user_id] || null
-                }));
-
-                setGroupMembers(enrichedMembers);
-
-                // 4. Initial fetch of scores for all members in this group
+                // 1. Fetch rounds and hole scores for this group
                 const { data: rounds, error: rErr } = await supabase
                     .from('rounds')
-                    .select('id, user_id, round_holes(score, hole_number)')
+                    .select('id, user_id, notes, round_holes(score, hole_number)')
                     .eq('group_id', groupId);
 
                 if (rErr) throw rErr;
 
+                // 2. Try to load tournament participants for this group
+                let tournamentParticipants: any[] = [];
+                try {
+                    const { data: tournaments } = await (supabase.from('tournaments') as any).select('id, name, guests, groups');
+                    if (tournaments) {
+                        for (const t of tournaments) {
+                            if (t.groups && Array.isArray(t.groups)) {
+                                const matchingGroup = t.groups.find((g: any) => g.id === groupId);
+                                if (matchingGroup && matchingGroup.participants) {
+                                    // Fetch registrations for this tournament
+                                    const { data: regs } = await supabase
+                                        .from('tournament_registrations')
+                                        .select('id, user_id, player_name, player_handicap, profiles(id, full_name, avatar_url, handicap)')
+                                        .eq('tournament_id', t.id);
+                                    
+                                    if (regs) {
+                                        tournamentParticipants = regs
+                                            .filter((r: any) => matchingGroup.participants.includes(r.id))
+                                            .map((r: any) => ({
+                                                reg_id: r.id,
+                                                user_id: r.user_id,
+                                                full_name: r.player_name || r.profiles?.full_name || 'Jugador',
+                                                avatar_url: r.profiles?.avatar_url || null,
+                                                handicap: r.player_handicap ?? r.profiles?.handicap
+                                            }));
+                                    }
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                } catch (e) {
+                    console.warn('Could not load tournament participants for leaderboard', e);
+                }
+
                 const scores: Record<string, number> = {};
                 const currentHoles: Record<string, number> = {};
 
-                rounds?.forEach(r => {
-                    const total = r.round_holes?.reduce((acc: number, h: any) => acc + (h.score || 0), 0) || 0;
-                    scores[r.user_id] = total;
+                if (tournamentParticipants.length > 0) {
+                    // Tournament mode: use registration IDs and notes matching
+                    const enrichedMembers = tournamentParticipants.map((tp: any) => ({
+                        user_id: tp.reg_id, // Use reg_id as the key for display
+                        profiles: {
+                            full_name: tp.full_name,
+                            avatar_url: tp.avatar_url,
+                            handicap: tp.handicap
+                        }
+                    }));
+                    setGroupMembers(enrichedMembers);
 
-                    if (r.round_holes && r.round_holes.length > 0) {
-                        const playedHoles = r.round_holes.map((h: any) => h.hole_number);
-                        currentHoles[r.user_id] = Math.max(...playedHoles);
-                    } else {
-                        currentHoles[r.user_id] = 1;
+                    // Match rounds to participants
+                    rounds?.forEach(r => {
+                        let matchKey: string | null = null;
+
+                        // Priority 1: Match by notes (participant:regId)
+                        if ((r as any).notes && (r as any).notes.startsWith('participant:')) {
+                            matchKey = (r as any).notes.split(':')[1];
+                        }
+                        // Priority 2: Match by user_id to registration user_id
+                        else if (r.user_id) {
+                            const found = tournamentParticipants.find((tp: any) => tp.user_id === r.user_id);
+                            if (found) matchKey = found.reg_id;
+                        }
+
+                        if (matchKey) {
+                            const total = r.round_holes?.reduce((acc: number, h: any) => acc + (h.score || 0), 0) || 0;
+                            scores[matchKey] = total;
+
+                            if (r.round_holes && r.round_holes.length > 0) {
+                                const playedHoles = r.round_holes.map((h: any) => h.hole_number);
+                                currentHoles[matchKey] = Math.max(...playedHoles);
+                            } else {
+                                currentHoles[matchKey] = 1;
+                            }
+                        }
+                    });
+                } else {
+                    // Fallback: regular group mode (non-tournament)
+                    const { data: members, error: mErr } = await supabase
+                        .from('group_members')
+                        .select('user_id')
+                        .eq('group_id', groupId);
+
+                    if (mErr) throw mErr;
+
+                    const userIds = (members || []).map((m: any) => m.user_id);
+                    let profilesMap: Record<string, any> = {};
+
+                    if (userIds.length > 0) {
+                        const { data: profilesData } = await supabase
+                            .from('profiles')
+                            .select('id, full_name, avatar_url, handicap, average_score')
+                            .in('id', userIds);
+
+                        profilesMap = (profilesData || []).reduce((acc: any, p: any) => {
+                            acc[p.id] = p;
+                            return acc;
+                        }, {});
                     }
-                });
+
+                    const enrichedMembers = (members || []).map((m: any) => ({
+                        ...m,
+                        profiles: profilesMap[m.user_id] || null
+                    }));
+
+                    setGroupMembers(enrichedMembers);
+
+                    rounds?.forEach(r => {
+                        const total = r.round_holes?.reduce((acc: number, h: any) => acc + (h.score || 0), 0) || 0;
+                        scores[r.user_id] = total;
+
+                        if (r.round_holes && r.round_holes.length > 0) {
+                            const playedHoles = r.round_holes.map((h: any) => h.hole_number);
+                            currentHoles[r.user_id] = Math.max(...playedHoles);
+                        } else {
+                            currentHoles[r.user_id] = 1;
+                        }
+                    });
+                }
+
                 setGroupScores(scores);
                 setGroupCurrentHoles(currentHoles);
             } catch (err) {
@@ -441,10 +515,11 @@ const Round: React.FC = () => {
         try {
             const { data: { user } } = await supabase.auth.getUser();
             
-            const effectiveUserId = (participantId && !participantId.startsWith('manual-guest-')) 
-                ? participantId 
-                : (user?.id || '00000000-0000-0000-0000-000000000000');
-            if (!effectiveUserId || (effectiveUserId === '00000000-0000-0000-0000-000000000000' && !participantId)) {
+            // Always use the authenticated user's ID for the rounds table (FK constraint to auth.users)
+            // The participantId (tournament_registration.id) goes in the notes field for leaderboard matching
+            const effectiveUserId = user?.id;
+            if (!effectiveUserId) {
+                console.error('No authenticated user found, cannot save score');
                 return;
             }
 
@@ -561,12 +636,11 @@ const Round: React.FC = () => {
         setIsSaving(true);
         try {
             const { data: { user } } = await supabase.auth.getUser();
-            const effectiveUserId = (participantId && !participantId.startsWith('manual-guest-')) 
-                ? participantId 
-                : (user?.id || '00000000-0000-0000-0000-000000000000');
+            // Always use the authenticated user's ID for the rounds table (FK constraint to auth.users)
+            const effectiveUserId = user?.id;
             
-            if (!effectiveUserId || (effectiveUserId === '00000000-0000-0000-0000-000000000000' && !participantId)) {
-                alert('Hubo un error al identificar al jugador.');
+            if (!effectiveUserId) {
+                alert('Hubo un error al identificar al jugador. No hay sesión activa.');
                 setIsSaving(false);
                 return;
             }
@@ -601,7 +675,9 @@ const Round: React.FC = () => {
                         total_score: totalScore,
                         first_nine_score: firstNine,
                         second_nine_score: secondNine,
-                        status: 'completed'
+                        status: 'completed',
+                        group_id: groupId,
+                        notes: participantId ? `participant:${participantId}` : null
                     }])
                     .select()
                     .maybeSingle();

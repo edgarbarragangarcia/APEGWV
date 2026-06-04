@@ -161,6 +161,10 @@ const PlayGroup: React.FC = () => {
         localStorage.setItem('play_group_selected_participant', participant.id);
         localStorage.setItem('play_group_selected_name', participant.full_name);
 
+        // Clear previous round state to avoid appending to an old abandoned round
+        localStorage.removeItem('round_id');
+        localStorage.removeItem('round_strokes');
+
         // Configuration for the round
         localStorage.setItem('round_course', JSON.stringify({ id: 'club-militar', club: 'Club Militar de Golf', name: 'Club Militar de Golf', city: 'Sopó', lat: 4.8897, lon: -73.9483 }));
         localStorage.setItem('round_current_hole', startHole.toString());
