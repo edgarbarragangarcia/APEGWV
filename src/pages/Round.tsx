@@ -441,7 +441,9 @@ const Round: React.FC = () => {
         try {
             const { data: { user } } = await supabase.auth.getUser();
             
-            const effectiveUserId = user?.id || (participantId && !participantId.startsWith('manual-guest-') ? participantId : '00000000-0000-0000-0000-000000000000');
+            const effectiveUserId = (participantId && !participantId.startsWith('manual-guest-')) 
+                ? participantId 
+                : (user?.id || '00000000-0000-0000-0000-000000000000');
             if (!effectiveUserId || (effectiveUserId === '00000000-0000-0000-0000-000000000000' && !participantId)) {
                 return;
             }
@@ -559,7 +561,9 @@ const Round: React.FC = () => {
         setIsSaving(true);
         try {
             const { data: { user } } = await supabase.auth.getUser();
-            const effectiveUserId = user?.id || (participantId && !participantId.startsWith('manual-guest-') ? participantId : '00000000-0000-0000-0000-000000000000');
+            const effectiveUserId = (participantId && !participantId.startsWith('manual-guest-')) 
+                ? participantId 
+                : (user?.id || '00000000-0000-0000-0000-000000000000');
             
             if (!effectiveUserId || (effectiveUserId === '00000000-0000-0000-0000-000000000000' && !participantId)) {
                 alert('Hubo un error al identificar al jugador.');
