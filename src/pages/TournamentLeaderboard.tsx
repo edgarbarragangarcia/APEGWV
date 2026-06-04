@@ -518,11 +518,13 @@ const TournamentLeaderboard: React.FC = () => {
                                                             fontSize: '15px', 
                                                             fontWeight: '800', 
                                                             color: 'white',
-                                                            whiteSpace: 'nowrap',
                                                             overflow: 'hidden',
-                                                            textOverflow: 'ellipsis',
                                                             textTransform: 'uppercase',
-                                                            letterSpacing: '0.5px'
+                                                            letterSpacing: '0.5px',
+                                                            lineHeight: '1.2',
+                                                            display: '-webkit-box',
+                                                            WebkitLineClamp: 2,
+                                                            WebkitBoxOrient: 'vertical'
                                                         }}>
                                                             {entry.full_name}
                                                         </span>
