@@ -205,7 +205,7 @@ const AppContent: React.FC = () => {
         </Routes>
       </main>
 
-      {session && !isRegistrationPage && !isPlayGroup && !isRoundPage && <BottomNav />}
+      {session && !isRegistrationPage && !isPlayGroup && !isLeaderboardPage && !isRoundPage && <BottomNav />}
 
       {showOnboarding && session && !isRegistrationPage && !isPlayGroup && (
         <OnboardingTour
