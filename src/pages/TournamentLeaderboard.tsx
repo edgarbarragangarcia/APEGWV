@@ -42,10 +42,10 @@ const TournamentLeaderboard: React.FC = () => {
 
         try {
             // 1. Fetch tournament by slug
-            const { data: tournaments, error: tError } = await supabase
-                .from('tournaments')
+            const { data: tournaments, error: tError } = await (supabase
+                .from('tournaments') as any)
                 .select('id, name, groups')
-                .eq('slug', slug);
+                .eq('slug', slug || '');
 
             if (tError) throw tError;
 
@@ -233,7 +233,7 @@ const TournamentLeaderboard: React.FC = () => {
         if (!slug || leaderboard.length === 0) return;
 
         // Debounce the refresh
-        let timeoutId: NodeJS.Timeout;
+        let timeoutId: ReturnType<typeof setTimeout>;
 
         const channel = supabase
             .channel(`leaderboard-scores-${slug}`)
