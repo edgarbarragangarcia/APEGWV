@@ -432,7 +432,15 @@ const TournamentLeaderboard: React.FC = () => {
                             <AnimatePresence>
                                 {leaderboard.map((entry, index) => {
                                     const isLeader = entry.position === 1 && entry.holes_played > 0;
+                                    const isSecond = entry.position === 2 && entry.holes_played > 0;
+                                    const isThird = entry.position === 3 && entry.holes_played > 0;
                                     
+                                    let posColor = 'white';
+                                    let rowBg = 'transparent';
+                                    if (isLeader) { posColor = '#FBBF24'; rowBg = 'linear-gradient(90deg, rgba(251, 191, 36, 0.08) 0%, transparent 100%)'; }
+                                    else if (isSecond) { posColor = '#9CA3AF'; }
+                                    else if (isThird) { posColor = '#D97706'; }
+
                                     // Determine arrow
                                     let arrow = null;
                                     if (entry.previous_position) {
@@ -455,19 +463,19 @@ const TournamentLeaderboard: React.FC = () => {
                                             transition={{ duration: 0.3 }}
                                             style={{ 
                                                 display: 'grid', 
-                                                gridTemplateColumns: '40px 1fr 50px 50px', 
-                                                padding: '16px 15px',
+                                                gridTemplateColumns: '40px 1fr 55px 65px', 
+                                                padding: '12px 15px',
                                                 borderBottom: index < leaderboard.length - 1 ? '1px solid rgba(255,255,255,0.03)' : 'none',
-                                                background: isLeader ? 'linear-gradient(90deg, rgba(163, 230, 53, 0.05) 0%, transparent 100%)' : 'transparent',
+                                                background: rowBg,
                                                 alignItems: 'center'
                                             }}
                                         >
                                             {/* POS */}
                                             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
                                                 <span style={{ 
-                                                    fontSize: '15px', 
+                                                    fontSize: isLeader ? '18px' : '15px', 
                                                     fontWeight: '900', 
-                                                    color: isLeader ? 'var(--secondary)' : 'white' 
+                                                    color: posColor
                                                 }}>
                                                     {entry.position}
                                                 </span>
@@ -475,33 +483,50 @@ const TournamentLeaderboard: React.FC = () => {
                                             </div>
 
                                             {/* PLAYER */}
-                                            <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', paddingRight: '10px' }}>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                    <span style={{ 
-                                                        fontSize: '14px', 
-                                                        fontWeight: '800', 
-                                                        color: 'white',
-                                                        whiteSpace: 'nowrap',
-                                                        overflow: 'hidden',
-                                                        textOverflow: 'ellipsis'
-                                                    }}>
-                                                        {entry.full_name}
-                                                    </span>
-                                                    {entry.handicap !== null && (
-                                                        <span style={{ fontSize: '9px', background: 'rgba(255,255,255,0.1)', padding: '2px 6px', borderRadius: '4px', color: 'rgba(255,255,255,0.6)', fontWeight: '700' }}>
-                                                            {entry.handicap}
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', overflow: 'hidden', paddingRight: '10px' }}>
+                                                {/* Avatar */}
+                                                <div style={{ 
+                                                    width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)', flexShrink: 0, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center'
+                                                }}>
+                                                    {entry.avatar_url ? (
+                                                        <img src={entry.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                    ) : (
+                                                        <span style={{ color: 'white', fontWeight: 'bold', fontSize: '12px' }}>
+                                                            {entry.full_name.charAt(0)}
                                                         </span>
                                                     )}
                                                 </div>
-                                                <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', fontWeight: '600', marginTop: '2px' }}>
-                                                    {entry.group_name}
-                                                </span>
+
+                                                <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                        <span style={{ 
+                                                            fontSize: '14px', 
+                                                            fontWeight: '800', 
+                                                            color: 'white',
+                                                            whiteSpace: 'nowrap',
+                                                            overflow: 'hidden',
+                                                            textOverflow: 'ellipsis'
+                                                        }}>
+                                                            {entry.full_name}
+                                                        </span>
+                                                    </div>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
+                                                        <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', fontWeight: '600' }}>
+                                                            {entry.group_name}
+                                                        </span>
+                                                        {entry.handicap !== null && (
+                                                            <span style={{ fontSize: '8px', background: 'rgba(255,255,255,0.1)', padding: '1px 4px', borderRadius: '4px', color: 'rgba(255,255,255,0.6)', fontWeight: '700' }}>
+                                                                HCP {entry.handicap}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </div>
                                             </div>
 
                                             {/* SCORE */}
                                             <div style={{ 
                                                 textAlign: 'center', 
-                                                fontSize: '15px', 
+                                                fontSize: '16px', 
                                                 fontWeight: '900',
                                                 color: getScoreColor(entry.score_relative_to_par, entry.holes_played)
                                             }}>
@@ -509,13 +534,23 @@ const TournamentLeaderboard: React.FC = () => {
                                             </div>
 
                                             {/* THRU */}
-                                            <div style={{ 
-                                                textAlign: 'center', 
-                                                fontSize: '13px', 
-                                                fontWeight: '700',
-                                                color: entry.holes_played === 18 ? 'var(--secondary)' : 'white'
-                                            }}>
-                                                {entry.holes_played === 18 ? 'F' : (entry.holes_played || '-')}
+                                            <div style={{ display: 'flex', justifyContent: 'center' }}>
+                                                {entry.holes_played > 0 ? (
+                                                    <div style={{ 
+                                                        background: entry.holes_played === 18 ? 'var(--secondary)' : 'rgba(163, 230, 53, 0.15)',
+                                                        color: entry.holes_played === 18 ? 'var(--primary)' : 'var(--secondary)',
+                                                        padding: '4px 8px',
+                                                        borderRadius: '8px',
+                                                        fontSize: '10px',
+                                                        fontWeight: '800',
+                                                        textTransform: 'uppercase',
+                                                        letterSpacing: '0.5px'
+                                                    }}>
+                                                        {entry.holes_played === 18 ? 'Fin' : `Hoyo ${entry.holes_played}`}
+                                                    </div>
+                                                ) : (
+                                                    <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: '12px', fontWeight: '700' }}>-</span>
+                                                )}
                                             </div>
                                         </motion.div>
                                     );
