@@ -4,7 +4,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../services/SupabaseManager';
 import { Trophy, ChevronLeft, Loader2, RefreshCw } from 'lucide-react';
 import PageHero from '../components/PageHero';
-import BottomNav from '../components/BottomNav';
 
 interface LeaderboardEntry {
     user_id: string;
@@ -585,10 +584,6 @@ const TournamentLeaderboard: React.FC = () => {
                         </div>
                     </div>
                 )}
-            </div>
-
-            <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 50 }}>
-                <BottomNav />
             </div>
         </div>
     );
