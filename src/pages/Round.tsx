@@ -134,9 +134,9 @@ const Round: React.FC = () => {
             if (participantId.startsWith('manual-guest-')) {
                 if (groupId) {
                     const { data: group } = await supabase.from('game_groups' as any).select('guests').eq('id', groupId).maybeSingle();
-                    if (group?.guests) {
+                    if ((group as any)?.guests) {
                         const index = parseInt(participantId.split('-')[2]);
-                        const guests = group.guests.split('\n').filter(Boolean);
+                        const guests = (group as any).guests.split('\n').filter(Boolean);
                         if (guests[index]) {
                             setParticipantName(guests[index].split('|')[0].trim());
                             return;
