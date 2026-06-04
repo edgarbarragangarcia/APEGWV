@@ -130,6 +130,8 @@ const TournamentGroups: React.FC = () => {
 
             if (tournament.groups && Array.isArray(tournament.groups) && tournament.groups.length > 0) {
                 setGroups(tournament.groups);
+                // Collapse all groups by default
+                setCollapsedGroups(new Set(tournament.groups.map((g: any) => g.id)));
             }
         } catch (err) {
             console.error('Error fetching data:', err);
