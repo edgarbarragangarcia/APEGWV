@@ -433,7 +433,7 @@ const TournamentLeaderboard: React.FC = () => {
                                 {/* Table Header */}
                                 <div style={{ 
                                     display: 'grid', 
-                                    gridTemplateColumns: '50px 380px 60px 60px repeat(18, 40px)', 
+                                    gridTemplateColumns: '50px 380px 60px 60px repeat(9, 40px) 50px repeat(9, 40px) 50px 50px', 
                                     background: '#04100c',
                                     borderBottom: '2px solid rgba(255,255,255,0.2)',
                                     fontSize: '11px',
@@ -446,11 +446,23 @@ const TournamentLeaderboard: React.FC = () => {
                                     <div style={{ padding: '12px 15px', borderRight: '1px solid rgba(255,255,255,0.1)', position: 'sticky', left: '50px', background: '#04100c', zIndex: 10 }}>JUGADOR</div>
                                     <div style={{ padding: '12px 0', textAlign: 'center', borderRight: '1px solid rgba(255,255,255,0.1)' }}>SCORE</div>
                                     <div style={{ padding: '12px 0', textAlign: 'center', borderRight: '1px solid rgba(255,255,255,0.1)' }}>THRU</div>
-                                    {[...Array(18)].map((_, i) => (
-                                        <div key={i} style={{ padding: '12px 0', textAlign: 'center', borderRight: i === 8 ? '1px dashed rgba(255,255,255,0.3)' : '1px solid rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.4)' }}>
+                                    
+                                    {/* Front 9 Header */}
+                                    {[...Array(9)].map((_, i) => (
+                                        <div key={`out-${i}`} style={{ padding: '12px 0', textAlign: 'center', borderRight: '1px solid rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.4)' }}>
                                             {i + 1}
                                         </div>
                                     ))}
+                                    <div style={{ padding: '12px 0', textAlign: 'center', borderRight: '1px dashed rgba(255,255,255,0.3)', color: 'var(--secondary)' }}>IDA</div>
+                                    
+                                    {/* Back 9 Header */}
+                                    {[...Array(9)].map((_, i) => (
+                                        <div key={`in-${i}`} style={{ padding: '12px 0', textAlign: 'center', borderRight: '1px solid rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.4)' }}>
+                                            {i + 10}
+                                        </div>
+                                    ))}
+                                    <div style={{ padding: '12px 0', textAlign: 'center', borderRight: '1px solid rgba(255,255,255,0.1)', color: 'var(--secondary)' }}>VTA</div>
+                                    <div style={{ padding: '12px 0', textAlign: 'center', color: 'white' }}>TOT</div>
                                 </div>
 
                         {/* Table Body */}
@@ -474,7 +486,7 @@ const TournamentLeaderboard: React.FC = () => {
                                             <div
                                                 style={{ 
                                                     display: 'grid',
-                                                    gridTemplateColumns: '50px 380px 60px 60px repeat(18, 40px)', 
+                                                    gridTemplateColumns: '50px 380px 60px 60px repeat(9, 40px) 50px repeat(9, 40px) 50px 50px', 
                                                     background: rowBg,
                                                     borderBottom: '1px solid rgba(255,255,255,0.1)',
                                                     alignItems: 'stretch'
@@ -571,36 +583,55 @@ const TournamentLeaderboard: React.FC = () => {
                                                     </span>
                                                 </div>
 
-                                                {/* HOLES 1-18 */}
-                                                {[...Array(18)].map((_, i) => {
-                                                    const holeNum = i + 1;
-                                                    const score = entry.hole_scores[holeNum];
-                                                    const par = entry.hole_pars[holeNum] || 4;
-                                                    let content = <span style={{ color: 'rgba(255,255,255,0.15)' }}>-</span>;
-                                                    
-                                                    if (score && score > 0) {
-                                                        const diff = score - par;
-                                                        if (diff < 0) {
-                                                            content = <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '20px', height: '20px', borderRadius: '50%', border: '1.5px solid #ef4444', color: '#ef4444', fontWeight: '900', fontSize: '11px', margin: '0 auto' }}>{score}</div>;
-                                                        } else if (diff > 0) {
-                                                            content = <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '20px', height: '20px', borderRadius: '4px', border: '1.5px solid #60a5fa', color: '#60a5fa', fontWeight: '900', fontSize: '11px', margin: '0 auto' }}>{score}</div>;
-                                                        } else {
-                                                            content = <span style={{ color: 'white', fontWeight: '800', fontSize: '13px' }}>{score}</span>;
+                                                {/* HOLES OUT/IN */}
+                                                {(() => {
+                                                    const frontHoles = [1,2,3,4,5,6,7,8,9];
+                                                    const backHoles = [10,11,12,13,14,15,16,17,18];
+                                                    const getOutScore = () => frontHoles.reduce((a, h) => a + (entry.hole_scores[h] || 0), 0);
+                                                    const getInScore = () => backHoles.reduce((a, h) => a + (entry.hole_scores[h] || 0), 0);
+                                                    const outScore = getOutScore();
+                                                    const inScore = getInScore();
+                                                    const totScore = outScore + inScore;
+
+                                                    const renderHole = (holeNum: number) => {
+                                                        const score = entry.hole_scores[holeNum];
+                                                        const par = entry.hole_pars[holeNum] || 4;
+                                                        let content = <span style={{ color: 'rgba(255,255,255,0.15)' }}>-</span>;
+                                                        
+                                                        if (score && score > 0) {
+                                                            const diff = score - par;
+                                                            if (diff < 0) {
+                                                                content = <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '20px', height: '20px', borderRadius: '50%', border: '1.5px solid #ef4444', color: '#ef4444', fontWeight: '900', fontSize: '11px', margin: '0 auto' }}>{score}</div>;
+                                                            } else if (diff > 0) {
+                                                                content = <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '20px', height: '20px', borderRadius: '4px', border: '1.5px solid #60a5fa', color: '#60a5fa', fontWeight: '900', fontSize: '11px', margin: '0 auto' }}>{score}</div>;
+                                                            } else {
+                                                                content = <span style={{ color: 'white', fontWeight: '800', fontSize: '13px' }}>{score}</span>;
+                                                            }
                                                         }
-                                                    }
+
+                                                        return (
+                                                            <div key={holeNum} style={{ 
+                                                                display: 'flex', 
+                                                                alignItems: 'center', 
+                                                                justifyContent: 'center',
+                                                                borderRight: '1px solid rgba(255,255,255,0.05)',
+                                                                background: score ? 'transparent' : 'rgba(255,255,255,0.01)'
+                                                            }}>
+                                                                {content}
+                                                            </div>
+                                                        );
+                                                    };
 
                                                     return (
-                                                        <div key={holeNum} style={{ 
-                                                            display: 'flex', 
-                                                            alignItems: 'center', 
-                                                            justifyContent: 'center',
-                                                            borderRight: holeNum === 9 ? '1px dashed rgba(255,255,255,0.3)' : '1px solid rgba(255,255,255,0.05)',
-                                                            background: score ? 'transparent' : 'rgba(255,255,255,0.01)'
-                                                        }}>
-                                                            {content}
-                                                        </div>
+                                                        <>
+                                                            {frontHoles.map(h => renderHole(h))}
+                                                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.03)', fontWeight: 'bold', color: 'var(--secondary)', borderRight: '1px dashed rgba(255,255,255,0.3)', fontSize: '13px' }}>{outScore > 0 ? outScore : '-'}</div>
+                                                            {backHoles.map(h => renderHole(h))}
+                                                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.03)', fontWeight: 'bold', color: 'var(--secondary)', borderRight: '1px solid rgba(255,255,255,0.1)', fontSize: '13px' }}>{inScore > 0 ? inScore : '-'}</div>
+                                                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.06)', fontWeight: '900', color: 'white', fontSize: '14px' }}>{totScore > 0 ? totScore : '-'}</div>
+                                                        </>
                                                     );
-                                                })}
+                                                })()}
                                             </div>
                                         </React.Fragment>
                                     );
