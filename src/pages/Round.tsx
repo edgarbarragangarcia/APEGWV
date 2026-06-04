@@ -1,6 +1,6 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, History, BarChart2, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, History, BarChart2, X, Loader2 } from 'lucide-react';
 import type { GolfCourse } from '../data/courses';
 import { supabase } from '../services/SupabaseManager';
 import { useGeoLocation } from '../hooks/useGeoLocation';
@@ -96,6 +96,7 @@ const Round: React.FC = () => {
     const [groupCurrentHoles, setGroupCurrentHoles] = React.useState<Record<string, number>>({});
     const [isLeaderboardOpen, setIsLeaderboardOpen] = React.useState(false);
     const [currentUserId, setCurrentUserId] = React.useState<string | null>(null);
+    const [loadingRound, setLoadingRound] = React.useState(false);
     const participantId = localStorage.getItem('play_group_selected_participant');
     const hasNavigatedRef = React.useRef(false);
     const realtimeTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -212,6 +213,57 @@ const Round: React.FC = () => {
         loadWeather();
     }, [course]);
 
+    React.useEffect(() => {
+        const loadExistingRound = async () => {
+            if (!groupId || !participantId) return;
+            setLoadingRound(true);
+            try {
+                const { data: rounds, error } = await supabase
+                    .from('rounds')
+                    .select('id, status, round_holes(score, par, hole_number)')
+                    .eq('group_id', groupId)
+                    .or(`user_id.eq.${participantId},notes.eq.participant:${participantId}`)
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                if (rounds && rounds.length > 0) {
+                    const activeRound = rounds[0];
+                    setRoundId(activeRound.id);
+                    localStorage.setItem('round_id', activeRound.id);
+
+                    const dbStrokes: Record<number, number> = {};
+                    activeRound.round_holes?.forEach((h: any) => {
+                        if (h.score > 0) {
+                            dbStrokes[h.hole_number] = h.score;
+                        }
+                    });
+                    setStrokes(dbStrokes);
+                    localStorage.setItem('round_strokes', JSON.stringify(dbStrokes));
+
+                    const playedHoles = Object.keys(dbStrokes).map(Number);
+                    if (playedHoles.length > 0) {
+                        const maxHole = Math.max(...playedHoles);
+                        const nextHole = maxHole < 18 ? maxHole + 1 : 18;
+                        setCurrentHole(nextHole);
+                        localStorage.setItem('round_current_hole', nextHole.toString());
+                    }
+                } else {
+                    setRoundId(null);
+                    setStrokes({});
+                    localStorage.removeItem('round_id');
+                    localStorage.removeItem('round_strokes');
+                }
+            } catch (err) {
+                console.error('Error loading existing round:', err);
+            } finally {
+                setLoadingRound(false);
+            }
+        };
+
+        loadExistingRound();
+    }, [groupId, participantId]);
+
     // Live Leaderboard Fetching & Subscription
     React.useEffect(() => {
         if (!groupId) return;
@@ -287,6 +339,12 @@ const Round: React.FC = () => {
                         // Priority 2: Match by user_id to registration user_id
                         else if (r.user_id) {
                             const found = tournamentParticipants.find((tp: any) => tp.user_id === r.user_id);
+                            if (found) matchKey = found.reg_id;
+                        }
+
+                        // Priority 3: Match by user_id being the registration ID itself
+                        if (!matchKey && r.user_id) {
+                            const found = tournamentParticipants.find((tp: any) => tp.reg_id === r.user_id);
                             if (found) matchKey = found.reg_id;
                         }
 
@@ -517,7 +575,9 @@ const Round: React.FC = () => {
             
             // Always use the authenticated user's ID for the rounds table (FK constraint to auth.users)
             // The participantId (tournament_registration.id) goes in the notes field for leaderboard matching
-            const effectiveUserId = user?.id;
+            const effectiveUserId = (participantId && !participantId.startsWith('manual-guest-')) 
+                ? participantId 
+                : (user?.id || '00000000-0000-0000-0000-000000000000');
             if (!effectiveUserId) {
                 console.error('No authenticated user found, cannot save score');
                 return;
@@ -637,7 +697,9 @@ const Round: React.FC = () => {
         try {
             const { data: { user } } = await supabase.auth.getUser();
             // Always use the authenticated user's ID for the rounds table (FK constraint to auth.users)
-            const effectiveUserId = user?.id;
+            const effectiveUserId = (participantId && !participantId.startsWith('manual-guest-')) 
+                ? participantId 
+                : (user?.id || '00000000-0000-0000-0000-000000000000');
             
             if (!effectiveUserId) {
                 alert('Hubo un error al identificar al jugador. No hay sesión activa.');
@@ -774,6 +836,27 @@ const Round: React.FC = () => {
     const [showCancelModal, setShowCancelModal] = React.useState(false);
     const [showStatsModal, setShowStatsModal] = React.useState(false);
     const [gameEndedMessage, setGameEndedMessage] = React.useState<{ userName: string, action: string } | null>(null);
+
+    if (loadingRound) {
+        return (
+            <div style={{
+                minHeight: '100dvh',
+                width: '100%',
+                backgroundColor: '#071611',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '20px',
+                color: 'white'
+            }}>
+                <Loader2 className="animate-spin" size={40} color="var(--secondary)" />
+                <p style={{ color: 'var(--secondary)', fontWeight: '600', letterSpacing: '1px', fontSize: '14px', textTransform: 'uppercase' }}>
+                    Cargando partida de {participantName || 'Jugador'}...
+                </p>
+            </div>
+        );
+    }
 
     return (
         <div className="animate-fade" style={{

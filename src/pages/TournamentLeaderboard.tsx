@@ -171,9 +171,14 @@ const TournamentLeaderboard: React.FC = () => {
                 if (round.notes && round.notes.startsWith('participant:')) {
                     matchingRegId = round.notes.split(':')[1];
                 } 
-                // Priority 2: Match by user_id
+                // Priority 2: Match by user_id to user_id in registration
                 else if (round.user_id) {
                     matchingRegId = Object.keys(usersMap).find(regId => usersMap[regId].user_id === round.user_id);
+                }
+                
+                // Priority 3: Match by round.user_id being the registration ID itself
+                if (!matchingRegId && round.user_id && usersMap[round.user_id]) {
+                    matchingRegId = round.user_id;
                 }
                 
                 if (matchingRegId && entriesMap[matchingRegId]) {
