@@ -706,8 +706,32 @@ const Round: React.FC = () => {
             position: 'relative',
             padding: '6px 10px 0 10px',
             width: '100%',
-            gap: '4px'
+            gap: '4px',
+            minHeight: '100dvh'
         }}>
+            {/* Premium Opaque Background */}
+            <div style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                zIndex: -1,
+                background: 'radial-gradient(circle at 20% 0%, rgba(163, 230, 53, 0.15), transparent 40%), radial-gradient(circle at 80% 100%, rgba(34, 197, 94, 0.1), transparent 40%)',
+                backgroundColor: '#071611',
+            }} />
+            <div style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                zIndex: -1,
+                opacity: 0.3,
+                pointerEvents: 'none',
+                backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`
+            }} />
+
             <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px', flexShrink: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <div style={{ padding: '8px', border: '1px solid var(--glass-border)', borderRadius: '10px' }}>
