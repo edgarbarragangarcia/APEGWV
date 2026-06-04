@@ -433,7 +433,7 @@ const TournamentLeaderboard: React.FC = () => {
                                 {/* Table Header */}
                                 <div style={{ 
                                     display: 'grid', 
-                                    gridTemplateColumns: '50px 280px 60px 60px repeat(18, 40px)', 
+                                    gridTemplateColumns: '50px 380px 60px 60px repeat(18, 40px)', 
                                     background: '#04100c',
                                     borderBottom: '2px solid rgba(255,255,255,0.2)',
                                     fontSize: '11px',
@@ -474,7 +474,7 @@ const TournamentLeaderboard: React.FC = () => {
                                             <div
                                                 style={{ 
                                                     display: 'grid',
-                                                    gridTemplateColumns: '50px 280px 60px 60px repeat(18, 40px)', 
+                                                    gridTemplateColumns: '50px 380px 60px 60px repeat(18, 40px)', 
                                                     background: rowBg,
                                                     borderBottom: '1px solid rgba(255,255,255,0.1)',
                                                     alignItems: 'stretch'
