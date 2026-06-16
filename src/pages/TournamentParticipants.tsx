@@ -364,13 +364,28 @@ const TournamentParticipants: React.FC = () => {
             console.error('Error copying to clipboard:', err);
         }
 
-        const mailtoUrl = `mailto:?bcc=${emails}&subject=Información Torneo: ${tournamentName}`;
-        const link = document.createElement('a');
-        link.href = mailtoUrl;
-        link.target = '_self';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        const subject = encodeURIComponent(`Información Torneo: ${tournamentName}`);
+        const bcc = encodeURIComponent(emails);
+        const mailtoUrl = `mailto:?bcc=${bcc}&subject=${subject}`;
+
+        if (mailtoUrl.length > 2000) {
+            const emptyMailtoUrl = `mailto:?subject=${subject}`;
+            const link = document.createElement('a');
+            link.href = emptyMailtoUrl;
+            link.target = '_self';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            showToast('Demasiados correos. Se copiaron al portapapeles, pégalos en CCO.', 'warning');
+        } else {
+            const link = document.createElement('a');
+            link.href = mailtoUrl;
+            link.target = '_self';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
     };
 
     const triggerDownload = async (blob: Blob, fileName: string) => {
