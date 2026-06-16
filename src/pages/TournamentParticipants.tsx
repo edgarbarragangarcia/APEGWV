@@ -349,35 +349,65 @@ const TournamentParticipants: React.FC = () => {
 
     const sendBulkEmail = () => {
         const selectedParticipants = participants.filter(p => selectedIds.includes(p.id));
-        const emails = selectedParticipants.map(p => p.email).filter(Boolean).join(',');
+        
+        const validEmails = selectedParticipants
+            .map(p => p.email ? p.email.trim() : '')
+            .filter(email => email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email));
 
-        if (!emails) {
-            showToast('No hay correos disponibles para los seleccionados.', 'warning');
+        const emailsStr = validEmails.join(',');
+
+        if (!emailsStr) {
+            showToast('No hay correos válidos disponibles para los seleccionados.', 'warning');
             return;
         }
 
         try {
-            navigator.clipboard.writeText(emails);
+            navigator.clipboard.writeText(emailsStr);
             setCopiedEmails(true);
             setTimeout(() => setCopiedEmails(false), 3000);
         } catch (err) {
             console.error('Error copying to clipboard:', err);
         }
 
-        const subject = encodeURIComponent(`Información Torneo: ${tournamentName}`);
-        const bcc = encodeURIComponent(emails);
-        const mailtoUrl = `mailto:?bcc=${bcc}&subject=${subject}`;
+        let subjectText = `Información Torneo: ${tournamentName}`;
+        let bodyText = '';
 
-        if (mailtoUrl.length > 2000) {
-            const emptyMailtoUrl = `mailto:?subject=${subject}`;
+        if (statusFilter === 'paid') {
+            subjectText = `CONFIRMACIÓN DE PAGO - ${tournamentName}`;
+            let template = tournamentMessages.paid || `¡Hola! Hemos recibido tu pago.`;
+            bodyText = template.replace(/{nombre}|\[nombre\]/gi, 'Jugador(a)');
+            if (!template.match(/{nombre}|\[nombre\]/gi)) bodyText = `¡Hola Jugador(a)!\n\n${bodyText}`;
+        } else if (statusFilter === 'registered') {
+            subjectText = `RECORDATORIO DE PAGO - ${tournamentName}`;
+            let template = tournamentMessages.unpaid || `¡Hola! Te recordamos realizar el pago para asegurar tu cupo.`;
+            bodyText = template.replace(/{nombre}|\[nombre\]/gi, 'Jugador(a)');
+            if (!template.match(/{nombre}|\[nombre\]/gi)) bodyText = `¡Hola Jugador(a)!\n\n${bodyText}`;
+        }
+
+        bodyText = bodyText.replace(/\n/g, '\r\n');
+
+        const subject = encodeURIComponent(subjectText);
+        const body = encodeURIComponent(bodyText);
+        const bcc = validEmails.map(e => encodeURIComponent(e)).join(',');
+
+        const mailtoUrl = `mailto:?bcc=${bcc}&subject=${subject}${bodyText ? `&body=${body}` : ''}`;
+
+        if (mailtoUrl.length > 800) {
+            let fallbackUrl = `mailto:?subject=${subject}${bodyText ? `&body=${body}` : ''}`;
+            
+            if (fallbackUrl.length > 2000) {
+                fallbackUrl = `mailto:?subject=${subject}`;
+                showToast('Demasiados correos. Se copiaron al portapapeles, pégalos en CCO.', 'warning');
+            } else {
+                showToast('Demasiados correos. Se copiaron al portapapeles, pégalos en CCO.', 'warning');
+            }
+
             const link = document.createElement('a');
-            link.href = emptyMailtoUrl;
+            link.href = fallbackUrl;
             link.target = '_self';
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-            
-            showToast('Demasiados correos. Se copiaron al portapapeles, pégalos en CCO.', 'warning');
         } else {
             const link = document.createElement('a');
             link.href = mailtoUrl;
