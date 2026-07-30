@@ -629,41 +629,54 @@ const TournamentGroups: React.FC = () => {
                                             </div>
                                         </div>
 
-                                        <span style={{
-                                            fontSize: '10px', fontWeight: '900', color: 'rgba(255,255,255,0.3)',
-                                            background: 'rgba(255,255,255,0.03)', padding: '4px 8px',
-                                            borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)'
-                                        }}>
-                                            {group.participants.length}
-                                        </span>
+                                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
+                                            <span
+                                                style={{
+                                                    fontSize: '10px', fontWeight: '900', color: 'rgba(255,255,255,0.3)',
+                                                    background: 'rgba(255,255,255,0.03)', padding: '4px 8px',
+                                                    borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)'
+                                                }}>
+                                                {group.participants.length}
+                                            </span>
+                                            <span style={{ fontSize: '8px', fontWeight: '700', color: 'rgba(255,255,255,0.25)' }}>Jugadores</span>
+                                        </div>
 
-                                        <button
-                                            onClick={() => toggleGroupCollapse(group.id)}
-                                            style={{
-                                                background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)',
-                                                borderRadius: '9px', width: '28px', height: '28px',
-                                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                cursor: 'pointer', color: 'rgba(255,255,255,0.4)'
-                                            }}
-                                        >
-                                            {collapsedGroups.has(group.id) ? <ChevronDown size={14} /> : <ChevronUp size={14} />}
-                                        </button>
+                                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
+                                            <button
+                                                onClick={() => toggleGroupCollapse(group.id)}
+                                                style={{
+                                                    background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)',
+                                                    borderRadius: '9px', width: '28px', height: '28px',
+                                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                    cursor: 'pointer', color: 'rgba(255,255,255,0.4)'
+                                                }}
+                                            >
+                                                {collapsedGroups.has(group.id) ? <ChevronDown size={14} /> : <ChevronUp size={14} />}
+                                            </button>
+                                            <span style={{ fontSize: '8px', fontWeight: '700', color: 'rgba(255,255,255,0.25)' }}>
+                                                {collapsedGroups.has(group.id) ? 'Ver' : 'Ocultar'}
+                                            </span>
+                                        </div>
 
-                                        <motion.button
-                                            whileTap={{ scale: 0.85 }}
-                                            onClick={() => copyGroupLink(group.id)}
-                                            style={{
-                                                background: 'rgba(163, 230, 53, 0.08)', border: '1px solid rgba(163, 230, 53, 0.12)',
-                                                borderRadius: '9px', width: '28px', height: '28px',
-                                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                cursor: 'pointer', color: 'var(--secondary)'
-                                            }}
-                                            title="Copiar Link de Juego"
-                                        >
-                                            <Share2 size={12} />
-                                        </motion.button>
+                                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
+                                            <motion.button
+                                                whileTap={{ scale: 0.85 }}
+                                                onClick={() => copyGroupLink(group.id)}
+                                                style={{
+                                                    background: 'rgba(163, 230, 53, 0.08)', border: '1px solid rgba(163, 230, 53, 0.12)',
+                                                    borderRadius: '9px', width: '28px', height: '28px',
+                                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                    cursor: 'pointer', color: 'var(--secondary)'
+                                                }}
+                                                title="Copiar Link de Juego"
+                                            >
+                                                <Share2 size={12} />
+                                            </motion.button>
+                                            <span style={{ fontSize: '8px', fontWeight: '700', color: 'rgba(163, 230, 53, 0.5)' }}>Compartir</span>
+                                        </div>
 
-                                        <motion.button
+                                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
+                                            <motion.button
                                             whileTap={{ scale: 0.85 }}
                                             onClick={() => removeGroup(group.id)}
                                             style={{
@@ -674,7 +687,9 @@ const TournamentGroups: React.FC = () => {
                                             }}
                                         >
                                             <Trash2 size={12} />
-                                        </motion.button>
+                                            </motion.button>
+                                            <span style={{ fontSize: '8px', fontWeight: '700', color: 'rgba(239, 68, 68, 0.5)' }}>Eliminar</span>
+                                        </div>
                                     </div>
 
                                     {/* Group Body */}
