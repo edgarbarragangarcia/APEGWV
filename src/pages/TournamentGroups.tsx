@@ -178,10 +178,6 @@ const TournamentGroups: React.FC = () => {
         setGroups(prev => prev.map(g => g.id === groupId ? { ...g, name } : g));
     };
 
-    const updateGroupTeeTime = (groupId: string, teeTime: string) => {
-        setGroups(prev => prev.map(g => g.id === groupId ? { ...g, tee_time: teeTime } : g));
-    };
-
     const updateGroupStartHole = (groupId: string, startHole: number) => {
         setGroups(prev => prev.map(g => g.id === groupId ? { ...g, start_hole: startHole } : g));
     };
