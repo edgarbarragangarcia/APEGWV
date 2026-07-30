@@ -3,6 +3,9 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../services/SupabaseManager';
 import * as XLSX from 'xlsx';
+import { Capacitor } from '@capacitor/core';
+import { Filesystem, Directory } from '@capacitor/filesystem';
+import { Share } from '@capacitor/share';
 import { Plus, Trash2, Save, Download, UserPlus, X, ChevronDown, ChevronUp, Search, Share2 } from 'lucide-react';
 import Skeleton from '../components/Skeleton';
 import PageHero from '../components/PageHero';
@@ -256,7 +259,7 @@ const TournamentGroups: React.FC = () => {
         }
     };
 
-    const downloadGroupsExcel = () => {
+    const downloadGroupsExcel = async () => {
         if (groups.length === 0) {
             showToast('No hay grupos para descargar', 'warning');
             return;
@@ -278,7 +281,27 @@ const TournamentGroups: React.FC = () => {
         const worksheet = XLSX.utils.json_to_sheet(rows);
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, worksheet, 'Grupos');
-        XLSX.writeFile(workbook, `grupos_${tournamentName.replace(/\s+/g, '_').toUpperCase()}.xlsx`);
+        const fileName = `grupos_${tournamentName.replace(/\s+/g, '_').toUpperCase()}.xlsx`;
+
+        if (Capacitor.isNativePlatform()) {
+            try {
+                const base64Data = XLSX.write(workbook, { bookType: 'xlsx', type: 'base64' });
+                const result = await Filesystem.writeFile({
+                    path: fileName,
+                    data: base64Data,
+                    directory: Directory.Cache
+                });
+                await Share.share({
+                    title: fileName,
+                    url: result.uri
+                });
+            } catch (err) {
+                console.error('Error exportando Excel:', err);
+                showToast('Error al generar el archivo Excel', 'error');
+            }
+        } else {
+            XLSX.writeFile(workbook, fileName);
+        }
     };
 
     const toggleGroupCollapse = (groupId: string) => {
@@ -577,17 +600,6 @@ const TournamentGroups: React.FC = () => {
                                         padding: '14px 16px',
                                         borderBottom: collapsedGroups.has(group.id) ? 'none' : '1px solid rgba(255,255,255,0.04)'
                                     }}>
-                                        <div style={{
-                                            width: '36px', height: '36px', borderRadius: '12px',
-                                            background: 'linear-gradient(135deg, rgba(163, 230, 53, 0.15) 0%, rgba(163, 230, 53, 0.05) 100%)',
-                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                            border: '1px solid rgba(163, 230, 53, 0.2)',
-                                            color: 'var(--secondary)', fontWeight: '950', fontSize: '14px',
-                                            flexShrink: 0
-                                        }}>
-                                            {groupIndex + 1}
-                                        </div>
-
                                         <div style={{ flex: 1, minWidth: 0 }}>
                                             <input
                                                 type="text"
