@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../services/SupabaseManager';
-import { Plus, Trash2, Save, Download, UserPlus, X, Clock, ChevronDown, ChevronUp, Search, Share2 } from 'lucide-react';
+import { Plus, Trash2, Save, Download, UserPlus, X, ChevronDown, ChevronUp, Search, Share2 } from 'lucide-react';
 import Skeleton from '../components/Skeleton';
 import PageHero from '../components/PageHero';
 import PageHeader from '../components/PageHeader';
@@ -551,7 +551,7 @@ const TournamentGroups: React.FC = () => {
                                     exit={{ opacity: 0, y: -20 }}
                                     transition={{ delay: groupIndex * 0.05 }}
                                     style={{
-                                        background: 'rgba(10, 31, 25, 0.6)',
+                                        background: groupIndex % 2 === 0 ? 'rgba(10, 31, 25, 0.6)' : 'rgba(22, 40, 33, 0.6)',
                                         borderRadius: '24px',
                                         border: '1px solid rgba(255,255,255,0.04)',
                                         overflow: 'hidden',
@@ -587,45 +587,27 @@ const TournamentGroups: React.FC = () => {
                                                     width: '100%', outline: 'none', fontFamily: 'inherit'
                                                 }}
                                             />
-                                            <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '4px 6px', marginTop: '3px' }}>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0 }}>
-                                                    <Clock size={10} color="rgba(255,255,255,0.3)" />
-                                                    <input
-                                                        type="time"
-                                                        value={group.tee_time}
-                                                        onChange={(e) => updateGroupTeeTime(group.id, e.target.value)}
-                                                        placeholder="Hora"
-                                                        style={{
-                                                            background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.5)',
-                                                            fontSize: '11px', fontWeight: '700', padding: 0, margin: 0,
-                                                            outline: 'none', fontFamily: 'inherit', colorScheme: 'dark',
-                                                            width: '60px'
-                                                        }}
-                                                    />
-                                                </div>
-                                                <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: '10px', flexShrink: 0 }}>|</span>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0 }}>
-                                                    <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '10px', fontWeight: '800', whiteSpace: 'nowrap' }}>Hoyo:</span>
-                                                    <select
-                                                        value={group.start_hole || 1}
-                                                        onChange={(e) => updateGroupStartHole(group.id, parseInt(e.target.value))}
-                                                        style={{
-                                                            WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none',
-                                                            background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)',
-                                                            color: 'white', fontSize: '11px', fontWeight: '800',
-                                                            padding: '2px 4px', margin: 0, height: '20px', lineHeight: '16px',
-                                                            borderRadius: '6px', outline: 'none', fontFamily: 'inherit',
-                                                            colorScheme: 'dark', cursor: 'pointer', width: '34px',
-                                                            textAlign: 'center', flexShrink: 0
-                                                        }}
-                                                    >
-                                                        {Array.from({ length: 18 }, (_, i) => i + 1)
-                                                            .filter(hole => hole === (group.start_hole || 1) || !groups.some(g => g.id !== group.id && g.start_hole === hole))
-                                                            .map(hole => (
-                                                                <option key={hole} value={hole}>{hole}</option>
-                                                            ))}
-                                                    </select>
-                                                </div>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '4px' }}>
+                                                <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '11px', fontWeight: '800', whiteSpace: 'nowrap' }}>Hoyo:</span>
+                                                <select
+                                                    value={group.start_hole || 1}
+                                                    onChange={(e) => updateGroupStartHole(group.id, parseInt(e.target.value))}
+                                                    style={{
+                                                        WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none',
+                                                        background: 'rgba(163, 230, 53, 0.1)', border: '1px solid rgba(163, 230, 53, 0.25)',
+                                                        color: 'var(--secondary)', fontSize: '14px', fontWeight: '900',
+                                                        padding: '4px 8px', margin: 0, height: '26px', lineHeight: '18px',
+                                                        borderRadius: '8px', outline: 'none', fontFamily: 'inherit',
+                                                        colorScheme: 'dark', cursor: 'pointer', width: '46px',
+                                                        textAlign: 'center', flexShrink: 0
+                                                    }}
+                                                >
+                                                    {Array.from({ length: 18 }, (_, i) => i + 1)
+                                                        .filter(hole => hole === (group.start_hole || 1) || !groups.some(g => g.id !== group.id && g.start_hole === hole))
+                                                        .map(hole => (
+                                                            <option key={hole} value={hole}>{hole}</option>
+                                                        ))}
+                                                </select>
                                             </div>
                                         </div>
 
