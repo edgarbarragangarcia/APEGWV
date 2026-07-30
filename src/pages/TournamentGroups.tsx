@@ -125,7 +125,11 @@ const TournamentGroups: React.FC = () => {
                     is_companion: false
                 }));
 
-            const allParticipants = [...registeredParticipants, ...manualGuestParticipants];
+            const paidParticipants = registeredParticipants.filter(p =>
+                p.registration_status === 'paid' || p.registration_status === 'Confirmado'
+            );
+
+            const allParticipants = [...paidParticipants, ...manualGuestParticipants];
             setParticipants(allParticipants);
 
             if (tournament.groups && Array.isArray(tournament.groups) && tournament.groups.length > 0) {
@@ -600,7 +604,7 @@ const TournamentGroups: React.FC = () => {
                                                     }}
                                                 >
                                                     {Array.from({ length: 18 }, (_, i) => i + 1)
-                                                        .filter(hole => hole === group.start_hole || !groups.some(g => g.id !== group.id && g.start_hole === hole))
+                                                        .filter(hole => hole === Number(group.start_hole) || !groups.some(g => g.id !== group.id && Number(g.start_hole) === hole))
                                                         .map(hole => (
                                                             <option key={hole} value={hole}>{hole}</option>
                                                         ))}
