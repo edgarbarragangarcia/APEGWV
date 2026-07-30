@@ -603,19 +603,20 @@ const TournamentGroups: React.FC = () => {
                                                 />
                                                 <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: '10px' }}>|</span>
                                                 <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '10px', fontWeight: '800' }}>Hoyo:</span>
-                                                <input
-                                                    type="number"
-                                                    min="1"
-                                                    max="18"
-                                                    value={group.start_hole || ''}
-                                                    onChange={(e) => updateGroupStartHole(group.id, parseInt(e.target.value) || 1)}
-                                                    placeholder="1"
+                                                <select
+                                                    value={group.start_hole || 1}
+                                                    onChange={(e) => updateGroupStartHole(group.id, parseInt(e.target.value))}
                                                     style={{
-                                                        background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.5)',
-                                                        fontSize: '11px', fontWeight: '700', padding: 0, margin: 0,
-                                                        outline: 'none', fontFamily: 'inherit', width: '30px'
+                                                        background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)',
+                                                        color: 'white', fontSize: '11px', fontWeight: '800', padding: '3px 6px',
+                                                        borderRadius: '6px', outline: 'none', fontFamily: 'inherit',
+                                                        colorScheme: 'dark', cursor: 'pointer'
                                                     }}
-                                                />
+                                                >
+                                                    {Array.from({ length: 18 }, (_, i) => i + 1).map(hole => (
+                                                        <option key={hole} value={hole}>{hole}</option>
+                                                    ))}
+                                                </select>
                                             </div>
                                         </div>
 
