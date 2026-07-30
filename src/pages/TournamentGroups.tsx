@@ -190,6 +190,10 @@ const TournamentGroups: React.FC = () => {
         return collapsedGroups.has(group.id);
     };
 
+    const displayedGroups = groupFinderQuery.trim()
+        ? [...groups].sort((a, b) => Number(groupMatchesFinder(b)) - Number(groupMatchesFinder(a)))
+        : groups;
+
     const generateSlug = () => {
         const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
         let slug = '';
@@ -596,9 +600,10 @@ const TournamentGroups: React.FC = () => {
                         {[1, 2, 3].map(i => <Skeleton key={i} height="120px" borderRadius="24px" />)}
                     </div>
                 ) : (
-                    <div style={{ flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch', touchAction: 'pan-y', paddingBottom: '100px' }}>
+                    <>
                         {/* Stats Bar */}
                         <div style={{
+                            flexShrink: 0,
                             display: 'grid', gridTemplateColumns: '1fr 1fr 1fr',
                             gap: '8px', marginBottom: '18px', marginTop: '5px'
                         }}>
@@ -619,7 +624,7 @@ const TournamentGroups: React.FC = () => {
                         </div>
 
                         {/* Group Finder */}
-                        <div style={{ position: 'relative', marginBottom: '16px' }}>
+                        <div style={{ flexShrink: 0, position: 'relative', marginBottom: '16px' }}>
                             <Search style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,0.4)' }} size={16} />
                             <input
                                 type="text"
@@ -647,7 +652,7 @@ const TournamentGroups: React.FC = () => {
                             )}
                         </div>
                         {groupFinderQuery.trim() && (
-                            <p style={{ color: groups.some(groupMatchesFinder) ? 'var(--secondary)' : '#fbbf24', fontSize: '12px', fontWeight: '700', marginTop: '-8px', marginBottom: '16px' }}>
+                            <p style={{ flexShrink: 0, color: groups.some(groupMatchesFinder) ? 'var(--secondary)' : '#fbbf24', fontSize: '12px', fontWeight: '700', marginTop: '-8px', marginBottom: '16px' }}>
                                 {groups.some(groupMatchesFinder)
                                     ? `Encontrado en: ${groups.filter(groupMatchesFinder).map(g => g.name).join(', ')}`
                                     : 'No se encontró ningún jugador con ese nombre'}
@@ -655,8 +660,9 @@ const TournamentGroups: React.FC = () => {
                         )}
 
                         {/* Groups List */}
+                        <div style={{ flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch', touchAction: 'pan-y', paddingBottom: '100px' }}>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                            {groups.map((group, groupIndex) => (
+                            {displayedGroups.map((group, groupIndex) => (
                                 <motion.div
                                     key={group.id}
                                     layout
@@ -820,7 +826,8 @@ const TournamentGroups: React.FC = () => {
                                 <Plus size={18} strokeWidth={3} /> Agregar Grupo
                             </motion.button>
                         </div>
-                    </div>
+                        </div>
+                    </>
                 )}
             </div>
         </div>
