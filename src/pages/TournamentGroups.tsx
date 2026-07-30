@@ -53,6 +53,17 @@ const TournamentGroups: React.FC = () => {
         if (id) fetchData();
     }, [id]);
 
+    const assignMissingHoles = (groupsArr: TournamentGroup[]): TournamentGroup[] => {
+        const used = new Set(groupsArr.filter(g => g.start_hole != null).map(g => Number(g.start_hole)));
+        let nextCandidate = 1;
+        const nextAvailableHole = () => {
+            while (used.has(nextCandidate) && nextCandidate <= 18) nextCandidate++;
+            used.add(nextCandidate);
+            return nextCandidate;
+        };
+        return groupsArr.map(g => g.start_hole != null ? g : { ...g, start_hole: nextAvailableHole() });
+    };
+
     const fetchData = async () => {
         setLoading(true);
         try {
@@ -134,7 +145,7 @@ const TournamentGroups: React.FC = () => {
             setParticipants(allParticipants);
 
             if (tournament.groups && Array.isArray(tournament.groups) && tournament.groups.length > 0) {
-                setGroups(tournament.groups);
+                setGroups(assignMissingHoles(tournament.groups));
                 // Collapse all groups by default
                 setCollapsedGroups(new Set(tournament.groups.map((g: any) => g.id)));
             }
@@ -165,14 +176,21 @@ const TournamentGroups: React.FC = () => {
     };
 
     const addGroup = () => {
-        const newGroup: TournamentGroup = {
-            id: crypto.randomUUID(),
-            name: `Grupo ${groups.length + 1}`,
-            tee_time: '',
-            slug: generateSlug(),
-            participants: []
-        };
-        setGroups(prev => [...prev, newGroup]);
+        setGroups(prev => {
+            const usedHoles = new Set(prev.filter(g => g.start_hole != null).map(g => Number(g.start_hole)));
+            let startHole = 1;
+            while (usedHoles.has(startHole) && startHole <= 18) startHole++;
+
+            const newGroup: TournamentGroup = {
+                id: crypto.randomUUID(),
+                name: `Grupo ${prev.length + 1}`,
+                tee_time: '',
+                start_hole: startHole,
+                slug: generateSlug(),
+                participants: []
+            };
+            return [...prev, newGroup];
+        });
     };
 
     const removeGroup = (groupId: string) => {
