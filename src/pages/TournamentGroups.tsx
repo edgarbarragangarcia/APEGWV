@@ -311,7 +311,8 @@ const TournamentGroups: React.FC = () => {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <p style={{
                         fontSize: '13px', fontWeight: '800', color: 'white',
-                        margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'
+                        margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                        textTransform: 'uppercase'
                     }}>
                         {p.full_name}
                     </p>
@@ -599,7 +600,7 @@ const TournamentGroups: React.FC = () => {
                                                     }}
                                                 >
                                                     {Array.from({ length: 18 }, (_, i) => i + 1)
-                                                        .filter(hole => hole === (group.start_hole || 1) || !groups.some(g => g.id !== group.id && g.start_hole === hole))
+                                                        .filter(hole => hole === group.start_hole || !groups.some(g => g.id !== group.id && g.start_hole === hole))
                                                         .map(hole => (
                                                             <option key={hole} value={hole}>{hole}</option>
                                                         ))}
