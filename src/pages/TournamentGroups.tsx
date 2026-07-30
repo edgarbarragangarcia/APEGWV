@@ -619,9 +619,11 @@ const TournamentGroups: React.FC = () => {
                                                             textAlign: 'center', flexShrink: 0
                                                         }}
                                                     >
-                                                        {Array.from({ length: 18 }, (_, i) => i + 1).map(hole => (
-                                                            <option key={hole} value={hole}>{hole}</option>
-                                                        ))}
+                                                        {Array.from({ length: 18 }, (_, i) => i + 1)
+                                                            .filter(hole => hole === (group.start_hole || 1) || !groups.some(g => g.id !== group.id && g.start_hole === hole))
+                                                            .map(hole => (
+                                                                <option key={hole} value={hole}>{hole}</option>
+                                                            ))}
                                                     </select>
                                                 </div>
                                             </div>
