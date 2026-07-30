@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../services/SupabaseManager';
+import * as XLSX from 'xlsx';
 import { Plus, Trash2, Save, Download, UserPlus, X, ChevronDown, ChevronUp, Search, Share2 } from 'lucide-react';
 import Skeleton from '../components/Skeleton';
 import PageHero from '../components/PageHero';
@@ -261,32 +262,23 @@ const TournamentGroups: React.FC = () => {
             return;
         }
 
-        const headers = ['Grupo', 'Hora de Salida', 'Jugador', 'Handicap', 'Federación'];
-        const csvContent = [
-            "\ufeff" + headers.join(','),
-            ...groups.flatMap(group =>
-                group.participants.map(pId => {
-                    const p = getParticipantById(pId);
-                    return [
-                        `"${group.name}"`,
-                        `"${group.tee_time || ''}"`,
-                        `"${(p?.full_name || '').replace(/"/g, '""')}"`,
-                        p?.handicap ?? '',
-                        `"${(p?.federation_code || '').replace(/"/g, '""')}"`
-                    ].join(',');
-                })
-            )
-        ].join('\n');
+        const rows = groups.flatMap(group =>
+            group.participants.map(pId => {
+                const p = getParticipantById(pId);
+                return {
+                    GRUPO: (group.name || '').toUpperCase(),
+                    HOYO: group.start_hole ?? '',
+                    JUGADOR: (p?.full_name || '').toUpperCase(),
+                    HANDICAP: p?.handicap ?? '',
+                    FEDERACIÓN: (p?.federation_code || '').toUpperCase()
+                };
+            })
+        );
 
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement('a');
-        const url = URL.createObjectURL(blob);
-        link.setAttribute('href', url);
-        link.setAttribute('download', `grupos_${tournamentName.replace(/\s+/g, '_')}.csv`);
-        link.style.visibility = 'hidden';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        const worksheet = XLSX.utils.json_to_sheet(rows);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Grupos');
+        XLSX.writeFile(workbook, `grupos_${tournamentName.replace(/\s+/g, '_').toUpperCase()}.xlsx`);
     };
 
     const toggleGroupCollapse = (groupId: string) => {
