@@ -126,7 +126,8 @@ const TournamentGroups: React.FC = () => {
                 }));
 
             const paidOrGuestParticipants = registeredParticipants.filter(p =>
-                p.registration_status === 'paid' || p.registration_status === 'Confirmado' || p.is_guest
+                p.registration_status === 'paid' || p.registration_status === 'Confirmado' ||
+                p.registration_status === 'Invitado' || p.is_guest
             );
 
             const allParticipants = [...paidOrGuestParticipants, ...manualGuestParticipants];
