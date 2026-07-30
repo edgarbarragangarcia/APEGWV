@@ -47,6 +47,7 @@ const TournamentGroups: React.FC = () => {
     // Modal states
     const [activeGroupForAdd, setActiveGroupForAdd] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
+    const [groupFinderQuery, setGroupFinderQuery] = useState('');
 
     const showToast = (message: string, type: 'success' | 'error' | 'warning' = 'success') => {
         setToast({ message, type });
@@ -168,9 +169,26 @@ const TournamentGroups: React.FC = () => {
     const assignedParticipantIds = groups.flatMap(g => g.participants);
     const unassignedParticipants = participants.filter(p => !assignedParticipantIds.includes(p.id));
     
-    const filteredUnassigned = unassignedParticipants.filter(p => 
+    const filteredUnassigned = unassignedParticipants.filter(p =>
         p.full_name?.toLowerCase().includes(searchQuery.toLowerCase())
     );
+
+    const groupParticipantMatches = (pId: string) => {
+        const q = groupFinderQuery.trim().toLowerCase();
+        if (!q) return false;
+        const p = getParticipantById(pId);
+        return !!p?.full_name?.toLowerCase().includes(q);
+    };
+
+    const groupMatchesFinder = (group: TournamentGroup) => {
+        if (!groupFinderQuery.trim()) return false;
+        return group.participants.some(groupParticipantMatches);
+    };
+
+    const isGroupCollapsed = (group: TournamentGroup) => {
+        if (groupFinderQuery.trim()) return !groupMatchesFinder(group);
+        return collapsedGroups.has(group.id);
+    };
 
     const generateSlug = () => {
         const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
@@ -282,6 +300,22 @@ const TournamentGroups: React.FC = () => {
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, worksheet, 'Grupos');
         const fileName = `grupos_${tournamentName.replace(/\s+/g, '_').toUpperCase()}.xlsx`;
+        const mimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+        const wbBytes = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' }) as ArrayBuffer;
+
+        const nav = navigator as Navigator & { canShare?: (data?: ShareData) => boolean };
+        if (nav.share && nav.canShare) {
+            try {
+                const file = new File([wbBytes], fileName, { type: mimeType });
+                if (nav.canShare({ files: [file] })) {
+                    await nav.share({ files: [file], title: fileName });
+                    return;
+                }
+            } catch (err: any) {
+                if (err?.name === 'AbortError') return;
+                console.warn('Web Share falló, probando alternativa', err);
+            }
+        }
 
         if (Capacitor.isNativePlatform()) {
             try {
@@ -300,7 +334,16 @@ const TournamentGroups: React.FC = () => {
                 showToast('Error al generar el archivo Excel', 'error');
             }
         } else {
-            XLSX.writeFile(workbook, fileName);
+            const blob = new Blob([wbBytes], { type: mimeType });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', fileName);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
         }
     };
 
@@ -313,7 +356,7 @@ const TournamentGroups: React.FC = () => {
         });
     };
 
-    const participantCard = (p: GroupParticipant, groupId?: string, onClickAction?: () => void) => (
+    const participantCard = (p: GroupParticipant, groupId?: string, onClickAction?: () => void, highlighted?: boolean) => (
         <motion.div
             key={p.id}
             layout
@@ -326,9 +369,9 @@ const TournamentGroups: React.FC = () => {
                 alignItems: 'center',
                 gap: '10px',
                 padding: '10px 12px',
-                background: 'rgba(255,255,255,0.02)',
+                background: highlighted ? 'rgba(163, 230, 53, 0.12)' : 'rgba(255,255,255,0.02)',
                 borderRadius: '16px',
-                border: '1px solid rgba(255,255,255,0.04)',
+                border: highlighted ? '1px solid rgba(163, 230, 53, 0.4)' : '1px solid rgba(255,255,255,0.04)',
                 cursor: onClickAction ? 'pointer' : 'default',
                 transition: 'all 0.2s ease',
             }}
@@ -575,6 +618,42 @@ const TournamentGroups: React.FC = () => {
                             </div>
                         </div>
 
+                        {/* Group Finder */}
+                        <div style={{ position: 'relative', marginBottom: '16px' }}>
+                            <Search style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,0.4)' }} size={16} />
+                            <input
+                                type="text"
+                                placeholder="Buscar jugador para ver su grupo..."
+                                value={groupFinderQuery}
+                                onChange={(e) => setGroupFinderQuery(e.target.value)}
+                                style={{
+                                    width: '100%', padding: '12px 16px 12px 42px',
+                                    background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
+                                    borderRadius: '14px', color: 'white', fontSize: '13px', outline: 'none',
+                                    boxSizing: 'border-box'
+                                }}
+                            />
+                            {groupFinderQuery && (
+                                <button
+                                    onClick={() => setGroupFinderQuery('')}
+                                    style={{
+                                        position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)',
+                                        background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.4)', cursor: 'pointer',
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center'
+                                    }}
+                                >
+                                    <X size={16} />
+                                </button>
+                            )}
+                        </div>
+                        {groupFinderQuery.trim() && (
+                            <p style={{ color: groups.some(groupMatchesFinder) ? 'var(--secondary)' : '#fbbf24', fontSize: '12px', fontWeight: '700', marginTop: '-8px', marginBottom: '16px' }}>
+                                {groups.some(groupMatchesFinder)
+                                    ? `Encontrado en: ${groups.filter(groupMatchesFinder).map(g => g.name).join(', ')}`
+                                    : 'No se encontró ningún jugador con ese nombre'}
+                            </p>
+                        )}
+
                         {/* Groups List */}
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                             {groups.map((group, groupIndex) => (
@@ -598,7 +677,7 @@ const TournamentGroups: React.FC = () => {
                                     <div style={{
                                         display: 'flex', alignItems: 'center', gap: '10px',
                                         padding: '14px 16px',
-                                        borderBottom: collapsedGroups.has(group.id) ? 'none' : '1px solid rgba(255,255,255,0.04)'
+                                        borderBottom: isGroupCollapsed(group) ? 'none' : '1px solid rgba(255,255,255,0.04)'
                                     }}>
                                         <div style={{ flex: 1, minWidth: 0 }}>
                                             <input
@@ -657,10 +736,10 @@ const TournamentGroups: React.FC = () => {
                                                     cursor: 'pointer', color: 'rgba(255,255,255,0.4)'
                                                 }}
                                             >
-                                                {collapsedGroups.has(group.id) ? <ChevronDown size={14} /> : <ChevronUp size={14} />}
+                                                {isGroupCollapsed(group) ? <ChevronDown size={14} /> : <ChevronUp size={14} />}
                                             </button>
                                             <span style={{ fontSize: '8px', fontWeight: '700', color: 'rgba(255,255,255,0.25)' }}>
-                                                {collapsedGroups.has(group.id) ? 'Ver' : 'Ocultar'}
+                                                {isGroupCollapsed(group) ? 'Ver' : 'Ocultar'}
                                             </span>
                                         </div>
 
@@ -699,12 +778,12 @@ const TournamentGroups: React.FC = () => {
                                     </div>
 
                                     {/* Group Body */}
-                                    {!collapsedGroups.has(group.id) && (
+                                    {!isGroupCollapsed(group) && (
                                         <div style={{ padding: '10px 14px 14px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                                             {group.participants.map(pId => {
                                                 const p = getParticipantById(pId);
                                                 if (!p) return null;
-                                                return participantCard(p, group.id);
+                                                return participantCard(p, group.id, undefined, groupParticipantMatches(pId));
                                             })}
                                             
                                             <motion.button
