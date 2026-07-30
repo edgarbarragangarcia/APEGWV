@@ -638,7 +638,7 @@ const TournamentGroups: React.FC = () => {
                                                     background: 'rgba(255,255,255,0.03)', padding: '4px 8px',
                                                     borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)'
                                                 }}>
-                                                {group.participants.length}
+                                                {group.participants.filter(pId => getParticipantById(pId)).length}
                                             </span>
                                             <span style={{ fontSize: '8px', fontWeight: '700', color: 'rgba(255,255,255,0.25)' }}>Jugadores</span>
                                         </div>
