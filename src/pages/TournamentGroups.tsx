@@ -125,11 +125,11 @@ const TournamentGroups: React.FC = () => {
                     is_companion: false
                 }));
 
-            const paidParticipants = registeredParticipants.filter(p =>
-                p.registration_status === 'paid' || p.registration_status === 'Confirmado'
+            const paidOrGuestParticipants = registeredParticipants.filter(p =>
+                p.registration_status === 'paid' || p.registration_status === 'Confirmado' || p.is_guest
             );
 
-            const allParticipants = [...paidParticipants, ...manualGuestParticipants];
+            const allParticipants = [...paidOrGuestParticipants, ...manualGuestParticipants];
             setParticipants(allParticipants);
 
             if (tournament.groups && Array.isArray(tournament.groups) && tournament.groups.length > 0) {
