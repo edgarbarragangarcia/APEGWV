@@ -483,8 +483,8 @@ const TournamentRegistration: React.FC = () => {
                             position: 'absolute', 
                             bottom: 0, left: 0, right: 0, top: 0,
                             background: isMobile
-                                ? 'linear-gradient(to bottom, rgba(14,47,31,0.35) 0%, var(--primary) 90%)'
-                                : 'linear-gradient(to top, var(--primary) 0%, rgba(14,47,31,0.55) 30%, transparent 100%)',
+                                ? 'linear-gradient(to bottom, rgba(14,47,31,0.2) 0%, var(--primary) 90%)'
+                                : 'linear-gradient(to top, var(--primary) 0%, rgba(14,47,31,0.35) 25%, transparent 100%)',
                             zIndex: 2
                         }} />
                         
