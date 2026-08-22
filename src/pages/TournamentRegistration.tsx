@@ -436,13 +436,18 @@ const TournamentRegistration: React.FC = () => {
                         background: 'var(--primary)'
                     }}>
                         {/* Hero Image Container */}
-                        <div style={{ 
-                            position: 'relative', 
-                            height: isMobile ? 'auto' : '40vh', 
+                        <div style={{
+                            position: 'relative',
+                            height: isMobile ? 'auto' : '40vh',
                             minHeight: isMobile ? 'auto' : '400px',
                             paddingTop: isMobile ? '10px' : '0',
                             paddingBottom: isMobile ? '50px' : '0',
-                            overflow: isMobile ? 'visible' : 'hidden'
+                            overflow: isMobile ? 'visible' : 'hidden',
+                            width: '100vw',
+                            left: '50%',
+                            right: '50%',
+                            marginLeft: '-50vw',
+                            marginRight: '-50vw'
                         }}>
                         <img
                             src={tournament.image_url || 'https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?q=80&w=2000'}
