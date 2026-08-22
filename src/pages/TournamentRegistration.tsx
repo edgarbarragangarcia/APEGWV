@@ -11,6 +11,8 @@ import { supabase } from '../services/SupabaseManager';
 import { useAuth } from '../context/AuthContext';
 import Skeleton from '../components/Skeleton';
 
+const isVideoUrl = (url: string) => /\.(mp4|webm|ogg|mov|m4v)(\?.*)?$/i.test(url);
+
 interface Tournament {
     id: string;
     name: string;
@@ -449,17 +451,34 @@ const TournamentRegistration: React.FC = () => {
                             marginLeft: '-50vw',
                             marginRight: '-50vw'
                         }}>
-                        <img
-                            src={tournament.image_url || 'https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?q=80&w=2000'}
-                            style={{ 
-                                position: isMobile ? 'absolute' : 'static',
-                                top: 0, left: 0,
-                                width: '100%', height: '100%', 
-                                objectFit: 'cover',
-                                zIndex: 1
-                            }}
-                            alt=""
-                        />
+                        {tournament.image_url && isVideoUrl(tournament.image_url) ? (
+                            <video
+                                src={tournament.image_url}
+                                autoPlay
+                                muted
+                                loop
+                                playsInline
+                                style={{
+                                    position: isMobile ? 'absolute' : 'static',
+                                    top: 0, left: 0,
+                                    width: '100%', height: '100%',
+                                    objectFit: 'cover',
+                                    zIndex: 1
+                                }}
+                            />
+                        ) : (
+                            <img
+                                src={tournament.image_url || 'https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?q=80&w=2000'}
+                                style={{
+                                    position: isMobile ? 'absolute' : 'static',
+                                    top: 0, left: 0,
+                                    width: '100%', height: '100%',
+                                    objectFit: 'cover',
+                                    zIndex: 1
+                                }}
+                                alt=""
+                            />
+                        )}
                         <div style={{ 
                             position: 'absolute', 
                             bottom: 0, left: 0, right: 0, top: 0,
