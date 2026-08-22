@@ -2712,7 +2712,7 @@ const TournamentManager: React.FC = () => {
                                 </div>
                             )}
 
-                            {isPremium && (
+                            {(isPremium || isAdmin) && (
                                 <button
                                     onClick={() => setShowForm(true)}
                                     className="btn-primary"
