@@ -500,32 +500,32 @@ const TournamentRegistration: React.FC = () => {
                             zIndex: 3
                         }}>
                             <div style={{ opacity: 1 }}>
-                                <h1 style={{ 
-                                    fontSize: isMobile ? '26px' : '42px', 
-                                    fontWeight: '950', 
-                                    margin: '0 0 4px 0', 
-                                    color: 'white', 
+                                <h1 style={{
+                                    fontSize: isMobile ? '26px' : '42px',
+                                    fontWeight: '950',
+                                    margin: '0 0 4px 0',
+                                    color: 'white',
                                     letterSpacing: isMobile ? '-0.5px' : '-1.5px',
                                     lineHeight: '1.2',
                                     textShadow: '0 10px 20px rgba(0,0,0,0.5)',
-                                    textAlign: isMobile ? 'center' : 'left'
+                                    textAlign: 'center'
                                 }}>
                                     {tournament.name}
                                 </h1>
-                                <div style={{ 
-                                    display: 'flex', 
-                                    flexWrap: 'wrap', 
-                                    justifyContent: isMobile ? 'center' : 'flex-start',
-                                    alignItems: 'center', 
-                                    gap: '20px', 
-                                    color: 'rgba(255,255,255,0.8)' 
+                                <div style={{
+                                    display: 'flex',
+                                    flexWrap: 'wrap',
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                    gap: '20px',
+                                    color: 'rgba(255,255,255,0.8)'
                                 }}>
-                                    <div style={{ 
-                                        display: 'flex', 
-                                        alignItems: 'center', 
-                                        justifyContent: isMobile ? 'center' : 'flex-start',
-                                        gap: '8px', 
-                                        fontSize: isMobile ? '16px' : '18px', 
+                                    <div style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        gap: '8px',
+                                        fontSize: isMobile ? '16px' : '18px',
                                         fontWeight: '600',
                                         width: isMobile ? '100%' : 'auto'
                                     }}>
