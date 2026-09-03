@@ -2,9 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-    Calendar, MapPin, Trophy, ShieldCheck, HeartHandshake, 
-    CheckCircle2, Loader2, Plus, X, Mail, BookOpen, 
-    Star, Users, Flag, Copy, Check, ChevronDown, AlertCircle,
+    MapPin, Trophy, ShieldCheck, HeartHandshake,
+    CheckCircle2, Loader2, Plus, X, Mail, BookOpen,
+    Star, Users, Copy, Check, ChevronDown, AlertCircle,
     IdCard
 } from 'lucide-react';
 import { supabase } from '../services/SupabaseManager';
@@ -869,14 +869,17 @@ const TournamentRegistration: React.FC = () => {
                                 }}>
                                     <div style={{
                                         display: 'flex',
+                                        flexDirection: 'column',
                                         alignItems: 'center',
-                                        justifyContent: 'center',
-                                        gap: '8px',
-                                        fontSize: isMobile ? '16px' : '18px',
-                                        fontWeight: '600',
+                                        gap: '4px',
                                         width: isMobile ? '100%' : 'auto'
                                     }}>
-                                        <MapPin size={20} color="var(--secondary)" /> {tournament.club}
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: isMobile ? '16px' : '18px', fontWeight: '600' }}>
+                                            <MapPin size={20} color="var(--secondary)" /> {tournament.club}
+                                        </div>
+                                        <div style={{ fontSize: isMobile ? '13px' : '14px', color: 'rgba(255,255,255,0.65)', fontWeight: '600' }}>
+                                            {new Date(tournament.date).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' })}
+                                        </div>
                                     </div>
                                     {!isMobile && (
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', fontWeight: '600' }}>
@@ -1098,51 +1101,6 @@ const TournamentRegistration: React.FC = () => {
                             {renderPaymentLookup()}
                         </div>
                     )}
-
-                    <div style={{ padding: isMobile ? '0 30px' : '0 30px', marginTop: isMobile ? '40px' : '-20px', position: 'relative', zIndex: 20 }}>
-                        {/* Quick Info Grid */}
-                        <div style={{ 
-                            display: 'grid', 
-                            gridTemplateColumns: isMobile ? '1fr 1fr' : '1fr 1fr', 
-                            gap: isMobile ? '15px' : '15px', 
-                            marginBottom: isMobile ? '10px' : '40px' 
-                        }}>
-                            {[
-                                { icon: <Calendar />, label: 'FECHA', value: new Date(tournament.date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC' }) },
-                                { icon: <Flag />, label: 'MODO JUEGO', value: tournament.game_mode || 'Stableford' }
-                            ].map((item, i) => (
-                                <motion.div
-                                    key={i}
-                                    className="glass"
-                                    whileHover={{ 
-                                        y: -5, 
-                                        boxShadow: '0 20px 45px rgba(0, 0, 0, 0.45), 0 0 20px rgba(163, 230, 53, 0.25), inset 0 1px 1px rgba(255, 255, 255, 0.15), inset 0 0 0 1.5px rgba(163, 230, 53, 0.5)',
-                                        borderColor: 'rgba(163, 230, 53, 0.6)'
-                                    }}
-                                    whileTap={{ scale: 0.97 }}
-                                    transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-                                    style={{ 
-                                        padding: isMobile ? '24px 20px' : '25px', 
-                                        borderRadius: isMobile ? '25px' : '25px', 
-                                        display: 'flex', 
-                                        flexDirection: 'column', 
-                                        gap: '10px', 
-                                        background: 'rgba(255,255,255,0.03)',
-                                        border: '1px solid rgba(163, 230, 53, 0.15)',
-                                        backdropFilter: 'blur(20px)',
-                                        boxShadow: '0 12px 35px rgba(0, 0, 0, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.1), inset 0 0 0 1px rgba(163, 230, 53, 0.05)',
-                                        cursor: 'pointer'
-                                    }}
-                                >
-                                    <div style={{ color: 'var(--secondary)', opacity: 0.9, transform: isMobile ? 'scale(0.9)' : 'none', transformOrigin: 'left center' }}>{item.icon}</div>
-                                    <div>
-                                        <div style={{ fontSize: isMobile ? '9px' : '9px', fontWeight: '900', color: 'rgba(255,255,255,0.4)', letterSpacing: '1px' }}>{item.label}</div>
-                                        <div style={{ fontSize: isMobile ? '13px' : '14px', fontWeight: '900', color: (item as any).color || 'white', marginTop: '4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.value}</div>
-                                    </div>
-                                </motion.div>
-                            ))}
-                        </div>
-                    </div>
 
                     {/* Scrollable Content Area */}
                     <div style={{ padding: isMobile ? '0px 30px 20px 30px' : '20px 30px', position: 'relative', zIndex: 20 }}>
