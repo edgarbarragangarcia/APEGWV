@@ -8,7 +8,6 @@ import {
     IdCard
 } from 'lucide-react';
 import { supabase } from '../services/SupabaseManager';
-import { useAuth } from '../context/AuthContext';
 import Skeleton from '../components/Skeleton';
 
 const isVideoUrl = (url: string) => /\.(mp4|webm|ogg|mov|m4v)(\?.*)?$/i.test(url);
@@ -64,7 +63,6 @@ interface Tournament {
 
 const TournamentRegistration: React.FC = () => {
     const { idOrSlug } = useParams<{ idOrSlug: string }>();
-    const { user } = useAuth();
 
     const [loading, setLoading] = useState(true);
     const [tournament, setTournament] = useState<Tournament | null>(null);
@@ -194,19 +192,8 @@ const TournamentRegistration: React.FC = () => {
             if (tError) throw tError;
             setTournament(tData);
 
-            const tourneyId = tData.id;
-
-            if (user) {
-                // El formulario SIEMPRE arranca vacío: no se precargan datos del perfil.
-                const { data: regData } = await supabase
-                    .from('tournament_registrations')
-                    .select('id')
-                    .eq('tournament_id', tourneyId)
-                    .eq('user_id', user.id)
-                    .maybeSingle();
-
-                if (regData) setIsRegistered(true);
-            }
+            // El formulario SIEMPRE arranca vacío y permite varias inscripciones
+            // (cada una es una persona distinta; el pago se consulta por cédula).
         } catch (err) {
             console.error('Error fetching data:', err);
         } finally {
@@ -216,7 +203,7 @@ const TournamentRegistration: React.FC = () => {
 
     useEffect(() => {
         fetchData();
-    }, [idOrSlug, user]);
+    }, [idOrSlug]);
 
     const isBuenaventura = !!tournament && /buenaventura/i.test(tournament.name || '');
 
@@ -626,7 +613,7 @@ const TournamentRegistration: React.FC = () => {
             const registrations = [
                 {
                     tournament_id: tournament.id,
-                    user_id: user?.id || null,
+                    user_id: null,
                     registration_status: mpEnabled ? 'Pendiente' : 'registered',
                     player_name: player1.name.trim(),
                     player_email: player1.email.trim(),
@@ -643,7 +630,7 @@ const TournamentRegistration: React.FC = () => {
                 const isCompanion = player2.type === 'companion';
                 registrations.push({
                     tournament_id: tournament.id,
-                    user_id: user?.id || null,
+                    user_id: null,
                     registration_status: mpEnabled ? 'Pendiente' : 'registered',
                     player_name: player2.name.trim(),
                     player_email: player2.email.trim(),
