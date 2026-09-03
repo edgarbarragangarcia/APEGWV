@@ -287,11 +287,19 @@ const TournamentRegistration: React.FC = () => {
         setLookupLoading(true);
         setLookupDone(false);
         try {
-            const { data, error } = await supabase
+            let { data, error } = await supabase
                 .from('tournament_registrations')
                 .select('id, player_name, player_email, registration_status, mp_payment_id, payment_date')
                 .eq('tournament_id', tournament.id)
                 .eq('player_document', doc);
+            // Compatibilidad: si aún no se ha corrido la migración de columnas MP.
+            if (error && (error.code === '42703' || /does not exist/i.test(error.message || ''))) {
+                ({ data, error } = await supabase
+                    .from('tournament_registrations')
+                    .select('id, player_name, player_email, registration_status, payment_date')
+                    .eq('tournament_id', tournament.id)
+                    .eq('player_document', doc));
+            }
             if (error) throw error;
             setLookupResults(data || []);
             setLookupDone(true);
@@ -547,8 +555,7 @@ const TournamentRegistration: React.FC = () => {
                     player_phone: player1.phone.trim(),
                     player_federation_code: player1.federationCode.trim(),
                     player_handicap: player1.handicap ? parseFloat(player1.handicap.trim().replace(',', '.')) : null,
-                    player_document: player1.document.trim(),
-                    selected_package: mpEnabled && selectedPackage ? selectedPackage.name : null
+                    player_document: player1.document.trim()
                 }
             ];
 
@@ -563,8 +570,7 @@ const TournamentRegistration: React.FC = () => {
                     player_phone: player2.phone.trim(),
                     player_federation_code: isCompanion ? `ACOMP:${player1.name.trim()}` : player2.federationCode.trim(),
                     player_handicap: isCompanion ? null : (player2.handicap ? parseFloat(player2.handicap.trim().replace(',', '.')) : null),
-                    player_document: player2.document.trim(),
-                    selected_package: mpEnabled && selectedPackage ? selectedPackage.name : null
+                    player_document: player2.document.trim()
                 });
             }
 
@@ -575,8 +581,19 @@ const TournamentRegistration: React.FC = () => {
 
             if (error) throw error;
 
+            const ids = (inserted || []).map((r: any) => r.id);
+
+            // Guarda el paquete elegido (best-effort; no bloquea si falta la columna).
+            if (mpEnabled && selectedPackage && ids.length > 0) {
+                try {
+                    await supabase
+                        .from('tournament_registrations')
+                        .update({ selected_package: selectedPackage.name })
+                        .in('id', ids);
+                } catch { /* columna aún no migrada: se resuelve en el pago */ }
+            }
+
             if (mpEnabled) {
-                const ids = (inserted || []).map((r: any) => r.id);
                 setMpRedirecting(true);
                 await startMercadoPago(ids, player1.email.trim(), selectedPackage?.id);
                 return;
