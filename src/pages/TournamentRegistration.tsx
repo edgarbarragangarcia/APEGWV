@@ -228,9 +228,10 @@ const TournamentRegistration: React.FC = () => {
     const packages: { id: string; name: string; price: number; currency: string }[] =
         Array.isArray(tournament?.packages) ? tournament!.packages : [];
 
-    // Cobro con Mercado Pago: habilitado para Buenaventura (con precio general o con paquetes).
+    // Cobro con Mercado Pago: habilitado si el torneo tiene paquetes definidos,
+    // o si es el torneo de Buenaventura con precio general.
     const isBuenaventura = !!tournament && /buenaventura/i.test(tournament.name || '');
-    const mpEnabled = isBuenaventura && (Number(tournament?.price) > 0 || packages.length > 0);
+    const mpEnabled = !!tournament && (packages.length > 0 || (isBuenaventura && Number(tournament?.price) > 0));
 
     const selectedPackage = packages.find((p) => p.id === selectedPackageId) || packages[0] || null;
 
@@ -1076,6 +1077,12 @@ const TournamentRegistration: React.FC = () => {
                         >
                             <ChevronDown size={28} />
                         </motion.div>
+                    )}
+
+                    {isMobile && !isFlipped && mpEnabled && (
+                        <div style={{ padding: '0 30px', marginTop: '30px', position: 'relative', zIndex: 20 }}>
+                            {renderPaymentLookup()}
+                        </div>
                     )}
 
                     <div style={{ padding: isMobile ? '0 30px' : '0 30px', marginTop: isMobile ? '40px' : '-20px', position: 'relative', zIndex: 20 }}>
