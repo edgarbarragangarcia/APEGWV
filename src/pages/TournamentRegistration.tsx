@@ -2,9 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-    MapPin, Trophy, ShieldCheck, HeartHandshake,
+    MapPin, Trophy, HeartHandshake,
     CheckCircle2, Loader2, Plus, X, Mail, BookOpen,
-    Star, Users, Copy, Check, ChevronDown, AlertCircle,
+    Users, Copy, Check, ChevronDown, AlertCircle,
     IdCard
 } from 'lucide-react';
 import { supabase } from '../services/SupabaseManager';
@@ -483,7 +483,7 @@ const TournamentRegistration: React.FC = () => {
 
     const handleRegister = async () => {
         if (isRegistered || !tournament) return;
-        const validatePlayer = (player: typeof player1, roleLabel: string, isCompanion: boolean = false) => {
+        const validatePlayer = (player: typeof player1, roleLabel: string) => {
             // 1. Name check
             const name = player.name.trim();
             if (!name) {
@@ -508,24 +508,12 @@ const TournamentRegistration: React.FC = () => {
                 return `La cédula o ID del ${roleLabel} es obligatoria.`;
             }
 
-            // 5. Golf-specific fields (Federation Code & Handicap) - skip if companion
-            if (!isCompanion) {
-                const handicap = player.handicap.trim();
-                if (!handicap) {
-                    return `El hándicap del ${roleLabel} es obligatorio.`;
-                }
-
-                const federationCode = player.federationCode.trim();
-                if (!federationCode) {
-                    return `El ID de federación del ${roleLabel} es obligatorio.`;
-                }
-            }
 
             return null;
         };
 
         // Validate player 1 (Primary Player)
-        const error1 = validatePlayer(player1, "Jugador Principal", false);
+        const error1 = validatePlayer(player1, "Jugador Principal");
         if (error1) {
             alert(error1);
             return;
@@ -535,9 +523,8 @@ const TournamentRegistration: React.FC = () => {
         if (addGuest) {
             const isCompanion = player2.type === 'companion';
             const error2 = validatePlayer(
-                player2 as any, 
-                isCompanion ? "Invitado (Acompañante)" : "Invitado (Jugador)", 
-                isCompanion
+                player2 as any,
+                isCompanion ? "Invitado (Acompañante)" : "Invitado (Jugador)"
             );
             if (error2) {
                 alert(error2);
@@ -1225,8 +1212,6 @@ const TournamentRegistration: React.FC = () => {
                                                     { icon: <Users />, label: 'NOMBRE COMPLETO', value: player1.name, field: 'name' },
                                                     { icon: <Mail />, label: 'CORREO ELECTRÓNICO', value: player1.email, field: 'email' },
                                                     { icon: <IdCard />, label: 'CÉDULA / DOCUMENTO DE IDENTIDAD', value: player1.document, field: 'document' },
-                                                    { icon: <ShieldCheck />, label: 'HÁNDICAP', value: player1.handicap, field: 'handicap', half: true },
-                                                    { icon: <Star />, label: 'ID FEDERACIÓN', value: player1.federationCode, field: 'federationCode', half: true },
                                                     { icon: <HeartHandshake />, label: 'TELÉFONO', value: player1.phone, field: 'phone' }
                                                 ].map((input, i) => (
                                                     <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
@@ -1426,8 +1411,6 @@ const TournamentRegistration: React.FC = () => {
                                     { icon: <Users />, label: 'NOMBRE COMPLETO', value: player1.name, field: 'name' },
                                     { icon: <Mail />, label: 'CORREO ELECTRÓNICO', value: player1.email, field: 'email' },
                                     { icon: <IdCard />, label: 'CÉDULA / DOCUMENTO DE IDENTIDAD', value: player1.document, field: 'document' },
-                                    { icon: <ShieldCheck />, label: 'HÁNDICAP', value: player1.handicap, field: 'handicap' },
-                                    { icon: <Star />, label: 'ID FEDERACIÓN', value: player1.federationCode, field: 'federationCode' },
                                     { icon: <HeartHandshake />, label: 'TELÉFONO', value: player1.phone, field: 'phone' }
                                 ].map((input, i) => (
                                     <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
