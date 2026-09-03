@@ -13,6 +13,27 @@ import Skeleton from '../components/Skeleton';
 
 const isVideoUrl = (url: string) => /\.(mp4|webm|ogg|mov|m4v)(\?.*)?$/i.test(url);
 
+const BUENAVENTURA_INFO = {
+    includes: [
+        '3 noches de alojamiento en Buenaventura Golf and Beach Resort',
+        'Alimentos y bebidas (incluidos durante toda la experiencia)',
+        '2 rondas de golf en el campo Buenaventura Golf',
+        'Torneo de golf femenino (competencia oficial)',
+        'Golf cart en todas las rondas',
+        'Kit de bienvenida',
+        'Experiencias y actividades especiales',
+        'Acompañamiento y logística durante todo el viaje',
+        'Traslados aeropuerto – hotel – campos de golf – aeropuerto (2 horas aprox. desde el aeropuerto al hotel)',
+    ],
+    itinerary: [
+        ['13 NOV', 'Llegada a Panamá · Traslado del aeropuerto al hotel Buenaventura · Bienvenida'],
+        ['14 NOV', 'Desayuno · Torneo de golf · Actividades especiales'],
+        ['15 NOV', 'Desayuno · Segunda ronda de golf · Premiación · Actividades especiales'],
+        ['16 NOV', 'Desayuno · Check out · Traslado del hotel al aeropuerto · Regreso a casa'],
+    ],
+    excludes: ['Tiquetes aéreos', 'Gastos personales', 'Seguro de viaje'],
+};
+
 interface Tournament {
     id: string;
     name: string;
@@ -56,6 +77,7 @@ const TournamentRegistration: React.FC = () => {
     const [lookupDone, setLookupDone] = useState(false);
     const [lookupResults, setLookupResults] = useState<any[]>([]);
     const [payingLookup, setPayingLookup] = useState(false);
+    const [selectedPackageId, setSelectedPackageId] = useState<string>('');
 
     useEffect(() => {
         const st = new URLSearchParams(window.location.search).get('status');
@@ -203,19 +225,40 @@ const TournamentRegistration: React.FC = () => {
         }];
     })();
 
-    // Cobro con Mercado Pago: por ahora habilitado solo para el torneo de Buenaventura con precio > 0.
-    const mpEnabled = !!tournament && Number(tournament.price) > 0 && /buenaventura/i.test(tournament.name || '');
+    const packages: { id: string; name: string; price: number; currency: string }[] =
+        Array.isArray(tournament?.packages) ? tournament!.packages : [];
+
+    // Cobro con Mercado Pago: habilitado para Buenaventura (con precio general o con paquetes).
+    const isBuenaventura = !!tournament && /buenaventura/i.test(tournament.name || '');
+    const mpEnabled = isBuenaventura && (Number(tournament?.price) > 0 || packages.length > 0);
+
+    const selectedPackage = packages.find((p) => p.id === selectedPackageId) || packages[0] || null;
+
+    useEffect(() => {
+        if (packages.length > 0 && !selectedPackageId) setSelectedPackageId(packages[0].id);
+    }, [packages.length]);
+
+    const fmtMoney = (amount: number, currency: string) => {
+        try {
+            return new Intl.NumberFormat(currency === 'USD' ? 'en-US' : 'es-CO', {
+                style: 'currency', currency, maximumFractionDigits: 0,
+            }).format(amount);
+        } catch {
+            return `${currency} ${new Intl.NumberFormat('es-CO').format(amount)}`;
+        }
+    };
 
     const isPaidReg = (r: any) =>
         !!r.mp_payment_id || r.registration_status === 'paid' || r.registration_status === 'Confirmado';
 
-    const startMercadoPago = async (registrationIds: string[], buyerEmail?: string) => {
+    const startMercadoPago = async (registrationIds: string[], buyerEmail?: string, packageId?: string) => {
         if (!tournament || registrationIds.length === 0) return;
         const { data: mp, error } = await supabase.functions.invoke('mercadopago-preference', {
             body: {
                 kind: 'tournament_registration',
                 tournament_id: tournament.id,
                 registration_ids: registrationIds,
+                package_id: packageId,
                 buyer_email: buyerEmail,
                 return_path: `/tournament-register/${idOrSlug}`,
             },
@@ -261,6 +304,81 @@ const TournamentRegistration: React.FC = () => {
             alert(err.message || 'Error al generar el pago.');
             setPayingLookup(false);
         }
+    };
+
+    const renderPackageSelector = () => {
+        if (!mpEnabled || packages.length === 0) return null;
+        return (
+            <div style={{ marginTop: '4px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <label style={{ fontSize: '9px', fontWeight: 900, color: 'var(--secondary)', marginLeft: '10px', letterSpacing: '1px' }}>ELIGE TU PAQUETE</label>
+                {packages.map((pkg) => {
+                    const active = selectedPackage?.id === pkg.id;
+                    return (
+                        <div
+                            key={pkg.id}
+                            onClick={() => setSelectedPackageId(pkg.id)}
+                            style={{
+                                padding: '12px 14px', borderRadius: '14px', cursor: 'pointer',
+                                background: active ? 'rgba(163,230,53,0.08)' : 'rgba(255,255,255,0.04)',
+                                border: `1px solid ${active ? 'var(--secondary)' : 'rgba(255,255,255,0.08)'}`,
+                                display: 'flex', alignItems: 'center', gap: '12px', transition: 'all 0.2s ease'
+                            }}
+                        >
+                            <div style={{
+                                width: 18, height: 18, borderRadius: '50%', flexShrink: 0,
+                                border: `2px solid ${active ? 'var(--secondary)' : 'rgba(255,255,255,0.25)'}`,
+                                display: 'flex', alignItems: 'center', justifyContent: 'center'
+                            }}>
+                                {active && <div style={{ width: 9, height: 9, borderRadius: '50%', background: 'var(--secondary)' }} />}
+                            </div>
+                            <div style={{ flex: 1 }}>
+                                <div style={{ fontSize: '13px', fontWeight: 800, color: 'white' }}>{pkg.name}</div>
+                                <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.45)' }}>por persona</div>
+                            </div>
+                            <div style={{ fontSize: '14px', fontWeight: 950, color: 'var(--secondary)' }}>{fmtMoney(pkg.price, pkg.currency)}</div>
+                        </div>
+                    );
+                })}
+            </div>
+        );
+    };
+
+    const renderBuenaventuraInfo = () => {
+        if (!isBuenaventura) return null;
+        const Section: React.FC<{ title: string; color: string; children: React.ReactNode }> = ({ title, color, children }) => (
+            <div>
+                <h4 style={{ fontSize: '11px', fontWeight: 900, color, letterSpacing: '1.5px', textTransform: 'uppercase', marginBottom: '14px' }}>{title}</h4>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>{children}</div>
+            </div>
+        );
+        return (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '32px', marginTop: '8px' }}>
+                <Section title="¿Qué incluye?" color="var(--secondary)">
+                    {BUENAVENTURA_INFO.includes.map((t, i) => (
+                        <div key={i} style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
+                            <CheckCircle2 size={15} color="var(--secondary)" style={{ marginTop: '3px', flexShrink: 0 }} />
+                            <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.75)', lineHeight: 1.55 }}>{t}</span>
+                        </div>
+                    ))}
+                </Section>
+                <Section title="Itinerario" color="#38bdf8">
+                    {BUENAVENTURA_INFO.itinerary.map(([day, desc], i) => (
+                        <div key={i} style={{ display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
+                            <span style={{ fontSize: '11px', fontWeight: 900, color: '#38bdf8', minWidth: '52px', marginTop: '2px' }}>{day}</span>
+                            <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.75)', lineHeight: 1.55 }}>{desc}</span>
+                        </div>
+                    ))}
+                </Section>
+                <Section title="No incluye" color="#f472b6">
+                    {BUENAVENTURA_INFO.excludes.map((t, i) => (
+                        <div key={i} style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                            <X size={15} color="#f472b6" style={{ flexShrink: 0 }} />
+                            <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.75)' }}>{t}</span>
+                        </div>
+                    ))}
+                </Section>
+            </div>
+        );
     };
 
     const renderPaymentLookup = () => {
@@ -414,7 +532,8 @@ const TournamentRegistration: React.FC = () => {
                     player_phone: player1.phone.trim(),
                     player_federation_code: player1.federationCode.trim(),
                     player_handicap: player1.handicap ? parseFloat(player1.handicap.trim().replace(',', '.')) : null,
-                    player_document: player1.document.trim()
+                    player_document: player1.document.trim(),
+                    selected_package: mpEnabled && selectedPackage ? selectedPackage.name : null
                 }
             ];
 
@@ -429,7 +548,8 @@ const TournamentRegistration: React.FC = () => {
                     player_phone: player2.phone.trim(),
                     player_federation_code: isCompanion ? `ACOMP:${player1.name.trim()}` : player2.federationCode.trim(),
                     player_handicap: isCompanion ? null : (player2.handicap ? parseFloat(player2.handicap.trim().replace(',', '.')) : null),
-                    player_document: player2.document.trim()
+                    player_document: player2.document.trim(),
+                    selected_package: mpEnabled && selectedPackage ? selectedPackage.name : null
                 });
             }
 
@@ -443,7 +563,7 @@ const TournamentRegistration: React.FC = () => {
             if (mpEnabled) {
                 const ids = (inserted || []).map((r: any) => r.id);
                 setMpRedirecting(true);
-                await startMercadoPago(ids, player1.email.trim());
+                await startMercadoPago(ids, player1.email.trim(), selectedPackage?.id);
                 return;
             }
 
@@ -767,8 +887,10 @@ const TournamentRegistration: React.FC = () => {
                                         textAlign: 'center'
                                     }}>
                                         <div style={{ fontSize: '10px', fontWeight: '900', color: 'var(--secondary)', letterSpacing: '1px' }}>VALOR INSCRIPCIÓN</div>
-                                        <div style={{ fontSize: '24px', fontWeight: '950', color: 'white' }}>
-                                            {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(tournament.price)}
+                                        <div style={{ fontSize: packages.length > 0 ? '15px' : '24px', fontWeight: '950', color: 'white' }}>
+                                            {packages.length > 0
+                                                ? packages.map((p) => `${p.name}: ${fmtMoney(p.price, p.currency)}`).join('  ·  ')
+                                                : new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(tournament.price)}
                                         </div>
                                         {paymentMethods.length > 0 && (
                                             <div style={{ 
@@ -1044,7 +1166,7 @@ const TournamentRegistration: React.FC = () => {
                                                         {tournament.description || "Únete a este prestigioso torneo donde la competitividad y la camaradería se encuentran en el campo. Una jornada diseñada para los amantes del golf que buscan excelencia en cada golpe."}
                                                     </p>
                                                 </div>
-
+                                                {renderBuenaventuraInfo()}
                                             </div>
                                         )}
 
@@ -1236,6 +1358,8 @@ const TournamentRegistration: React.FC = () => {
                                                         </motion.div>
                                                     )}
                                                 </AnimatePresence>
+
+                                                {renderPackageSelector()}
 
                                                 {/* Submit Button */}
                                                 <button
@@ -1433,6 +1557,8 @@ const TournamentRegistration: React.FC = () => {
                                         </motion.div>
                                     )}
                                 </AnimatePresence>
+
+                                {renderPackageSelector()}
 
                                 <button
                                     onClick={handleRegister}

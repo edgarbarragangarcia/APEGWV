@@ -102,7 +102,7 @@ serve(async (req) => {
   let regIds: string[] = Array.isArray(meta.registration_ids) ? meta.registration_ids : []
   let query = supabase
     .from("tournament_registrations")
-    .select("id, registration_status, mp_payment_id, tournament_id")
+    .select("id, registration_status, mp_payment_id, tournament_id, package_price")
   query = regIds.length > 0 ? query.in("id", regIds) : query.eq("mp_reference", reference)
   const { data: regs, error } = await query
   if (error) { console.error(error); return new Response("db error", { status: 500 }) }
@@ -119,8 +119,11 @@ serve(async (req) => {
   const tournamentId = regs[0].tournament_id
   const { data: tournament } = await supabase
     .from("tournaments").select("price").eq("id", tournamentId).single()
-  const unitPrice = Math.round(Number(tournament?.price) || 0)
   const pendingRegs = regs.filter((r: any) => !r.mp_payment_id)
+  // Price the preference function already resolved & stored per row (package-aware),
+  // falling back to the tournament base price.
+  const storedPrice = pendingRegs.find((r: any) => Number(r.package_price) > 0)?.package_price
+  const unitPrice = Math.round(Number(storedPrice ?? tournament?.price) || 0)
   const expectedTotal = unitPrice * pendingRegs.length
   const amountOk = unitPrice > 0 && paidAmount + 1 >= expectedTotal // 1 COP tolerance
 

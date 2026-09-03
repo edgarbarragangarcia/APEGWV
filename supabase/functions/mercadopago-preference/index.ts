@@ -23,6 +23,7 @@ serve(async (req) => {
       kind,
       tournament_id,
       registration_ids,
+      package_id,
       return_path,
     } = body
 
@@ -50,17 +51,14 @@ serve(async (req) => {
       // Trust ONLY the database for the price and for which registrations exist.
       const { data: tournament, error: tErr } = await supabase
         .from('tournaments')
-        .select('id, name, price, slug')
+        .select('id, name, price, slug, packages')
         .eq('id', tournament_id)
         .single()
       if (tErr || !tournament) return json({ error: 'Torneo no encontrado.' }, 404)
 
-      const unitPrice = Math.round(Number(tournament.price) || 0)
-      if (unitPrice <= 0) return json({ error: 'Este torneo no tiene un precio válido.' }, 400)
-
       const { data: regs, error: rErr } = await supabase
         .from('tournament_registrations')
-        .select('id, tournament_id, registration_status, mp_payment_id')
+        .select('id, tournament_id, registration_status, mp_payment_id, package_price, payment_currency, selected_package')
         .in('id', registration_ids)
       if (rErr) throw rErr
 
@@ -72,13 +70,47 @@ serve(async (req) => {
       }
 
       const validIds = validRegs.map((r: any) => r.id)
+
+      // Package / room-type pricing. The price and currency come ONLY from the DB:
+      // either from the chosen package, from a price already stored on the rows
+      // (pay-later case), or the tournament base price.
+      const packages: any[] = Array.isArray(tournament.packages) ? tournament.packages : []
+      let unitPrice = Math.round(Number(tournament.price) || 0)
+      let currencyId = 'COP'
+      let packageName = ''
+      const storedRow = validRegs.find((r: any) => Number(r.package_price) > 0)
+      if (packages.length > 0) {
+        const pkg = packages.find((p) => String(p.id) === String(package_id))
+        if (pkg) {
+          unitPrice = Math.round(Number(pkg.price) || 0)
+          currencyId = String(pkg.currency || 'USD').toUpperCase()
+          packageName = String(pkg.name || pkg.id || '')
+        } else if (storedRow) {
+          unitPrice = Math.round(Number(storedRow.package_price) || 0)
+          currencyId = String(storedRow.payment_currency || 'USD').toUpperCase()
+          packageName = String(storedRow.selected_package || '')
+        } else {
+          unitPrice = Math.round(Number(packages[0].price) || 0)
+          currencyId = String(packages[0].currency || 'USD').toUpperCase()
+          packageName = String(packages[0].name || packages[0].id || '')
+        }
+      } else if (storedRow) {
+        unitPrice = Math.round(Number(storedRow.package_price) || 0)
+        currencyId = String(storedRow.payment_currency || 'COP').toUpperCase()
+      }
+      if (unitPrice <= 0) return json({ error: 'Este torneo no tiene un precio válido.' }, 400)
       const reference = `tourn_${tournament_id}_${Date.now()}`
 
-      // Stamp the reference so the webhook can find these rows even if
-      // Mercado Pago drops the metadata.
+      // Stamp the reference + resolved package so the webhook can verify the
+      // amount later even if Mercado Pago drops the metadata.
       await supabase
         .from('tournament_registrations')
-        .update({ mp_reference: reference })
+        .update({
+          mp_reference: reference,
+          selected_package: packageName || null,
+          package_price: unitPrice,
+          payment_currency: currencyId,
+        })
         .in('id', validIds)
 
       const path = typeof return_path === 'string' && return_path.startsWith('/')
@@ -88,11 +120,11 @@ serve(async (req) => {
       const payload: any = {
         items: [{
           id: String(tournament_id),
-          title: `Inscripción · ${String(tournament.name).substring(0, 200)}`,
-          description: `${validIds.length} inscripción(es)`,
+          title: `Inscripción · ${String(tournament.name).substring(0, 180)}${packageName ? ' · ' + packageName : ''}`,
+          description: `${validIds.length} inscripción(es)${packageName ? ' — ' + packageName : ''}`,
           unit_price: unitPrice,
           quantity: validIds.length,
-          currency_id: 'COP',
+          currency_id: currencyId,
         }],
         back_urls: {
           success: `${origin}${path}?status=success&ref=${reference}`,
@@ -106,6 +138,10 @@ serve(async (req) => {
           tournament_id,
           registration_ids: validIds,
           reference,
+          package_id: package_id ?? null,
+          package_name: packageName || null,
+          currency: currencyId,
+          unit_price: unitPrice,
           expected_total: unitPrice * validIds.length,
         },
         payer: buyer_email && buyer_email.includes('@') ? { email: buyer_email } : undefined,

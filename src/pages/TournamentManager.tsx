@@ -335,6 +335,7 @@ const TournamentManager: React.FC = () => {
         payment_methods: [{ id: '1', method: 'Nequi', account: '', bankName: '', accountType: '' }] as { id: string, method: string, account: string, bankName?: string, accountType?: string }[],
         message_paid: '',
         message_unpaid: '',
+        packages: [] as { id: string, name: string, price: string, currency: string }[],
         notes: ''
     });
 
@@ -535,6 +536,15 @@ const TournamentManager: React.FC = () => {
 
             let result;
 
+            const cleanedPackages = formData.packages
+                .map(p => ({
+                    id: p.id,
+                    name: p.name.trim(),
+                    price: parseFloat(String(p.price).replace(/[^\d.]/g, '') || '0'),
+                    currency: (p.currency || 'USD').toUpperCase(),
+                }))
+                .filter(p => p.name && p.price > 0);
+
             if (editingId) {
                 result = await supabase
                     .from('tournaments')
@@ -557,6 +567,7 @@ const TournamentManager: React.FC = () => {
                         prizes: formData.prizes.map(p => p.name).filter(Boolean).join('\n'),
                         guests: formData.guests.map(g => `${g.name}|${g.federation_code || ''}`).filter(Boolean).join('\n'),
                         notes: `${formData.notes}\n\n---PAYMENTS_JSON---\n${JSON.stringify(formData.payment_methods)}\n\n---MESSAGES_JSON---\n${JSON.stringify({ paid: formData.message_paid, unpaid: formData.message_unpaid })}`,
+                        packages: cleanedPackages as any,
                         approval_status: tournaments.find(t => t.id === editingId)?.approval_status || 'pending',
                         updated_at: new Date().toISOString()
                     })
@@ -584,6 +595,7 @@ const TournamentManager: React.FC = () => {
                         prizes: formData.prizes.map(p => p.name).filter(Boolean).join('\n'),
                         guests: formData.guests.map(g => `${g.name}|${g.federation_code || ''}`).filter(Boolean).join('\n'),
                         notes: `${formData.notes}\n\n---PAYMENTS_JSON---\n${JSON.stringify(formData.payment_methods)}\n\n---MESSAGES_JSON---\n${JSON.stringify({ paid: formData.message_paid, unpaid: formData.message_unpaid })}`,
+                        packages: cleanedPackages as any,
                         creator_id: user.id,
                         approval_status: isAdmin ? 'approved' : 'pending'
                     } as any])
@@ -674,6 +686,7 @@ const TournamentManager: React.FC = () => {
             payment_methods: [{ id: '1', method: 'Nequi', account: '' }],
             message_paid: '',
             message_unpaid: '',
+            packages: [],
             notes: ''
         });
         setEditingId(null);
@@ -743,6 +756,12 @@ const TournamentManager: React.FC = () => {
                 if (match) { try { return JSON.parse(match[1]).unpaid || ''; } catch(e){} }
                 return '';
             })(),
+            packages: (Array.isArray((tournament as any).packages) ? (tournament as any).packages : []).map((p: any, i: number) => ({
+                id: String(p.id ?? i + 1),
+                name: p.name || '',
+                price: p.price != null ? String(p.price) : '',
+                currency: p.currency || 'USD',
+            })),
             notes: (tournament.notes || '').split('\n\n---PAYMENT_DATA---')[0].split('\n\n---PAYMENTS_JSON---')[0].split('\n\n---MESSAGES_JSON---')[0].trim()
         });
         setEditingId(tournament.id);
@@ -1307,6 +1326,67 @@ const TournamentManager: React.FC = () => {
                                                             ))}
                                                         </div>
 
+                                                    </div>
+
+                                                    {/* Paquetes / Habitaciones (para cobro con Mercado Pago) */}
+                                                    <div className="glass" style={{ padding: '20px', borderRadius: '24px', background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.05)', marginTop: '10px' }}>
+                                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                                                            <h4 style={{ fontSize: '12px', fontWeight: '900', color: 'var(--secondary)', textTransform: 'uppercase', letterSpacing: '1px', margin: 0 }}>Paquetes / Habitaciones</h4>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => setFormData({ ...formData, packages: [...formData.packages, { id: Date.now().toString(), name: '', price: '', currency: 'USD' }] })}
+                                                                style={{ background: 'rgba(163, 230, 53, 0.1)', border: '1px solid rgba(163, 230, 53, 0.2)', color: 'var(--secondary)', padding: '5px 10px', borderRadius: '10px', fontSize: '10px', fontWeight: '900', cursor: 'pointer' }}
+                                                            >
+                                                                + AGREGAR
+                                                            </button>
+                                                        </div>
+                                                        <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.35)', margin: '0 0 14px 0', lineHeight: 1.5 }}>
+                                                            Si defines paquetes, la persona elige uno al inscribirse y Mercado Pago cobra ese valor por persona. Si lo dejas vacío se usa el precio general del torneo.
+                                                        </p>
+                                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                                            {formData.packages.map((pkg, idx) => (
+                                                                <div key={pkg.id} style={{ background: 'rgba(255,255,255,0.02)', padding: '14px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                                                    <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '8px' }}>
+                                                                        <button type="button" onClick={() => setFormData({ ...formData, packages: formData.packages.filter(p => p.id !== pkg.id) })} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.2)', cursor: 'pointer' }}>
+                                                                            <X size={14} />
+                                                                        </button>
+                                                                    </div>
+                                                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '10px' }}>
+                                                                        <input
+                                                                            type="text"
+                                                                            value={pkg.name}
+                                                                            onChange={(e) => { const n = [...formData.packages]; n[idx].name = e.target.value; setFormData({ ...formData, packages: n }); }}
+                                                                            className="form-input"
+                                                                            placeholder="Nombre (ej: Habitación Doble)"
+                                                                            style={{ background: 'rgba(255,255,255,0.05)', color: 'white', padding: '10px 12px' }}
+                                                                        />
+                                                                        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '10px' }}>
+                                                                            <input
+                                                                                type="text"
+                                                                                inputMode="decimal"
+                                                                                value={pkg.price}
+                                                                                onChange={(e) => { const n = [...formData.packages]; n[idx].price = e.target.value.replace(/[^\d.]/g, ''); setFormData({ ...formData, packages: n }); }}
+                                                                                className="form-input"
+                                                                                placeholder="Precio por persona"
+                                                                                style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', padding: '10px 12px' }}
+                                                                            />
+                                                                            <select
+                                                                                value={pkg.currency}
+                                                                                onChange={(e) => { const n = [...formData.packages]; n[idx].currency = e.target.value; setFormData({ ...formData, packages: n }); }}
+                                                                                className="form-input"
+                                                                                style={{ background: 'rgba(255,255,255,0.05)', color: 'white', padding: '10px 12px' }}
+                                                                            >
+                                                                                <option value="USD">USD</option>
+                                                                                <option value="COP">COP</option>
+                                                                            </select>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            ))}
+                                                            {formData.packages.length === 0 && (
+                                                                <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.25)', textAlign: 'center', padding: '4px 0' }}>Sin paquetes definidos</p>
+                                                            )}
+                                                        </div>
                                                     </div>
 
                                                     <div style={{ marginTop: '10px' }}>
