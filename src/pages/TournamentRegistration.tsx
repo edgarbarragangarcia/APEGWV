@@ -197,25 +197,7 @@ const TournamentRegistration: React.FC = () => {
             const tourneyId = tData.id;
 
             if (user) {
-                const { data: profile } = await supabase
-                    .from('profiles')
-                    .select('*')
-                    .eq('id', user.id)
-                    .single();
-
-                if (profile) {
-                    setPlayer1({
-                        name: profile.full_name || '',
-                        email: profile.email || '',
-                        phone: profile.phone || '',
-                        federationCode: profile.federation_code || '',
-                        handicap: profile.handicap?.toString() || '',
-                        document: '',
-                        birthdate: '',
-                        nationality: ''
-                    });
-                }
-
+                // El formulario SIEMPRE arranca vacío: no se precargan datos del perfil.
                 const { data: regData } = await supabase
                     .from('tournament_registrations')
                     .select('id')
