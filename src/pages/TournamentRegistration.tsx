@@ -50,6 +50,13 @@ const TournamentRegistration: React.FC = () => {
     const [mpRedirecting, setMpRedirecting] = useState(false);
     const [paymentResult, setPaymentResult] = useState<'success' | 'failure' | 'pending' | null>(null);
 
+    // "Ya me inscribí" → consulta por cédula para ir a pagar
+    const [lookupDoc, setLookupDoc] = useState('');
+    const [lookupLoading, setLookupLoading] = useState(false);
+    const [lookupDone, setLookupDone] = useState(false);
+    const [lookupResults, setLookupResults] = useState<any[]>([]);
+    const [payingLookup, setPayingLookup] = useState(false);
+
     useEffect(() => {
         const st = new URLSearchParams(window.location.search).get('status');
         if (st === 'success' || st === 'failure' || st === 'pending') {
@@ -199,6 +206,138 @@ const TournamentRegistration: React.FC = () => {
     // Cobro con Mercado Pago: por ahora habilitado solo para el torneo de Buenaventura con precio > 0.
     const mpEnabled = !!tournament && Number(tournament.price) > 0 && /buenaventura/i.test(tournament.name || '');
 
+    const isPaidReg = (r: any) =>
+        !!r.mp_payment_id || r.registration_status === 'paid' || r.registration_status === 'Confirmado';
+
+    const startMercadoPago = async (registrationIds: string[], buyerEmail?: string) => {
+        if (!tournament || registrationIds.length === 0) return;
+        const { data: mp, error } = await supabase.functions.invoke('mercadopago-preference', {
+            body: {
+                kind: 'tournament_registration',
+                tournament_id: tournament.id,
+                registration_ids: registrationIds,
+                buyer_email: buyerEmail,
+                return_path: `/tournament-register/${idOrSlug}`,
+            },
+        });
+        if (error) throw error;
+        const initPoint = mp?.init_point || mp?.sandbox_init_point;
+        if (!initPoint) throw new Error(mp?.error || 'No se pudo generar el enlace de pago de Mercado Pago.');
+        const iOSNative = (window as any).iOSNative;
+        if (iOSNative?.openExternalURL) iOSNative.openExternalURL(initPoint);
+        else window.location.href = initPoint;
+    };
+
+    const handleLookup = async () => {
+        const doc = lookupDoc.trim();
+        if (!doc || !tournament) return;
+        setLookupLoading(true);
+        setLookupDone(false);
+        try {
+            const { data, error } = await supabase
+                .from('tournament_registrations')
+                .select('id, player_name, player_email, registration_status, mp_payment_id, payment_date')
+                .eq('tournament_id', tournament.id)
+                .eq('player_document', doc);
+            if (error) throw error;
+            setLookupResults(data || []);
+            setLookupDone(true);
+        } catch (err) {
+            console.error('Lookup error:', err);
+            alert('No se pudo consultar tu inscripción. Intenta de nuevo.');
+        } finally {
+            setLookupLoading(false);
+        }
+    };
+
+    const handlePayLookup = async () => {
+        const pending = lookupResults.filter((r) => !isPaidReg(r));
+        if (pending.length === 0) return;
+        setPayingLookup(true);
+        try {
+            await startMercadoPago(pending.map((r) => r.id), pending[0].player_email);
+        } catch (err: any) {
+            console.error('Pay lookup error:', err);
+            alert(err.message || 'Error al generar el pago.');
+            setPayingLookup(false);
+        }
+    };
+
+    const renderPaymentLookup = () => {
+        if (!mpEnabled) return null;
+        const hasPending = lookupResults.some((r) => !isPaidReg(r));
+        return (
+            <div style={{
+                marginTop: '20px', padding: '22px', borderRadius: '24px',
+                background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)'
+            }}>
+                <h4 style={{ fontSize: '14px', fontWeight: 900, color: 'white', marginBottom: '6px' }}>¿Ya te inscribiste?</h4>
+                <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)', marginBottom: '14px', lineHeight: 1.5 }}>
+                    Ingresa tu número de cédula para ver tu inscripción e ir a la zona de pago.
+                </p>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                    <input
+                        value={lookupDoc}
+                        onChange={(e) => setLookupDoc(e.target.value)}
+                        onKeyDown={(e) => { if (e.key === 'Enter') handleLookup(); }}
+                        placeholder="Número de cédula"
+                        style={{
+                            flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
+                            borderRadius: '14px', padding: '12px 14px', color: 'white', outline: 'none', fontSize: '14px', fontWeight: 600
+                        }}
+                    />
+                    <button
+                        onClick={handleLookup}
+                        disabled={lookupLoading || !lookupDoc.trim()}
+                        style={{
+                            background: 'var(--secondary)', color: 'var(--primary)', border: 'none',
+                            borderRadius: '14px', padding: '0 18px', fontWeight: 900, fontSize: '12px', letterSpacing: '0.5px'
+                        }}
+                    >
+                        {lookupLoading ? '...' : 'BUSCAR'}
+                    </button>
+                </div>
+
+                {lookupDone && (
+                    <div style={{ marginTop: '14px' }}>
+                        {lookupResults.length === 0 ? (
+                            <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)' }}>
+                                No encontramos inscripciones con esa cédula en este torneo.
+                            </p>
+                        ) : (
+                            <>
+                                {lookupResults.map((r) => {
+                                    const paid = isPaidReg(r);
+                                    return (
+                                        <div key={r.id} style={{
+                                            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                                            padding: '10px 12px', borderRadius: '12px', background: 'rgba(255,255,255,0.03)', marginBottom: '8px'
+                                        }}>
+                                            <span style={{ fontSize: '13px', color: 'white', fontWeight: 700 }}>{r.player_name}</span>
+                                            <span style={{ fontSize: '10px', fontWeight: 900, letterSpacing: '0.5px', color: paid ? 'var(--secondary)' : '#fbbf24' }}>
+                                                {paid ? 'PAGADO ✓' : 'PENDIENTE DE PAGO'}
+                                            </span>
+                                        </div>
+                                    );
+                                })}
+                                {hasPending && (
+                                    <button
+                                        onClick={handlePayLookup}
+                                        disabled={payingLookup}
+                                        className="btn-primary"
+                                        style={{ width: '100%', padding: '16px', borderRadius: '18px', fontWeight: 950, fontSize: '14px', marginTop: '6px', letterSpacing: '0.5px' }}
+                                    >
+                                        {payingLookup ? <Loader2 className="animate-spin" size={20} /> : 'PAGAR CON MERCADO PAGO'}
+                                    </button>
+                                )}
+                            </>
+                        )}
+                    </div>
+                )}
+            </div>
+        );
+    };
+
     const handleRegister = async () => {
         if (isRegistered || !tournament) return;
         const validatePlayer = (player: typeof player1, roleLabel: string, isCompanion: boolean = false) => {
@@ -303,22 +442,8 @@ const TournamentRegistration: React.FC = () => {
 
             if (mpEnabled) {
                 const ids = (inserted || []).map((r: any) => r.id);
-                const { data: mp, error: mpErr } = await supabase.functions.invoke('mercadopago-preference', {
-                    body: {
-                        kind: 'tournament_registration',
-                        tournament_id: tournament.id,
-                        registration_ids: ids,
-                        buyer_email: player1.email.trim(),
-                        return_path: `/tournament-register/${idOrSlug}`,
-                    },
-                });
-                if (mpErr) throw mpErr;
-                const initPoint = mp?.init_point || mp?.sandbox_init_point;
-                if (!initPoint) throw new Error(mp?.error || 'No se pudo generar el enlace de pago de Mercado Pago.');
                 setMpRedirecting(true);
-                const iOSNative = (window as any).iOSNative;
-                if (iOSNative?.openExternalURL) iOSNative.openExternalURL(initPoint);
-                else window.location.href = initPoint;
+                await startMercadoPago(ids, player1.email.trim());
                 return;
             }
 
@@ -977,20 +1102,20 @@ const TournamentRegistration: React.FC = () => {
                                             initial={{ opacity: 0, x: 20 }}
                                             animate={{ opacity: 1, x: 0 }}
                                             className="glass"
-                                            style={{ 
-                                                padding: '35px', 
-                                                borderRadius: '40px', 
+                                            style={{
+                                                padding: '26px',
+                                                borderRadius: '32px',
                                                 background: 'rgba(255,255,255,0.03)',
                                                 border: '1px solid rgba(255,255,255,0.08)',
                                                 boxShadow: '0 40px 80px rgba(0,0,0,0.4)'
                                             }}
                                         >
-                                            <div style={{ marginBottom: '30px' }}>
-                                                <h3 style={{ fontSize: '24px', fontWeight: '950', marginBottom: '5px' }}>Inscripción</h3>
-                                                <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.4)', fontWeight: '600' }}>Completa tus datos para participar</p>
+                                            <div style={{ marginBottom: '16px' }}>
+                                                <h3 style={{ fontSize: '20px', fontWeight: '950', marginBottom: '3px' }}>Inscripción</h3>
+                                                <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', fontWeight: '600' }}>Completa tus datos para participar</p>
                                             </div>
 
-                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '11px' }}>
                                                 {/* Input Fields */}
                                                 {[
                                                     { icon: <Users />, label: 'NOMBRE COMPLETO', value: player1.name, field: 'name' },
@@ -1000,10 +1125,10 @@ const TournamentRegistration: React.FC = () => {
                                                     { icon: <Star />, label: 'ID FEDERACIÓN', value: player1.federationCode, field: 'federationCode', half: true },
                                                     { icon: <HeartHandshake />, label: 'TELÉFONO', value: player1.phone, field: 'phone' }
                                                 ].map((input, i) => (
-                                                    <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                                    <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
                                                         <label style={{ fontSize: isMobile ? '8px' : '9px', fontWeight: '900', color: 'var(--secondary)', marginLeft: '10px', letterSpacing: '1px' }}>{input.label}</label>
                                                         <div className="glass" style={{ 
-                                                            padding: isMobile ? '12px 16px' : '15px 20px', borderRadius: isMobile ? '16px' : '20px', display: 'flex', alignItems: 'center', gap: isMobile ? '8px' : '15px',
+                                                            padding: isMobile ? '11px 14px' : '11px 16px', borderRadius: isMobile ? '14px' : '16px', display: 'flex', alignItems: 'center', gap: isMobile ? '8px' : '15px',
                                                             background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.05)',
                                                             transition: 'all 0.3s ease'
                                                         }}>
@@ -1022,8 +1147,8 @@ const TournamentRegistration: React.FC = () => {
                                                 {/* Add Companion Toggle */}
                                                 <div 
                                                     onClick={() => setAddGuest(!addGuest)}
-                                                    style={{ 
-                                                        marginTop: '10px', padding: '20px', borderRadius: '25px', 
+                                                    style={{
+                                                        marginTop: '4px', padding: '14px', borderRadius: '18px',
                                                         border: `1px dashed ${addGuest ? 'var(--secondary)' : 'rgba(255,255,255,0.2)'}`,
                                                         textAlign: 'center', cursor: 'pointer', background: addGuest ? 'rgba(163, 230, 53, 0.05)' : 'transparent',
                                                         transition: 'all 0.3s ease'
@@ -1044,7 +1169,7 @@ const TournamentRegistration: React.FC = () => {
                                                             exit={{ opacity: 0, height: 0 }}
                                                             style={{ overflow: 'hidden' }}
                                                         >
-                                                            <div style={{ paddingTop: '30px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                                                            <div style={{ paddingTop: '16px', display: 'flex', flexDirection: 'column', gap: '11px' }}>
                                                                 <div style={{ display: 'flex', gap: '10px' }}>
                                                                     {['player', 'companion'].map(type => (
                                                                         <button
@@ -1061,7 +1186,7 @@ const TournamentRegistration: React.FC = () => {
                                                                         </button>
                                                                     ))}
                                                                 </div>
-                                                                 <div className="glass" style={{ padding: isMobile ? '12px 16px' : '15px 20px', borderRadius: isMobile ? '16px' : '20px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                                                 <div className="glass" style={{ padding: isMobile ? '11px 14px' : '11px 16px', borderRadius: isMobile ? '14px' : '16px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
                                                                     <input
                                                                         type="text"
                                                                         placeholder="Nombre completo"
@@ -1070,7 +1195,7 @@ const TournamentRegistration: React.FC = () => {
                                                                         style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none', fontSize: isMobile ? '12px' : '14px' }}
                                                                     />
                                                                 </div>
-                                                                <div className="glass" style={{ padding: isMobile ? '12px 16px' : '15px 20px', borderRadius: isMobile ? '16px' : '20px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                                                <div className="glass" style={{ padding: isMobile ? '11px 14px' : '11px 16px', borderRadius: isMobile ? '14px' : '16px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
                                                                     <input
                                                                         type="email"
                                                                         placeholder="Correo electrónico"
@@ -1079,7 +1204,7 @@ const TournamentRegistration: React.FC = () => {
                                                                         style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none', fontSize: isMobile ? '12px' : '14px' }}
                                                                     />
                                                                 </div>
-                                                                <div className="glass" style={{ padding: isMobile ? '12px 16px' : '15px 20px', borderRadius: isMobile ? '16px' : '20px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                                                <div className="glass" style={{ padding: isMobile ? '11px 14px' : '11px 16px', borderRadius: isMobile ? '14px' : '16px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
                                                                     <input
                                                                         type="text"
                                                                         placeholder="Teléfono"
@@ -1088,7 +1213,7 @@ const TournamentRegistration: React.FC = () => {
                                                                         style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none', fontSize: isMobile ? '12px' : '14px' }}
                                                                     />
                                                                 </div>
-                                                                <div className="glass" style={{ padding: isMobile ? '12px 16px' : '15px 20px', borderRadius: isMobile ? '16px' : '20px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                                                <div className="glass" style={{ padding: isMobile ? '11px 14px' : '11px 16px', borderRadius: isMobile ? '14px' : '16px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
                                                                     <input
                                                                         type="text"
                                                                         placeholder="Cédula o documento de identidad"
@@ -1099,10 +1224,10 @@ const TournamentRegistration: React.FC = () => {
                                                                 </div>
                                                                 {player2.type === 'player' && (
                                                                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: isMobile ? '10px' : '15px' }}>
-                                                                        <div className="glass" style={{ padding: isMobile ? '12px 16px' : '15px 20px', borderRadius: isMobile ? '16px' : '20px', background: 'rgba(255,255,255,0.05)' }}>
+                                                                        <div className="glass" style={{ padding: isMobile ? '11px 14px' : '11px 16px', borderRadius: isMobile ? '14px' : '16px', background: 'rgba(255,255,255,0.05)' }}>
                                                                             <input type="text" placeholder="Hándicap" value={player2.handicap} onChange={(e) => setPlayer2({ ...player2, handicap: e.target.value })} style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none', fontSize: isMobile ? '11px' : '13px' }} />
                                                                         </div>
-                                                                        <div className="glass" style={{ padding: isMobile ? '12px 16px' : '15px 20px', borderRadius: isMobile ? '16px' : '20px', background: 'rgba(255,255,255,0.05)' }}>
+                                                                        <div className="glass" style={{ padding: isMobile ? '11px 14px' : '11px 16px', borderRadius: isMobile ? '14px' : '16px', background: 'rgba(255,255,255,0.05)' }}>
                                                                             <input type="text" placeholder="Federación" value={player2.federationCode} onChange={(e) => setPlayer2({ ...player2, federationCode: e.target.value })} style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none', fontSize: isMobile ? '11px' : '13px' }} />
                                                                         </div>
                                                                     </div>
@@ -1118,8 +1243,8 @@ const TournamentRegistration: React.FC = () => {
                                                     disabled={registering || (isRegistered && !showSuccess)}
                                                     className="btn-primary"
                                                     style={{ 
-                                                        width: '100%', padding: '20px', borderRadius: '25px', 
-                                                        fontWeight: '950', fontSize: '16px', marginTop: '20px',
+                                                        width: '100%', padding: '16px', borderRadius: '20px',
+                                                        fontWeight: '950', fontSize: '15px', marginTop: '14px',
                                                         boxShadow: '0 15px 40px rgba(163, 230, 53, 0.3)',
                                                         background: isRegistered ? 'rgba(255,255,255,0.05)' : 'var(--secondary)',
                                                         color: isRegistered ? 'rgba(255,255,255,0.3)' : 'var(--primary)',
@@ -1131,6 +1256,7 @@ const TournamentRegistration: React.FC = () => {
                                                 </button>
                                             </div>
                                         </motion.div>
+                                        {renderPaymentLookup()}
                                     </div>
                                 </div>
                             )}
@@ -1200,7 +1326,7 @@ const TournamentRegistration: React.FC = () => {
                                     <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                                         <label style={{ fontSize: isMobile ? '8px' : '9px', fontWeight: '900', color: 'var(--secondary)', marginLeft: '10px', letterSpacing: '1px' }}>{input.label}</label>
                                         <div style={{ 
-                                            padding: isMobile ? '12px 16px' : '15px 20px', borderRadius: isMobile ? '16px' : '20px', display: 'flex', alignItems: 'center', gap: isMobile ? '8px' : '15px',
+                                            padding: isMobile ? '11px 14px' : '11px 16px', borderRadius: isMobile ? '14px' : '16px', display: 'flex', alignItems: 'center', gap: isMobile ? '8px' : '15px',
                                             background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.05)'
                                         }}>
                                             <div style={{ color: 'rgba(255,255,255,0.3)' }}>{React.cloneElement(input.icon as any, { size: 18 })}</div>
@@ -1323,7 +1449,9 @@ const TournamentRegistration: React.FC = () => {
                                     {registering || mpRedirecting ? <Loader2 className="animate-spin" size={24} /> :
                                         isRegistered ? 'YA ESTÁS INSCRITO' : mpEnabled ? 'INSCRIBIRME Y PAGAR' : 'INSCRIBIRME AHORA'}
                                 </button>
-                                
+
+                                {renderPaymentLookup()}
+
                                 <p style={{ textAlign: 'center', fontSize: '11px', color: 'rgba(255,255,255,0.4)', paddingBottom: '40px' }}>
                                     Al inscribirte aceptas los términos y condiciones del torneo.
                                 </p>
