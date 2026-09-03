@@ -225,13 +225,22 @@ const TournamentRegistration: React.FC = () => {
         }];
     })();
 
-    const packages: { id: string; name: string; price: number; currency: string }[] =
-        Array.isArray(tournament?.packages) ? tournament!.packages : [];
-
-    // Cobro con Mercado Pago: habilitado si el torneo tiene paquetes definidos,
-    // o si es el torneo de Buenaventura con precio general.
     const isBuenaventura = !!tournament && /buenaventura/i.test(tournament.name || '');
-    const mpEnabled = !!tournament && (packages.length > 0 || (isBuenaventura && Number(tournament?.price) > 0));
+
+    // Paquetes configurados en el gestor; si el torneo es Buenaventura y aún no
+    // tiene paquetes, se usan los del folleto (USD, se cobran en COP a la TRM).
+    const DEFAULT_BUENAVENTURA_PACKAGES = [
+        { id: 'single', name: 'Habitación Single', price: 2100, currency: 'USD' },
+        { id: 'double', name: 'Habitación Doble', price: 1900, currency: 'USD' },
+    ];
+    const configuredPackages: { id: string; name: string; price: number; currency: string }[] =
+        Array.isArray(tournament?.packages) ? tournament!.packages : [];
+    const packages = configuredPackages.length > 0
+        ? configuredPackages
+        : (isBuenaventura ? DEFAULT_BUENAVENTURA_PACKAGES : []);
+
+    // Cobro con Mercado Pago: habilitado si hay paquetes, o si es Buenaventura.
+    const mpEnabled = !!tournament && (packages.length > 0 || isBuenaventura);
 
     const selectedPackage = packages.find((p) => p.id === selectedPackageId) || packages[0] || null;
 
@@ -340,6 +349,11 @@ const TournamentRegistration: React.FC = () => {
                         </div>
                     );
                 })}
+                {packages.some((p) => p.currency === 'USD') && (
+                    <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', marginLeft: '10px', lineHeight: 1.5 }}>
+                        El valor se cobra en pesos (COP) a la TRM oficial del día.
+                    </p>
+                )}
             </div>
         );
     };
@@ -1206,21 +1220,6 @@ const TournamentRegistration: React.FC = () => {
                                     </motion.div>
                                 </AnimatePresence>
 
-                                {/* Sponsors Section */}
-                                <div style={{ marginTop: '60px', padding: '40px 0' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '30px' }}>
-                                        <div style={{ height: '1px', flex: 1, background: 'rgba(255,255,255,0.05)' }} />
-                                        <h4 style={{ fontSize: '11px', fontWeight: '900', color: 'rgba(255,255,255,0.4)', letterSpacing: '3px' }}>PATROCINADORES OFICIALES</h4>
-                                        <div style={{ height: '1px', flex: 1, background: 'rgba(255,255,255,0.05)' }} />
-                                    </div>
-                                    <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '40px', opacity: 0.6 }}>
-                                        {[1, 2, 3, 4].map(i => (
-                                            <div key={i} style={{ width: '100px', height: '50px', background: 'rgba(255,255,255,0.05)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                <Trophy size={20} color="white" style={{ opacity: 0.3 }} />
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
                             </div>
 
                             {/* Registration Form Column (Desktop Only) */}

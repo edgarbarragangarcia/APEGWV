@@ -1341,7 +1341,7 @@ const TournamentManager: React.FC = () => {
                                                             </button>
                                                         </div>
                                                         <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.35)', margin: '0 0 14px 0', lineHeight: 1.5 }}>
-                                                            Si defines paquetes, la persona elige uno al inscribirse y Mercado Pago cobra ese valor por persona. Si lo dejas vacío se usa el precio general del torneo.
+                                                            Si defines paquetes, la persona elige uno al inscribirse. Los paquetes en USD se cobran en pesos (COP) a la TRM oficial del día de la inscripción. Si lo dejas vacío se usa el precio general del torneo.
                                                         </p>
                                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                                                             {formData.packages.map((pkg, idx) => (

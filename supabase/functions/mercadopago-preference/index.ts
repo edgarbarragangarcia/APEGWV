@@ -7,6 +7,36 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+// USD -> COP usando la TRM oficial del día (Superfinanciera vía datos.gov.co),
+// con respaldo a open.er-api.com y a un valor fijo por Secret (USD_COP_RATE).
+async function getUsdCopRate(): Promise<{ rate: number; source: string }> {
+  const override = Number(Deno.env.get('USD_COP_RATE'))
+  if (override > 0) return { rate: override, source: 'env:USD_COP_RATE' }
+
+  try {
+    const r = await fetch(
+      'https://www.datos.gov.co/resource/32sa-8pi3.json?$order=vigenciadesde%20DESC&$limit=1',
+      { signal: AbortSignal.timeout(5000) },
+    )
+    if (r.ok) {
+      const j = await r.json()
+      const v = Number(j?.[0]?.valor)
+      if (v > 0) return { rate: v, source: 'TRM datos.gov.co' }
+    }
+  } catch (_) { /* fallthrough */ }
+
+  try {
+    const r = await fetch('https://open.er-api.com/v6/latest/USD', { signal: AbortSignal.timeout(5000) })
+    if (r.ok) {
+      const j = await r.json()
+      const v = Number(j?.rates?.COP)
+      if (v > 0) return { rate: v, source: 'open.er-api.com' }
+    }
+  } catch (_) { /* fallthrough */ }
+
+  throw new Error('No se pudo obtener la TRM del día. Configura el Secret USD_COP_RATE como respaldo.')
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -74,7 +104,13 @@ serve(async (req) => {
       // Package / room-type pricing. The price and currency come ONLY from the DB:
       // either from the chosen package, from a price already stored on the rows
       // (pay-later case), or the tournament base price.
-      const packages: any[] = Array.isArray(tournament.packages) ? tournament.packages : []
+      let packages: any[] = Array.isArray(tournament.packages) ? tournament.packages : []
+      if (packages.length === 0 && /buenaventura/i.test(String(tournament.name || ''))) {
+        packages = [
+          { id: 'single', name: 'Habitación Single', price: 2100, currency: 'USD' },
+          { id: 'double', name: 'Habitación Doble', price: 1900, currency: 'USD' },
+        ]
+      }
       let unitPrice = Math.round(Number(tournament.price) || 0)
       let currencyId = 'COP'
       let packageName = ''
@@ -99,6 +135,22 @@ serve(async (req) => {
         currencyId = String(storedRow.payment_currency || 'COP').toUpperCase()
       }
       if (unitPrice <= 0) return json({ error: 'Este torneo no tiene un precio válido.' }, 400)
+
+      // El cobro SIEMPRE se hace en COP. Si el paquete está en USD se convierte
+      // con la TRM del día y se congela el valor en COP en la inscripción, para
+      // que el webhook valide contra ese mismo monto aunque la TRM cambie.
+      let fxRate = 0
+      let fxSource = ''
+      let usdAmount = 0
+      if (currencyId === 'USD') {
+        const fx = await getUsdCopRate()
+        fxRate = fx.rate
+        fxSource = fx.source
+        usdAmount = unitPrice
+        unitPrice = Math.round(unitPrice * fxRate)
+        currencyId = 'COP'
+      }
+
       const reference = `tourn_${tournament_id}_${Date.now()}`
 
       // Stamp the reference + resolved package so the webhook can verify the
@@ -120,8 +172,9 @@ serve(async (req) => {
       const payload: any = {
         items: [{
           id: String(tournament_id),
-          title: `Inscripción · ${String(tournament.name).substring(0, 180)}${packageName ? ' · ' + packageName : ''}`,
-          description: `${validIds.length} inscripción(es)${packageName ? ' — ' + packageName : ''}`,
+          title: `Inscripción · ${String(tournament.name).substring(0, 160)}${packageName ? ' · ' + packageName : ''}`,
+          description: `${validIds.length} inscripción(es)${packageName ? ' — ' + packageName : ''}` +
+            (usdAmount ? ` · USD ${usdAmount} x TRM ${Math.round(fxRate)}` : ''),
           unit_price: unitPrice,
           quantity: validIds.length,
           currency_id: currencyId,
@@ -143,6 +196,9 @@ serve(async (req) => {
           currency: currencyId,
           unit_price: unitPrice,
           expected_total: unitPrice * validIds.length,
+          usd_amount: usdAmount || null,
+          trm: fxRate || null,
+          trm_source: fxSource || null,
         },
         payer: buyer_email && buyer_email.includes('@') ? { email: buyer_email } : undefined,
         statement_descriptor: 'APEG GOLF',
