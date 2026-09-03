@@ -886,25 +886,24 @@ const TournamentRegistration: React.FC = () => {
                                     gap: '20px',
                                     color: 'rgba(255,255,255,0.8)'
                                 }}>
-                                    <div style={{
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        alignItems: 'center',
-                                        gap: '4px',
-                                        width: isMobile ? '100%' : 'auto'
-                                    }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: isMobile ? '16px' : '18px', fontWeight: '600' }}>
-                                            <MapPin size={20} color="var(--secondary)" /> {tournament.club}
-                                        </div>
-                                        <div style={{ fontSize: isMobile ? '13px' : '14px', color: 'rgba(255,255,255,0.65)', fontWeight: '600' }}>
-                                            {new Date(tournament.date).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' })}
-                                        </div>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: isMobile ? '16px' : '18px', fontWeight: '600' }}>
+                                        <MapPin size={20} color="var(--secondary)" /> {tournament.club}
                                     </div>
                                     {!isMobile && (
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', fontWeight: '600' }}>
                                             <Users size={18} color="var(--secondary)" /> {tournament.current_participants || 0} / {tournament.participants_limit || '∞'} JUGADORES
                                         </div>
                                     )}
+                                </div>
+                                <div style={{
+                                    textAlign: 'center',
+                                    width: '100%',
+                                    marginTop: '6px',
+                                    fontSize: isMobile ? '13px' : '15px',
+                                    fontWeight: '600',
+                                    color: 'rgba(255,255,255,0.7)'
+                                }}>
+                                    {new Date(tournament.date).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' })}
                                 </div>
 
                                 {isMobile && (
