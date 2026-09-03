@@ -47,6 +47,15 @@ const TournamentRegistration: React.FC = () => {
     const [isFlipped, setIsFlipped] = useState(false);
     const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
     const [copiedId, setCopiedId] = useState<string | null>(null);
+    const [mpRedirecting, setMpRedirecting] = useState(false);
+    const [paymentResult, setPaymentResult] = useState<'success' | 'failure' | 'pending' | null>(null);
+
+    useEffect(() => {
+        const st = new URLSearchParams(window.location.search).get('status');
+        if (st === 'success' || st === 'failure' || st === 'pending') {
+            setPaymentResult(st);
+        }
+    }, []);
 
     const handleCopy = (text: string, id: string) => {
         navigator.clipboard.writeText(text).then(() => {
@@ -187,6 +196,9 @@ const TournamentRegistration: React.FC = () => {
         }];
     })();
 
+    // Cobro con Mercado Pago: por ahora habilitado solo para el torneo de Buenaventura con precio > 0.
+    const mpEnabled = !!tournament && Number(tournament.price) > 0 && /buenaventura/i.test(tournament.name || '');
+
     const handleRegister = async () => {
         if (isRegistered || !tournament) return;
         const validatePlayer = (player: typeof player1, roleLabel: string, isCompanion: boolean = false) => {
@@ -256,8 +268,8 @@ const TournamentRegistration: React.FC = () => {
             const registrations = [
                 {
                     tournament_id: tournament.id,
-                    user_id: user?.id || null, 
-                    registration_status: 'registered',
+                    user_id: user?.id || null,
+                    registration_status: mpEnabled ? 'Pendiente' : 'registered',
                     player_name: player1.name.trim(),
                     player_email: player1.email.trim(),
                     player_phone: player1.phone.trim(),
@@ -272,7 +284,7 @@ const TournamentRegistration: React.FC = () => {
                 registrations.push({
                     tournament_id: tournament.id,
                     user_id: user?.id || null,
-                    registration_status: 'registered',
+                    registration_status: mpEnabled ? 'Pendiente' : 'registered',
                     player_name: player2.name.trim(),
                     player_email: player2.email.trim(),
                     player_phone: player2.phone.trim(),
@@ -282,11 +294,34 @@ const TournamentRegistration: React.FC = () => {
                 });
             }
 
-            const { error } = await supabase
+            const { data: inserted, error } = await supabase
                 .from('tournament_registrations')
-                .insert(registrations);
+                .insert(registrations)
+                .select('id');
 
             if (error) throw error;
+
+            if (mpEnabled) {
+                const ids = (inserted || []).map((r: any) => r.id);
+                const { data: mp, error: mpErr } = await supabase.functions.invoke('mercadopago-preference', {
+                    body: {
+                        kind: 'tournament_registration',
+                        tournament_id: tournament.id,
+                        registration_ids: ids,
+                        buyer_email: player1.email.trim(),
+                        return_path: `/tournament-register/${idOrSlug}`,
+                    },
+                });
+                if (mpErr) throw mpErr;
+                const initPoint = mp?.init_point || mp?.sandbox_init_point;
+                if (!initPoint) throw new Error(mp?.error || 'No se pudo generar el enlace de pago de Mercado Pago.');
+                setMpRedirecting(true);
+                const iOSNative = (window as any).iOSNative;
+                if (iOSNative?.openExternalURL) iOSNative.openExternalURL(initPoint);
+                else window.location.href = initPoint;
+                return;
+            }
+
             setIsRegistered(true);
             setShowSuccess(true);
             if (navigator.vibrate) navigator.vibrate([50, 30, 50]);
@@ -322,6 +357,58 @@ const TournamentRegistration: React.FC = () => {
             minHeight: '100vh',
             position: 'relative'
         }}>
+            {/* Mercado Pago return / payment result */}
+            <AnimatePresence>
+                {paymentResult && (
+                    <motion.div
+                        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                        style={{
+                            position: 'fixed', inset: 0, zIndex: 1100, display: 'flex',
+                            alignItems: 'center', justifyContent: 'center', padding: '20px',
+                            background: 'rgba(0,0,0,0.9)', backdropFilter: 'blur(15px)'
+                        }}
+                    >
+                        <motion.div
+                            initial={{ scale: 0.85, y: 30, opacity: 0 }} animate={{ scale: 1, y: 0, opacity: 1 }}
+                            style={{
+                                background: 'linear-gradient(135deg, #152c1e, #0a0f0d)', padding: '44px 28px',
+                                borderRadius: '32px', border: '1px solid rgba(163, 230, 53, 0.25)',
+                                textAlign: 'center', maxWidth: '420px', width: '100%'
+                            }}
+                        >
+                            <div style={{
+                                width: '84px', height: '84px', borderRadius: '50%', margin: '0 auto 24px',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                background: paymentResult === 'failure' ? 'rgba(239,68,68,0.15)' : 'rgba(163,230,53,0.15)',
+                                color: paymentResult === 'failure' ? '#ef4444' : 'var(--secondary)'
+                            }}>
+                                {paymentResult === 'failure' ? <X size={44} /> : paymentResult === 'pending' ? <Loader2 size={44} /> : <CheckCircle2 size={44} />}
+                            </div>
+                            <h2 style={{ fontSize: '26px', fontWeight: 950, color: 'white', marginBottom: '12px', letterSpacing: '-0.5px' }}>
+                                {paymentResult === 'failure' ? 'PAGO NO COMPLETADO' : paymentResult === 'pending' ? 'PAGO EN PROCESO' : '¡PAGO RECIBIDO!'}
+                            </h2>
+                            <p style={{ color: 'rgba(255,255,255,0.6)', lineHeight: 1.7, marginBottom: '32px', fontSize: '15px' }}>
+                                {paymentResult === 'failure'
+                                    ? 'No se pudo procesar el pago con Mercado Pago. Tu inscripción quedó pendiente; puedes intentar de nuevo o pagar por transferencia.'
+                                    : paymentResult === 'pending'
+                                        ? 'Mercado Pago está confirmando tu pago. Tu inscripción se activará automáticamente cuando se acredite.'
+                                        : 'Estamos confirmando tu pago con Mercado Pago. Tu inscripción quedará confirmada en unos minutos.'}
+                            </p>
+                            <button
+                                onClick={() => {
+                                    setPaymentResult(null);
+                                    window.history.replaceState(null, '', window.location.pathname);
+                                }}
+                                className="btn-primary"
+                                style={{ width: '100%', padding: '16px', borderRadius: '22px', fontWeight: 950, fontSize: '14px', letterSpacing: '1px' }}
+                            >
+                                ENTENDIDO
+                            </button>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
             {/* Success Modal */}
             <AnimatePresence>
                 {showSuccess && (
@@ -1039,8 +1126,8 @@ const TournamentRegistration: React.FC = () => {
                                                         border: isRegistered ? '1px solid rgba(255,255,255,0.1)' : 'none',
                                                     }}
                                                 >
-                                                    {registering ? <Loader2 className="animate-spin" size={24} /> :
-                                                        isRegistered ? 'YA ESTÁS INSCRITO' : 'INSCRIBIRME AHORA'}
+                                                    {registering || mpRedirecting ? <Loader2 className="animate-spin" size={24} /> :
+                                                        isRegistered ? 'YA ESTÁS INSCRITO' : mpEnabled ? 'INSCRIBIRME Y PAGAR' : 'INSCRIBIRME AHORA'}
                                                 </button>
                                             </div>
                                         </motion.div>
@@ -1233,8 +1320,8 @@ const TournamentRegistration: React.FC = () => {
                                         color: isRegistered ? 'rgba(255,255,255,0.3)' : 'var(--primary)',
                                     }}
                                 >
-                                    {registering ? <Loader2 className="animate-spin" size={24} /> :
-                                        isRegistered ? 'YA ESTÁS INSCRITO' : 'INSCRIBIRME AHORA'}
+                                    {registering || mpRedirecting ? <Loader2 className="animate-spin" size={24} /> :
+                                        isRegistered ? 'YA ESTÁS INSCRITO' : mpEnabled ? 'INSCRIBIRME Y PAGAR' : 'INSCRIBIRME AHORA'}
                                 </button>
                                 
                                 <p style={{ textAlign: 'center', fontSize: '11px', color: 'rgba(255,255,255,0.4)', paddingBottom: '40px' }}>
