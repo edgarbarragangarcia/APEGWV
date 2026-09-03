@@ -909,11 +909,13 @@ const TournamentRegistration: React.FC = () => {
                     }}
                 >
                     {/* FRONT SIDE (Entire Page) */}
-                    <div style={{ 
+                    <div style={{
                         backfaceVisibility: 'hidden',
                         WebkitBackfaceVisibility: 'hidden',
                         position: (isMobile && isFlipped) ? 'absolute' : 'relative',
                         top: 0, left: 0, width: '100%',
+                        height: (isMobile && isFlipped) ? '100dvh' : undefined,
+                        overflow: (isMobile && isFlipped) ? 'hidden' : undefined,
                         zIndex: (isMobile && isFlipped) ? 0 : 2,
                         pointerEvents: (isMobile && isFlipped) ? 'none' : 'auto',
                         background: 'var(--primary)'
@@ -1493,14 +1495,16 @@ const TournamentRegistration: React.FC = () => {
 
                     {/* BACK SIDE (Mobile Form) */}
                     {isMobile && (
-                    <div style={{ 
-                        backfaceVisibility: 'hidden', 
+                    <div style={{
+                        backfaceVisibility: 'hidden',
                         WebkitBackfaceVisibility: 'hidden',
-                        transform: 'rotateY(180deg)', 
-                        position: (isMobile && isFlipped) ? 'relative' : 'absolute', 
+                        transform: 'rotateY(180deg)',
+                        position: (isMobile && isFlipped) ? 'relative' : 'absolute',
                         top: 0, left: 0,
                         width: '100%',
-                        minHeight: '100vh',
+                        height: isFlipped ? undefined : '100dvh',
+                        minHeight: isFlipped ? '100dvh' : undefined,
+                        overflow: isFlipped ? undefined : 'hidden',
                         background: 'linear-gradient(135deg, #152c1e, #0a0f0d)',
                         display: 'flex',
                         flexDirection: 'column',
