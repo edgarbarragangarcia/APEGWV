@@ -101,12 +101,6 @@ const TournamentRegistration: React.FC = () => {
         return () => { cancelled = true; };
     }, []);
 
-    // "Ya me inscribí" → consulta por cédula para ir a pagar
-    const [lookupDoc, setLookupDoc] = useState('');
-    const [lookupLoading, setLookupLoading] = useState(false);
-    const [lookupDone, setLookupDone] = useState(false);
-    const [lookupResults, setLookupResults] = useState<any[]>([]);
-    const [payingLookup, setPayingLookup] = useState(false);
     const [selectedPackageId, setSelectedPackageId] = useState<string>('');
 
     useEffect(() => {
@@ -245,9 +239,6 @@ const TournamentRegistration: React.FC = () => {
         return fmtMoney(pkg.price, 'USD'); // aún cargando la TRM
     };
 
-    const isPaidReg = (r: any) =>
-        !!r.mp_payment_id || r.registration_status === 'paid' || r.registration_status === 'Confirmado';
-
     const startMercadoPago = async (registrationIds: string[], buyerEmail?: string, packageId?: string) => {
         if (!tournament || registrationIds.length === 0) return;
         const { data: mp, error } = await supabase.functions.invoke('mercadopago-preference', {
@@ -266,71 +257,6 @@ const TournamentRegistration: React.FC = () => {
         const iOSNative = (window as any).iOSNative;
         if (iOSNative?.openExternalURL) iOSNative.openExternalURL(initPoint);
         else window.location.href = initPoint;
-    };
-
-    const handleLookup = async () => {
-        const doc = lookupDoc.trim();
-        if (!doc || !tournament) return;
-        setLookupLoading(true);
-        setLookupDone(false);
-        try {
-            let data: any[] | null = null;
-            let error: any = null;
-            ({ data, error } = await supabase
-                .from('tournament_registrations')
-                .select('id, player_name, player_email, registration_status, mp_payment_id, mp_reference, selected_package, payment_date')
-                .eq('tournament_id', tournament.id)
-                .eq('player_document', doc) as any);
-            // Compatibilidad: si aún no se ha corrido la migración de columnas MP.
-            if (error && (error.code === '42703' || /does not exist/i.test(error.message || ''))) {
-                ({ data, error } = await supabase
-                    .from('tournament_registrations')
-                    .select('id, player_name, player_email, registration_status, payment_date')
-                    .eq('tournament_id', tournament.id)
-                    .eq('player_document', doc) as any);
-            }
-            if (error) throw error;
-            setLookupResults(data || []);
-            setLookupDone(true);
-        } catch (err) {
-            console.error('Lookup error:', err);
-            alert('No se pudo consultar tu inscripción. Intenta de nuevo.');
-        } finally {
-            setLookupLoading(false);
-        }
-    };
-
-    const handlePayLookup = async () => {
-        const pending = lookupResults.filter((r) => !isPaidReg(r));
-        if (pending.length === 0) return;
-        setPayingLookup(true);
-        try {
-            await startMercadoPago(pending.map((r) => r.id), pending[0].player_email);
-        } catch (err: any) {
-            console.error('Pay lookup error:', err);
-            alert(err.message || 'Error al generar el pago.');
-            setPayingLookup(false);
-        }
-    };
-
-    const handleVerifyLookup = async () => {
-        const ref = lookupResults.map((r) => r.mp_reference).find(Boolean);
-        if (!ref) { alert('Aún no hay un pago iniciado para esta inscripción. Usa "Pagar con Mercado Pago".'); return; }
-        setPayingLookup(true);
-        try {
-            const { data, error } = await supabase.functions.invoke('mercadopago-verify', { body: { reference: ref } });
-            if (error) throw error;
-            if (data?.status === 'approved') {
-                setPaymentResult('success');
-                await handleLookup();
-            } else {
-                alert('El pago todavía no aparece como aprobado en Mercado Pago. Intenta de nuevo en unos minutos.');
-            }
-        } catch (err: any) {
-            alert(err.message || 'No se pudo verificar el pago.');
-        } finally {
-            setPayingLookup(false);
-        }
     };
 
     const renderExtraFields = () => {
@@ -450,101 +376,6 @@ const TournamentRegistration: React.FC = () => {
                         </div>
                     ))}
                 </Section>
-            </div>
-        );
-    };
-
-    const renderPaymentLookup = () => {
-        if (!mpEnabled) return null;
-        const hasPending = lookupResults.some((r) => !isPaidReg(r));
-        return (
-            <div style={{
-                marginTop: '20px', padding: '22px', borderRadius: '24px',
-                background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)'
-            }}>
-                <h4 style={{ fontSize: '14px', fontWeight: 900, color: 'white', marginBottom: '6px' }}>¿Ya te inscribiste?</h4>
-                <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)', marginBottom: '14px', lineHeight: 1.5 }}>
-                    Ingresa tu número de cédula para ver tu inscripción e ir a la zona de pago.
-                </p>
-                <div style={{ display: 'flex', gap: '8px', alignItems: 'stretch' }}>
-                    <input
-                        value={lookupDoc}
-                        onChange={(e) => setLookupDoc(e.target.value)}
-                        onKeyDown={(e) => { if (e.key === 'Enter') handleLookup(); }}
-                        placeholder="Número de cédula"
-                        inputMode="numeric"
-                        style={{
-                            flex: 1, minWidth: 0, boxSizing: 'border-box',
-                            background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
-                            borderRadius: '12px', padding: '0 14px', height: '44px',
-                            color: 'white', outline: 'none', fontSize: '14px', fontWeight: 600
-                        }}
-                    />
-                    <button
-                        onClick={handleLookup}
-                        disabled={lookupLoading || !lookupDoc.trim()}
-                        style={{
-                            flexShrink: 0, height: '44px', padding: '0 18px', boxSizing: 'border-box',
-                            background: 'var(--secondary)', color: 'var(--primary)', border: 'none',
-                            borderRadius: '12px', fontWeight: 900, fontSize: '12px', letterSpacing: '0.5px',
-                            cursor: 'pointer', opacity: (lookupLoading || !lookupDoc.trim()) ? 0.5 : 1,
-                        }}
-                    >
-                        {lookupLoading ? '...' : 'BUSCAR'}
-                    </button>
-                </div>
-
-                {lookupDone && (
-                    <div style={{ marginTop: '14px' }}>
-                        {lookupResults.length === 0 ? (
-                            <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)' }}>
-                                No encontramos inscripciones con esa cédula en este torneo.
-                            </p>
-                        ) : (
-                            <>
-                                {lookupResults.map((r) => {
-                                    const paid = isPaidReg(r);
-                                    return (
-                                        <div key={r.id} style={{
-                                            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                                            padding: '10px 12px', borderRadius: '12px', background: 'rgba(255,255,255,0.03)', marginBottom: '8px'
-                                        }}>
-                                            <span style={{ fontSize: '13px', color: 'white', fontWeight: 700 }}>{r.player_name}</span>
-                                            <span style={{ fontSize: '10px', fontWeight: 900, letterSpacing: '0.5px', color: paid ? 'var(--secondary)' : '#fbbf24' }}>
-                                                {paid ? 'PAGADO ✓' : 'PENDIENTE DE PAGO'}
-                                            </span>
-                                        </div>
-                                    );
-                                })}
-                                {hasPending && (
-                                    <>
-                                        <button
-                                            onClick={handlePayLookup}
-                                            disabled={payingLookup}
-                                            className="btn-primary"
-                                            style={{ width: '100%', padding: '16px', borderRadius: '18px', fontWeight: 950, fontSize: '14px', marginTop: '6px', letterSpacing: '0.5px' }}
-                                        >
-                                            {payingLookup ? <Loader2 className="animate-spin" size={20} /> : 'PAGAR CON MERCADO PAGO'}
-                                        </button>
-                                        {lookupResults.some((r) => r.mp_reference) && (
-                                            <button
-                                                onClick={handleVerifyLookup}
-                                                disabled={payingLookup}
-                                                style={{
-                                                    width: '100%', padding: '12px', borderRadius: '16px', marginTop: '8px',
-                                                    background: 'transparent', border: '1px solid rgba(255,255,255,0.15)',
-                                                    color: 'rgba(255,255,255,0.7)', fontWeight: 800, fontSize: '12px', letterSpacing: '0.5px'
-                                                }}
-                                            >
-                                                YA PAGUÉ — VERIFICAR
-                                            </button>
-                                        )}
-                                    </>
-                                )}
-                            </>
-                        )}
-                    </div>
-                )}
             </div>
         );
     };
@@ -1088,12 +919,6 @@ const TournamentRegistration: React.FC = () => {
                         </motion.div>
                     )}
 
-                    {isMobile && !isFlipped && mpEnabled && (
-                        <div style={{ padding: '0 30px', marginTop: '30px', position: 'relative', zIndex: 20 }}>
-                            {renderPaymentLookup()}
-                        </div>
-                    )}
-
                     {/* Scrollable Content Area */}
                     <div style={{ padding: isMobile ? '0px 30px 20px 30px' : '0 30px 20px 30px', marginTop: isMobile ? '20px' : '10px', position: 'relative', zIndex: 20 }}>
                         <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '40px' }}>
@@ -1277,7 +1102,6 @@ const TournamentRegistration: React.FC = () => {
                                                 </button>
                                             </div>
                                         </motion.div>
-                                        {renderPaymentLookup()}
                                     </div>
                                 </div>
                             )}
@@ -1476,7 +1300,6 @@ const TournamentRegistration: React.FC = () => {
                                         isRegistered ? 'YA ESTÁS INSCRITO' : mpEnabled ? 'INSCRIBIRME Y PAGAR' : 'INSCRIBIRME AHORA'}
                                 </button>
 
-                                {renderPaymentLookup()}
 
                                 <p style={{ textAlign: 'center', fontSize: '11px', color: 'rgba(255,255,255,0.4)', paddingBottom: '40px' }}>
                                     Al inscribirte aceptas los términos y condiciones del torneo.
