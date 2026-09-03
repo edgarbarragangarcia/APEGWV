@@ -287,18 +287,20 @@ const TournamentRegistration: React.FC = () => {
         setLookupLoading(true);
         setLookupDone(false);
         try {
-            let { data, error } = await supabase
+            let data: any[] | null = null;
+            let error: any = null;
+            ({ data, error } = await supabase
                 .from('tournament_registrations')
                 .select('id, player_name, player_email, registration_status, mp_payment_id, payment_date')
                 .eq('tournament_id', tournament.id)
-                .eq('player_document', doc);
+                .eq('player_document', doc) as any);
             // Compatibilidad: si aún no se ha corrido la migración de columnas MP.
             if (error && (error.code === '42703' || /does not exist/i.test(error.message || ''))) {
                 ({ data, error } = await supabase
                     .from('tournament_registrations')
                     .select('id, player_name, player_email, registration_status, payment_date')
                     .eq('tournament_id', tournament.id)
-                    .eq('player_document', doc));
+                    .eq('player_document', doc) as any);
             }
             if (error) throw error;
             setLookupResults(data || []);
@@ -588,7 +590,7 @@ const TournamentRegistration: React.FC = () => {
                 try {
                     await supabase
                         .from('tournament_registrations')
-                        .update({ selected_package: selectedPackage.name })
+                        .update({ selected_package: selectedPackage.name } as any)
                         .in('id', ids);
                 } catch { /* columna aún no migrada: se resuelve en el pago */ }
             }
