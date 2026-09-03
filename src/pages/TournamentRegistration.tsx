@@ -497,23 +497,28 @@ const TournamentRegistration: React.FC = () => {
                 <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)', marginBottom: '14px', lineHeight: 1.5 }}>
                     Ingresa tu número de cédula para ver tu inscripción e ir a la zona de pago.
                 </p>
-                <div style={{ display: 'flex', gap: '8px' }}>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'stretch' }}>
                     <input
                         value={lookupDoc}
                         onChange={(e) => setLookupDoc(e.target.value)}
                         onKeyDown={(e) => { if (e.key === 'Enter') handleLookup(); }}
                         placeholder="Número de cédula"
+                        inputMode="numeric"
                         style={{
-                            flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
-                            borderRadius: '14px', padding: '12px 14px', color: 'white', outline: 'none', fontSize: '14px', fontWeight: 600
+                            flex: 1, minWidth: 0, boxSizing: 'border-box',
+                            background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
+                            borderRadius: '12px', padding: '0 14px', height: '44px',
+                            color: 'white', outline: 'none', fontSize: '14px', fontWeight: 600
                         }}
                     />
                     <button
                         onClick={handleLookup}
                         disabled={lookupLoading || !lookupDoc.trim()}
                         style={{
+                            flexShrink: 0, height: '44px', padding: '0 18px', boxSizing: 'border-box',
                             background: 'var(--secondary)', color: 'var(--primary)', border: 'none',
-                            borderRadius: '14px', padding: '0 18px', fontWeight: 900, fontSize: '12px', letterSpacing: '0.5px'
+                            borderRadius: '12px', fontWeight: 900, fontSize: '12px', letterSpacing: '0.5px',
+                            cursor: 'pointer', opacity: (lookupLoading || !lookupDoc.trim()) ? 0.5 : 1,
                         }}
                     >
                         {lookupLoading ? '...' : 'BUSCAR'}
