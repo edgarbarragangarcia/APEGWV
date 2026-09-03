@@ -3,8 +3,8 @@ import { useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
     MapPin, Trophy, HeartHandshake, Calendar, Globe,
-    CheckCircle2, Loader2, Plus, X, Mail, BookOpen,
-    Users, Copy, Check, ChevronDown, AlertCircle,
+    CheckCircle2, Loader2, Plus, X, Mail,
+    Users, ChevronDown,
     IdCard
 } from 'lucide-react';
 import { supabase } from '../services/SupabaseManager';
@@ -72,12 +72,36 @@ const TournamentRegistration: React.FC = () => {
     const [showSuccess, setShowSuccess] = useState(false);
     const [isRegistered, setIsRegistered] = useState(false);
     const [addGuest, setAddGuest] = useState(false);
-    const [activeTab, setActiveTab] = useState<'rules' | 'notes' | 'info'>('info');
     const [isFlipped, setIsFlipped] = useState(false);
     const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
-    const [copiedId, setCopiedId] = useState<string | null>(null);
     const [mpRedirecting, setMpRedirecting] = useState(false);
     const [paymentResult, setPaymentResult] = useState<'success' | 'failure' | 'pending' | 'verifying' | null>(null);
+    const [trm, setTrm] = useState<number | null>(null);
+
+    // TRM oficial del día (USD -> COP), para mostrar los valores en pesos.
+    useEffect(() => {
+        let cancelled = false;
+        const load = async () => {
+            try {
+                const r = await fetch('https://www.datos.gov.co/resource/32sa-8pi3.json?$order=vigenciadesde%20DESC&$limit=1');
+                if (r.ok) {
+                    const j = await r.json();
+                    const v = Number(j?.[0]?.valor);
+                    if (v > 0 && !cancelled) { setTrm(v); return; }
+                }
+            } catch { /* fallback */ }
+            try {
+                const r = await fetch('https://open.er-api.com/v6/latest/USD');
+                if (r.ok) {
+                    const j = await r.json();
+                    const v = Number(j?.rates?.COP);
+                    if (v > 0 && !cancelled) setTrm(v);
+                }
+            } catch { /* sin TRM: se muestra el valor en USD */ }
+        };
+        load();
+        return () => { cancelled = true; };
+    }, []);
 
     // "Ya me inscribí" → consulta por cédula para ir a pagar
     const [lookupDoc, setLookupDoc] = useState('');
@@ -115,13 +139,6 @@ const TournamentRegistration: React.FC = () => {
             .catch(() => setPaymentResult('pending'));
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
-
-    const handleCopy = (text: string, id: string) => {
-        navigator.clipboard.writeText(text).then(() => {
-            setCopiedId(id);
-            setTimeout(() => setCopiedId(null), 2000);
-        });
-    };
 
     // Registration form states
     const [player1, setPlayer1] = useState({
@@ -219,46 +236,6 @@ const TournamentRegistration: React.FC = () => {
         fetchData();
     }, [idOrSlug, user]);
 
-    const paymentMethods = (() => {
-        if (!tournament?.notes) return [];
-        const jsonMatch = tournament.notes.match(/---PAYMENTS_JSON---\n([\s\S]*?)(?:\n\n|$)/);
-        if (jsonMatch) {
-            try { 
-                const parsed = JSON.parse(jsonMatch[1]);
-                return parsed.map((p: any) => {
-                    let label = p.method === 'Llave BreB' ? 'LLAVE' : 
-                                p.method === 'Nequi' ? 'NEQUI' : 
-                                (p.method === 'Daviplata' || p.method === 'DaviPlata') ? 'CELULAR DAVIPLATA' : 
-                                p.method === 'Bancolombia' ? 'CUENTA BANCARIA BANCOLOMBIA' :
-                                p.method === 'Cuenta de Ahorros' ? 'CUENTA DE AHORROS' :
-                                p.method === 'Cuenta Corriente' ? 'CUENTA CORRIENTE' :
-                                p.method === 'Cuenta Bancaria' ? 'CUENTA BANCARIA' : 'CUENTA';
-                    
-                    if (p.bankName) label = `${label} ${p.bankName}`.toUpperCase();
-                    if (p.accountType) label = `${label} (${p.accountType})`.toUpperCase();
-
-                    return {
-                        method: p.method,
-                        account: p.account,
-                        label
-                    };
-                });
-            } catch(e) { console.error("JSON parse error", e); }
-        }
-        // Fallback to legacy
-        const matchMethod = tournament.notes.match(/METHOD:(.*?)(?:\n|$)/);
-        const matchPhone = tournament.notes.match(/PHONE:(.*?)(?:\n|$)/);
-        const matchKey = tournament.notes.match(/KEY:(.*?)(?:\n|$)/);
-        if (!matchMethod && !matchPhone && !matchKey) return [];
-        const method = matchMethod ? matchMethod[1].trim() : 'Nequi';
-        const account = (matchPhone ? matchPhone[1].trim() : '') || (matchKey ? matchKey[1].trim() : '');
-        return [{
-            method,
-            account,
-            label: method === 'Llave BreB' ? 'LLAVE' : method === 'Nequi' ? 'NEQUI' : 'CUENTA'
-        }];
-    })();
-
     const isBuenaventura = !!tournament && /buenaventura/i.test(tournament.name || '');
 
     // Paquetes configurados en el gestor; si el torneo es Buenaventura y aún no
@@ -290,6 +267,13 @@ const TournamentRegistration: React.FC = () => {
         } catch {
             return `${currency} ${new Intl.NumberFormat('es-CO').format(amount)}`;
         }
+    };
+
+    // Precio del paquete SIEMPRE en pesos: si está en USD se convierte con la TRM del día.
+    const pkgCop = (pkg: { price: number; currency: string }) => {
+        if ((pkg.currency || 'USD').toUpperCase() === 'COP') return fmtMoney(pkg.price, 'COP');
+        if (trm) return fmtMoney(Math.round(pkg.price * trm), 'COP');
+        return fmtMoney(pkg.price, 'USD'); // aún cargando la TRM
     };
 
     const isPaidReg = (r: any) =>
@@ -450,13 +434,13 @@ const TournamentRegistration: React.FC = () => {
                                 <div style={{ fontSize: '13px', fontWeight: 800, color: 'white' }}>{pkg.name}</div>
                                 <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.45)' }}>por persona</div>
                             </div>
-                            <div style={{ fontSize: '14px', fontWeight: 950, color: 'var(--secondary)' }}>{fmtMoney(pkg.price, pkg.currency)}</div>
+                            <div style={{ fontSize: '14px', fontWeight: 950, color: 'var(--secondary)' }}>{pkgCop(pkg)}</div>
                         </div>
                     );
                 })}
-                {packages.some((p) => p.currency === 'USD') && (
+                {packages.some((p) => (p.currency || 'USD').toUpperCase() === 'USD') && (
                     <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', marginLeft: '10px', lineHeight: 1.5 }}>
-                        El valor se cobra en pesos (COP) a la TRM oficial del día.
+                        Valor en pesos colombianos, actualizado a la TRM oficial del día{trm ? ` ($${new Intl.NumberFormat('es-CO').format(Math.round(trm))} / USD)` : ''}.
                     </p>
                 )}
             </div>
@@ -927,7 +911,7 @@ const TournamentRegistration: React.FC = () => {
                             minHeight: isMobile ? 'auto' : '260px',
                             paddingTop: isMobile ? '10px' : '0',
                             paddingBottom: isMobile ? '40px' : '0',
-                            overflow: 'hidden',
+                            overflow: isMobile ? 'visible' : 'hidden',
                             width: '100vw',
                             left: '50%',
                             right: '50%',
@@ -1044,127 +1028,22 @@ const TournamentRegistration: React.FC = () => {
                                         textAlign: 'center'
                                     }}>
                                         <div style={{ fontSize: '10px', fontWeight: '900', color: 'var(--secondary)', letterSpacing: '1px' }}>VALOR INSCRIPCIÓN</div>
-                                        <div style={{ fontSize: packages.length > 0 ? '15px' : '24px', fontWeight: '950', color: 'white' }}>
-                                            {packages.length > 0
-                                                ? packages.map((p) => `${p.name}: ${fmtMoney(p.price, p.currency)}`).join('  ·  ')
-                                                : new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(tournament.price)}
-                                        </div>
-                                        {false && paymentMethods.length > 0 && (
-                                            <div style={{
-                                                marginTop: '5px',
-                                                paddingTop: '5px', 
-                                                borderTop: '1px solid rgba(255,255,255,0.05)',
-                                                display: 'flex',
-                                                flexDirection: 'column',
-                                                gap: '12px',
-                                                width: '100%',
-                                                alignItems: 'center'
-                                            }}>
-                                                {paymentMethods.map((pm: any, i: number) => {
-                                                    const isCopied = copiedId === pm.account;
-                                                    return (
-                                                        <div 
-                                                            key={i} 
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                handleCopy(pm.account, pm.account);
-                                                            }}
-                                                            style={{ 
-                                                                display: 'flex', 
-                                                                flexDirection: 'column', 
-                                                                alignItems: 'center', 
-                                                                width: '100%',
-                                                                cursor: 'pointer',
-                                                                padding: '10px 12px',
-                                                                borderRadius: '15px',
-                                                                background: 'rgba(255, 255, 255, 0.02)',
-                                                                border: '1px dashed rgba(255, 255, 255, 0.1)',
-                                                                transition: 'all 0.2s ease',
-                                                                userSelect: 'none'
-                                                            }}
-                                                        >
-                                                            <div style={{ fontSize: '10px', fontWeight: '950', color: 'rgba(255,255,255,0.5)', letterSpacing: '1px', textTransform: 'uppercase' }}>
-                                                                {pm.label}
-                                                            </div>
-                                                            <div style={{ 
-                                                                display: 'flex', 
-                                                                alignItems: 'center', 
-                                                                justifyContent: 'center',
-                                                                gap: '8px', 
-                                                                marginTop: '2px',
-                                                                width: '100%'
-                                                            }}>
-                                                                <span style={{ fontSize: pm.account.length > 15 ? '12px' : '14px', fontWeight: '900', color: 'white', wordBreak: 'break-all' }}>
-                                                                    {pm.account}
-                                                                </span>
-                                                                {isCopied ? (
-                                                                    <Check size={14} color="var(--secondary)" style={{ flexShrink: 0 }} />
-                                                                ) : (
-                                                                    <Copy size={13} color="rgba(255,255,255,0.4)" style={{ flexShrink: 0 }} />
-                                                                )}
-                                                            </div>
-                                                            
-                                                            <AnimatePresence mode="wait">
-                                                                {isCopied ? (
-                                                                    <motion.div 
-                                                                        key="copied"
-                                                                        initial={{ opacity: 0, y: 3, scale: 0.95 }}
-                                                                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                                                                        exit={{ opacity: 0, y: -3, scale: 0.95 }}
-                                                                        style={{ 
-                                                                            fontSize: '9px', 
-                                                                            fontWeight: '900', 
-                                                                            color: 'var(--secondary)', 
-                                                                            marginTop: '4px',
-                                                                            letterSpacing: '0.5px' 
-                                                                        }}
-                                                                    >
-                                                                        ¡COPIADO CON ÉXITO!
-                                                                    </motion.div>
-                                                                ) : (
-                                                                    <motion.div 
-                                                                        key="copy"
-                                                                        initial={{ opacity: 0 }}
-                                                                        animate={{ opacity: 1 }}
-                                                                        exit={{ opacity: 0 }}
-                                                                        style={{ 
-                                                                            fontSize: '9px', 
-                                                                            fontWeight: '800', 
-                                                                            color: 'rgba(255,255,255,0.3)', 
-                                                                            marginTop: '4px', 
-                                                                            letterSpacing: '0.5px' 
-                                                                        }}
-                                                                    >
-                                                                        TOCA PARA COPIAR
-                                                                    </motion.div>
-                                                                )}
-                                                            </AnimatePresence>
-                                                        </div>
-                                                    );
-                                                })}
-                                                
-                                                <div style={{ 
-                                                    marginTop: '12px', 
-                                                    padding: '12px 14px', 
-                                                    background: 'rgba(239, 68, 68, 0.15)', 
-                                                    border: '2px solid rgba(239, 68, 68, 0.5)', 
-                                                    borderRadius: '20px', 
-                                                    width: '100%',
-                                                    display: 'flex',
-                                                    flexDirection: 'column',
-                                                    gap: '12px',
-                                                    alignItems: 'center',
-                                                    textAlign: 'center',
-                                                    boxShadow: '0 10px 30px rgba(239, 68, 68, 0.15)'
-                                                }}>
-                                                    <AlertCircle size={28} color="#ef4444" style={{ flexShrink: 0, marginBottom: '5px' }} />
-                                                    <p style={{ margin: 0, fontSize: '14px', color: 'rgba(255,255,255,0.95)', lineHeight: '1.6' }}>
-                                                        <strong style={{ color: '#ef4444', fontSize: '16px', display: 'block', marginBottom: '8px', letterSpacing: '0.5px' }}>Confirmación de inscripción y pago 📩</strong>
-                                                        Por favor enviar el comprobante de pago al correo:<br/>
-                                                        <strong style={{ fontSize: '18px', display: 'block', marginTop: '10px', color: 'white', wordBreak: 'break-all', letterSpacing: '1px' }}>amorporelgolf@gmail.com</strong>
-                                                    </p>
-                                                </div>
-
+                                        {packages.length > 0 ? (
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                                                {packages.map((p) => (
+                                                    <div key={p.id} style={{ fontSize: '14px', fontWeight: '950', color: 'white' }}>
+                                                        {p.name}: <span style={{ color: 'var(--secondary)' }}>{pkgCop(p)}</span>
+                                                    </div>
+                                                ))}
+                                                {packages.some((p) => (p.currency || 'USD').toUpperCase() === 'USD') && (
+                                                    <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.4)', marginTop: '3px' }}>
+                                                        En pesos, a la TRM del día{trm ? ` ($${new Intl.NumberFormat('es-CO').format(Math.round(trm))})` : ''}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ) : (
+                                            <div style={{ fontSize: '24px', fontWeight: '950', color: 'white' }}>
+                                                {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(tournament.price)}
                                             </div>
                                         )}
                                     </div>
@@ -1246,76 +1125,16 @@ const TournamentRegistration: React.FC = () => {
                         <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '40px' }}>
                             {/* Content Column */}
                             <div style={{ flex: 1.5 }}>
-                                {/* Tabs for detailed info */}
-                                <div style={{ display: 'flex', gap: '25px', borderBottom: '1px solid rgba(255,255,255,0.05)', marginBottom: '30px' }}>
-                                    {['info', 'rules'].map((tab) => (
-                                        <button
-                                            key={tab}
-                                            onClick={() => setActiveTab(tab as any)}
-                                            style={{
-                                                padding: '15px 5px',
-                                                fontSize: '13px',
-                                                fontWeight: '900',
-                                                letterSpacing: '1px',
-                                                color: activeTab === tab ? 'var(--secondary)' : 'rgba(255,255,255,0.4)',
-                                                borderBottom: `3px solid ${activeTab === tab ? 'var(--secondary)' : 'transparent'}`,
-                                                transition: 'all 0.3s ease',
-                                                textTransform: 'uppercase'
-                                            }}
-                                        >
-                                            {tab === 'info' ? 'DETALLES' : 'REGLAS'}
-                                        </button>
-                                    ))}
+                                <div style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', marginBottom: '30px', padding: '0 0 12px 0' }}>
+                                    <span style={{ fontSize: '13px', fontWeight: 900, letterSpacing: '1px', color: 'var(--secondary)', textTransform: 'uppercase' }}>DETALLES</span>
                                 </div>
 
-                                <AnimatePresence mode="wait">
-                                    <motion.div
-                                        key={activeTab}
-                                        initial={{ opacity: 0, x: -10 }}
-                                        animate={{ opacity: 1, x: 0 }}
-                                        exit={{ opacity: 0, x: 10 }}
-                                        transition={{ duration: 0.3 }}
-                                        style={{ minHeight: '200px' }}
-                                    >
-                                        {activeTab === 'info' && (
-                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
-                                                <div>
-                                                    <p style={{ fontSize: '16px', lineHeight: '1.8', color: 'rgba(255,255,255,0.7)', fontWeight: '400', whiteSpace: 'pre-line' }}>
-                                                        {tournament.description || "Únete a este prestigioso torneo donde la competitividad y la camaradería se encuentran en el campo. Una jornada diseñada para los amantes del golf que buscan excelencia en cada golpe."}
-                                                    </p>
-                                                </div>
-                                                {renderBuenaventuraInfo()}
-                                            </div>
-                                        )}
-
-                                        {activeTab === 'rules' && (
-                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                                                {tournament.rules && tournament.rules.length > 0 ? (
-                                                    tournament.rules.map((rule, idx) => (
-                                                        <div key={idx} style={{ 
-                                                            padding: '18px 25px', borderRadius: '20px', background: 'rgba(255,255,255,0.03)',
-                                                            border: '1px solid rgba(255,255,255,0.05)', display: 'flex', gap: '15px', alignItems: 'flex-start'
-                                                        }}>
-                                                            <div style={{ color: 'var(--secondary)', marginTop: '3px' }}><CheckCircle2 size={16} /></div>
-                                                            <p style={{ margin: 0, fontSize: '14px', color: 'rgba(255,255,255,0.8)', fontWeight: '500', whiteSpace: 'pre-line' }}>{rule}</p>
-                                                        </div>
-                                                    ))
-                                                ) : (
-                                                    <div style={{ padding: '40px', textAlign: 'center', opacity: 0.5 }}>
-                                                        <BookOpen size={40} style={{ marginBottom: '15px' }} />
-                                                        <p>Reglas locales estándar de la federación.</p>
-                                                    </div>
-                                                )}
-                                                {tournament.custom_rules && (
-                                                    <div style={{ marginTop: '20px', padding: '20px', background: 'rgba(163, 230, 53, 0.05)', borderRadius: '20px', border: '1px dashed rgba(163, 230, 53, 0.3)' }}>
-                                                        <h5 style={{ color: 'var(--secondary)', marginBottom: '10px', fontSize: '12px' }}>REGLAS ADICIONALES</h5>
-                                                        <p style={{ fontSize: '13px', lineHeight: '1.6', whiteSpace: 'pre-line' }}>{tournament.custom_rules}</p>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        )}
-                                    </motion.div>
-                                </AnimatePresence>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
+                                    <p style={{ fontSize: '16px', lineHeight: '1.8', color: 'rgba(255,255,255,0.7)', fontWeight: '400', whiteSpace: 'pre-line' }}>
+                                        {tournament.description || "Únete a este prestigioso torneo donde la competitividad y la camaradería se encuentran en el campo. Una jornada diseñada para los amantes del golf que buscan excelencia en cada golpe."}
+                                    </p>
+                                    {renderBuenaventuraInfo()}
+                                </div>
 
                             </div>
 
