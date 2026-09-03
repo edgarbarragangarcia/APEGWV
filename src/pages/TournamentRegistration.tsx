@@ -1273,9 +1273,10 @@ const TournamentRegistration: React.FC = () => {
                                                 ))}
 
                                                 {/* Add Companion Toggle */}
-                                                <div 
+                                                <div
                                                     onClick={() => setAddGuest(!addGuest)}
                                                     style={{
+                                                        display: 'none',
                                                         marginTop: '4px', padding: '14px', borderRadius: '18px',
                                                         border: `1px dashed ${addGuest ? 'var(--secondary)' : 'rgba(255,255,255,0.2)'}`,
                                                         textAlign: 'center', cursor: 'pointer', background: addGuest ? 'rgba(163, 230, 53, 0.05)' : 'transparent',
@@ -1472,10 +1473,11 @@ const TournamentRegistration: React.FC = () => {
                                 ))}
 
                                 {/* Add Companion Toggle */}
-                                <div 
+                                <div
                                     onClick={() => setAddGuest(!addGuest)}
-                                    style={{ 
-                                        marginTop: '10px', padding: '18px', borderRadius: '20px', 
+                                    style={{
+                                        display: 'none',
+                                        marginTop: '10px', padding: '18px', borderRadius: '20px',
                                         border: `1px dashed ${addGuest ? 'var(--secondary)' : 'rgba(255,255,255,0.2)'}`,
                                         textAlign: 'center', cursor: 'pointer', background: addGuest ? 'rgba(163, 230, 53, 0.05)' : 'transparent',
                                         transition: 'all 0.3s ease'
