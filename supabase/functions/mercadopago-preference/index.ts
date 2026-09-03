@@ -180,12 +180,11 @@ serve(async (req) => {
           currency_id: currencyId,
         }],
         back_urls: {
-          success: `${origin}${path}?status=success&ref=${reference}`,
-          failure: `${origin}${path}?status=failure&ref=${reference}`,
-          pending: `${origin}${path}?status=pending&ref=${reference}`,
+          success: `${origin}${path}?mp=1&ref=${reference}`,
+          failure: `${origin}${path}?mp=1&ref=${reference}`,
+          pending: `${origin}${path}?mp=1&ref=${reference}`,
         },
         external_reference: reference,
-        notification_url: `${SUPABASE_URL}/functions/v1/mercadopago-webhook`,
         metadata: {
           kind: 'tournament_registration',
           tournament_id,

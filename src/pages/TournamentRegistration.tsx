@@ -77,7 +77,7 @@ const TournamentRegistration: React.FC = () => {
     const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
     const [copiedId, setCopiedId] = useState<string | null>(null);
     const [mpRedirecting, setMpRedirecting] = useState(false);
-    const [paymentResult, setPaymentResult] = useState<'success' | 'failure' | 'pending' | null>(null);
+    const [paymentResult, setPaymentResult] = useState<'success' | 'failure' | 'pending' | 'verifying' | null>(null);
 
     // "Ya me inscribí" → consulta por cédula para ir a pagar
     const [lookupDoc, setLookupDoc] = useState('');
@@ -88,10 +88,32 @@ const TournamentRegistration: React.FC = () => {
     const [selectedPackageId, setSelectedPackageId] = useState<string>('');
 
     useEffect(() => {
-        const st = new URLSearchParams(window.location.search).get('status');
-        if (st === 'success' || st === 'failure' || st === 'pending') {
-            setPaymentResult(st);
-        }
+        const p = new URLSearchParams(window.location.search);
+        const isReturn = p.get('mp') === '1' || p.has('payment_id') || p.has('collection_id') || p.has('ref');
+        if (!isReturn) return;
+
+        const paymentId = p.get('payment_id') || p.get('collection_id') || undefined;
+        const reference = p.get('ref') || p.get('external_reference') || undefined;
+        // Limpia la URL para no re-verificar en cada recarga.
+        window.history.replaceState(null, '', window.location.pathname);
+
+        setPaymentResult('verifying');
+        supabase.functions
+            .invoke('mercadopago-verify', { body: { payment_id: paymentId, reference } })
+            .then(({ data, error }) => {
+                if (error) { setPaymentResult('pending'); return; }
+                const st = data?.status;
+                if (st === 'approved') {
+                    setPaymentResult('success');
+                    fetchData();
+                } else if (st === 'not_found' || st === 'no_regs') {
+                    setPaymentResult('failure');
+                } else {
+                    setPaymentResult('pending');
+                }
+            })
+            .catch(() => setPaymentResult('pending'));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const handleCopy = (text: string, id: string) => {
@@ -303,7 +325,7 @@ const TournamentRegistration: React.FC = () => {
             let error: any = null;
             ({ data, error } = await supabase
                 .from('tournament_registrations')
-                .select('id, player_name, player_email, registration_status, mp_payment_id, payment_date')
+                .select('id, player_name, player_email, registration_status, mp_payment_id, mp_reference, selected_package, payment_date')
                 .eq('tournament_id', tournament.id)
                 .eq('player_document', doc) as any);
             // Compatibilidad: si aún no se ha corrido la migración de columnas MP.
@@ -334,6 +356,26 @@ const TournamentRegistration: React.FC = () => {
         } catch (err: any) {
             console.error('Pay lookup error:', err);
             alert(err.message || 'Error al generar el pago.');
+            setPayingLookup(false);
+        }
+    };
+
+    const handleVerifyLookup = async () => {
+        const ref = lookupResults.map((r) => r.mp_reference).find(Boolean);
+        if (!ref) { alert('Aún no hay un pago iniciado para esta inscripción. Usa "Pagar con Mercado Pago".'); return; }
+        setPayingLookup(true);
+        try {
+            const { data, error } = await supabase.functions.invoke('mercadopago-verify', { body: { reference: ref } });
+            if (error) throw error;
+            if (data?.status === 'approved') {
+                setPaymentResult('success');
+                await handleLookup();
+            } else {
+                alert('El pago todavía no aparece como aprobado en Mercado Pago. Intenta de nuevo en unos minutos.');
+            }
+        } catch (err: any) {
+            alert(err.message || 'No se pudo verificar el pago.');
+        } finally {
             setPayingLookup(false);
         }
     };
@@ -517,14 +559,29 @@ const TournamentRegistration: React.FC = () => {
                                     );
                                 })}
                                 {hasPending && (
-                                    <button
-                                        onClick={handlePayLookup}
-                                        disabled={payingLookup}
-                                        className="btn-primary"
-                                        style={{ width: '100%', padding: '16px', borderRadius: '18px', fontWeight: 950, fontSize: '14px', marginTop: '6px', letterSpacing: '0.5px' }}
-                                    >
-                                        {payingLookup ? <Loader2 className="animate-spin" size={20} /> : 'PAGAR CON MERCADO PAGO'}
-                                    </button>
+                                    <>
+                                        <button
+                                            onClick={handlePayLookup}
+                                            disabled={payingLookup}
+                                            className="btn-primary"
+                                            style={{ width: '100%', padding: '16px', borderRadius: '18px', fontWeight: 950, fontSize: '14px', marginTop: '6px', letterSpacing: '0.5px' }}
+                                        >
+                                            {payingLookup ? <Loader2 className="animate-spin" size={20} /> : 'PAGAR CON MERCADO PAGO'}
+                                        </button>
+                                        {lookupResults.some((r) => r.mp_reference) && (
+                                            <button
+                                                onClick={handleVerifyLookup}
+                                                disabled={payingLookup}
+                                                style={{
+                                                    width: '100%', padding: '12px', borderRadius: '16px', marginTop: '8px',
+                                                    background: 'transparent', border: '1px solid rgba(255,255,255,0.15)',
+                                                    color: 'rgba(255,255,255,0.7)', fontWeight: 800, fontSize: '12px', letterSpacing: '0.5px'
+                                                }}
+                                            >
+                                                YA PAGUÉ — VERIFICAR
+                                            </button>
+                                        )}
+                                    </>
                                 )}
                             </>
                         )}
@@ -713,28 +770,32 @@ const TournamentRegistration: React.FC = () => {
                                 background: paymentResult === 'failure' ? 'rgba(239,68,68,0.15)' : 'rgba(163,230,53,0.15)',
                                 color: paymentResult === 'failure' ? '#ef4444' : 'var(--secondary)'
                             }}>
-                                {paymentResult === 'failure' ? <X size={44} /> : paymentResult === 'pending' ? <Loader2 size={44} /> : <CheckCircle2 size={44} />}
+                                {paymentResult === 'failure' ? <X size={44} /> : (paymentResult === 'pending' || paymentResult === 'verifying') ? <Loader2 size={44} className="animate-spin" /> : <CheckCircle2 size={44} />}
                             </div>
                             <h2 style={{ fontSize: '26px', fontWeight: 950, color: 'white', marginBottom: '12px', letterSpacing: '-0.5px' }}>
-                                {paymentResult === 'failure' ? 'PAGO NO COMPLETADO' : paymentResult === 'pending' ? 'PAGO EN PROCESO' : '¡PAGO RECIBIDO!'}
+                                {paymentResult === 'failure' ? 'PAGO NO COMPLETADO'
+                                    : paymentResult === 'verifying' ? 'VERIFICANDO PAGO…'
+                                    : paymentResult === 'pending' ? 'PAGO EN PROCESO'
+                                    : '¡PAGO CONFIRMADO!'}
                             </h2>
                             <p style={{ color: 'rgba(255,255,255,0.6)', lineHeight: 1.7, marginBottom: '32px', fontSize: '15px' }}>
                                 {paymentResult === 'failure'
-                                    ? 'No se pudo procesar el pago con Mercado Pago. Tu inscripción quedó pendiente; puedes intentar de nuevo o pagar por transferencia.'
-                                    : paymentResult === 'pending'
-                                        ? 'Mercado Pago está confirmando tu pago. Tu inscripción se activará automáticamente cuando se acredite.'
-                                        : 'Estamos confirmando tu pago con Mercado Pago. Tu inscripción quedará confirmada en unos minutos.'}
+                                    ? 'No se pudo confirmar el pago. Tu inscripción quedó pendiente; puedes intentar de nuevo o pagar por transferencia.'
+                                    : paymentResult === 'verifying'
+                                        ? 'Estamos verificando tu pago con Mercado Pago…'
+                                        : paymentResult === 'pending'
+                                            ? 'Tu pago aún no se acredita. Vuelve a esta página con tu cédula para verificarlo cuando Mercado Pago lo confirme.'
+                                            : 'Tu inscripción quedó confirmada. ¡Nos vemos en el campo!'}
                             </p>
-                            <button
-                                onClick={() => {
-                                    setPaymentResult(null);
-                                    window.history.replaceState(null, '', window.location.pathname);
-                                }}
-                                className="btn-primary"
-                                style={{ width: '100%', padding: '16px', borderRadius: '22px', fontWeight: 950, fontSize: '14px', letterSpacing: '1px' }}
-                            >
-                                ENTENDIDO
-                            </button>
+                            {paymentResult !== 'verifying' && (
+                                <button
+                                    onClick={() => setPaymentResult(null)}
+                                    className="btn-primary"
+                                    style={{ width: '100%', padding: '16px', borderRadius: '22px', fontWeight: 950, fontSize: '14px', letterSpacing: '1px' }}
+                                >
+                                    ENTENDIDO
+                                </button>
+                            )}
                         </motion.div>
                     </motion.div>
                 )}
@@ -860,11 +921,11 @@ const TournamentRegistration: React.FC = () => {
                         {/* Hero Image Container */}
                         <div style={{
                             position: 'relative',
-                            height: isMobile ? 'auto' : '40vh',
-                            minHeight: isMobile ? 'auto' : '400px',
+                            height: isMobile ? 'auto' : '26vh',
+                            minHeight: isMobile ? 'auto' : '260px',
                             paddingTop: isMobile ? '10px' : '0',
-                            paddingBottom: isMobile ? '50px' : '0',
-                            overflow: isMobile ? 'visible' : 'hidden',
+                            paddingBottom: isMobile ? '40px' : '0',
+                            overflow: 'hidden',
                             width: '100vw',
                             left: '50%',
                             right: '50%',
@@ -883,6 +944,8 @@ const TournamentRegistration: React.FC = () => {
                                     top: 0, left: 0,
                                     width: '100%', height: '100%',
                                     objectFit: 'cover',
+                                    filter: 'blur(4px) brightness(0.82)',
+                                    transform: 'scale(1.08)',
                                     zIndex: 1
                                 }}
                             />
@@ -894,6 +957,8 @@ const TournamentRegistration: React.FC = () => {
                                     top: 0, left: 0,
                                     width: '100%', height: '100%',
                                     objectFit: 'cover',
+                                    filter: 'blur(4px) brightness(0.82)',
+                                    transform: 'scale(1.08)',
                                     zIndex: 1
                                 }}
                                 alt=""
@@ -913,7 +978,7 @@ const TournamentRegistration: React.FC = () => {
 
                         <div style={{ 
                             position: isMobile ? 'relative' : 'absolute', 
-                            bottom: isMobile ? 'auto' : '50px', 
+                            bottom: isMobile ? 'auto' : '24px', 
                             left: '0', 
                             width: '100%', 
                             padding: isMobile ? '0 20px' : '0 30px',
@@ -1175,7 +1240,7 @@ const TournamentRegistration: React.FC = () => {
                     )}
 
                     {/* Scrollable Content Area */}
-                    <div style={{ padding: isMobile ? '0px 30px 20px 30px' : '20px 30px', position: 'relative', zIndex: 20 }}>
+                    <div style={{ padding: isMobile ? '0px 30px 20px 30px' : '0 30px 20px 30px', marginTop: isMobile ? '20px' : '10px', position: 'relative', zIndex: 20 }}>
                         <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '40px' }}>
                             {/* Content Column */}
                             <div style={{ flex: 1.5 }}>
