@@ -1047,9 +1047,9 @@ const TournamentRegistration: React.FC = () => {
                                                 ? packages.map((p) => `${p.name}: ${fmtMoney(p.price, p.currency)}`).join('  ·  ')
                                                 : new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(tournament.price)}
                                         </div>
-                                        {paymentMethods.length > 0 && (
-                                            <div style={{ 
-                                                marginTop: '5px', 
+                                        {false && paymentMethods.length > 0 && (
+                                            <div style={{
+                                                marginTop: '5px',
                                                 paddingTop: '5px', 
                                                 borderTop: '1px solid rgba(255,255,255,0.05)',
                                                 display: 'flex',
