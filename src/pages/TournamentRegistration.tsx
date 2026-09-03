@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-    MapPin, Trophy, HeartHandshake,
+    MapPin, Trophy, HeartHandshake, Calendar, Globe,
     CheckCircle2, Loader2, Plus, X, Mail, BookOpen,
     Users, Copy, Check, ChevronDown, AlertCircle,
     IdCard
@@ -33,6 +33,14 @@ const BUENAVENTURA_INFO = {
     ],
     excludes: ['Tiquetes aéreos', 'Gastos personales', 'Seguro de viaje'],
 };
+
+const NACIONALIDADES = [
+    'Colombiana', 'Panameña', 'Estadounidense', 'Mexicana', 'Argentina', 'Chilena',
+    'Peruana', 'Ecuatoriana', 'Venezolana', 'Costarricense', 'Guatemalteca', 'Hondureña',
+    'Salvadoreña', 'Nicaragüense', 'Dominicana', 'Cubana', 'Boliviana', 'Paraguaya',
+    'Uruguaya', 'Brasileña', 'Española', 'Canadiense', 'Portuguesa', 'Italiana',
+    'Francesa', 'Alemana', 'Británica', 'Otra',
+];
 
 interface Tournament {
     id: string;
@@ -100,7 +108,9 @@ const TournamentRegistration: React.FC = () => {
         phone: '',
         federationCode: '',
         handicap: '',
-        document: ''
+        document: '',
+        birthdate: '',
+        nationality: ''
     });
     const [player2, setPlayer2] = useState({
         name: '',
@@ -161,7 +171,9 @@ const TournamentRegistration: React.FC = () => {
                         phone: profile.phone || '',
                         federationCode: profile.federation_code || '',
                         handicap: profile.handicap?.toString() || '',
-                        document: ''
+                        document: '',
+                        birthdate: '',
+                        nationality: ''
                     });
                 }
 
@@ -324,6 +336,47 @@ const TournamentRegistration: React.FC = () => {
             alert(err.message || 'Error al generar el pago.');
             setPayingLookup(false);
         }
+    };
+
+    const renderExtraFields = () => {
+        const labelStyle: React.CSSProperties = { fontSize: isMobile ? '8px' : '9px', fontWeight: 900, color: 'var(--secondary)', marginLeft: '10px', letterSpacing: '1px' };
+        const wrapStyle: React.CSSProperties = {
+            padding: isMobile ? '11px 14px' : '11px 16px', borderRadius: isMobile ? '14px' : '16px',
+            display: 'flex', alignItems: 'center', gap: isMobile ? '8px' : '15px',
+            background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.05)',
+        };
+        const inputStyle: React.CSSProperties = { background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none', fontSize: isMobile ? '13px' : '15px', fontWeight: 600, colorScheme: 'dark' };
+        return (
+            <>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                    <label style={labelStyle}>FECHA DE NACIMIENTO</label>
+                    <div className="glass" style={wrapStyle}>
+                        <div style={{ color: 'rgba(255,255,255,0.3)' }}><Calendar size={isMobile ? 18 : 20} /></div>
+                        <input
+                            type="date"
+                            value={player1.birthdate}
+                            max={new Date().toISOString().split('T')[0]}
+                            onChange={(e) => setPlayer1({ ...player1, birthdate: e.target.value })}
+                            style={inputStyle}
+                        />
+                    </div>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                    <label style={labelStyle}>NACIONALIDAD</label>
+                    <div className="glass" style={wrapStyle}>
+                        <div style={{ color: 'rgba(255,255,255,0.3)' }}><Globe size={isMobile ? 18 : 20} /></div>
+                        <select
+                            value={player1.nationality}
+                            onChange={(e) => setPlayer1({ ...player1, nationality: e.target.value })}
+                            style={{ ...inputStyle, color: player1.nationality ? 'white' : 'rgba(255,255,255,0.4)' }}
+                        >
+                            <option value="" disabled style={{ color: '#000' }}>Selecciona tu nacionalidad</option>
+                            {NACIONALIDADES.map((n) => <option key={n} value={n} style={{ color: '#000' }}>{n}</option>)}
+                        </select>
+                    </div>
+                </div>
+            </>
+        );
     };
 
     const renderPackageSelector = () => {
@@ -508,6 +561,14 @@ const TournamentRegistration: React.FC = () => {
                 return `La cédula o ID del ${roleLabel} es obligatoria.`;
             }
 
+            if (!player.birthdate?.trim()) {
+                return `La fecha de nacimiento del ${roleLabel} es obligatoria.`;
+            }
+
+            if (!player.nationality?.trim()) {
+                return `La nacionalidad del ${roleLabel} es obligatoria.`;
+            }
+
 
             return null;
         };
@@ -544,7 +605,9 @@ const TournamentRegistration: React.FC = () => {
                     player_phone: player1.phone.trim(),
                     player_federation_code: player1.federationCode.trim(),
                     player_handicap: player1.handicap ? parseFloat(player1.handicap.trim().replace(',', '.')) : null,
-                    player_document: player1.document.trim()
+                    player_document: player1.document.trim(),
+                    player_birthdate: player1.birthdate || null,
+                    player_nationality: player1.nationality || null
                 }
             ];
 
@@ -559,7 +622,9 @@ const TournamentRegistration: React.FC = () => {
                     player_phone: player2.phone.trim(),
                     player_federation_code: isCompanion ? `ACOMP:${player1.name.trim()}` : player2.federationCode.trim(),
                     player_handicap: isCompanion ? null : (player2.handicap ? parseFloat(player2.handicap.trim().replace(',', '.')) : null),
-                    player_document: player2.document.trim()
+                    player_document: player2.document.trim(),
+                    player_birthdate: null,
+                    player_nationality: null
                 });
             }
 
@@ -736,7 +801,9 @@ const TournamentRegistration: React.FC = () => {
                                             phone: '',
                                             federationCode: '',
                                             handicap: '',
-                                            document: ''
+                                            document: '',
+                                            birthdate: '',
+                                            nationality: ''
                                         });
                                         setPlayer2({
                                             name: '',
@@ -1233,6 +1300,8 @@ const TournamentRegistration: React.FC = () => {
                                                     </div>
                                                 ))}
 
+                                                {renderExtraFields()}
+
                                                 {/* Add Companion Toggle */}
                                                 <div
                                                     onClick={() => setAddGuest(!addGuest)}
@@ -1430,6 +1499,8 @@ const TournamentRegistration: React.FC = () => {
                                         </div>
                                     </div>
                                 ))}
+
+                                {renderExtraFields()}
 
                                 {/* Add Companion Toggle */}
                                 <div

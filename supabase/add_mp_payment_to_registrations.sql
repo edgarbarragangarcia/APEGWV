@@ -1,13 +1,15 @@
 -- Mercado Pago payment support for tournament registrations + room/package plans.
 -- Safe to run multiple times.
 
--- Per-registration payment tracking
+-- Per-registration payment tracking + datos del inscrito
 alter table public.tournament_registrations
-  add column if not exists mp_payment_id   text,
-  add column if not exists mp_reference    text,
-  add column if not exists selected_package text,
-  add column if not exists package_price   numeric,
-  add column if not exists payment_currency text;
+  add column if not exists mp_payment_id     text,
+  add column if not exists mp_reference      text,
+  add column if not exists selected_package  text,
+  add column if not exists package_price     numeric,
+  add column if not exists payment_currency  text,
+  add column if not exists player_birthdate  date,
+  add column if not exists player_nationality text;
 
 create index if not exists idx_tournament_registrations_mp_reference
   on public.tournament_registrations (mp_reference);
