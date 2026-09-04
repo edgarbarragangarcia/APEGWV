@@ -1204,25 +1204,30 @@ const TournamentRegistration: React.FC = () => {
                         zIndex: isFlipped ? 2 : 0,
                         pointerEvents: isFlipped ? 'auto' : 'none'
                     }}>
-                        <div style={{ 
-                            padding: '20px 30px', 
-                            display: 'flex', 
-                            alignItems: 'center', 
+                        <div style={{
+                            padding: '18px 24px',
+                            display: 'flex',
+                            alignItems: 'flex-start',
                             justifyContent: 'space-between',
+                            gap: '12px',
                             borderBottom: '1px solid rgba(255,255,255,0.1)',
                             background: 'rgba(0,0,0,0.4)'
                         }}>
-                            <div>
+                            <div style={{ flex: 1, minWidth: 0 }}>
                                 <h3 style={{ fontSize: '18px', fontWeight: '950', margin: 0, color: 'white' }}>INSCRIPCIÓN</h3>
-                                <p style={{ fontSize: '10px', color: 'var(--secondary)', fontWeight: '700', margin: 0 }}>{tournament.name}</p>
+                                <p style={{
+                                    fontSize: '10px', color: 'var(--secondary)', fontWeight: '700', margin: '2px 0 0 0', lineHeight: 1.4,
+                                    display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden'
+                                }}>{tournament.name}</p>
                             </div>
-                            <button 
+                            <button
                                 onClick={() => setIsFlipped(false)}
                                 style={{
-                                    background: 'rgba(255,255,255,0.05)',
-                                    border: '1px solid rgba(255,255,255,0.1)',
+                                    flexShrink: 0,
+                                    background: 'rgba(255,255,255,0.08)',
+                                    border: '1px solid rgba(255,255,255,0.15)',
                                     color: 'white',
-                                    padding: '8px 15px',
+                                    padding: '8px 14px',
                                     borderRadius: '12px',
                                     fontSize: '11px',
                                     fontWeight: '900'
