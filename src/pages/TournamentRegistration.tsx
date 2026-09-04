@@ -332,6 +332,7 @@ const TournamentRegistration: React.FC = () => {
     };
 
     const renderExtraFields = () => {
+        if (existingReg) return null;
         const labelStyle: React.CSSProperties = { fontSize: isMobile ? '8px' : '9px', fontWeight: 900, color: 'var(--secondary)', marginLeft: '10px', letterSpacing: '1px' };
         const wrapStyle: React.CSSProperties = {
             padding: isMobile ? '11px 14px' : '11px 16px', borderRadius: isMobile ? '14px' : '16px',
@@ -373,7 +374,7 @@ const TournamentRegistration: React.FC = () => {
     };
 
     const renderPackageSelector = () => {
-        if (!mpEnabled || packages.length === 0) return null;
+        if (!mpEnabled || packages.length === 0 || existingReg) return null;
         return (
             <div style={{ marginTop: '4px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <label style={{ fontSize: '9px', fontWeight: 900, color: 'var(--secondary)', marginLeft: '10px', letterSpacing: '1px' }}>ELIGE TU PAQUETE</label>
@@ -781,9 +782,11 @@ const TournamentRegistration: React.FC = () => {
                         pointerEvents: (isMobile && isFlipped) ? 'none' : 'auto',
                         background: 'var(--primary)'
                     }}>
-                        {/* Hero Image Container */}
+                        {/* Hero Image Container — fija en escritorio; el contenido pasa por detrás */}
                         <div style={{
-                            position: 'relative',
+                            position: isMobile ? 'relative' : 'sticky',
+                            top: isMobile ? undefined : 0,
+                            zIndex: isMobile ? undefined : 40,
                             height: isMobile ? 'auto' : '26vh',
                             minHeight: isMobile ? 'auto' : '260px',
                             paddingTop: isMobile ? '10px' : '0',
@@ -1012,7 +1015,7 @@ const TournamentRegistration: React.FC = () => {
                             {/* Registration Form Column (Desktop Only) */}
                             {!isMobile && (
                                 <div style={{ flex: 1.2 }}>
-                                    <div style={{ position: 'sticky', top: '30px' }}>
+                                    <div style={{ position: 'sticky', top: 'calc(26vh + 20px)' }}>
                                         <motion.div
                                             initial={{ opacity: 0, x: 20 }}
                                             animate={{ opacity: 1, x: 0 }}
