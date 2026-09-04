@@ -68,54 +68,55 @@ function buildEmail(d: EmailData) {
     ? (d.kind === "confirmed" ? "Se acreditó un pago por Mercado Pago." : "Mercado Pago rechazó un pago. La inscripción sigue pendiente.")
     : (d.kind === "confirmed" ? "Tu inscripción quedó confirmada. ¡Nos vemos en el campo! ⛳"
       : "Tu inscripción quedó registrada, pero el pago fue rechazado. Puedes intentarlo de nuevo cuando quieras.")
-  const accent = d.kind === "rejected" ? "#ef4444" : "#a3e635"
+  const accent = d.kind === "rejected" ? "#c62828" : "#2f6d10"
   const rows = d.players.map((p) => `
     <tr>
-      <td style="padding:12px 14px;border-bottom:1px solid #1c3a29;color:#e8f5e0;font-size:14px;font-weight:600;">
-        ${p.name}${d.forApeg && p.doc ? `<br><span style="color:#7fae6d;font-size:12px;font-weight:400;">CC ${p.doc}</span>` : ""}${d.forApeg && p.email ? `<br><span style="color:#7fae6d;font-size:12px;font-weight:400;">${p.email}${p.phone ? " · " + p.phone : ""}</span>` : ""}
+      <td style="padding:12px 14px;border-bottom:1px solid #e4ede2;color:#1f2e22;font-size:14px;font-weight:600;">
+        ${p.name}${d.forApeg && p.doc ? `<br><span style="color:#7a8a7a;font-size:12px;font-weight:400;">CC ${p.doc}${p.email ? " · " + p.email : ""}${p.phone ? " · " + p.phone : ""}</span>` : ""}
       </td>
-      <td style="padding:12px 14px;border-bottom:1px solid #1c3a29;color:#a3e635;font-size:13px;font-weight:700;">${p.pkg || "Inscripción"}</td>
-      <td style="padding:12px 14px;border-bottom:1px solid #1c3a29;color:#e8f5e0;font-size:14px;font-weight:700;text-align:right;white-space:nowrap;">${cop(p.amount)}</td>
+      <td style="padding:12px 14px;border-bottom:1px solid #e4ede2;color:#3f7d1e;font-size:13px;font-weight:700;">${p.pkg || "Inscripción"}</td>
+      <td style="padding:12px 14px;border-bottom:1px solid #e4ede2;color:#0e2f1f;font-size:14px;font-weight:800;text-align:right;white-space:nowrap;">${cop(p.amount)}</td>
     </tr>`).join("")
   const cta = (!d.forApeg && d.payUrl && d.kind === "rejected")
-    ? `<div style="text-align:center;padding:4px 24px 20px;"><a href="${d.payUrl}" style="display:inline-block;background:#a3e635;color:#0e2f1f;font-weight:900;font-size:15px;text-decoration:none;padding:15px 34px;border-radius:999px;">Reintentar el pago</a></div>` : ""
-  return `<!doctype html><html><body style="margin:0;padding:0;background:#ffffff;">
-  <div style="max-width:560px;margin:0 auto;padding:32px 16px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
-    <div style="background:linear-gradient(135deg,#0e2f1f,#0a1f15);border:1px solid #1c3a29;border-radius:28px;overflow:hidden;">
-      <div style="padding:36px 32px 20px;text-align:center;">
-        <div style="display:inline-block;background:${accent};color:#0e2f1f;font-weight:900;font-size:12px;letter-spacing:2px;padding:6px 14px;border-radius:999px;">APEG · AMOR POR EL GOLF</div>
-        <h1 style="margin:22px 0 6px;color:#fff;font-size:25px;font-weight:900;letter-spacing:-0.5px;">${heading}</h1>
-        <p style="margin:0;color:#9fc98d;font-size:14px;line-height:1.6;">${intro}</p>
-        ${d.reason ? `<p style="margin:8px 0 0;color:#ef9a9a;font-size:12px;">Motivo: ${d.reason}</p>` : ""}
+    ? `<div style="text-align:center;padding:6px 22px 22px;"><a href="${d.payUrl}" style="display:inline-block;background:#0e2f1f;color:#a3e635;font-weight:900;font-size:15px;text-decoration:none;padding:15px 36px;border-radius:999px;">Reintentar el pago</a></div>` : ""
+  return `<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="color-scheme" content="light"><meta name="supported-color-schemes" content="light"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+  <body style="margin:0;padding:0;background:#eef2ee;">
+  <div style="max-width:560px;margin:0 auto;padding:28px 14px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+    <div style="background:#ffffff;border:1px solid #dfe7df;border-radius:22px;overflow:hidden;">
+      <div style="padding:30px 30px 18px;text-align:center;">
+        <div style="display:inline-block;background:#0e2f1f;color:#a3e635;font-weight:900;font-size:11px;letter-spacing:2px;padding:7px 15px;border-radius:999px;">APEG &bull; AMOR POR EL GOLF</div>
+        <h1 style="margin:20px 0 6px;color:${accent};font-size:23px;font-weight:900;letter-spacing:-0.5px;">${heading}</h1>
+        <p style="margin:0;color:#5a6a5a;font-size:14px;line-height:1.6;">${intro}</p>
+        ${d.reason ? `<p style="margin:8px 0 0;color:#c62828;font-size:12px;">Motivo: ${d.reason}</p>` : ""}
       </div>
-      <div style="padding:0 24px 8px;"><div style="background:#0a1f15;border:1px solid #1c3a29;border-radius:20px;padding:18px 20px;">
-        <div style="color:#7fae6d;font-size:11px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;">Evento</div>
-        <div style="color:#fff;font-size:16px;font-weight:800;margin:4px 0 12px;">${d.eventName}</div>
+      <div style="padding:0 22px 8px;"><div style="background:#f4f8f3;border:1px solid #e4ede2;border-radius:16px;padding:16px 18px;">
+        <div style="color:#7a8a7a;font-size:11px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;">Evento</div>
+        <div style="color:#0e2f1f;font-size:16px;font-weight:800;margin:4px 0 10px;">${d.eventName}</div>
         <table style="width:100%;border-collapse:collapse;"><tr>
-          <td style="color:#9fc98d;font-size:13px;">📅 ${d.eventDate || "Por confirmar"}</td>
-          <td style="color:#9fc98d;font-size:13px;text-align:right;">📍 ${d.club || ""}</td>
+          <td style="color:#5a6a5a;font-size:13px;">${d.eventDate || "Fecha por confirmar"}</td>
+          <td style="color:#5a6a5a;font-size:13px;text-align:right;">${d.club || ""}</td>
         </tr></table>
       </div></div>
-      <div style="padding:16px 24px 8px;"><table style="width:100%;border-collapse:collapse;background:#0a1f15;border:1px solid #1c3a29;border-radius:20px;overflow:hidden;">
-        <thead><tr style="background:#0e2f1f;">
-          <th style="padding:12px 14px;text-align:left;color:#7fae6d;font-size:11px;letter-spacing:1px;text-transform:uppercase;">Participante</th>
-          <th style="padding:12px 14px;text-align:left;color:#7fae6d;font-size:11px;letter-spacing:1px;text-transform:uppercase;">Plan</th>
-          <th style="padding:12px 14px;text-align:right;color:#7fae6d;font-size:11px;letter-spacing:1px;text-transform:uppercase;">Valor</th>
+      <div style="padding:14px 22px 8px;"><table style="width:100%;border-collapse:collapse;border:1px solid #e4ede2;border-radius:16px;overflow:hidden;">
+        <thead><tr style="background:#f0f5ef;">
+          <th style="padding:11px 14px;text-align:left;color:#6b7c6b;font-size:11px;letter-spacing:1px;text-transform:uppercase;">Participante</th>
+          <th style="padding:11px 14px;text-align:left;color:#6b7c6b;font-size:11px;letter-spacing:1px;text-transform:uppercase;">Plan</th>
+          <th style="padding:11px 14px;text-align:right;color:#6b7c6b;font-size:11px;letter-spacing:1px;text-transform:uppercase;">Valor</th>
         </tr></thead><tbody>${rows}</tbody>
       </table></div>
-      <div style="padding:12px 24px ${cta ? "8px" : "24px"};">
-        <div style="background:linear-gradient(135deg,rgba(163,230,53,0.12),rgba(163,230,53,0.04));border:1px solid rgba(163,230,53,0.3);border-radius:20px;padding:16px 20px;">
+      <div style="padding:12px 22px ${cta ? "8px" : "22px"};">
+        <div style="background:#f2f9e9;border:1px solid #d7e9b6;border-radius:16px;padding:15px 18px;">
           <table style="width:100%;border-collapse:collapse;"><tr>
-            <td style="color:#9fc98d;font-size:12px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;vertical-align:middle;">${d.kind === "confirmed" ? "Total pagado" : "Total a pagar"}</td>
-            <td style="color:#a3e635;font-size:22px;font-weight:900;text-align:right;vertical-align:middle;white-space:nowrap;">${cop(d.total)}</td>
+            <td style="color:#6b7c6b;font-size:12px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;vertical-align:middle;">${d.kind === "confirmed" ? "Total pagado" : "Total a pagar"}</td>
+            <td style="color:#2f6d10;font-size:21px;font-weight:900;text-align:right;vertical-align:middle;white-space:nowrap;">${cop(d.total)}</td>
           </tr></table>
         </div>
-        ${d.usdTotal && d.trm ? `<p style="margin:10px 4px 0;color:#7fae6d;font-size:11px;text-align:right;">USD ${d.usdTotal.toLocaleString()} · TRM ${Math.round(d.trm).toLocaleString("es-CO")}</p>` : ""}
-        ${d.paymentId ? `<p style="margin:10px 4px 0;color:#5c7a4d;font-size:11px;text-align:right;">Ref. Mercado Pago: ${d.paymentId}</p>` : ""}
+        ${d.usdTotal && d.trm ? `<p style="margin:10px 4px 0;color:#8a9a8a;font-size:11px;text-align:right;">USD ${d.usdTotal.toLocaleString()} &bull; TRM ${Math.round(d.trm).toLocaleString("es-CO")}</p>` : ""}
+        ${d.paymentId ? `<p style="margin:10px 4px 0;color:#a0b0a0;font-size:11px;text-align:right;">Ref. Mercado Pago: ${d.paymentId}</p>` : ""}
       </div>
       ${cta}
-      <div style="padding:20px 32px 32px;border-top:1px solid #1c3a29;text-align:center;">
-        <p style="margin:0;color:#7fae6d;font-size:12px;line-height:1.7;">¿Dudas? Escríbenos a <a href="mailto:${GMAIL_USER}" style="color:#a3e635;text-decoration:none;font-weight:700;">${GMAIL_USER}</a><br>APEG · Amor por el Golf</p>
+      <div style="padding:18px 30px 28px;border-top:1px solid #e4ede2;text-align:center;">
+        <p style="margin:0;color:#8a9a8a;font-size:12px;line-height:1.7;">¿Dudas? Escríbenos a <a href="mailto:${GMAIL_USER}" style="color:#2f6d10;text-decoration:none;font-weight:700;">${GMAIL_USER}</a><br>APEG &bull; Amor por el Golf</p>
       </div>
     </div>
   </div></body></html>`
