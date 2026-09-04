@@ -199,9 +199,12 @@ const TournamentRegistration: React.FC = () => {
         fetchData();
     }, [idOrSlug]);
 
+    // Tipo de evento: 'viaje' = inscripción por paquetes con pago en Mercado Pago.
+    const isViaje = tournament?.event_type === 'viaje';
+    // Solo para el contenido específico del folleto de Buenaventura.
     const isBuenaventura = !!tournament && /buenaventura/i.test(tournament.name || '');
 
-    // Paquetes configurados en el gestor; si el torneo es Buenaventura y aún no
+    // Paquetes configurados en el gestor; si es el viaje de Buenaventura y aún no
     // tiene paquetes, se usan los del folleto (USD, se cobran en COP a la TRM).
     const DEFAULT_BUENAVENTURA_PACKAGES = [
         { id: 'single', name: 'Habitación Single', price: 2100, currency: 'USD' },
@@ -211,10 +214,10 @@ const TournamentRegistration: React.FC = () => {
         Array.isArray(tournament?.packages) ? tournament!.packages : [];
     const packages = configuredPackages.length > 0
         ? configuredPackages
-        : (isBuenaventura ? DEFAULT_BUENAVENTURA_PACKAGES : []);
+        : (isViaje && isBuenaventura ? DEFAULT_BUENAVENTURA_PACKAGES : []);
 
-    // Cobro con Mercado Pago: habilitado si hay paquetes, o si es Buenaventura.
-    const mpEnabled = !!tournament && (packages.length > 0 || isBuenaventura);
+    // Cobro con Mercado Pago: los viajes con paquetes definidos.
+    const mpEnabled = !!tournament && isViaje && packages.length > 0;
 
     const selectedPackage = packages.find((p) => p.id === selectedPackageId) || packages[0] || null;
 

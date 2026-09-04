@@ -307,6 +307,7 @@ const TournamentManager: React.FC = () => {
     const [formData, setFormData] = useState({
         name: '',
         slug: '',
+        event_type: 'torneo' as 'torneo' | 'viaje',
         description: '',
         date: '',
         club: '',
@@ -554,7 +555,8 @@ const TournamentManager: React.FC = () => {
                         description: formData.description,
                         date: formData.date,
                         club: formData.club,
-                        price: parseFloat(formData.price || '0'),
+                        price: formData.event_type === 'viaje' ? 0 : parseFloat(formData.price || '0'),
+                        event_type: formData.event_type,
                         participants_limit: parseInt(formData.participants_limit || '100'),
                         image_url: formData.image_url,
                         status: formData.status,
@@ -567,7 +569,7 @@ const TournamentManager: React.FC = () => {
                         prizes: formData.prizes.map(p => p.name).filter(Boolean).join('\n'),
                         guests: formData.guests.map(g => `${g.name}|${g.federation_code || ''}`).filter(Boolean).join('\n'),
                         notes: `${formData.notes}\n\n---PAYMENTS_JSON---\n${JSON.stringify(formData.payment_methods)}\n\n---MESSAGES_JSON---\n${JSON.stringify({ paid: formData.message_paid, unpaid: formData.message_unpaid })}`,
-                        packages: cleanedPackages as any,
+                        packages: (formData.event_type === 'viaje' ? cleanedPackages : []) as any,
                         approval_status: tournaments.find(t => t.id === editingId)?.approval_status || 'pending',
                         updated_at: new Date().toISOString()
                     })
@@ -582,7 +584,8 @@ const TournamentManager: React.FC = () => {
                         description: formData.description,
                         date: formData.date,
                         club: formData.club,
-                        price: parseFloat(formData.price || '0'),
+                        price: formData.event_type === 'viaje' ? 0 : parseFloat(formData.price || '0'),
+                        event_type: formData.event_type,
                         participants_limit: parseInt(formData.participants_limit || '100'),
                         image_url: formData.image_url,
                         status: formData.status,
@@ -595,7 +598,7 @@ const TournamentManager: React.FC = () => {
                         prizes: formData.prizes.map(p => p.name).filter(Boolean).join('\n'),
                         guests: formData.guests.map(g => `${g.name}|${g.federation_code || ''}`).filter(Boolean).join('\n'),
                         notes: `${formData.notes}\n\n---PAYMENTS_JSON---\n${JSON.stringify(formData.payment_methods)}\n\n---MESSAGES_JSON---\n${JSON.stringify({ paid: formData.message_paid, unpaid: formData.message_unpaid })}`,
-                        packages: cleanedPackages as any,
+                        packages: (formData.event_type === 'viaje' ? cleanedPackages : []) as any,
                         creator_id: user.id,
                         approval_status: isAdmin ? 'approved' : 'pending'
                     } as any])
@@ -658,6 +661,7 @@ const TournamentManager: React.FC = () => {
         setFormData({
             name: '',
             slug: '',
+            event_type: 'torneo',
             description: '',
             date: '',
             club: '',
@@ -697,6 +701,7 @@ const TournamentManager: React.FC = () => {
         setFormData({
             name: tournament.name,
             slug: tournament.slug || '',
+            event_type: ((tournament as any).event_type === 'viaje' ? 'viaje' : 'torneo'),
             description: tournament.description || '',
             date: tournament.date.split('T')[0],
             club: tournament.club,
@@ -1158,7 +1163,29 @@ const TournamentManager: React.FC = () => {
                                                         />
                                                     </div>
 
-                                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                                                    <div className="input-group">
+                                                        <label style={{ fontSize: '11px', fontWeight: '800', marginBottom: '8px', display: 'block', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Tipo de Evento</label>
+                                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                                                            {([['torneo', 'Torneo (precio único)'], ['viaje', 'Viaje (por paquetes)']] as const).map(([val, lbl]) => (
+                                                                <button
+                                                                    key={val}
+                                                                    type="button"
+                                                                    onClick={() => setFormData({ ...formData, event_type: val })}
+                                                                    style={{
+                                                                        padding: '14px 12px', borderRadius: '14px', fontSize: '13px', fontWeight: '800', cursor: 'pointer',
+                                                                        background: formData.event_type === val ? 'var(--secondary)' : 'rgba(255,255,255,0.04)',
+                                                                        color: formData.event_type === val ? 'var(--primary)' : 'rgba(255,255,255,0.7)',
+                                                                        border: `1px solid ${formData.event_type === val ? 'var(--secondary)' : 'rgba(255,255,255,0.1)'}`,
+                                                                    }}
+                                                                >
+                                                                    {lbl}
+                                                                </button>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+
+                                                    <div style={{ display: 'grid', gridTemplateColumns: formData.event_type === 'viaje' ? '1fr' : '1fr 1fr', gap: '15px' }}>
+                                                        {formData.event_type !== 'viaje' && (
                                                         <div className="input-group">
                                                             <label style={{ fontSize: '11px', fontWeight: '800', marginBottom: '8px', display: 'block', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Precio Inscripción</label>
                                                             <div style={{ position: 'relative' }}>
@@ -1181,6 +1208,7 @@ const TournamentManager: React.FC = () => {
                                                                 />
                                                             </div>
                                                         </div>
+                                                        )}
                                                         <div className="input-group">
                                                             <label style={{ fontSize: '11px', fontWeight: '800', marginBottom: '8px', display: 'block', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Cupos Disponibles</label>
                                                             <div style={{ position: 'relative' }}>
@@ -1328,7 +1356,8 @@ const TournamentManager: React.FC = () => {
 
                                                     </div>
 
-                                                    {/* Paquetes / Habitaciones (para cobro con Mercado Pago) */}
+                                                    {/* Paquetes / Habitaciones — solo para eventos tipo "viaje" (cobro con Mercado Pago) */}
+                                                    {formData.event_type === 'viaje' && (
                                                     <div className="glass" style={{ padding: '20px', borderRadius: '24px', background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.05)', marginTop: '10px' }}>
                                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
                                                             <h4 style={{ fontSize: '12px', fontWeight: '900', color: 'var(--secondary)', textTransform: 'uppercase', letterSpacing: '1px', margin: 0 }}>Paquetes / Habitaciones</h4>
@@ -1388,6 +1417,7 @@ const TournamentManager: React.FC = () => {
                                                             )}
                                                         </div>
                                                     </div>
+                                                    )}
 
                                                     <div style={{ marginTop: '10px' }}>
                                                         <div

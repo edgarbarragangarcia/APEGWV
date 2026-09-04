@@ -81,7 +81,7 @@ serve(async (req) => {
       // Trust ONLY the database for the price and for which registrations exist.
       const { data: tournament, error: tErr } = await supabase
         .from('tournaments')
-        .select('id, name, price, slug, packages')
+        .select('id, name, price, slug, packages, event_type')
         .eq('id', tournament_id)
         .single()
       if (tErr || !tournament) return json({ error: 'Torneo no encontrado.' }, 404)
@@ -105,7 +105,11 @@ serve(async (req) => {
       // either from the chosen package, from a price already stored on the rows
       // (pay-later case), or the tournament base price.
       let packages: any[] = Array.isArray(tournament.packages) ? tournament.packages : []
-      if (packages.length === 0 && /buenaventura/i.test(String(tournament.name || ''))) {
+      if (
+        packages.length === 0 &&
+        tournament.event_type === 'viaje' &&
+        /buenaventura/i.test(String(tournament.name || ''))
+      ) {
         packages = [
           { id: 'single', name: 'Habitación Single', price: 2100, currency: 'USD' },
           { id: 'double', name: 'Habitación Doble', price: 1900, currency: 'USD' },
