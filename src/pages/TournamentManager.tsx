@@ -2300,6 +2300,7 @@ const TournamentManager: React.FC = () => {
                                             </AnimatePresence>
                                         </div>
 
+                                        {formData.event_type !== 'viaje' && (
                                         <div style={{ marginTop: '0px', padding: '10px 15px', background: 'rgba(255,255,255,0.03)', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)' }}>
                                             <div
                                                 style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}
@@ -2378,6 +2379,7 @@ const TournamentManager: React.FC = () => {
                                                 )}
                                             </AnimatePresence>
                                         </div>
+                                        )}
 
                                         <div style={{ marginTop: '0px', padding: '10px 15px', background: 'rgba(255,255,255,0.03)', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)' }}>
                                             <div
