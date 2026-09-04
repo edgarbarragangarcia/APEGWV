@@ -782,7 +782,7 @@ const TournamentRegistration: React.FC = () => {
                         pointerEvents: (isMobile && isFlipped) ? 'none' : 'auto',
                         background: 'var(--primary)'
                     }}>
-                        {/* Hero Image Container — fija en escritorio; el contenido pasa por detrás */}
+                        {/* Hero Image Container — fija y full-bleed en escritorio; el contenido pasa por detrás */}
                         <div style={{
                             position: isMobile ? 'relative' : 'sticky',
                             top: isMobile ? undefined : 0,
@@ -792,11 +792,11 @@ const TournamentRegistration: React.FC = () => {
                             paddingTop: isMobile ? '10px' : '0',
                             paddingBottom: isMobile ? '40px' : '0',
                             overflow: isMobile ? 'visible' : 'hidden',
-                            width: isMobile ? '100vw' : '100%',
+                            width: '100vw',
                             left: isMobile ? '50%' : undefined,
                             right: isMobile ? '50%' : undefined,
-                            marginLeft: isMobile ? '-50vw' : undefined,
-                            marginRight: isMobile ? '-50vw' : undefined
+                            marginLeft: isMobile ? '-50vw' : 'calc(50% - 50vw)',
+                            marginRight: isMobile ? '-50vw' : 'calc(50% - 50vw)'
                         }}>
                         {tournament.image_url && isVideoUrl(tournament.image_url) ? (
                             <video
