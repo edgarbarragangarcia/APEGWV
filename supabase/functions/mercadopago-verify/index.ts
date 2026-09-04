@@ -1,7 +1,7 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4"
-import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts"
+import nodemailer from "npm:nodemailer@6.9.14"
 
 // Verificación de pago al regresar de Mercado Pago (sin webhook).
 // - approved            -> registration_status = 'paid'       + correo de confirmación
@@ -34,17 +34,22 @@ const cop = (n: number) => "$" + Math.round(Number(n) || 0).toLocaleString("es-C
 const fmtDate = (d: string | null | undefined) =>
   d ? new Date(d).toLocaleDateString("es-CO", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" }) : ""
 
-let smtp: SMTPClient | null = null
-function smtpClient() {
+let transporter: any = null
+function getTransporter() {
   if (!GMAIL_USER || !GMAIL_APP_PASSWORD) return null
-  if (!smtp) smtp = new SMTPClient({ connection: { hostname: "smtp.gmail.com", port: 465, tls: true, auth: { username: GMAIL_USER, password: GMAIL_APP_PASSWORD } } })
-  return smtp
+  if (!transporter) {
+    transporter = nodemailer.createTransport({
+      host: "smtp.gmail.com", port: 465, secure: true,
+      auth: { user: GMAIL_USER, pass: GMAIL_APP_PASSWORD },
+    })
+  }
+  return transporter
 }
 async function sendMail(to: string, subject: string, html: string) {
-  const c = smtpClient()
-  if (!c) { console.warn("SMTP no configurado (GMAIL_USER / GMAIL_APP_PASSWORD)"); return }
+  const t = getTransporter()
+  if (!t) { console.warn("SMTP no configurado (GMAIL_USER / GMAIL_APP_PASSWORD)"); return }
   try {
-    await c.send({ from: `APEG · Amor por el Golf <${GMAIL_USER}>`, to, replyTo: GMAIL_USER!, subject, html, content: "Requiere un cliente compatible con HTML." })
+    await t.sendMail({ from: `"APEG · Amor por el Golf" <${GMAIL_USER}>`, to, replyTo: GMAIL_USER, subject, html })
   } catch (e) { console.error("Error enviando correo a", to, e) }
 }
 
@@ -74,7 +79,7 @@ function buildEmail(d: EmailData) {
     </tr>`).join("")
   const cta = (!d.forApeg && d.payUrl && d.kind === "rejected")
     ? `<div style="text-align:center;padding:4px 24px 20px;"><a href="${d.payUrl}" style="display:inline-block;background:#a3e635;color:#0e2f1f;font-weight:900;font-size:15px;text-decoration:none;padding:15px 34px;border-radius:999px;">Reintentar el pago</a></div>` : ""
-  return `<!doctype html><html><body style="margin:0;padding:0;background:#05150d;">
+  return `<!doctype html><html><body style="margin:0;padding:0;background:#ffffff;">
   <div style="max-width:560px;margin:0 auto;padding:32px 16px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
     <div style="background:linear-gradient(135deg,#0e2f1f,#0a1f15);border:1px solid #1c3a29;border-radius:28px;overflow:hidden;">
       <div style="padding:36px 32px 20px;text-align:center;">
@@ -99,9 +104,11 @@ function buildEmail(d: EmailData) {
         </tr></thead><tbody>${rows}</tbody>
       </table></div>
       <div style="padding:12px 24px ${cta ? "8px" : "24px"};">
-        <div style="background:linear-gradient(135deg,rgba(163,230,53,0.12),rgba(163,230,53,0.04));border:1px solid rgba(163,230,53,0.3);border-radius:20px;padding:18px 20px;display:flex;justify-content:space-between;align-items:center;">
-          <span style="color:#9fc98d;font-size:12px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;">${d.kind === "confirmed" ? "Total pagado" : "Total a pagar"}</span>
-          <span style="color:#a3e635;font-size:22px;font-weight:900;">${cop(d.total)}</span>
+        <div style="background:linear-gradient(135deg,rgba(163,230,53,0.12),rgba(163,230,53,0.04));border:1px solid rgba(163,230,53,0.3);border-radius:20px;padding:16px 20px;">
+          <table style="width:100%;border-collapse:collapse;"><tr>
+            <td style="color:#9fc98d;font-size:12px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;vertical-align:middle;">${d.kind === "confirmed" ? "Total pagado" : "Total a pagar"}</td>
+            <td style="color:#a3e635;font-size:22px;font-weight:900;text-align:right;vertical-align:middle;white-space:nowrap;">${cop(d.total)}</td>
+          </tr></table>
         </div>
         ${d.usdTotal && d.trm ? `<p style="margin:10px 4px 0;color:#7fae6d;font-size:11px;text-align:right;">USD ${d.usdTotal.toLocaleString()} · TRM ${Math.round(d.trm).toLocaleString("es-CO")}</p>` : ""}
         ${d.paymentId ? `<p style="margin:10px 4px 0;color:#5c7a4d;font-size:11px;text-align:right;">Ref. Mercado Pago: ${d.paymentId}</p>` : ""}

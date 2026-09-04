@@ -1,7 +1,7 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4"
-import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts"
+import nodemailer from "npm:nodemailer@6.9.14"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -13,11 +13,11 @@ const GMAIL_USER = Deno.env.get('GMAIL_USER')
 const GMAIL_APP_PASSWORD = Deno.env.get('GMAIL_APP_PASSWORD')
 const APEG_NOTIFY = Deno.env.get('APEG_NOTIFY_EMAIL') || GMAIL_USER || ''
 const _cop = (n: number) => '$' + Math.round(Number(n) || 0).toLocaleString('es-CO') + ' COP'
-let _smtp: SMTPClient | null = null
+let _tx: any = null
 async function sendMail(to: string, subject: string, html: string) {
   if (!GMAIL_USER || !GMAIL_APP_PASSWORD) { console.warn('SMTP no configurado'); return }
-  if (!_smtp) _smtp = new SMTPClient({ connection: { hostname: 'smtp.gmail.com', port: 465, tls: true, auth: { username: GMAIL_USER, password: GMAIL_APP_PASSWORD } } })
-  try { await _smtp.send({ from: `APEG · Amor por el Golf <${GMAIL_USER}>`, to, replyTo: GMAIL_USER, subject, html, content: 'Requiere HTML.' }) }
+  if (!_tx) _tx = nodemailer.createTransport({ host: 'smtp.gmail.com', port: 465, secure: true, auth: { user: GMAIL_USER, pass: GMAIL_APP_PASSWORD } })
+  try { await _tx.sendMail({ from: `"APEG · Amor por el Golf" <${GMAIL_USER}>`, to, replyTo: GMAIL_USER, subject, html }) }
   catch (e) { console.error('Error correo a', to, e) }
 }
 function pendingEmailHtml(d: { forApeg: boolean; eventName: string; eventDate: string; club: string; players: { name: string; email?: string; phone?: string; doc?: string; pkg: string | null; amount: number }[]; total: number; payUrl: string }) {
@@ -26,7 +26,7 @@ function pendingEmailHtml(d: { forApeg: boolean; eventName: string; eventDate: s
     <td style="padding:12px 14px;border-bottom:1px solid #1c3a29;color:#a3e635;font-size:13px;font-weight:700;">${p.pkg || 'Inscripción'}</td>
     <td style="padding:12px 14px;border-bottom:1px solid #1c3a29;color:#e8f5e0;font-size:14px;font-weight:700;text-align:right;white-space:nowrap;">${_cop(p.amount)}</td>
   </tr>`).join('')
-  return `<!doctype html><html><body style="margin:0;padding:0;background:#05150d;">
+  return `<!doctype html><html><body style="margin:0;padding:0;background:#ffffff;">
   <div style="max-width:560px;margin:0 auto;padding:32px 16px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
     <div style="background:linear-gradient(135deg,#0e2f1f,#0a1f15);border:1px solid #1c3a29;border-radius:28px;overflow:hidden;">
       <div style="padding:36px 32px 18px;text-align:center;">
@@ -42,9 +42,11 @@ function pendingEmailHtml(d: { forApeg: boolean; eventName: string; eventDate: s
       <div style="padding:16px 24px 8px;"><table style="width:100%;border-collapse:collapse;background:#0a1f15;border:1px solid #1c3a29;border-radius:20px;overflow:hidden;">
         <thead><tr style="background:#0e2f1f;"><th style="padding:12px 14px;text-align:left;color:#7fae6d;font-size:11px;text-transform:uppercase;">Participante</th><th style="padding:12px 14px;text-align:left;color:#7fae6d;font-size:11px;text-transform:uppercase;">Plan</th><th style="padding:12px 14px;text-align:right;color:#7fae6d;font-size:11px;text-transform:uppercase;">Valor</th></tr></thead>
         <tbody>${rows}</tbody></table></div>
-      <div style="padding:12px 24px 8px;"><div style="background:rgba(163,230,53,0.1);border:1px solid rgba(163,230,53,0.3);border-radius:20px;padding:18px 20px;display:flex;justify-content:space-between;align-items:center;">
-        <span style="color:#9fc98d;font-size:12px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;">Total a pagar</span>
-        <span style="color:#a3e635;font-size:22px;font-weight:900;">${_cop(d.total)}</span>
+      <div style="padding:12px 24px 8px;"><div style="background:rgba(163,230,53,0.1);border:1px solid rgba(163,230,53,0.3);border-radius:20px;padding:16px 20px;">
+        <table style="width:100%;border-collapse:collapse;"><tr>
+          <td style="color:#9fc98d;font-size:12px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;vertical-align:middle;">Total a pagar</td>
+          <td style="color:#a3e635;font-size:22px;font-weight:900;text-align:right;vertical-align:middle;white-space:nowrap;">${_cop(d.total)}</td>
+        </tr></table>
       </div></div>
       ${d.forApeg ? '' : `<div style="text-align:center;padding:4px 24px 20px;"><a href="${d.payUrl}" style="display:inline-block;background:#a3e635;color:#0e2f1f;font-weight:900;font-size:15px;text-decoration:none;padding:15px 34px;border-radius:999px;">Completar el pago</a></div>`}
       <div style="padding:20px 32px 32px;border-top:1px solid #1c3a29;text-align:center;"><p style="margin:0;color:#7fae6d;font-size:12px;line-height:1.7;">¿Dudas? <a href="mailto:${GMAIL_USER}" style="color:#a3e635;text-decoration:none;font-weight:700;">${GMAIL_USER}</a><br>APEG · Amor por el Golf</p></div>
@@ -272,7 +274,7 @@ serve(async (req) => {
       const initPoint: string = mpData.init_point || mpData.sandbox_init_point || ''
 
       // Correo "inscripción registrada — falta pago" en segundo plano (no bloquea el redirect).
-      const sendPendingEmails = (async () => {
+      const _emailTask = (async () => {
         try {
           const { data: rows } = await supabase
             .from('tournament_registrations')
@@ -307,7 +309,7 @@ serve(async (req) => {
           console.error('Fallo enviando correo de inscripción:', e)
         }
       })()
-      try { (globalThis as any).EdgeRuntime?.waitUntil?.(sendPendingEmails) } catch { /* noop */ }
+      try { (globalThis as any).EdgeRuntime?.waitUntil?.(_emailTask) } catch { /* noop */ }
 
       return json({ init_point: mpData.init_point, sandbox_init_point: mpData.sandbox_init_point, reference }, 200)
     }
