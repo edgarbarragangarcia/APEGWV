@@ -102,6 +102,9 @@ const TournamentRegistration: React.FC = () => {
     }, []);
 
     const [selectedPackageId, setSelectedPackageId] = useState<string>('');
+    // Detección de inscripción existente por cédula
+    const [existingReg, setExistingReg] = useState<{ ids: string[]; paid: boolean; name: string } | null>(null);
+    const [checkingDoc, setCheckingDoc] = useState(false);
 
     useEffect(() => {
         const p = new URLSearchParams(window.location.search);
@@ -221,6 +224,15 @@ const TournamentRegistration: React.FC = () => {
 
     const selectedPackage = packages.find((p) => p.id === selectedPackageId) || packages[0] || null;
 
+    const existingPending = !!existingReg && !existingReg.paid;
+    const existingPaid = !!existingReg && existingReg.paid;
+    const submitLabel = existingPaid ? 'YA ESTÁS INSCRITO Y PAGADO'
+        : existingPending ? 'IR A PAGAR AHORA'
+        : isRegistered ? 'YA ESTÁS INSCRITO'
+        : mpEnabled ? 'INSCRIBIRME Y PAGAR' : 'INSCRIBIRME AHORA';
+    const submitDisabled = registering || mpRedirecting || checkingDoc || existingPaid || (isRegistered && !showSuccess);
+    const onSubmitClick = () => { if (existingPending) { handlePayExisting(); } else { handleRegister(); } };
+
     useEffect(() => {
         if (packages.length > 0 && !selectedPackageId) setSelectedPackageId(packages[0].id);
     }, [packages.length]);
@@ -260,6 +272,63 @@ const TournamentRegistration: React.FC = () => {
         const iOSNative = (window as any).iOSNative;
         if (iOSNative?.openExternalURL) iOSNative.openExternalURL(initPoint);
         else window.location.href = initPoint;
+    };
+
+    const isPaidStatus = (s: string | null | undefined, mpId?: string | null) =>
+        !!mpId || s === 'paid' || s === 'Confirmado';
+
+    const checkExistingByDocument = async (doc: string) => {
+        const d = doc.trim();
+        setExistingReg(null);
+        if (!d || !tournament || d.length < 4) return;
+        setCheckingDoc(true);
+        try {
+            const { data, error } = await supabase
+                .from('tournament_registrations')
+                .select('id, player_name, registration_status, mp_payment_id')
+                .eq('tournament_id', tournament.id)
+                .eq('player_document', d) as any;
+            if (error || !data || data.length === 0) return;
+            const paid = data.every((r: any) => isPaidStatus(r.registration_status, r.mp_payment_id));
+            setExistingReg({
+                ids: data.filter((r: any) => !isPaidStatus(r.registration_status, r.mp_payment_id)).map((r: any) => r.id),
+                paid,
+                name: data[0].player_name || '',
+            });
+        } catch { /* ignora */ } finally {
+            setCheckingDoc(false);
+        }
+    };
+
+    const handlePayExisting = async () => {
+        if (!existingReg || existingReg.ids.length === 0) return;
+        setMpRedirecting(true);
+        try {
+            await startMercadoPago(existingReg.ids, player1.email.trim() || undefined, selectedPackage?.id);
+        } catch (err: any) {
+            setMpRedirecting(false);
+            alert(err.message || 'No se pudo generar el pago.');
+        }
+    };
+
+    const renderExistingBanner = () => {
+        if (!existingReg) return null;
+        return (
+            <div style={{
+                marginTop: '12px', padding: '14px 16px', borderRadius: '16px', textAlign: 'center',
+                background: existingReg.paid ? 'rgba(163,230,53,0.1)' : 'rgba(251,191,36,0.12)',
+                border: `1px solid ${existingReg.paid ? 'rgba(163,230,53,0.35)' : 'rgba(251,191,36,0.4)'}`,
+            }}>
+                <div style={{ fontSize: '13px', fontWeight: 900, color: existingReg.paid ? 'var(--secondary)' : '#fbbf24', marginBottom: '4px' }}>
+                    {existingReg.paid ? 'YA ESTÁS INSCRITO Y PAGADO ✓' : 'YA ESTÁS INSCRITO'}
+                </div>
+                <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.65)', lineHeight: 1.5 }}>
+                    {existingReg.paid
+                        ? `Encontramos tu inscripción${existingReg.name ? ` (${existingReg.name})` : ''}. Tu pago está confirmado, no necesitas hacer nada más.`
+                        : `Encontramos tu inscripción${existingReg.name ? ` (${existingReg.name})` : ''}. Solo falta el pago — usa el botón para ir directo a pagar.`}
+                </div>
+            </div>
+        );
     };
 
     const renderExtraFields = () => {
@@ -980,7 +1049,8 @@ const TournamentRegistration: React.FC = () => {
                                                             <input
                                                                 type="text"
                                                                 value={input.value}
-                                                                onChange={(e) => setPlayer1({ ...player1, [input.field]: e.target.value })}
+                                                                onChange={(e) => { setPlayer1({ ...player1, [input.field]: e.target.value }); if (input.field === 'document') setExistingReg(null); }}
+                                                                onBlur={() => { if (input.field === 'document') checkExistingByDocument(input.value); }}
                                                                 placeholder={`Ingresa tu ${input.label.toLowerCase()}`}
                                                                 style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none', fontSize: isMobile ? '13px' : '15px', fontWeight: '600' }}
                                                             />
@@ -1087,21 +1157,21 @@ const TournamentRegistration: React.FC = () => {
                                                 {renderPackageSelector()}
 
                                                 {/* Submit Button */}
+                                                {renderExistingBanner()}
                                                 <button
-                                                    onClick={handleRegister}
-                                                    disabled={registering || (isRegistered && !showSuccess)}
+                                                    onClick={onSubmitClick}
+                                                    disabled={submitDisabled}
                                                     className="btn-primary"
-                                                    style={{ 
+                                                    style={{
                                                         width: '100%', padding: '16px', borderRadius: '20px',
                                                         fontWeight: '950', fontSize: '15px', marginTop: '14px',
                                                         boxShadow: '0 15px 40px rgba(163, 230, 53, 0.3)',
-                                                        background: isRegistered ? 'rgba(255,255,255,0.05)' : 'var(--secondary)',
-                                                        color: isRegistered ? 'rgba(255,255,255,0.3)' : 'var(--primary)',
-                                                        border: isRegistered ? '1px solid rgba(255,255,255,0.1)' : 'none',
+                                                        background: (isRegistered || existingPaid) ? 'rgba(255,255,255,0.05)' : 'var(--secondary)',
+                                                        color: (isRegistered || existingPaid) ? 'rgba(255,255,255,0.3)' : 'var(--primary)',
+                                                        border: (isRegistered || existingPaid) ? '1px solid rgba(255,255,255,0.1)' : 'none',
                                                     }}
                                                 >
-                                                    {registering || mpRedirecting ? <Loader2 className="animate-spin" size={24} /> :
-                                                        isRegistered ? 'YA ESTÁS INSCRITO' : mpEnabled ? 'INSCRIBIRME Y PAGAR' : 'INSCRIBIRME AHORA'}
+                                                    {registering || mpRedirecting || checkingDoc ? <Loader2 className="animate-spin" size={24} /> : submitLabel}
                                                 </button>
                                             </div>
                                         </motion.div>
@@ -1181,7 +1251,8 @@ const TournamentRegistration: React.FC = () => {
                                             <input
                                                 type="text"
                                                 value={input.value}
-                                                onChange={(e) => setPlayer1({ ...player1, [input.field]: e.target.value })}
+                                                onChange={(e) => { setPlayer1({ ...player1, [input.field]: e.target.value }); if (input.field === 'document') setExistingReg(null); }}
+                                                onBlur={() => { if (input.field === 'document') checkExistingByDocument(input.value); }}
                                                 placeholder={`Tu ${input.label.toLowerCase()}`}
                                                 style={{ background: 'transparent', border: 'none', color: 'white', width: '100%', outline: 'none', fontSize: isMobile ? '13px' : '15px', fontWeight: '600' }}
                                             />
@@ -1287,20 +1358,20 @@ const TournamentRegistration: React.FC = () => {
 
                                 {renderPackageSelector()}
 
+                                {renderExistingBanner()}
                                 <button
-                                    onClick={handleRegister}
-                                    disabled={registering || (isRegistered && !showSuccess)}
+                                    onClick={onSubmitClick}
+                                    disabled={submitDisabled}
                                     className="btn-primary"
-                                    style={{ 
-                                        width: '100%', padding: '20px', borderRadius: '25px', 
+                                    style={{
+                                        width: '100%', padding: '20px', borderRadius: '25px',
                                         fontWeight: '950', fontSize: '16px', marginTop: '10px',
                                         boxShadow: '0 15px 40px rgba(163, 230, 53, 0.3)',
-                                        background: isRegistered ? 'rgba(255,255,255,0.05)' : 'var(--secondary)',
-                                        color: isRegistered ? 'rgba(255,255,255,0.3)' : 'var(--primary)',
+                                        background: (isRegistered || existingPaid) ? 'rgba(255,255,255,0.05)' : 'var(--secondary)',
+                                        color: (isRegistered || existingPaid) ? 'rgba(255,255,255,0.3)' : 'var(--primary)',
                                     }}
                                 >
-                                    {registering || mpRedirecting ? <Loader2 className="animate-spin" size={24} /> :
-                                        isRegistered ? 'YA ESTÁS INSCRITO' : mpEnabled ? 'INSCRIBIRME Y PAGAR' : 'INSCRIBIRME AHORA'}
+                                    {registering || mpRedirecting || checkingDoc ? <Loader2 className="animate-spin" size={24} /> : submitLabel}
                                 </button>
 
 

@@ -1313,6 +1313,7 @@ const TournamentManager: React.FC = () => {
                                                                                 className="form-input"
                                                                                 style={{ background: 'rgba(255,255,255,0.05)', color: 'white', padding: '10px 12px' }}
                                                                             >
+                                                                                <option value="Mercado Pago">Mercado Pago (tarjeta / PSE)</option>
                                                                                 <option value="Nequi">Nequi</option>
                                                                                 <option value="Llave BreB">Llave BreB</option>
                                                                                 <option value="Cuenta Bancaria">Cuenta Bancaria</option>
