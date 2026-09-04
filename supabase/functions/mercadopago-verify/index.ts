@@ -2,21 +2,13 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4"
 
-// ─────────────────────────────────────────────────────────────────────────────
 // Verificación de pago al regresar de Mercado Pago (sin webhook).
-//
-// El navegador vuelve de MP con ?payment_id=... o con ?ref=<reference>.
-// Esta función:
-//  1. Consulta el pago REAL en la API de MP con MP_ACCESS_TOKEN (nunca confía
-//     en los parámetros del navegador para el estado ni el monto).
-//  2. Solo marca "paid" si status === 'approved', el external_reference
-//     corresponde a inscripciones nuestras, y el monto cubre el precio que la
-//     función de preferencia ya congeló en cada fila (package_price).
-//  3. Es idempotente: una fila ya con mp_payment_id no se toca.
-//
-// Es tan seguro como un webhook: un atacante necesitaría un pago aprobado real
-// en MP con NUESTRO external_reference (que solo crea mercadopago-preference).
-// ─────────────────────────────────────────────────────────────────────────────
+// Consulta el pago real en MP con MP_ACCESS_TOKEN, valida estado y monto
+// contra el precio congelado en la inscripción, y actualiza el estado.
+// - approved  -> registration_status = 'paid'
+// - rejected/cancelled -> registration_status = 'Rechazado'
+// - resto -> se deja 'Pendiente'
+// Siempre registra mp_status / mp_status_detail / mp_amount para la contabilidad.
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -48,7 +40,6 @@ serve(async (req) => {
   try {
     const { payment_id, reference } = await req.json()
 
-    // 1. Resolver el/los pagos a revisar.
     let payments: any[] = []
     if (payment_id) {
       const p = await mpGet(`/v1/payments/${payment_id}`)
@@ -63,15 +54,15 @@ serve(async (req) => {
     }
 
     const approved = payments.find((p) => p.status === "approved")
-    const anyPayment = approved || payments[0]
-    if (!anyPayment) return json({ status: "not_found", updated: 0 })
+    const latest = approved || payments[0]
+    if (!latest) return json({ status: "not_found", updated: 0 })
 
-    const ref: string = anyPayment.external_reference || anyPayment.metadata?.reference || reference || ""
+    const ref: string = latest.external_reference || latest.metadata?.reference || reference || ""
     if (!ref.startsWith("tourn_")) return json({ status: "ignored", updated: 0 })
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
 
-    const meta = anyPayment.metadata || {}
+    const meta = latest.metadata || {}
     const regIds: string[] = Array.isArray(meta.registration_ids) ? meta.registration_ids : []
 
     let q = supabase
@@ -82,32 +73,58 @@ serve(async (req) => {
     if (error) return json({ error: error.message }, 500)
     if (!regs || regs.length === 0) return json({ status: "no_regs", updated: 0 })
 
+    const mpStatus: string = latest.status || "unknown"
+    const mpDetail: string = latest.status_detail || ""
+    const mpAmount = Number(latest.transaction_amount) || 0
+
+    // Contabilidad: registra siempre el último estado de MP en todas las filas.
+    const meta_fields: Record<string, unknown> = {
+      mp_status: mpStatus,
+      mp_status_detail: mpDetail,
+      mp_amount: mpAmount,
+    }
+    await supabase
+      .from("tournament_registrations")
+      .update(meta_fields)
+      .in("id", regs.map((r: any) => r.id))
+      .is("mp_payment_id", null)
+
     const alreadyPaid = regs.every((r: any) => r.mp_payment_id)
     if (alreadyPaid) return json({ status: "approved", updated: 0, already: true })
 
-    if (!approved) {
-      return json({ status: anyPayment.status || "pending", updated: 0 })
+    const pending = regs.filter((r: any) => !r.mp_payment_id)
+
+    // Pago rechazado / cancelado -> marca 'Rechazado' para que se vea en el admin.
+    if (mpStatus === "rejected" || mpStatus === "cancelled") {
+      await supabase
+        .from("tournament_registrations")
+        .update({ registration_status: "Rechazado" })
+        .in("id", pending.map((r: any) => r.id))
+        .is("mp_payment_id", null)
+      return json({ status: mpStatus, detail: mpDetail, updated: 0 })
     }
 
-    // 2. Verificar el monto contra el precio congelado en nuestras filas.
-    const pending = regs.filter((r: any) => !r.mp_payment_id)
+    if (!approved) return json({ status: mpStatus, updated: 0 })
+
+    // Verificación de monto contra el precio congelado.
     const { data: tournament } = await supabase
       .from("tournaments").select("price").eq("id", regs[0].tournament_id).single()
     const stored = pending.find((r: any) => Number(r.package_price) > 0)?.package_price
     const unitPrice = Math.round(Number(stored ?? tournament?.price) || 0)
     const expected = unitPrice * pending.length
-    const paid = Number(approved.transaction_amount) || 0
-    if (unitPrice <= 0 || paid + 1 < expected) {
-      return json({ status: "amount_mismatch", updated: 0, paid, expected })
+    if (unitPrice <= 0 || mpAmount + 1 < expected) {
+      return json({ status: "amount_mismatch", updated: 0, paid: mpAmount, expected })
     }
 
-    // 3. Marcar pagado (idempotente).
     const { data: upd, error: upErr } = await supabase
       .from("tournament_registrations")
       .update({
         registration_status: "paid",
         payment_date: new Date().toISOString(),
         mp_payment_id: String(approved.id),
+        mp_status: "approved",
+        mp_status_detail: approved.status_detail || "accredited",
+        mp_amount: mpAmount,
       })
       .in("id", pending.map((r: any) => r.id))
       .is("mp_payment_id", null)
