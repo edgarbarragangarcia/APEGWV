@@ -233,11 +233,33 @@ const TournamentCard = ({ tourney, onEdit, isAdmin, onApprove, onDelete }: { tou
                             <h4 style={{ fontSize: '15px', fontWeight: '950', color: 'white', marginBottom: '4px', letterSpacing: '-0.3px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                 {tourney.name}
                             </h4>
-                            <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', marginBottom: '8px' }}>
-                                <span style={{ fontSize: '18px', fontWeight: '950', color: 'var(--secondary)', letterSpacing: '-0.5px' }}>
-                                    {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(tourney.price || 0)}
-                                </span>
-                            </div>
+                            {(() => {
+                                const pkgs = Array.isArray((tourney as any).packages) ? (tourney as any).packages : [];
+                                const isViaje = (tourney as any).event_type === 'viaje';
+                                if (isViaje && pkgs.length > 0) {
+                                    return (
+                                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px 10px', marginBottom: '8px' }}>
+                                            {pkgs.map((p: any, i: number) => {
+                                                const cur = (p.currency || 'USD').toUpperCase();
+                                                const val = Number(p.price) || 0;
+                                                const fmt = (() => { try { return new Intl.NumberFormat(cur === 'USD' ? 'en-US' : 'es-CO', { style: 'currency', currency: cur, maximumFractionDigits: 0 }).format(val); } catch { return `${cur} ${val}`; } })();
+                                                return (
+                                                    <span key={i} style={{ fontSize: '13px', fontWeight: '900', color: 'var(--secondary)', letterSpacing: '-0.3px' }}>
+                                                        {p.name ? `${p.name}: ` : ''}{fmt}
+                                                    </span>
+                                                );
+                                            })}
+                                        </div>
+                                    );
+                                }
+                                return (
+                                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', marginBottom: '8px' }}>
+                                        <span style={{ fontSize: '18px', fontWeight: '950', color: 'var(--secondary)', letterSpacing: '-0.5px' }}>
+                                            {isViaje ? 'Sin paquetes' : new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(tourney.price || 0)}
+                                        </span>
+                                    </div>
+                                );
+                            })()}
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'rgba(255,255,255,0.6)', fontSize: '11px', fontWeight: '800' }}>
                                     <MapPin size={10} color="var(--secondary)" strokeWidth={2.5} />
