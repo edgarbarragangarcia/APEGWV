@@ -792,11 +792,11 @@ const TournamentRegistration: React.FC = () => {
                             paddingTop: isMobile ? '10px' : '0',
                             paddingBottom: isMobile ? '40px' : '0',
                             overflow: isMobile ? 'visible' : 'hidden',
-                            width: '100vw',
-                            left: '50%',
-                            right: '50%',
-                            marginLeft: '-50vw',
-                            marginRight: '-50vw'
+                            width: isMobile ? '100vw' : '100%',
+                            left: isMobile ? '50%' : undefined,
+                            right: isMobile ? '50%' : undefined,
+                            marginLeft: isMobile ? '-50vw' : undefined,
+                            marginRight: isMobile ? '-50vw' : undefined
                         }}>
                         {tournament.image_url && isVideoUrl(tournament.image_url) ? (
                             <video
