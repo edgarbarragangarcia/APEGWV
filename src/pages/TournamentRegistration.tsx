@@ -763,7 +763,7 @@ const TournamentRegistration: React.FC = () => {
             <div style={{ perspective: isMobile ? '1500px' : 'none' }}>
                 <motion.div
                     animate={isMobile ? { rotateY: isFlipped ? 180 : 0 } : {}}
-                    transition={{ duration: 0.6, type: 'spring', stiffness: 260, damping: 20 }}
+                    transition={{ duration: 0.5, ease: [0.45, 0, 0.15, 1] }}
                     style={{ 
                         position: 'relative', 
                         transformStyle: isMobile ? 'preserve-3d' : 'flat',
