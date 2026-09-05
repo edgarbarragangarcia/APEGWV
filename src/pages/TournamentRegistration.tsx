@@ -759,27 +759,19 @@ const TournamentRegistration: React.FC = () => {
                 )}
             </AnimatePresence>
 
-            {/* Full Page Flip Wrapper on Mobile */}
-            <div style={{ perspective: isMobile ? '1500px' : 'none' }}>
-                <motion.div
-                    animate={isMobile ? { rotateY: isFlipped ? 180 : 0 } : {}}
-                    transition={{ duration: 0.5, ease: [0.45, 0, 0.15, 1] }}
-                    style={{ 
-                        position: 'relative', 
-                        transformStyle: isMobile ? 'preserve-3d' : 'flat',
-                        WebkitTransformStyle: isMobile ? 'preserve-3d' : 'flat'
-                    }}
-                >
+            {/* Full Page Transition Wrapper on Mobile */}
+            <div>
+                <div style={{ position: 'relative' }}>
                     {/* FRONT SIDE (Entire Page) */}
                     <div style={{
-                        backfaceVisibility: 'hidden',
-                        WebkitBackfaceVisibility: 'hidden',
                         position: (isMobile && isFlipped) ? 'absolute' : 'relative',
                         top: 0, left: 0, width: '100%',
                         height: (isMobile && isFlipped) ? '100dvh' : undefined,
                         overflow: (isMobile && isFlipped) ? 'hidden' : undefined,
                         zIndex: (isMobile && isFlipped) ? 0 : 2,
                         pointerEvents: (isMobile && isFlipped) ? 'none' : 'auto',
+                        opacity: (isMobile && isFlipped) ? 0 : 1,
+                        transition: 'opacity 0.3s ease',
                         background: 'var(--primary)'
                     }}>
                         {/* Hero Image Container — fija y full-bleed en escritorio; el contenido pasa por detrás */}
@@ -1190,9 +1182,6 @@ const TournamentRegistration: React.FC = () => {
                     {/* BACK SIDE (Mobile Form) */}
                     {isMobile && (
                     <div style={{
-                        backfaceVisibility: 'hidden',
-                        WebkitBackfaceVisibility: 'hidden',
-                        transform: 'rotateY(180deg)',
                         position: (isMobile && isFlipped) ? 'relative' : 'absolute',
                         top: 0, left: 0,
                         width: '100%',
@@ -1203,7 +1192,10 @@ const TournamentRegistration: React.FC = () => {
                         display: 'flex',
                         flexDirection: 'column',
                         zIndex: isFlipped ? 2 : 0,
-                        pointerEvents: isFlipped ? 'auto' : 'none'
+                        pointerEvents: isFlipped ? 'auto' : 'none',
+                        opacity: isFlipped ? 1 : 0,
+                        transform: isFlipped ? 'translateY(0)' : 'translateY(24px)',
+                        transition: 'opacity 0.3s ease, transform 0.35s cubic-bezier(0.22, 1, 0.36, 1)'
                     }}>
                         <div style={{
                             padding: '18px 24px',
@@ -1392,7 +1384,7 @@ const TournamentRegistration: React.FC = () => {
                     </div>
                 
                     )}
-                </motion.div>
+                </div>
             </div>
         </div>
     );
