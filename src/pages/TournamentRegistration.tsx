@@ -903,8 +903,9 @@ const TournamentRegistration: React.FC = () => {
                                         flexDirection: 'column',
                                         alignItems: 'center',
                                         gap: '8px',
-                                        width: 'fit-content',
-                                        minWidth: '350px',
+                                        width: '100%',
+                                        maxWidth: '350px',
+                                        boxSizing: 'border-box',
                                         textAlign: 'center'
                                     }}>
                                         <div style={{ fontSize: '10px', fontWeight: '900', color: 'var(--secondary)', letterSpacing: '1px' }}>VALOR INSCRIPCIÓN</div>
