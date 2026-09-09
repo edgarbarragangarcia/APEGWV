@@ -73,6 +73,8 @@ const TournamentRegistration: React.FC = () => {
     const [isFlipped, setIsFlipped] = useState(false);
     const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
     const [mpRedirecting, setMpRedirecting] = useState(false);
+    const [activeAction, setActiveAction] = useState<'pay' | 'later' | null>(null);
+    const [pendingPaymentNotice, setPendingPaymentNotice] = useState(false);
     const [paymentResult, setPaymentResult] = useState<'success' | 'failure' | 'pending' | 'verifying' | null>(null);
     const [trm, setTrm] = useState<number | null>(null);
 
@@ -231,7 +233,11 @@ const TournamentRegistration: React.FC = () => {
         : isRegistered ? 'YA ESTÁS INSCRITO'
         : mpEnabled ? 'INSCRIBIRME Y PAGAR' : 'INSCRIBIRME AHORA';
     const submitDisabled = registering || mpRedirecting || checkingDoc || existingPaid || (isRegistered && !showSuccess);
-    const onSubmitClick = () => { if (existingPending) { handlePayExisting(); } else { handleRegister(); } };
+    // Cuando el torneo cobra por Mercado Pago y no hay una inscripción previa, se ofrecen
+    // dos caminos: inscribirse ya (sin pagar todavía) o inscribirse y pagar de una vez.
+    const showDualOptions = mpEnabled && !existingReg && !isRegistered;
+    const onSubmitClick = () => { if (existingPending) { handlePayExisting(); } else { handleRegister(true); } };
+    const onRegisterLaterClick = () => { handleRegister(false); };
 
     useEffect(() => {
         if (packages.length > 0 && !selectedPackageId) setSelectedPackageId(packages[0].id);
@@ -453,7 +459,7 @@ const TournamentRegistration: React.FC = () => {
         );
     };
 
-    const handleRegister = async () => {
+    const handleRegister = async (payNow: boolean = true) => {
         if (isRegistered || !tournament) return;
         const validatePlayer = (player: typeof player1, roleLabel: string) => {
             // 1. Name check
@@ -513,6 +519,7 @@ const TournamentRegistration: React.FC = () => {
         }
 
         setRegistering(true);
+        setActiveAction(payNow ? 'pay' : 'later');
         try {
             const registrations = [
                 {
@@ -566,12 +573,13 @@ const TournamentRegistration: React.FC = () => {
                 } catch { /* columna aún no migrada: se resuelve en el pago */ }
             }
 
-            if (mpEnabled) {
+            if (mpEnabled && payNow) {
                 setMpRedirecting(true);
                 await startMercadoPago(ids, player1.email.trim(), selectedPackage?.id);
                 return;
             }
 
+            setPendingPaymentNotice(mpEnabled && !payNow);
             setIsRegistered(true);
             setShowSuccess(true);
             if (navigator.vibrate) navigator.vibrate([50, 30, 50]);
@@ -581,6 +589,7 @@ const TournamentRegistration: React.FC = () => {
             alert(`Hubo un error al procesar tu inscripción: ${msg}`);
         } finally {
             setRegistering(false);
+            setActiveAction(null);
         }
     };
 
@@ -712,7 +721,9 @@ const TournamentRegistration: React.FC = () => {
                             </div>
                             <h2 style={{ fontSize: '32px', fontWeight: '950', color: 'white', marginBottom: '15px', letterSpacing: '-1px' }}>¡FELICIDADES!</h2>
                             <p style={{ color: 'rgba(255,255,255,0.6)', lineHeight: '1.7', marginBottom: '40px', fontSize: '16px' }}>
-                                Has quedado inscrito oficialmente en el <strong>{tournament.name}</strong>. ¡Nos vemos en el campo!
+                                {pendingPaymentNotice
+                                    ? <>Quedaste inscrito en el <strong>{tournament.name}</strong>. Tu cupo está pendiente de pago: vuelve a esta página con tu cédula cuando quieras completarlo.</>
+                                    : <>Has quedado inscrito oficialmente en el <strong>{tournament.name}</strong>. ¡Nos vemos en el campo!</>}
                             </p>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                                 <button
@@ -741,7 +752,8 @@ const TournamentRegistration: React.FC = () => {
                                         setIsFlipped(false);
                                         setIsRegistered(false);
                                         setShowSuccess(false);
-                                        
+                                        setPendingPaymentNotice(false);
+
                                         // Fetch profile data again to re-populate the main logged-in player
                                         fetchData();
 
@@ -1154,20 +1166,34 @@ const TournamentRegistration: React.FC = () => {
 
                                                 {/* Submit Button */}
                                                 {renderExistingBanner()}
+                                                {showDualOptions && (
+                                                    <button
+                                                        onClick={onRegisterLaterClick}
+                                                        disabled={submitDisabled}
+                                                        style={{
+                                                            width: '100%', padding: '16px', borderRadius: '20px',
+                                                            fontWeight: '900', fontSize: '13px', marginTop: '14px',
+                                                            background: 'transparent', color: 'white',
+                                                            border: '1px solid rgba(255,255,255,0.25)',
+                                                        }}
+                                                    >
+                                                        {registering && activeAction === 'later' ? <Loader2 className="animate-spin" size={22} /> : 'INSCRIBIRME POR AHORA'}
+                                                    </button>
+                                                )}
                                                 <button
                                                     onClick={onSubmitClick}
                                                     disabled={submitDisabled}
                                                     className="btn-primary"
                                                     style={{
                                                         width: '100%', padding: '16px', borderRadius: '20px',
-                                                        fontWeight: '950', fontSize: '15px', marginTop: '14px',
+                                                        fontWeight: '950', fontSize: '15px', marginTop: showDualOptions ? '10px' : '14px',
                                                         boxShadow: '0 15px 40px rgba(163, 230, 53, 0.3)',
                                                         background: (isRegistered || existingPaid) ? 'rgba(255,255,255,0.05)' : 'var(--secondary)',
                                                         color: (isRegistered || existingPaid) ? 'rgba(255,255,255,0.3)' : 'var(--primary)',
                                                         border: (isRegistered || existingPaid) ? '1px solid rgba(255,255,255,0.1)' : 'none',
                                                     }}
                                                 >
-                                                    {registering || mpRedirecting || checkingDoc ? <Loader2 className="animate-spin" size={24} /> : submitLabel}
+                                                    {(registering && activeAction === 'pay') || mpRedirecting || checkingDoc ? <Loader2 className="animate-spin" size={24} /> : submitLabel}
                                                 </button>
                                             </div>
                                         </motion.div>
@@ -1360,6 +1386,20 @@ const TournamentRegistration: React.FC = () => {
                                 {renderPackageSelector()}
 
                                 {renderExistingBanner()}
+                                {showDualOptions && (
+                                    <button
+                                        onClick={onRegisterLaterClick}
+                                        disabled={submitDisabled}
+                                        style={{
+                                            width: '100%', padding: '18px', borderRadius: '25px',
+                                            fontWeight: '900', fontSize: '13px', marginTop: '10px',
+                                            background: 'transparent', color: 'white',
+                                            border: '1px solid rgba(255,255,255,0.25)',
+                                        }}
+                                    >
+                                        {registering && activeAction === 'later' ? <Loader2 className="animate-spin" size={22} /> : 'INSCRIBIRME POR AHORA'}
+                                    </button>
+                                )}
                                 <button
                                     onClick={onSubmitClick}
                                     disabled={submitDisabled}
@@ -1372,7 +1412,7 @@ const TournamentRegistration: React.FC = () => {
                                         color: (isRegistered || existingPaid) ? 'rgba(255,255,255,0.3)' : 'var(--primary)',
                                     }}
                                 >
-                                    {registering || mpRedirecting || checkingDoc ? <Loader2 className="animate-spin" size={24} /> : submitLabel}
+                                    {(registering && activeAction === 'pay') || mpRedirecting || checkingDoc ? <Loader2 className="animate-spin" size={24} /> : submitLabel}
                                 </button>
 
 
